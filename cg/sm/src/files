@@ -44,6 +44,7 @@ src/advanceSteps.C : src/advanceSteps.bC; $(BPP) -quiet -clean $<
 src/advanceSOS.C : src/advanceSOS.bC boundaryMacros.h; $(BPP) -quiet -clean $<
 src/advanceFOS.C : src/advanceFOS.bC boundaryMacros.h; $(BPP) -quiet -clean $<
 
+
 src/assignInitialConditions.C : src/assignInitialConditions.bC; $(BPP) -quiet -clean $<
 src/getTimeStep.C : src/getTimeStep.bC; $(BPP) -quiet -clean $<
 
@@ -52,6 +53,8 @@ src/assignTwilightZoneInitialConditions.C : src/assignTwilightZoneInitialConditi
 src/assignParabolicInitialConditions.C : src/assignParabolicInitialConditions.bC; $(BPP) -quiet -clean $<
 src/assignSpecialInitialConditions.C : src/assignSpecialInitialConditions.bC forcing.h translationAndRotationSolution.h sphereEigenmode.h; $(BPP) -quiet -clean $<
 src/assignHempInitialConditions.C : src/assignHempInitialConditions.bC; $(BPP) -quiet -clean $<
+
+src/userDefinedKnownSolution.C : src/userDefinedKnownSolution.bC; $(BPP) -quiet -clean $<
 
 src/assignBoundaryConditions.C : src/assignBoundaryConditions.bC; $(BPP) -quiet -clean $<
 src/assignBoundaryConditionsSOS.C : src/assignBoundaryConditionsSOS.bC boundaryMacros.h forcing.h translationAndRotationSolution.h; $(BPP) -quiet -clean $<

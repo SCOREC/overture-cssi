@@ -1,4 +1,68 @@
 *********************************************************************************************
+******* Mon/Tues Oct 11/12, 2021
+
+return to champ 
+
+Fix test case for curvilinear grids
+
+NONSQUARE:
+cgad -noplot tz -g=nonSquare4.order2 -useChamp=1 -bc1=champ -bc2=champ -bc3=champ -degreex=2 -degreet=2 -kappa=.1 -ts=bdf -bdfOrder=2 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+
+ -- CGAD-- champBoundaryConditions: multiDomainProblem=0,  kappa=0.1, thermalConductivity=0.1
++++++ CHAMP BC: FILL MATRIX BC FOR (grid,side,axis)=(0,0,0) (heatFluxInterface)
+***** fillChampBC: (side,axis,grid)=(0,0,0) : theta=Kleft/Kright=0.5, beta=Dleft/Dright=2 ****
+FILL CHAMP MATRIX: OPPOSITE SIDE: domain2=0, grid2=0, side2=0, axis2=0 className=Cgad, name=ad current2=0
+ THIS SIDE    : Ib1=[0,0] Ib2=[0,4] Ib3=[0,0]
+ OPPOSITE SIDE: Jb1=[0,0] Jb2=[0,4] Jb3=[0,0]
+Save some coefficients for TZ
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(-1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(0,-1,0) coeff = -6.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(-1,0,0) coeff = -1.000000e+01
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(0,0,0) coeff = 3.200000e+01
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(1,0,0) coeff = -1.400000e+01
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(-1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(0,1,0) coeff = -6.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(-1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(0,-1,0) coeff = -6.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(-1,0,0) coeff = -1.000000e+01
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(0,0,0) coeff = 3.200000e+01
+
+
+Now runs through champBC
+cgad -noplot tz -g=square4.order2 -useChamp=1 -bc1=champ -bc2=champ -bc3=champ -degreex=2 -degreet=2 -kappa=.1 -ts=bdf -bdfOrder=2 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+
+
+ -- CGAD-- champBoundaryConditions: multiDomainProblem=0,  kappa=0.1, thermalConductivity=0.1
++++++ CHAMP BC: FILL MATRIX BC FOR (grid,side,axis)=(0,0,0) (heatFluxInterface)
+***** fillChampBC: (side,axis,grid)=(0,0,0) : theta=Kleft/Kright=0.5, beta=Dleft/Dright=2 ****
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(-1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(0,-1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(-1,0,0) coeff = 1.400000e+01
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(0,0,0) coeff = -3.200000e+01
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(1,0,0) coeff = 1.000000e+01
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(-1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(0,1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(-1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(0,-1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(-1,0,0) coeff = 1.400000e+01
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(0,0,0) coeff = -3.200000e+01
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(1,0,0) coeff = 1.000000e+01
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(-1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(0,1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(-1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(0,-1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(1,-1,0) coeff = 0.000000e+00
+
+
+
+*********************************************************************************************
 ******* Wed April 21, 2021
 
 RETURN TO CHAMP: 

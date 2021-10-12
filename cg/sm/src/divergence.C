@@ -172,94 +172,94 @@ getMaxDivAndCurl( const int current, real t,
             if( true )
             {
 
-      	if( debug & 64 )
-      	{
-        	  display(uLocal,sPrintF("getMaxDivAndCurl: uLocal p=%i, t=%9.3e",myid,t),pDebugFile," %10.2e ");
-      	}
+                if( debug & 64 )
+                {
+                    display(uLocal,sPrintF("getMaxDivAndCurl: uLocal p=%i, t=%9.3e",myid,t),pDebugFile," %10.2e ");
+                }
             
-      	divLocal=0.;
-      	vorLocal=0.;
+                divLocal=0.;
+                vorLocal=0.;
             
-      	mgop.derivative(MappedGridOperators::xDerivative,uLocal,udLocal,I1,I2,I3,E);
-	//display(div(I1,I2,I3)," compute div: ux","%6.2f ");
-      	if( mg.numberOfDimensions()==2 )
-      	{
-        	  FOR_3D(i1,i2,i3,I1,I2,I3)
-        	  {
-          	    if( MASK(i1,i2,i3)>0 )
-          	    { // find max of x-derivatives:
-            	      gradUMax=max(gradUMax,max(fabs(UD(i1,i2,i3,uc)),fabs(UD(i1,i2,i3,vc))));
-            	      DIV(i1,i2,i3)=UD(i1,i2,i3,uc);
+                mgop.derivative(MappedGridOperators::xDerivative,uLocal,udLocal,I1,I2,I3,E);
+        //display(div(I1,I2,I3)," compute div: ux","%6.2f ");
+                if( mg.numberOfDimensions()==2 )
+                {
+                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    {
+                        if( MASK(i1,i2,i3)>0 )
+                        { // find max of x-derivatives:
+                            gradUMax=max(gradUMax,max(fabs(UD(i1,i2,i3,uc)),fabs(UD(i1,i2,i3,vc))));
+                            DIV(i1,i2,i3)=UD(i1,i2,i3,uc);
                             VOR(i1,i2,i3,0)=UD(i1,i2,i3,vc); // v.x 
-          	    }
-        	  }
-      	}
-      	else
-      	{
-        	  FOR_3D(i1,i2,i3,I1,I2,I3)
-        	  {
-          	    if( MASK(i1,i2,i3)>0 )
-          	    { // find max of x-derivatives:
-            	      gradUMax=max(gradUMax,max(fabs(UD(i1,i2,i3,uc)),fabs(UD(i1,i2,i3,vc)),fabs(UD(i1,i2,i3,wc))));
-            	      DIV(i1,i2,i3)=UD(i1,i2,i3,uc);
+                        }
+                    }
+                }
+                else
+                {
+                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    {
+                        if( MASK(i1,i2,i3)>0 )
+                        { // find max of x-derivatives:
+                            gradUMax=max(gradUMax,max(fabs(UD(i1,i2,i3,uc)),fabs(UD(i1,i2,i3,vc)),fabs(UD(i1,i2,i3,wc))));
+                            DIV(i1,i2,i3)=UD(i1,i2,i3,uc);
                             VOR(i1,i2,i3,1)=-UD(i1,i2,i3,wc); 
                             VOR(i1,i2,i3,2)= UD(i1,i2,i3,vc); 
-          	    }
-        	  }
-      	}
+                        }
+                    }
+                }
             
-      	mgop.derivative(MappedGridOperators::yDerivative,uLocal, udLocal,I1,I2,I3,E);
-	//display(ud(I1,I2,I3)," compute div: uy","%6.2f ");
+                mgop.derivative(MappedGridOperators::yDerivative,uLocal, udLocal,I1,I2,I3,E);
+        //display(ud(I1,I2,I3)," compute div: uy","%6.2f ");
 
-      	if( mg.numberOfDimensions()==2 )
-      	{
-        	  FOR_3D(i1,i2,i3,I1,I2,I3)
-        	  {
-          	    if( MASK(i1,i2,i3)>0 )
-          	    {  // include max of y-derivatives:
-            	      gradUMax=max(gradUMax,max(fabs(UD(i1,i2,i3,uc)),fabs(UD(i1,i2,i3,vc))));
-            	      DIV(i1,i2,i3)+=UD(i1,i2,i3,vc);
+                if( mg.numberOfDimensions()==2 )
+                {
+                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    {
+                        if( MASK(i1,i2,i3)>0 )
+                        {  // include max of y-derivatives:
+                            gradUMax=max(gradUMax,max(fabs(UD(i1,i2,i3,uc)),fabs(UD(i1,i2,i3,vc))));
+                            DIV(i1,i2,i3)+=UD(i1,i2,i3,vc);
                             VOR(i1,i2,i3,0)-=UD(i1,i2,i3,uc); // -u.y 
-          	    }
-        	  }
-      	}
-      	else
-      	{
-        	  FOR_3D(i1,i2,i3,I1,I2,I3)
-        	  {
-          	    if( MASK(i1,i2,i3)>0 )
-          	    { // include max of y-derivatives:
-            	      gradUMax=max(gradUMax,max(fabs(UD(i1,i2,i3,uc)),fabs(UD(i1,i2,i3,vc)),fabs(UD(i1,i2,i3,wc))));
-            	      DIV(i1,i2,i3)+=UD(i1,i2,i3,vc);
+                        }
+                    }
+                }
+                else
+                {
+                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    {
+                        if( MASK(i1,i2,i3)>0 )
+                        { // include max of y-derivatives:
+                            gradUMax=max(gradUMax,max(fabs(UD(i1,i2,i3,uc)),fabs(UD(i1,i2,i3,vc)),fabs(UD(i1,i2,i3,wc))));
+                            DIV(i1,i2,i3)+=UD(i1,i2,i3,vc);
 
                             VOR(i1,i2,i3,0) =UD(i1,i2,i3,wc);
                             VOR(i1,i2,i3,2)-=UD(i1,i2,i3,uc); 
-          	    }
-        	  }
+                        }
+                    }
 
-        	  mgop.derivative(MappedGridOperators::zDerivative,uLocal,udLocal,I1,I2,I3,E);
-        	  FOR_3(i1,i2,i3,I1,I2,I3)
-        	  { 
-          	    if( MASK(i1,i2,i3)>0 )
-          	    { // include max of z-derivatives:
-            	      gradUMax=max(gradUMax,fabs(UD(i1,i2,i3,uc)),fabs(UD(i1,i2,i3,vc)),fabs(UD(i1,i2,i3,wc)));
-            	      DIV(i1,i2,i3)+=UD(i1,i2,i3,wc);
+                    mgop.derivative(MappedGridOperators::zDerivative,uLocal,udLocal,I1,I2,I3,E);
+                    FOR_3(i1,i2,i3,I1,I2,I3)
+                    { 
+                        if( MASK(i1,i2,i3)>0 )
+                        { // include max of z-derivatives:
+                            gradUMax=max(gradUMax,fabs(UD(i1,i2,i3,uc)),fabs(UD(i1,i2,i3,vc)),fabs(UD(i1,i2,i3,wc)));
+                            DIV(i1,i2,i3)+=UD(i1,i2,i3,wc);
 
                             VOR(i1,i2,i3,0)-=UD(i1,i2,i3,vc);
                             VOR(i1,i2,i3,1)+=UD(i1,i2,i3,uc); 
-          	    }
-        	  }
-      	}
+                        }
+                    }
+                }
 
-      	if( debug & 64 )
-      	{
-        	  display(divLocal,sPrintF("getMaxDivAndCurl: divLocal p=%i, t=%9.3e",myid,t),pDebugFile," %10.2e ");
-      	}
+                if( debug & 64 )
+                {
+                    display(divLocal,sPrintF("getMaxDivAndCurl: divLocal p=%i, t=%9.3e",myid,t),pDebugFile," %10.2e ");
+                }
             }
             else
             {
-      	divLocal=0.; 
-      	mgop.derivative(MappedGridOperators::divergence,uLocal,divLocal,I1,I2,I3);
+                divLocal=0.; 
+                mgop.derivative(MappedGridOperators::divergence,uLocal,divLocal,I1,I2,I3);
             }
             
         } // end if compute max norms
@@ -269,7 +269,7 @@ getMaxDivAndCurl( const int current, real t,
         {
       // just compute div(E) -- no max norms
             if( useConservativeDivergence )
-      	mgop.useConservativeApproximations(useConservative);
+                mgop.useConservativeApproximations(useConservative);
             else
                 mgop.useConservativeApproximations(false); 
 
@@ -291,28 +291,28 @@ getMaxDivAndCurl( const int current, real t,
             real uMax[3]={0.,0.,0.}; //
             FOR_3D(i1,i2,i3,I1,I2,I3)
             {
-      	if( MASK(i1,i2,i3)>0 )
-      	{
-        	  if( fabs(DIV(i1,i2,i3))>divUMax )
-        	  {
-          	    i1Max=i1; i2Max=i2; i3Max=i3; gridMax=grid;
-          	    divUMax=fabs(DIV(i1,i2,i3));
-        	  }
-        	  if( fabs(VOR(i1,i2,i3,0))>vorUMax )
-        	  {
-          	    vorUMax=fabs(VOR(i1,i2,i3,0));
-        	  }
+                if( MASK(i1,i2,i3)>0 )
+                {
+                    if( fabs(DIV(i1,i2,i3))>divUMax )
+                    {
+                        i1Max=i1; i2Max=i2; i3Max=i3; gridMax=grid;
+                        divUMax=fabs(DIV(i1,i2,i3));
+                    }
+                    if( fabs(VOR(i1,i2,i3,0))>vorUMax )
+                    {
+                        vorUMax=fabs(VOR(i1,i2,i3,0));
+                    }
                     for( int dir=0; dir<numberOfDimensions; dir++ )
-          	    uMax[dir]=max(fabs(U(i1,i2,i3,uc+dir)),uMax[dir]);
-      	}
-      	else
-      	{
-        	  DIV(i1,i2,i3)=0.;
-      	}
+                        uMax[dir]=max(fabs(U(i1,i2,i3,uc+dir)),uMax[dir]);
+                }
+                else
+                {
+                    DIV(i1,i2,i3)=0.;
+                }
             
             }
             for( int dir=0; dir<numberOfDimensions; dir++ )
-      	solutionNorm(uc+dir)=max(solutionNorm(uc+dir),uMax[dir]);
+                solutionNorm(uc+dir)=max(solutionNorm(uc+dir),uMax[dir]);
         }
         
         if( pdiv!=NULL )
@@ -340,7 +340,7 @@ getMaxDivAndCurl( const int current, real t,
 
         if( computeMaxNorms && debug & 4 )
             printF("+++ processor=%i divUMax=%8.2e max at i=(%i,%i,%i) grid=%i \n",myid,
-           	     divUMax,i1Max,i2Max,i3Max,gridMax);
+                          divUMax,i1Max,i2Max,i3Max,gridMax);
             
 
     // Communication_Manager::Sync();
@@ -366,9 +366,9 @@ getMaxDivAndCurl( const int current, real t,
 
 void Cgsm::
 getVelocityAndStress( const int current, real t, 
-                  		      realCompositeGridFunction *pv /* =NULL */, int vComponent /* =0 */,
-                  		      realCompositeGridFunction *ps /* =NULL */, int sComponent /* =0 */,
-                  		      bool computeMaxNorms /* = true */ )
+                                            realCompositeGridFunction *pv /* =NULL */, int vComponent /* =0 */,
+                                            realCompositeGridFunction *ps /* =NULL */, int sComponent /* =0 */,
+                                            bool computeMaxNorms /* = true */ )
 // ======================================================================================
 /// \brief Compute the velocity and stress by differencing the displacements.
 /// 
@@ -553,26 +553,26 @@ getVelocityAndStress( const int current, real t,
             
             FOR_3D(i1,i2,i3,I1,I2,I3)
             {
-      	if( MASK(i1,i2,i3)>0 )
-      	{ 
-	  // velocity: approximate by differences -- this is wrong at t=0 if there is no prev solution
+                if( MASK(i1,i2,i3)>0 )
+                { 
+          // velocity: approximate by differences -- this is wrong at t=0 if there is no prev solution
           // NOTE: For schemes that update the velocity this next option is not normally used (but could be turned on)
-        	  V(i1,i2,i3,0) = (U(i1,i2,i3,uc) - UP(i1,i2,i3,uc))*dti;
-        	  V(i1,i2,i3,1) = (U(i1,i2,i3,vc) - UP(i1,i2,i3,vc))*dti;
-        	  
-	  // Stress:
-        	  if( linearStressStrain )
-        	  {
-          	    real div = ux(i1,i2,i3,uc) + uy(i1,i2,i3,vc);
-          	    S(i1,i2,i3,0) = lambda*div + 2.*mu*(ux(i1,i2,i3,uc));  // s11
-          	    S(i1,i2,i3,1) = mu*(uy(i1,i2,i3,uc)+ux(i1,i2,i3,vc));  // s12
-          	    S(i1,i2,i3,2) = lambda*div + 2.*mu*(uy(i1,i2,i3,vc));  // s22
+                    V(i1,i2,i3,0) = (U(i1,i2,i3,uc) - UP(i1,i2,i3,uc))*dti;
+                    V(i1,i2,i3,1) = (U(i1,i2,i3,vc) - UP(i1,i2,i3,vc))*dti;
+                    
+          // Stress:
+                    if( linearStressStrain )
+                    {
+                        real div = ux(i1,i2,i3,uc) + uy(i1,i2,i3,vc);
+                        S(i1,i2,i3,0) = lambda*div + 2.*mu*(ux(i1,i2,i3,uc));  // s11
+                        S(i1,i2,i3,1) = mu*(uy(i1,i2,i3,uc)+ux(i1,i2,i3,vc));  // s12
+                        S(i1,i2,i3,2) = lambda*div + 2.*mu*(uy(i1,i2,i3,vc));  // s22
 
-          	    stressNorm  =max(stressNorm  ,fabs(S(i1,i2,i3,0)),fabs(S(i1,i2,i3,1)),fabs(S(i1,i2,i3,2)));
-        	  }
-        	  else if( svkStressStrain )
-        	  {
-	    // SVK model: 
+                        stressNorm  =max(stressNorm  ,fabs(S(i1,i2,i3,0)),fabs(S(i1,i2,i3,1)),fabs(S(i1,i2,i3,2)));
+                    }
+                    else if( svkStressStrain )
+                    {
+            // SVK model: 
 
             // sigma = J^{-1} F S F^T
             // F = I + du/dx 
@@ -582,16 +582,16 @@ getVelocityAndStress( const int current, real t,
             // 
                         real ux0=ux(i1,i2,i3,uc), uy0=uy(i1,i2,i3,uc), vx0=ux(i1,i2,i3,vc), vy0=uy(i1,i2,i3,vc);
 
-// 	    real E11 = ux0 + .5*( ux0*ux0 + vx0*vx0 );
-// 	    real E12 = .5*( uy0 + vx0 +  ux0*uy0 + vx0*vy0 );
-// 	    real E21 = E12;
-// 	    real E22 = vy0 + .5*( uy0*uy0 + vy0*vy0 );
+//          real E11 = ux0 + .5*( ux0*ux0 + vx0*vx0 );
+//          real E12 = .5*( uy0 + vx0 +  ux0*uy0 + vx0*vy0 );
+//          real E21 = E12;
+//          real E22 = vy0 + .5*( uy0*uy0 + vy0*vy0 );
 //             real traceE = E11 + E22;
 
 //             // PKII stress "S"
-// 	    real S11 = lambda*traceE + 2.*mu*( E11 );
-// 	    real S12 = 2.*mu*( E12 ); 
-// 	    real S22 = lambda*traceE + 2.*mu*( E22 );
+//          real S11 = lambda*traceE + 2.*mu*( E11 );
+//          real S12 = 2.*mu*( E12 ); 
+//          real S22 = lambda*traceE + 2.*mu*( E22 );
 
 //             // Cauchy Stress -- finish me 
 
@@ -601,25 +601,25 @@ getVelocityAndStress( const int current, real t,
 
             // F_ij = delta_ij + du_i/dx_j 
                         real F11 = 1. + ux0, F12 = uy0, F21 = vx0, F22=1. + vy0;
-          	    real aJi = F11*F22 - F12*F21;
+                        real aJi = F11*F22 - F12*F21;
                         if( aJi!=0. ) aJi=1./aJi;
             // nominal stress P: 
                         real P11 = u(i1,i2,i3,s11c), P12 = u(i1,i2,i3,s12c);
                         real P21 = u(i1,i2,i3,s21c), P22 = u(i1,i2,i3,s22c);
-          	    
-          	    S(i1,i2,i3,0) = (F11*P11 + F12*P21)*aJi; // Sigma_11
-          	    S(i1,i2,i3,1) = (F11*P12 + F12*P22)*aJi; // Sigma_12
-          	    
-          	    S(i1,i2,i3,2) = (F21*P11 + F22*P21)*aJi; // Sigma_21
-          	    S(i1,i2,i3,3) = (F21*P12 + F22*P22)*aJi; // Sigma_22
+                        
+                        S(i1,i2,i3,0) = (F11*P11 + F12*P21)*aJi; // Sigma_11
+                        S(i1,i2,i3,1) = (F11*P12 + F12*P22)*aJi; // Sigma_12
+                        
+                        S(i1,i2,i3,2) = (F21*P11 + F22*P21)*aJi; // Sigma_21
+                        S(i1,i2,i3,3) = (F21*P12 + F22*P22)*aJi; // Sigma_22
 
-          	    stressNorm  =max(stressNorm  ,fabs(S(i1,i2,i3,0)),fabs(S(i1,i2,i3,1)),
+                        stressNorm  =max(stressNorm  ,fabs(S(i1,i2,i3,0)),fabs(S(i1,i2,i3,1)),
                                                                                     fabs(S(i1,i2,i3,2)),fabs(S(i1,i2,i3,3)));
 
-        	  }
-        	  
-        	  velocityNorm=max(velocityNorm,fabs(V(i1,i2,i3,0)),fabs(V(i1,i2,i3,1)));
-      	}
+                    }
+                    
+                    velocityNorm=max(velocityNorm,fabs(V(i1,i2,i3,0)),fabs(V(i1,i2,i3,1)));
+                }
             }
         }
         else
@@ -637,29 +637,29 @@ getVelocityAndStress( const int current, real t,
             
             FOR_3D(i1,i2,i3,I1,I2,I3)
             {
-      	if( MASK(i1,i2,i3)>0 )
-      	{ 
-	  // velocity: approximate by differences -- this is wrong at t=0 if there is no prev solution
-        	  V(i1,i2,i3,0) = (U(i1,i2,i3,uc) - UP(i1,i2,i3,uc))*dti;
-        	  V(i1,i2,i3,1) = (U(i1,i2,i3,vc) - UP(i1,i2,i3,vc))*dti;
-        	  V(i1,i2,i3,2) = (U(i1,i2,i3,wc) - UP(i1,i2,i3,wc))*dti;
-        	  
-	  // Stress:
-        	  real div = ux(i1,i2,i3,uc) + uy(i1,i2,i3,vc) + uz(i1,i2,i3,wc);
-        	  S(i1,i2,i3,0) = lambda*div + 2.*mu*(ux(i1,i2,i3,uc));  // s11
-        	  S(i1,i2,i3,1) = mu*(uy(i1,i2,i3,uc)+ux(i1,i2,i3,vc));  // s12
-        	  S(i1,i2,i3,2) = mu*(ux(i1,i2,i3,wc)+uz(i1,i2,i3,uc));  // s13
+                if( MASK(i1,i2,i3)>0 )
+                { 
+          // velocity: approximate by differences -- this is wrong at t=0 if there is no prev solution
+                    V(i1,i2,i3,0) = (U(i1,i2,i3,uc) - UP(i1,i2,i3,uc))*dti;
+                    V(i1,i2,i3,1) = (U(i1,i2,i3,vc) - UP(i1,i2,i3,vc))*dti;
+                    V(i1,i2,i3,2) = (U(i1,i2,i3,wc) - UP(i1,i2,i3,wc))*dti;
+                    
+          // Stress:
+                    real div = ux(i1,i2,i3,uc) + uy(i1,i2,i3,vc) + uz(i1,i2,i3,wc);
+                    S(i1,i2,i3,0) = lambda*div + 2.*mu*(ux(i1,i2,i3,uc));  // s11
+                    S(i1,i2,i3,1) = mu*(uy(i1,i2,i3,uc)+ux(i1,i2,i3,vc));  // s12
+                    S(i1,i2,i3,2) = mu*(ux(i1,i2,i3,wc)+uz(i1,i2,i3,uc));  // s13
 
-        	  S(i1,i2,i3,3) = lambda*div + 2.*mu*(uy(i1,i2,i3,vc));  // s22
-        	  S(i1,i2,i3,4) = mu*(uy(i1,i2,i3,wc)+uz(i1,i2,i3,vc));  // s23
+                    S(i1,i2,i3,3) = lambda*div + 2.*mu*(uy(i1,i2,i3,vc));  // s22
+                    S(i1,i2,i3,4) = mu*(uy(i1,i2,i3,wc)+uz(i1,i2,i3,vc));  // s23
 
-        	  S(i1,i2,i3,5) = lambda*div + 2.*mu*(uz(i1,i2,i3,wc));  // s33
+                    S(i1,i2,i3,5) = lambda*div + 2.*mu*(uz(i1,i2,i3,wc));  // s33
 
-        	  velocityNorm=max(velocityNorm,fabs(V(i1,i2,i3,0)),fabs(V(i1,i2,i3,1)),fabs(V(i1,i2,i3,2)));
-        	  stressNorm  =max(max(stressNorm  ,fabs(S(i1,i2,i3,0)),fabs(S(i1,i2,i3,1)),fabs(S(i1,i2,i3,2))),
-                     			   max(fabs(S(i1,i2,i3,3)),fabs(S(i1,i2,i3,4)),fabs(S(i1,i2,i3,5))));
+                    velocityNorm=max(velocityNorm,fabs(V(i1,i2,i3,0)),fabs(V(i1,i2,i3,1)),fabs(V(i1,i2,i3,2)));
+                    stressNorm  =max(max(stressNorm  ,fabs(S(i1,i2,i3,0)),fabs(S(i1,i2,i3,1)),fabs(S(i1,i2,i3,2))),
+                                                      max(fabs(S(i1,i2,i3,3)),fabs(S(i1,i2,i3,4)),fabs(S(i1,i2,i3,5))));
 
-      	}
+                }
             }
         }
             
@@ -703,7 +703,7 @@ getVelocityAndStress( const int current, real t,
         stressNorm  =ParallelUtility::getMaxValue(stressNorm);  // get max over all processors
     }
 
-    if( computeMaxNorms && (true || debug & 2) )
+    if( computeMaxNorms && ( debug & 2) )
     {
         printF("getVelocityAndStress: |velocity|=%8.2e, |stress|=%8.2e at t=%8.2e \n",velocityNorm,stressNorm,t);
     }
@@ -875,22 +875,22 @@ checkDisplacementAndStress( const int current, real t )
         {
             FOR_3D(i1,i2,i3,I1,I2,I3)
             {
-      	if( MASK(i1,i2,i3)>0 )
-      	{ 
-	  // Compute the stress from the displacement
+                if( MASK(i1,i2,i3)>0 )
+                { 
+          // Compute the stress from the displacement
                     u1x = ux(i1,i2,i3,uc), u1y=uy(i1,i2,i3,uc);
                     u2x = ux(i1,i2,i3,vc), u2y=uy(i1,i2,i3,vc);
-        	  
-        	  div = u1x + u2y;
-        	  s11 = lambda*div + 2.*mu*u1x;
-        	  s12 = mu*( u1y+u2x );
-        	  s21 = s12;
-        	  s22 = lambda*div + 2.*mu*u2y;
+                    
+                    div = u1x + u2y;
+                    s11 = lambda*div + 2.*mu*u1x;
+                    s12 = mu*( u1y+u2x );
+                    s21 = s12;
+                    s22 = lambda*div + 2.*mu*u2y;
                     
                     if( false )
                     {
                         printF(" i1,i2=(%3i,%3i) s11=%9.3e, computed-from-u=%9.3e, diff=%8.2e\n",
-           	     i1,i2,U(i1,i2,i3,s11c),s11,fabs(s11-U(i1,i2,i3,s11c)));
+                          i1,i2,U(i1,i2,i3,s11c),s11,fabs(s11-U(i1,i2,i3,s11c)));
                     }
                     
                     stressErr[0] = max( stressErr[0], fabs(s11-U(i1,i2,i3,s11c)) );
@@ -903,7 +903,7 @@ checkDisplacementAndStress( const int current, real t )
                     stressNorm[2]=max(stressNorm[2],fabs(s21));
                     stressNorm[3]=max(stressNorm[3],fabs(s22));
                     
-      	}
+                }
             }
         }
         else
@@ -915,37 +915,37 @@ checkDisplacementAndStress( const int current, real t )
 
             FOR_3D(i1,i2,i3,I1,I2,I3)
             {
-      	if( MASK(i1,i2,i3)>0 )
-      	{ 
+                if( MASK(i1,i2,i3)>0 )
+                { 
           // Compute the stress from the displacement
 
                     u1x = ux(i1,i2,i3,uc), u1y=uy(i1,i2,i3,uc), u1z=uz(i1,i2,i3,uc);
                     u2x = ux(i1,i2,i3,vc), u2y=uy(i1,i2,i3,vc), u2z=uz(i1,i2,i3,vc);
                     u3x = ux(i1,i2,i3,wc), u3y=uy(i1,i2,i3,wc), u3z=uz(i1,i2,i3,wc);
 
-        	  div = u1x+u2y+u3z;
-        	  s11 = lambda*div + 2.*mu*u1x;
-        	  s12 = mu*( u1y+u2x );
-        	  s13 = mu*( u1z+u3x );
-        	  s21 = s12;
-        	  s22 = lambda*div + 2.*mu*u2y;
-        	  s23 = mu*( u2z + u3y );
-        	  s31 = s13;
-        	  s32 = s23;
-        	  s33 = lambda*div + 2.*mu*u3z;
+                    div = u1x+u2y+u3z;
+                    s11 = lambda*div + 2.*mu*u1x;
+                    s12 = mu*( u1y+u2x );
+                    s13 = mu*( u1z+u3x );
+                    s21 = s12;
+                    s22 = lambda*div + 2.*mu*u2y;
+                    s23 = mu*( u2z + u3y );
+                    s31 = s13;
+                    s32 = s23;
+                    s33 = lambda*div + 2.*mu*u3z;
 
           // printF(" i1,i2,i3,=(%3i,%3i,%3i) s11=%9.3e, computed-from-u=%9.3e, diff=%8.2e\n",
-	  //       i1,i2,i3,U(i1,i2,i3,s11c),s11,fabs(s11-U(i1,i2,i3,s11c)));
+          //       i1,i2,i3,U(i1,i2,i3,s11c),s11,fabs(s11-U(i1,i2,i3,s11c)));
 
 
                     stressErr[0] = max( stressErr[0], fabs(s11-U(i1,i2,i3,s11c)) );
                     stressErr[1] = max( stressErr[1], fabs(s12-U(i1,i2,i3,s12c)) );
                     stressErr[2] = max( stressErr[2], fabs(s13-U(i1,i2,i3,s13c)) );
-                                      			      		  
+                                                                                    
                     stressErr[3] = max( stressErr[3], fabs(s21-U(i1,i2,i3,s21c)) );
                     stressErr[4] = max( stressErr[4], fabs(s22-U(i1,i2,i3,s22c)) );
                     stressErr[5] = max( stressErr[5], fabs(s23-U(i1,i2,i3,s23c)) );
-                                      			      		  
+                                                                                    
                     stressErr[6] = max( stressErr[6], fabs(s31-U(i1,i2,i3,s31c)) );
                     stressErr[7] = max( stressErr[7], fabs(s32-U(i1,i2,i3,s32c)) );
                     stressErr[8] = max( stressErr[8], fabs(s33-U(i1,i2,i3,s33c)) );
@@ -960,7 +960,7 @@ checkDisplacementAndStress( const int current, real t )
                     stressNorm[7]=max(stressNorm[7],fabs(s32));
                     stressNorm[8]=max(stressNorm[8],fabs(s33));
 
-      	}
+                }
             }
         }
             

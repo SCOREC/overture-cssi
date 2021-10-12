@@ -219,11 +219,11 @@ projectInitialConditionsForMovingGrids(int gfIndex)
       // useMovingGridSubIterations=true;  // ****TEMP*** 
 
       if( useMovingGridSubIterations  )
-	numberOfCorrections= max(numberOfCorrections,parameters.dbase.get<int>("numberOfPCcorrections")); 
+        numberOfCorrections= max(numberOfCorrections,parameters.dbase.get<int>("numberOfPCcorrections")); 
     }
     
     printF("--INS--::projectInitialConditionsForMovingGrids: useMovingGridSubIterations=%i numberOfCorrections=%i\n",(int)useMovingGridSubIterations,
-	   numberOfCorrections);
+           numberOfCorrections);
 
     // **TEST: 
     const real & dt = parameters.dbase.get<real >("dt");
@@ -244,37 +244,37 @@ projectInitialConditionsForMovingGrids(int gfIndex)
       // define initial forces on moving bodies -- we really should iterate here since the 
       // forces depend on the pressure and the pressure depends on the forces.
       if( movingGridProblem() && gf[gfIndex].t==0. )
-	correctMovingGrids( gf[gfIndex].t, gf[gfIndex].t,gf[gfIndex],gf[gfIndex] ); 
+        correctMovingGrids( gf[gfIndex].t, gf[gfIndex].t,gf[gfIndex],gf[gfIndex] ); 
       
       // -- compute any body forcing since the pressure may depend on this ---
       const real tForce = gf[gfIndex].t; // evaluate the body force at this time
       computeBodyForcing( gf[gfIndex], tForce );
 
       if( !parameters.dbase.get<bool >("projectInitialConditions") ) // TEMP fix for Joel's bug
-	updateDivergenceDamping( gf[gfIndex].cg,true );
+        updateDivergenceDamping( gf[gfIndex].cg,true );
     
       // Evaluate the initial pressure field:
       if( correction==0 )
-	printF("--INS:PICMG--Solve for the initial pressure field, dt=%9.3e (correction=%i) \n",
-	       parameters.dbase.get<real >("dt"),correction);
+        printF("--INS:PICMG--Solve for the initial pressure field, dt=%9.3e (correction=%i) \n",
+               parameters.dbase.get<real >("dt"),correction);
       solveForTimeIndependentVariables( gf[gfIndex] );     
 
       bool isConverged = getMovingGridCorrectionHasConverged();
       if( movingGridProblem() && useMovingGridSubIterations )
       {
-	if( true || debug() & 2 )
-	{
-	  if( correction==0 ) isConverged=false;  // Make at least 2 correction steps *wdh* 2015/06/07
+        if( true || debug() & 2 )
+        {
+          if( correction==0 ) isConverged=false;  // Make at least 2 correction steps *wdh* 2015/06/07
 
-	  real delta = getMovingGridMaximumRelativeCorrection();
-	  printF("--INS--:projectInitialConditionsForMovingGrids: moving grid correction step : delta =%8.2e (correction=%i, isConverged=%i)\n",
-		 delta,correction,(int)isConverged);
-	}
+          real delta = getMovingGridMaximumRelativeCorrection();
+          printF("--INS--:projectInitialConditionsForMovingGrids: moving grid correction step : delta =%8.2e (correction=%i, isConverged=%i)\n",
+                 delta,correction,(int)isConverged);
+        }
       }
       
 
       if( isConverged )
-	break;
+        break;
     }
     
   }

@@ -271,6 +271,8 @@ saveShow( GridFunction & gf0 )
   // -- this doesn't seem to work in parallel -- fix me -- see pulse example ---
   // Here we save time sequences to the show file *wdh* 091124 
   // Only save if this is the last frame in a subFile
+
+  // *wdh* Sept 20, 2021 -- this may now work in parallel *check me* (see Maxwell solver cgmx)
 #ifndef USE_PPP
   if( parameters.dbase.get<bool >("saveSequencesEveryTime") && parameters.dbase.get<Ogshow* >("show")!=NULL &&
       parameters.dbase.get<Ogshow* >("show")->isLastFrameInSubFile() )
@@ -341,41 +343,64 @@ saveSequencesToShowFile()
   const int & wc =  parameters.dbase.get<int >("wc");
   const int & rc =  parameters.dbase.get<int >("rc");
   const int & tc =  parameters.dbase.get<int >("tc");
+
+ const SmParameters::CompressibilityTypeEnum & compressibilityType = 
+            parameters.dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");  
   
   Range I(0,sequenceCount-1);
   Range N=sequence.dimension(1);
   
   aString *name = new aString [numberOfSequences]; 
+  aString sequenceName;
+  if( checkErrors )
+    sequenceName="errors";
+  else
+    sequenceName="solutionNorms";
+
   for( int n=0; n<numberOfComponents; n++ )
   {
-    if( cgerrp!=NULL )
+    if( checkErrors )
     {
-      name[n]=cgerrp[0].getName(n);
+      if( cgerrp!=NULL )
+      {
+        name[n]=cgerrp[0].getName(n);
+      }
+      else
+      {
+        name[n]=sPrintF("error%i",n);
+      }
     }
     else
     {
-      name[n]=sPrintF("error%i",n);
+      // -- save solution norms --
+      aString buff;
+      name[n]= sPrintF(buff,"%sNorm",(const char*)gf[0].u.getName(n));
     }
+
     for( int i=0; i<name[n].length(); i++ )
     { // change blanks to underscores (for matlab)
       if( name[n][i]==' ' )
       {
-	name[n][i]='_';
+	      name[n][i]='_';
       }
     }
   }
 
-
+  int seqCount = numberOfComponents;
   if( computeEnergy && numberOfSequences>numberOfComponents )
   {
-    name[numberOfComponents  ]="Energy";
-    name[numberOfComponents+1]="Delta_U";
+    name[seqCount]="Energy";   seqCount++; 
+    name[seqCount]="Delta_U";  seqCount++;
   }
-  
+  if( compressibilityType==SmParameters::incompressibleSolid )
+  {
+    name[seqCount] = "divU";   seqCount++;
+  }
+
   // display(sequence(I,N),"saveSequencesToShowFile: sequence(I,N)");
   
-
-  show->saveSequence("errors",timeSequence(I),sequence(I,N),name);
+  
+  show->saveSequence(sequenceName,timeSequence(I),sequence(I,N),name);
 
   delete [] name;
   

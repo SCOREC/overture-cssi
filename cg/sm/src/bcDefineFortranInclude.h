@@ -1,6 +1,6 @@
 ! define BC parameters for fortran routines
 ! boundary conditions
-c123456789012345678901234567890123456789012345678901234567890123456789
+!123456789012345678901234567890123456789012345678901234567890123456789
       integer interpolation,displacementBC,tractionBC
       integer slipWall,symmetry,interfaceBC
       integer abcEM2,abcPML,abc3,abc4,abc5,rbcNonLocal,rbcLocal,lastBC

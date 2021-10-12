@@ -3,12 +3,12 @@
 #
 # Usage:
 #   
-#  cgsm [-noplot] tz -g=<name> -tz=<poly/trig> -degreex=<> -degreet=<> -tf=<tFinal> -tp=<tPlot> -ts=[me|fe|ie]...
-#                    -bcn=[dirichlet|d|sf|slip|mixed] -diss=<> -order=<2/4> -debug=<num> -bg=<backGround> -cons=[0/1] ...
+#  cgsm [-noplot] tz -g=<name> -tz=<poly/trig> -degreex=<> -degreet=<> -tf=<tFinal> -tp=<tPlot> -ts=[me|fe|ie|pc2|pc4]...
+#                    -bcn=[dirichlet|e|d|sf|slip|mixed] -diss=<> -order=<2/4> -debug=<num> -bg=<backGround> -cons=[0/1] ...
 #                    -pv=[nc|c|g|h] -godunovOrder=[1|2] -mu=<> -lambda=<> -rho=<> -filter=[0|1] ...
 #                    -bc1=[dirichlet|d|t|s|sym] -bc2=[..] -bc3=[...] ... -bc6=[...] 
 #                    -checkGhostErr=[0|1|2] -stressRelaxation=[0|2|4] -relaxAlpha=<> -relaxDelta=<> ...
-#                    -godunovType=[0|2] -varMat=[0|1]  -go=[run/halt/og]
+#                    -godunovType=[0|2] -varMat=[0|1] -incompressible=[0:1]
 # 
 #  -diss : coeff of artificial diffusion 
 #  -go : run, halt, og=open graphics
@@ -229,7 +229,8 @@
 # --- set default values for parameters ---
 # 
 $noplot=""; $backGround="square"; $grid="square10"; $rho=1.; $mu=1.; $lambda=1.; $pv="nc"; $en="max"; $show=" ";
-$debug = 0;  $tPlot=.1; $diss=.1; $dissOrder=2; $bcn="d"; $cons=0; $godunovOrder=2;
+$debug = 0;  $tPlot=.1; $diss=.1; $dissOrder=2; $bcn="d"; $cons=0; $godunovOrder=2; 
+$orderInTime=-1; # -1 = use default 
 $tz = "poly"; $degreex=2; $degreet=2; $fx=1.; $fy=$fx; $fz=$fx; $ft=$fx;  $ts="me"; 
 $order = 2; $go="run"; $checkGhostErr=0; 
 $tFinal=1.; $cfl=.9; $dsf=.1; $filter=0; $filterOrder=6; $filterStages=2; $filterFrequency=1; $filterIterations=1; 
@@ -237,10 +238,13 @@ $ad=0.; $ad4=0.; # art. diss for Godunov
 $amr=0; $useTopHat=0; $xTopHat=.25; $yTopHat=.25; $zTopHat=0.; $x0=.5; $y0=.5; $z0=.5;
 $ratio=2;  $nrl=2;  # refinement ratio and number of refinement levels
 $tol=.001;  $nbz=2;   # amr tol and number-of-buffer-zones
-$stressRelaxation=0; $relaxAlpha=0.1; $relaxDelta=0.1; $varMat=0;
-$tangentialStressDissipation=1.;
+$stressRelaxation=0; $relaxAlpha=0.1; $relaxDelta=0.1; $varMat=0; $tangentialStressDissipation=1.;
+$incompressible=0; # set to 1 for incompressible solids
+$upwindSOS=0;      # set to 1 for upwind dissipation for second-order systems
 $bc1=""; $bc2=""; $bc3=""; $bc4=""; $bc5=""; $bc6=""; 
-$godunovType=0;
+$godunovType=0; $useCurlCurl=1;
+$cdv=.5;           # divergence damping 
+$numberOfCorrections=1; $skipLastPressureSolve=0; 
 #
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet,"diss=f"=>\$diss,\
@@ -255,7 +259,9 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>
   "relaxDelta=f"=>\$relaxDelta,"tangentialStressDissipation=f"=>\$tangentialStressDissipation,\
   "bc1=s"=>\$bc1,"bc2=s"=>\$bc2,"bc3=s"=>\$bc3,"bc4=s"=>\$bc4,"bc5=s"=>\$bc5,"bc6=s"=>\$bc6,\
   "amr=i"=>\$amr,"tol=f"=>\$tol,"nrl=i"=>\$nrl,"nbz=i"=>\$nbz,"ratio=i"=>\$ratio,"useTopHat=i"=>\$useTopHat,\
-  "xTopHat=f"=>\$xTopHat,"yTopHat=f"=>\$yTopHat,"zTopHat=f"=>\$zTopHat,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0 );
+  "xTopHat=f"=>\$xTopHat,"yTopHat=f"=>\$yTopHat,"zTopHat=f"=>\$zTopHat,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,\
+  "incompressible=i"=>\$incompressible,"upwindSOS=i"=>\$upwindSOS,"cdv=f"=>\$cdv,"orderInTime=i"=>\$orderInTime,\
+  "skipLastPressureSolve=i"=>\$skipLastPressureSolve,"numberOfCorrections=i"=>\$numberOfCorrections,"useCurlCurl=i"=>\$useCurlCurl );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $tz eq "poly" ){ $tz="polynomial"; }
@@ -273,10 +279,13 @@ if( $ts eq "me" ){ $ts = "modifiedEquationTimeStepping"; }
 if( $ts eq "fe" ){ $ts = "forwardEuler"; }
 if( $ts eq "ie" ){ $ts = "improvedEuler"; }
 if( $ts eq "ab" ){ $ts = "adamsBashforth2"; }
+if( $ts eq "pc2" ){ $ts = "adamsPredictorCorrector2"; }
+if( $ts eq "pc4" ){ $ts = "adamsPredictorCorrector4"; }
 # 
 if( $bcn eq "d" ){ $bcn = "all=displacementBC"; }
 if( $bcn eq "dirichlet" ){ $bcn = "all=dirichletBoundaryCondition"; }
 if( $bcn eq "sf" ){ $bcn = "all=tractionBC\n"; }
+if( $bcn eq "t" ){ $bcn = "all=tractionBC\n"; }
 if( $bcn eq "slip" ){ $bcn = "all=slipWall\n"; }
 if( $bcn eq "mixed" ){ $bcn = "all=displacementBC\n $backGround(0,0)=tractionBC\n $backGround(1,0)=tractionBC"; }
 if( $bcn eq "mixed2" ){ $bcn = "all=displacementBC\n $backGround(0,1)=tractionBC\n $backGround(1,1)=tractionBC"; }
@@ -295,37 +304,37 @@ if( $bcn eq "sf3D11" ){ $bcn = "all=dirichletBoundaryCondition\n $backGround(1,1
 if( $bcn eq "sf3D12" ){ $bcn = "all=dirichletBoundaryCondition\n $backGround(1,2)=tractionBC\n"; }
 #
 # NEW way for BC's
-if( $bc1 eq "dirichlet" ){ $bc1="bcNumber1=dirichletBoundaryCondition"; }\
+if( $bc1 eq "dirichlet" || $bc1 eq "e" ){ $bc1="bcNumber1=dirichletBoundaryCondition"; }\
      elsif( $bc1 eq "d" ){ $bc1="bcNumber1=displacementBC"; }\
      elsif( $bc1 eq "t" ){ $bc1="bcNumber1=tractionBC"; }\
      elsif( $bc1 eq "s" ){ $bc1="bcNumber1=slipWall"; }\
      elsif( $bc1 eq "sym" ){ $bc1="bcNumber1=symmetry"; }\
      else{ $bc1="#"; }
-if( $bc2 eq "dirichlet" ){ $bc2="bcNumber2=dirichletBoundaryCondition"; }\
+if( $bc2 eq "dirichlet" || $bc2 eq "e" ){ $bc2="bcNumber2=dirichletBoundaryCondition"; }\
      elsif( $bc2 eq "d" ){ $bc2="bcNumber2=displacementBC"; }\
      elsif( $bc2 eq "t" ){ $bc2="bcNumber2=tractionBC"; }\
      elsif( $bc2 eq "s" ){ $bc2="bcNumber2=slipWall"; }\
      elsif( $bc2 eq "sym" ){ $bc2="bcNumber2=symmetry"; }\
      else{ $bc2="#"; }
-if( $bc3 eq "dirichlet" ){ $bc3="bcNumber3=dirichletBoundaryCondition"; }\
+if( $bc3 eq "dirichlet" || $bc3 eq "e" ){ $bc3="bcNumber3=dirichletBoundaryCondition"; }\
      elsif( $bc3 eq "d" ){ $bc3="bcNumber3=displacementBC"; }\
      elsif( $bc3 eq "t" ){ $bc3="bcNumber3=tractionBC"; }\
      elsif( $bc3 eq "s" ){ $bc3="bcNumber3=slipWall"; }\
      elsif( $bc3 eq "sym" ){ $bc3="bcNumber3=symmetry"; }\
      else{ $bc3="#"; }
-if( $bc4 eq "dirichlet" ){ $bc4="bcNumber4=dirichletBoundaryCondition"; }\
+if( $bc4 eq "dirichlet" || $bc4 eq "e" ){ $bc4="bcNumber4=dirichletBoundaryCondition"; }\
      elsif( $bc4 eq "d" ){ $bc4="bcNumber4=displacementBC"; }\
      elsif( $bc4 eq "t" ){ $bc4="bcNumber4=tractionBC"; }\
      elsif( $bc4 eq "s" ){ $bc4="bcNumber4=slipWall"; }\
      elsif( $bc4 eq "sym" ){ $bc4="bcNumber4=symmetry"; }\
      else{ $bc4="#"; }
-if( $bc5 eq "dirichlet" ){ $bc5="bcNumber5=dirichletBoundaryCondition"; }\
+if( $bc5 eq "dirichlet" || $bc5 eq "e" ){ $bc5="bcNumber5=dirichletBoundaryCondition"; }\
      elsif( $bc5 eq "d" ){ $bc5="bcNumber5=displacementBC"; }\
      elsif( $bc5 eq "t" ){ $bc5="bcNumber5=tractionBC"; }\
      elsif( $bc5 eq "s" ){ $bc5="bcNumber5=slipWall"; }\
      elsif( $bc5 eq "sym" ){ $bc5="bcNumber5=symmetry"; }\
      else{ $bc5="#"; }
-if( $bc6 eq "dirichlet" ){ $bc6="bcNumber6=dirichletBoundaryCondition"; }\
+if( $bc6 eq "dirichlet" || $bc6 eq "e" ){ $bc6="bcNumber6=dirichletBoundaryCondition"; }\
      elsif( $bc6 eq "d" ){ $bc6="bcNumber6=displacementBC"; }\
      elsif( $bc6 eq "t" ){ $bc6="bcNumber6=tractionBC"; }\
      elsif( $bc6 eq "s" ){ $bc6="bcNumber6=slipWall"; }\
@@ -345,6 +354,9 @@ $grid
 linear elasticity
 variable material properties $varMat
 $pv
+if( $incompressible eq 0 ){ $cmd="compressible solid"; }else{ $cmd="incompressible solid"; }
+$cmd
+#
  continue
 #  -- time stepping method : 
 $ts
@@ -361,6 +373,15 @@ SMPDE:stressRelaxation $stressRelaxation
 SMPDE:relaxAlpha $relaxAlpha
 SMPDE:relaxDelta $relaxDelta
 SMPDE:tangential stress dissipation $tangentialStressDissipation
+#
+SMPDE:upwind for SOS $upwindSOS
+SMPDE:divergence damping $cdv
+SMPDE:skip last pressure solve $skipLastPressureSolve
+SMPDE:number of corrections $numberOfCorrections
+SMPDE:use curl-curl bc $useCurlCurl
+#
+if( $orderInTime>0 ){ $cmd="SMPDE:time order of accuracy $orderInTime"; }else{ $cmd="#"; }
+$cmd
 #
 # SVK and other nonlinear models:
 SMPDE:PDE type for Godunov $godunovType
@@ -493,6 +514,7 @@ check error on ghost
    $checkGhostErr
 # 
 if( $pv eq "conservative" || $pv eq "non-conservative" ){ $cmds="plot velocity 1\n plot stress 1"; }else{ $cmds="#"; }
+if( $incompressible eq 1 ){ $cmds = "plot divergence 1"; }
 $cmds
 #*********************************
 show file options...

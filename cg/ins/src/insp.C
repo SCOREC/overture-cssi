@@ -139,37 +139,37 @@ updatePressureEquation(CompositeGrid & cg0, GridFunction & cgf )
       // printF("--UPE-- grid=%i has_key  deformingBodyNumber = %i\n",grid,(int)bd.dbase.has_key("deformingBodyNumber"));
       if( bd.dbase.has_key("deformingBodyNumber") )
       {
-	int (&deformingBodyNumber)[2][3] = bd.dbase.get<int[2][3]>("deformingBodyNumber");
+        int (&deformingBodyNumber)[2][3] = bd.dbase.get<int[2][3]>("deformingBodyNumber");
         for( int side=0; side<=1; side++ )
-	{
-	  for( int axis=0; axis<cg0.numberOfDimensions(); axis++ )
-	  {
+        {
+          for( int axis=0; axis<cg0.numberOfDimensions(); axis++ )
+          {
             // printF("--UPE- deformingBodyNumber[side=%i][axis=%i]=%i\n",side,axis,deformingBodyNumber[side][axis]);
-	    
-	    deformingBodyModel[side][axis]=noModel;
+            
+            deformingBodyModel[side][axis]=noModel;
 
-	    if( deformingBodyNumber[side][axis]>=0 )
-	    {
+            if( deformingBodyNumber[side][axis]>=0 )
+            {
               int body=deformingBodyNumber[side][axis];
-	      if( cgf.t <= dt )
-		printF("--UPE-- AMP: grid=%i, (side,axis)=(%i,%i) belongs to deforming body %i\n",grid,side,axis,body);
+              if( cgf.t <= dt )
+                printF("--UPE-- AMP: grid=%i, (side,axis)=(%i,%i) belongs to deforming body %i\n",grid,side,axis,body);
 
-	      DeformingBodyMotion & deform = movingGrids.getDeformingBody(body);
-	      if( deform.isBeamModel() )
-	      {
-		deformingBodyModel[side][axis]=isBeamModel;
-		
-		BeamModel & beamModel = deform.getBeamModel();
+              DeformingBodyMotion & deform = movingGrids.getDeformingBody(body);
+              if( deform.isBeamModel() )
+              {
+                deformingBodyModel[side][axis]=isBeamModel;
+                
+                BeamModel & beamModel = deform.getBeamModel();
 
-		real rhosHs=-1.;
-		beamModel.getMassPerUnitLength( beamMassPerUnitLength[side][axis] );
-  	        if( cgf.t <= dt )
-		  printF("--UPE-- AMP: BeamModel: beamMassPerUnitLength = %8.2e\n",beamMassPerUnitLength[side][axis]);
+                real rhosHs=-1.;
+                beamModel.getMassPerUnitLength( beamMassPerUnitLength[side][axis] );
+                if( cgf.t <= dt )
+                  printF("--UPE-- AMP: BeamModel: beamMassPerUnitLength = %8.2e\n",beamMassPerUnitLength[side][axis]);
 
-	      }
-	      else if( deform.isBulkSolidModel() )
-	      {
-		deformingBodyModel[side][axis]=isBulkSolidModel;
+              }
+              else if( deform.isBulkSolidModel() )
+              {
+                deformingBodyModel[side][axis]=isBulkSolidModel;
 
                 // deform.getBulkSolidParameters( solidImpedance );
 
@@ -190,13 +190,13 @@ updatePressureEquation(CompositeGrid & cg0, GridFunction & cgf )
                 if( false )
                   printF("INSP: This is a deforming grid for a bulk solid model: grid=%i, solid impedance=%g.\n",grid,solidImpedance);
 
-	      }
-	      
+              }
+              
 
-	    }
-	  }
-	}
-	
+            }
+          }
+        }
+        
 
       } // end if bd.dbase.has_key("deformingBodyNumber") )
       
@@ -226,98 +226,98 @@ updatePressureEquation(CompositeGrid & cg0, GridFunction & cgf )
       case Parameters::noSlipWall:
       case Parameters::slipWall:
       {
-	if( useAddedMassAlgorithm && deformingBodyModel[side][axis]==isBeamModel )
-	{
-	  // ----- Mixed-BC for AMP scheme with a BEAM ------
+        if( useAddedMassAlgorithm && deformingBodyModel[side][axis]==isBeamModel )
+        {
+          // ----- Mixed-BC for AMP scheme with a BEAM ------
 
-	  if( beamMassPerUnitLength[side][axis]<0. )
-	  {
-	    printF("--UPE-- ERROR:  beamMassPerUnitLength[side=%i][axis=%i] = %9.2e, grid=%i\n",side,axis,
-		   beamMassPerUnitLength[side][axis],grid);
-	    OV_ABORT("ERROR");
-	  }
+          if( beamMassPerUnitLength[side][axis]<0. )
+          {
+            printF("--UPE-- ERROR:  beamMassPerUnitLength[side=%i][axis=%i] = %9.2e, grid=%i\n",side,axis,
+                   beamMassPerUnitLength[side][axis],grid);
+            OV_ABORT("ERROR");
+          }
 
-	  const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
-	  assert( fluidDensity>0. );
-	  
-	  if( cgf.t <= dt )
-	  {
-		
-	    printF("--UPE-- grid=%i (side,axis)=(%i,%i) Apply AMP pressure BC, t=%8.2e\n",grid,side,axis,cgf.t);
-	    printF("--UPE-- Boundary is a beam, beamMassPerUnitLength = %8.2e. fluidDensity=%8.2e\n",
+          const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
+          assert( fluidDensity>0. );
+          
+          if( cgf.t <= dt )
+          {
+                
+            printF("--UPE-- grid=%i (side,axis)=(%i,%i) Apply AMP pressure BC, t=%8.2e\n",grid,side,axis,cgf.t);
+            printF("--UPE-- Boundary is a beam, beamMassPerUnitLength = %8.2e. fluidDensity=%8.2e\n",
                     beamMassPerUnitLength[side][axis],fluidDensity);
-	  }
-	  
-	    
-	  boundaryConditions(side,axis,grid)=OgesParameters::mixed;  
-	  mixedNormalCoeff(pc,side,axis,grid)=beamMassPerUnitLength[side][axis]/fluidDensity;
-	  mixedCoeff(pc,side,axis,grid)=1.;
+          }
+          
+            
+          boundaryConditions(side,axis,grid)=OgesParameters::mixed;  
+          mixedNormalCoeff(pc,side,axis,grid)=beamMassPerUnitLength[side][axis]/fluidDensity;
+          mixedCoeff(pc,side,axis,grid)=1.;
 
-	  boundaryConditionData(0,side,axis,grid)=mixedCoeff(pc,side,axis,grid);
-	  boundaryConditionData(1,side,axis,grid)=mixedNormalCoeff(pc,side,axis,grid);
-	  singularPressureEquation=false;
-	}
-	else if( useAddedMassAlgorithm && deformingBodyModel[side][axis]==isBulkSolidModel )
-	{
-	  // ----- Mixed-BC for AMP scheme with a BULK SOLID ------
+          boundaryConditionData(0,side,axis,grid)=mixedCoeff(pc,side,axis,grid);
+          boundaryConditionData(1,side,axis,grid)=mixedNormalCoeff(pc,side,axis,grid);
+          singularPressureEquation=false;
+        }
+        else if( useAddedMassAlgorithm && deformingBodyModel[side][axis]==isBulkSolidModel )
+        {
+          // ----- Mixed-BC for AMP scheme with a BULK SOLID ------
 
-	  const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
-	  assert( fluidDensity>0. );
-	  
-	  if( dt<=0. ) // *wdh* May 26, 2017
-	  {
-	    dt=1.e-3;  // ** FIX ME **
-	    parameters.dbase.get<real>("dt")=dt;
-	    printF("\n --UPE-- WARNING: dt<= 0 ... setting dt=%9.3e, t=%9.3e. *** FIX ME***\n\n",dt,cgf.t);
-	  }
-	  else if( cgf.t<= 2.*dt )
-	  {
-	    printF("\n --UPE-- INFO: update pressure equation t=%9.3e, dt=%9.3e\n",cgf.t,dt);
-	  }
-	  
+          const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
+          assert( fluidDensity>0. );
+          
+          if( dt<=0. ) // *wdh* May 26, 2017
+          {
+            dt=1.e-3;  // ** FIX ME **
+            parameters.dbase.get<real>("dt")=dt;
+            printF("\n --UPE-- WARNING: dt<= 0 ... setting dt=%9.3e, t=%9.3e. *** FIX ME***\n\n",dt,cgf.t);
+          }
+          else if( cgf.t<= 2.*dt )
+          {
+            printF("\n --UPE-- INFO: update pressure equation t=%9.3e, dt=%9.3e\n",cgf.t,dt);
+          }
+          
 
-	  if( cgf.t <= 2.*dt )
-	  {
-		
-	    printF("--UPE-- grid=%i (side,axis)=(%i,%i) Apply AMP pressure BC, t=%8.2e\n",grid,side,axis,cgf.t);
-	    printF("--UPE-- Boundary is a bulk-solid, solidImpedance = %8.2e. fluidDensity=%8.2e, "
+          if( cgf.t <= 2.*dt )
+          {
+                
+            printF("--UPE-- grid=%i (side,axis)=(%i,%i) Apply AMP pressure BC, t=%8.2e\n",grid,side,axis,cgf.t);
+            printF("--UPE-- Boundary is a bulk-solid, solidImpedance = %8.2e. fluidDensity=%8.2e, "
                    " mixedNormalCoeff=zp*dt/rho=%12.5e\n",
-		   solidImpedance,fluidDensity,solidImpedance*dt/fluidDensity);
-	  }
-	  
-	  boundaryConditions(side,axis,grid)=OgesParameters::mixed;  
-	  mixedNormalCoeff(pc,side,axis,grid)=solidImpedance*dt/fluidDensity;
-	  mixedCoeff(pc,side,axis,grid)=1.;
+                   solidImpedance,fluidDensity,solidImpedance*dt/fluidDensity);
+          }
+          
+          boundaryConditions(side,axis,grid)=OgesParameters::mixed;  
+          mixedNormalCoeff(pc,side,axis,grid)=solidImpedance*dt/fluidDensity;
+          mixedCoeff(pc,side,axis,grid)=1.;
 
-	  boundaryConditionData(0,side,axis,grid)=mixedCoeff(pc,side,axis,grid);
-	  boundaryConditionData(1,side,axis,grid)=mixedNormalCoeff(pc,side,axis,grid);
-	  singularPressureEquation=false;
+          boundaryConditionData(0,side,axis,grid)=mixedCoeff(pc,side,axis,grid);
+          boundaryConditionData(1,side,axis,grid)=mixedNormalCoeff(pc,side,axis,grid);
+          singularPressureEquation=false;
 
-	}
-	
+        }
+        
 
         // *** Is this next option used??
         if( (parameters.gridIsMoving(grid) && (bool)parameters.dbase.get<int>("movingBodyPressureBC")) ||
              parameters.dbase.get<int>("movingBodyPressureBC")==2 )
-	{
+        {
           // *wdh* 100907 -- try this for 'light' moving bodies
           // movingBodyPressureBC==2 : for testing we apply the mixed BC on all walls. 
-	  const real & a0 = parameters.dbase.get<real>("movingBodyPressureCoefficient");
-	  if( a0>0. )
-	  {
-	    if( true )
-	    {
-	      printF("updatePressureEquation: set mixed pressure BC, p.n+%8.2e p = ... for `light' moving body : "
-		     "(grid,side,axis)=(%i,%i,%i)\n", a0,grid,side,axis);
-	    }
+          const real & a0 = parameters.dbase.get<real>("movingBodyPressureCoefficient");
+          if( a0>0. )
+          {
+            if( true )
+            {
+              printF("updatePressureEquation: set mixed pressure BC, p.n+%8.2e p = ... for `light' moving body : "
+                     "(grid,side,axis)=(%i,%i,%i)\n", a0,grid,side,axis);
+            }
             boundaryConditions(side,axis,grid)=OgesParameters::mixed;  
             mixedNormalCoeff(pc,side,axis,grid)=1.;
             mixedCoeff(pc,side,axis,grid)=a0;
-	    boundaryConditionData(0,side,axis,grid)=mixedCoeff(pc,side,axis,grid);
-	    boundaryConditionData(1,side,axis,grid)=mixedNormalCoeff(pc,side,axis,grid);
-	    singularPressureEquation=false;
-	  }
-	}
+            boundaryConditionData(0,side,axis,grid)=mixedCoeff(pc,side,axis,grid);
+            boundaryConditionData(1,side,axis,grid)=mixedNormalCoeff(pc,side,axis,grid);
+            singularPressureEquation=false;
+          }
+        }
         break;
       }
       
@@ -333,7 +333,7 @@ updatePressureEquation(CompositeGrid & cg0, GridFunction & cgf )
       case Parameters::dirichletBoundaryCondition:
       case Parameters::freeSurfaceBoundaryCondition:  // *new* 2012/11/24
         singularPressureEquation=false;
-	neumannBoundaryConditions=false;
+        neumannBoundaryConditions=false;
         boundaryConditions(side,axis,grid)=OgesParameters::dirichlet;  
         break;
       case InsParameters::outflow:
@@ -342,42 +342,42 @@ updatePressureEquation(CompositeGrid & cg0, GridFunction & cgf )
         // pressure equation is still singular with a mixed BC if alpha=0. (alpha*p+beta*p.n=)
 
         assert( mixedCoeff(pc,side,axis,grid)!=0. || mixedNormalCoeff(pc,side,axis,grid)!=0. );
-	
+        
         singularPressureEquation=singularPressureEquation && mixedCoeff(pc,side,axis,grid)==0. ;
-	neumannBoundaryConditions=neumannBoundaryConditions &&
+        neumannBoundaryConditions=neumannBoundaryConditions &&
                mixedCoeff(pc,side,axis,grid)==0. && mixedNormalCoeff(pc,side,axis,grid)==1.;
 
         if( mixedCoeff(pc,side,axis,grid)==0. && mixedNormalCoeff(pc,side,axis,grid)==1. )
-	{
+        {
           boundaryConditions(side,axis,grid)=OgesParameters::neumann;  
         }
-	else
-	{
+        else
+        {
           boundaryConditions(side,axis,grid)=OgesParameters::mixed;  
           boundaryConditionData(0,side,axis,grid)=mixedCoeff(pc,side,axis,grid);
-	  boundaryConditionData(1,side,axis,grid)=mixedNormalCoeff(pc,side,axis,grid);
+          boundaryConditionData(1,side,axis,grid)=mixedNormalCoeff(pc,side,axis,grid);
           if( debug() & 4 )
             printF("*****updatePressureEquation: mixed BC: %f*p+%f*p.n \n",
-		 mixedCoeff(pc,side,axis,grid), mixedNormalCoeff(pc,side,axis,grid));
-	  
-	}
-	
+                 mixedCoeff(pc,side,axis,grid), mixedNormalCoeff(pc,side,axis,grid));
+          
+        }
+        
         break;
       default:
-	// kkc 070131      case dirichletInterfaceCondition:
-	if ( bc==dirichletInterfaceCondition ) {
-	  // this is a dirichlet BC for a fake region -- do not adjust the singular nature of the problem
-	  boundaryConditions(side,axis,grid)=OgesParameters::dirichlet;  
-	} else {
-	  boundaryConditions(side,axis,grid)=c.boundaryCondition(side,axis);
-	  if( c.boundaryCondition(side,axis) > 0 )
-	    {
-	      cout << "INS::updatePressureEquation:ERROR unknown BC value! \n";
-	      printF("cg0[grid=%i].boundaryCondition()(side=%i,axis=%i)=%i\n",grid,side,axis,
-		     c.boundaryCondition(side,axis));
-	      OV_ABORT("INS::updatePressureEquation ERROR unknown BC value");
-	    }
-	}
+        // kkc 070131      case dirichletInterfaceCondition:
+        if ( bc==dirichletInterfaceCondition ) {
+          // this is a dirichlet BC for a fake region -- do not adjust the singular nature of the problem
+          boundaryConditions(side,axis,grid)=OgesParameters::dirichlet;  
+        } else {
+          boundaryConditions(side,axis,grid)=c.boundaryCondition(side,axis);
+          if( c.boundaryCondition(side,axis) > 0 )
+            {
+              cout << "INS::updatePressureEquation:ERROR unknown BC value! \n";
+              printF("cg0[grid=%i].boundaryCondition()(side=%i,axis=%i)=%i\n",grid,side,axis,
+                     c.boundaryCondition(side,axis));
+              OV_ABORT("INS::updatePressureEquation ERROR unknown BC value");
+            }
+        }
       }
     }
   }
@@ -410,7 +410,7 @@ updatePressureEquation(CompositeGrid & cg0, GridFunction & cgf )
 
 
       if( parameters.isAxisymmetric() )
-	poisson->set(OgesParameters::THEisAxisymmetric,true);
+        poisson->set(OgesParameters::THEisAxisymmetric,true);
 
       const InsParameters::PDEModel & pdeModel = parameters.dbase.get<InsParameters::PDEModel >("pdeModel");
       const bool solveVariableDensityPoisson = pdeModel==InsParameters::twoPhaseFlowModel;
@@ -421,13 +421,13 @@ updatePressureEquation(CompositeGrid & cg0, GridFunction & cgf )
       if( solveVariableDensityPoisson )
       {
         // Solve div( (1/rho) grad ) p = ...
-	const int & rc = parameters.dbase.get<int >("rc");
-	assert( rc>=0 );
+        const int & rc = parameters.dbase.get<int >("rc");
+        assert( rc>=0 );
 
-	Index I1,I2,I3;
+        Index I1,I2,I3;
         realCompositeGridFunction rhoInverse(cg);  // fix this
- 	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
- 	{
+        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+        {
           realArray & u = cgf.u[grid];
           #ifdef USE_PPP
            realSerialArray uLocal;     getLocalArrayWithGhostBoundaries(u,uLocal);
@@ -436,24 +436,24 @@ updatePressureEquation(CompositeGrid & cg0, GridFunction & cgf )
            const realSerialArray & uLocal = u;
            const realSerialArray & rhoiLocal = rhoInverse[grid];
           #endif
-	  getIndex(cg[grid].dimension(),I1,I2,I3);
+          getIndex(cg[grid].dimension(),I1,I2,I3);
           bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3);
-	  if( ok )
-	  {
-	    rhoiLocal(I1,I2,I3) = 1./uLocal(I1,I2,I3,rc);
-	  }
-	}
+          if( ok )
+          {
+            rhoiLocal(I1,I2,I3) = 1./uLocal(I1,I2,I3,rc);
+          }
+        }
 
         printF(" PPPPPPPP Cgins::updatePressureEquation form div( (1/rho) grad(p))=F,  t=%9.3e...\n\n",cgf.t);
 
-	OgesParameters::EquationEnum equation = OgesParameters::divScalarGradOperator;
+        OgesParameters::EquationEnum equation = OgesParameters::divScalarGradOperator;
         poisson->setEquationAndBoundaryConditions(equation,cgop,boundaryConditions, boundaryConditionData,
                                                   Overture::nullRealArray(),&rhoInverse);
       }
       else
       {
-	OgesParameters::EquationEnum equation = OgesParameters::laplaceEquation;
-	poisson->setEquationAndBoundaryConditions(equation,cgop,boundaryConditions, boundaryConditionData );
+        OgesParameters::EquationEnum equation = OgesParameters::laplaceEquation;
+        poisson->setEquationAndBoundaryConditions(equation,cgop,boundaryConditions, boundaryConditionData );
       }
       
 
@@ -465,13 +465,13 @@ updatePressureEquation(CompositeGrid & cg0, GridFunction & cgf )
       
       if( false )
       {
-	realCompositeGridFunction & coeff = poisson->coeff;
+        realCompositeGridFunction & coeff = poisson->coeff;
         coeff.display("coeff");
         for( int grid=0; grid<cg0.numberOfComponentGrids(); grid++ )
-	{
-	  const intMappedGridFunction & classify = coeff[grid].sparse->classify;
-	  ::display(classify,"classify");
-	}
+        {
+          const intMappedGridFunction & classify = coeff[grid].sparse->classify;
+          ::display(classify,"classify");
+        }
       }
       
 
@@ -631,24 +631,24 @@ updateDivergenceDamping( CompositeGrid & cg0, const int & geometryHasChanged )
 
       if( cg0[grid].isRectangular() )
       {
-	real dx[3];
-	cg0[grid].getDeltaX( dx );
-	// printF(" ***** insp: dx for rectangular grid = [%e,%e,%e] cDtDt=%6.2e cdvnu=%6.2e\n",dx[0],dx[1],dx[2],
+        real dx[3];
+        cg0[grid].getDeltaX( dx );
+        // printF(" ***** insp: dx for rectangular grid = [%e,%e,%e] cDtDt=%6.2e cdvnu=%6.2e\n",dx[0],dx[1],dx[2],
         //  cDtDt,cdvnu);
-	  
+          
         if( cg0[grid].numberOfDimensions()==1 )
-	  ddw(I1,I2,I3)=min( cdvnu*( 1./SQR(2.*dx[0]) ), cDtDt );
+          ddw(I1,I2,I3)=min( cdvnu*( 1./SQR(2.*dx[0]) ), cDtDt );
         else if( cg0[grid].numberOfDimensions()==2 || parameters.dbase.get<int >("compare3Dto2D") )
-	  ddw(I1,I2,I3)=min( cdvnu*( 1./SQR(2.*dx[0])+ 1./SQR(2.*dx[1]) ), cDtDt );
+          ddw(I1,I2,I3)=min( cdvnu*( 1./SQR(2.*dx[0])+ 1./SQR(2.*dx[1]) ), cDtDt );
         else 
-    	  ddw(I1,I2,I3)=min( cdvnu*( 1./SQR(2.*dx[0])+1./SQR(2.*dx[1])+1./SQR(2.*dx[2]) ), cDtDt );
+          ddw(I1,I2,I3)=min( cdvnu*( 1./SQR(2.*dx[0])+1./SQR(2.*dx[1])+1./SQR(2.*dx[2]) ), cDtDt );
       }
       else
       {
         // updated for P++ 060928 *wdh*
         // realArray & xy = cg0[grid].center();
         cg0[grid].update(MappedGrid::THEcenter);
-	
+        
         #ifdef USE_PPP
           realSerialArray xy; getLocalArrayWithGhostBoundaries(cg0[grid].center(),xy);
         #else
@@ -660,42 +660,42 @@ updateDivergenceDamping( CompositeGrid & cg0, const int & geometryHasChanged )
           if( !ok ) continue;  // no points on this processor
         #endif
 
-	if( cg0[grid].numberOfDimensions()==1 )
-	  ddw(I1,I2,I3)=min( cdvnu*DAI1(1.,I1,I2,I3), cDtDt );
-	else if( cg0[grid].numberOfDimensions()==2 || 
-		 parameters.dbase.get<int >("compare3Dto2D") )  // *** we use a 2D divergence for comparing 3d to 2d
-	{
+        if( cg0[grid].numberOfDimensions()==1 )
+          ddw(I1,I2,I3)=min( cdvnu*DAI1(1.,I1,I2,I3), cDtDt );
+        else if( cg0[grid].numberOfDimensions()==2 || 
+                 parameters.dbase.get<int >("compare3Dto2D") )  // *** we use a 2D divergence for comparing 3d to 2d
+        {
           // printF("updateDivergenceDamping: grid=%i, cdv=%e\n",grid, cdv);
-	  // ::display(ddw,"ddw","%3.1f ");
-	  // ::display(xy,"xy","%3.1f ");
-	  
+          // ::display(ddw,"ddw","%3.1f ");
+          // ::display(xy,"xy","%3.1f ");
+          
           RealArray temp1(I1,I2,I3),temp2(I1,I2,I3);
           temp1 = POW2(xy(I1+1,I2  ,I3  ,0)-xy(I1-1,I2  ,I3  ,0))+
-	          POW2(xy(I1+1,I2  ,I3  ,1)-xy(I1-1,I2  ,I3  ,1));
-	  temp1 = 1./(max(realSmall,temp1));
+                  POW2(xy(I1+1,I2  ,I3  ,1)-xy(I1-1,I2  ,I3  ,1));
+          temp1 = 1./(max(realSmall,temp1));
           temp2 = POW2(xy(I1  ,I2+1,I3  ,0)-xy(I1  ,I2-1,I3  ,0))+
-	          POW2(xy(I1  ,I2+1,I3  ,1)-xy(I1  ,I2-1,I3  ,1));
-	  temp2 = 1./(max(realSmall,temp2));
-	  temp1 += temp2;
-	  
+                  POW2(xy(I1  ,I2+1,I3  ,1)-xy(I1  ,I2-1,I3  ,1));
+          temp2 = 1./(max(realSmall,temp2));
+          temp1 += temp2;
+          
 // #define DAI2(cd,I1,I2,I3)  ( \
 //         cd/max(realSmall,\
 //             ( POW2(xy(I1+1,I2  ,I3  ,0)-xy(I1-1,I2  ,I3  ,0))  \
 //              +POW2(xy(I1+1,I2  ,I3  ,1)-xy(I1-1,I2  ,I3  ,1)) ) ) \
 //       + cd/max(realSmall,  \
 //             ( POW2(xy(I1  ,I2+1,I3  ,0)-xy(I1  ,I2-1,I3  ,0))  \
-//              +POW2(xy(I1  ,I2+1,I3  ,1)-xy(I1  ,I2-1,I3  ,1)) ) ) )	  
+//              +POW2(xy(I1  ,I2+1,I3  ,1)-xy(I1  ,I2-1,I3  ,1)) ) ) )    
 
-    	  ddw(I1,I2,I3)=min( cdvnu*temp1, cDtDt );
+          ddw(I1,I2,I3)=min( cdvnu*temp1, cDtDt );
 
-//  	  ddw(I1,I2,I3)=min( cdvnu*DAI2(1.,I1,I2,I3), cDtDt );
+//        ddw(I1,I2,I3)=min( cdvnu*DAI2(1.,I1,I2,I3), cDtDt );
 
 //           printF(" divergenceDampingWeight, max=%e, min=%e\n",max(divergenceDampingWeight(I1,I2,I3)),
 //                min(divergenceDampingWeight(I1,I2,I3)));
-	}
-	else
-	  ddw(I1,I2,I3)=min( cdvnu*DAI3(1.,I1,I2,I3), cDtDt );
-	
+        }
+        else
+          ddw(I1,I2,I3)=min( cdvnu*DAI3(1.,I1,I2,I3), cDtDt );
+        
       }
       // printF(" divergenceDampingWeight, max=%e, min=%e\n",max(divergenceDampingWeight(I1,I2,I3)),
       //         min(divergenceDampingWeight(I1,I2,I3)));

@@ -52,9 +52,9 @@
 void Cgsm::
 computeNumberOfStepsAndAdjustTheTimeStep(const real & t,
                                          const real & tFinal,
-					 const real & nextTimeToPlot, 
-					 int & numberOfSubSteps, 
-					 real & dtNew,
+                                         const real & nextTimeToPlot, 
+                                         int & numberOfSubSteps, 
+                                         real & dtNew,
                                          const bool & adjustTimeStep /* = TRUE */ )
 // =====================================================================================
 // /Description:
@@ -120,7 +120,7 @@ computeNumberOfStepsAndAdjustTheTimeStep(const real & t,
   
     if( debug & 4 )
       printF("--SM-- compute..Step: numberOfSubSteps=%i maximumStepsBetweenComputingDt=%i dtNew=%9.3e\n",
-	     numberOfSubSteps,maximumStepsBetweenComputingDt,dtNew);
+             numberOfSubSteps,maximumStepsBetweenComputingDt,dtNew);
   }
 
   if( dtNew<0. )
@@ -186,26 +186,26 @@ outputResultsAfterEachTimeStep( int current, real t, real dt, int stepNumber )
       
       if ( cg[grid].getGridType()==MappedGrid::structuredGrid )
       {
-// 	if( cg.numberOfDimensions()==2 )
-// 	{
-// 	  real uex=u(i1,i2,i3,ex), uey=u(i1,i2,i3,ey), uhz=u(i1,i2,i3,hz);
-// 	  if( okToOutput ) fPrintF(probeFile,"%e %e %e ",uex,uey,uhz);
-// 	}
-// 	else
-// 	{
-// 	  real uex=u(i1,i2,i3,ex), uey=u(i1,i2,i3,ey), uez=u(i1,i2,i3,ez);
-// 	  if( okToOutput ) fPrintF(probeFile,"%e %e %e ",uex,uey,uez);
-// 	}
+//      if( cg.numberOfDimensions()==2 )
+//      {
+//        real uex=u(i1,i2,i3,ex), uey=u(i1,i2,i3,ey), uhz=u(i1,i2,i3,hz);
+//        if( okToOutput ) fPrintF(probeFile,"%e %e %e ",uex,uey,uhz);
+//      }
+//      else
+//      {
+//        real uex=u(i1,i2,i3,ex), uey=u(i1,i2,i3,ey), uez=u(i1,i2,i3,ez);
+//        if( okToOutput ) fPrintF(probeFile,"%e %e %e ",uex,uey,uez);
+//      }
       }
       else
       {
-	uprobeLoc(0) = i1;
-// 	reconstructDSIAtEntities(t, HField, uprobeLoc, u, uprobeVal);
-	if ( cg.numberOfDimensions()==2 && okToOutput)
-	  fPrintF(probeFile,"%e ",uprobeVal(0));
-	else if ( okToOutput )
-	  fPrintF(probeFile,"%e %e %e ",uprobeVal(0),uprobeVal(1),uprobeVal(2));
-	      
+        uprobeLoc(0) = i1;
+//      reconstructDSIAtEntities(t, HField, uprobeLoc, u, uprobeVal);
+        if ( cg.numberOfDimensions()==2 && okToOutput)
+          fPrintF(probeFile,"%e ",uprobeVal(0));
+        else if ( okToOutput )
+          fPrintF(probeFile,"%e %e %e ",uprobeVal(0),uprobeVal(1),uprobeVal(2));
+              
       }
       
       
@@ -233,6 +233,8 @@ outputResults( int current, real t, real dt )
   FILE *& logFile   =parameters.dbase.get<FILE* >("logFile");
 
   SmParameters::PDEVariation & pdeVariation = parameters.dbase.get<SmParameters::PDEVariation>("pdeVariation");
+  const SmParameters::CompressibilityTypeEnum & compressibilityType = 
+                              parameters.dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");  
 
   const int numberOfDimensions=cg.numberOfDimensions();
   const int & numberOfComponents = parameters.dbase.get<int >("numberOfComponents");
@@ -284,9 +286,9 @@ outputResults( int current, real t, real dt )
 
     // ---- Output the norm of the displacement ---
     err = (numberOfDimensions == 2 ? max(maximumError(uc),maximumError(vc)) : 
-	   max(maximumError(uc),maximumError(vc),maximumError(wc)) );
+           max(maximumError(uc),maximumError(vc),maximumError(wc)) );
     uNorm= (numberOfDimensions == 2 ? max(solutionNorm(uc),solutionNorm(vc)) : 
-	    max(solutionNorm(uc),solutionNorm(vc),solutionNorm(wc)) );
+            max(solutionNorm(uc),solutionNorm(vc),solutionNorm(wc)) );
 
     fPrintF(checkFile,"%i %9.2e %10.3e  ",cc,err,uNorm); cc++;
 
@@ -294,9 +296,9 @@ outputResults( int current, real t, real dt )
     {
       // ---- Output the norm of the velocity ---
       err = (numberOfDimensions == 2 ? max(maximumError(v1c),maximumError(v2c)) : 
-	     max(maximumError(v1c),maximumError(v2c),maximumError(v3c)) );
+             max(maximumError(v1c),maximumError(v2c),maximumError(v3c)) );
       uNorm= (numberOfDimensions == 2 ? max(solutionNorm(v1c),solutionNorm(v2c)) : 
-	      max(solutionNorm(v1c),solutionNorm(v2c),solutionNorm(v3c)) );
+              max(solutionNorm(v1c),solutionNorm(v2c),solutionNorm(v3c)) );
       fPrintF(checkFile,"%i %9.2e %10.3e  ",cc,err,uNorm); cc++;
     }
     if( saveStress )
@@ -310,14 +312,14 @@ outputResults( int current, real t, real dt )
       else
       {
         err = max( 
-	  max(maximumError(s11c),maximumError(s12c),maximumError(s13c)),
-	  max(maximumError(s21c),maximumError(s22c),maximumError(s23c)),
-	  max(maximumError(s31c),maximumError(s32c),maximumError(s33c)) );
-	
+          max(maximumError(s11c),maximumError(s12c),maximumError(s13c)),
+          max(maximumError(s21c),maximumError(s22c),maximumError(s23c)),
+          max(maximumError(s31c),maximumError(s32c),maximumError(s33c)) );
+        
         uNorm = max( 
-	  max(solutionNorm(s11c),solutionNorm(s12c),solutionNorm(s13c)),
-	  max(solutionNorm(s21c),solutionNorm(s22c),solutionNorm(s23c)),
-	  max(solutionNorm(s31c),solutionNorm(s32c),solutionNorm(s33c)) );
+          max(solutionNorm(s11c),solutionNorm(s12c),solutionNorm(s13c)),
+          max(solutionNorm(s21c),solutionNorm(s22c),solutionNorm(s23c)),
+          max(solutionNorm(s31c),solutionNorm(s32c),solutionNorm(s33c)) );
       }
       fPrintF(checkFile,"%i %9.2e %10.3e  ",cc,err,uNorm); cc++;
     }
@@ -366,13 +368,26 @@ outputResults( int current, real t, real dt )
       FILE *output = fileio==0 ? logFile : stdout;
 
       fPrintF(output,"-->t=%10.4e dt=%8.2e |div(U)|=%8.2e |div(U)|/|grad(U)|=%8.2e, |grad(U)|=%8.2e, max(u):[",
-	      t,dt,divUMax,divUMax/max(REAL_MIN*100.,gradUMax),gradUMax);
+              t,dt,divUMax,divUMax/max(REAL_MIN*100.,gradUMax),gradUMax);
       for( int c=C.getBase(); c<=C.getBound(); c++ )
-	fPrintF(output,"%8.2e,",solutionNorm(c));
+      {
+        fPrintF(output,"%8.2e,",solutionNorm(c));
+      }
 
       fPrintF(output,"]\n");
-	  
+          
     }
+
+    // *wdh* Sept 20, 2021 -- save sequences 
+    if( compressibilityType==SmParameters::incompressibleSolid )
+    {
+      // save the divergence in the sequences as well
+      if( solutionNorm.getLength(0)<numberOfComponents+1 )
+        solutionNorm.resize(Range(numberOfComponents+1));
+      solutionNorm(numberOfComponents)=divUMax; 
+    }
+    saveSequenceInfo( t, solutionNorm );
+
   }
   else
   {
@@ -406,6 +421,8 @@ solve()
   SmParameters::PDEVariation & pdeVariation = parameters.dbase.get<SmParameters::PDEVariation>("pdeVariation");
   SmParameters::TimeSteppingMethodSm & timeSteppingMethod = 
     parameters.dbase.get< SmParameters::TimeSteppingMethodSm>("timeSteppingMethodSm");
+  const SmParameters::CompressibilityTypeEnum & compressibilityType = 
+                              parameters.dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");
   RealArray & timing = parameters.dbase.get<RealArray >("timing");
   const int pdeTypeForGodunovMethod = parameters.dbase.get<int>("pdeTypeForGodunovMethod");   // 0=linear, 2=SVK ? 
 
@@ -476,7 +493,7 @@ solve()
   // dt= numSteps ? tFinal/numSteps : 0 ;
   // assert( dt<= dt0 );
   // printF("--solve-- dt=%9.3e, tPlot=%f, tPlot/dt=%f numStepsToPlot=%i numSteps=%i \n",dt,
-  // 	   tPlot,tPlot/dt,numStepsToPlot,numSteps);
+  //       tPlot,tPlot/dt,numStepsToPlot,numSteps);
 
 
   // For linear-elasticity this next method will compute the solution at t-dt
@@ -487,19 +504,34 @@ solve()
   int & globalStepNumber = parameters.dbase.get<int >("globalStepNumber");
   if( globalStepNumber<0 )
   { // we need to apply the BC's at the start for some cases (e.g. hemp, boundary-data )
-    printF(" >>>> solve: applyBC's at start, globalStepNumber=%i, t=%8.2e\n",globalStepNumber,t);
 
-    if( debug & 4 )
-      getErrors( current, gf[current].t,dt,
-                 sPrintF("\n ******** Solve : errors BEFORE applyBC at start, t=%9.3e ******\n", gf[current].t));
+    if( compressibilityType != SmParameters::incompressibleSolid )
+    {
+      if( debug & 4 )
+        getErrors( current, gf[current].t,dt,
+                   sPrintF("\n ******** Solve : errors BEFORE applyBC at start, t=%9.3e ******\n", gf[current].t));
 
-    int option=0;
-    applyBoundaryConditions( option, dt, current, current );
-    // interpolateAndApplyBoundaryConditions( gf[current] );
+    
+      printF(" >>>> solve: applyBC's at start, globalStepNumber=%i, t=%8.2e\n",globalStepNumber,t);
+      int option=0;
+      applyBoundaryConditions( option, dt, current, current );
+      // interpolateAndApplyBoundaryConditions( gf[current] );
 
-    if( debug & 4 )
-      getErrors( current, gf[current].t,dt,
-                 sPrintF("\n ******** Solve : errors AFTER applyBC at start, t=%9.3e ******\n", gf[current].t));
+      if( debug & 4 )
+        getErrors( current, gf[current].t,dt,
+                   sPrintF("\n ******** Solve : errors AFTER applyBC at start, t=%9.3e ******\n", gf[current].t));
+    }
+
+    if( compressibilityType==SmParameters::incompressibleSolid )
+    {
+      // -- for the incompresssible equations we solve for the pressure at t=0 ----
+      printF(" >>>> Solve for initial pressure at START, globalStepNumber=%i, t=%8.2e\n",globalStepNumber,t);
+      // NOTE: solveForPressure fills the pressure at the "next" time
+      // In general we may also need to solve for the pressure at t=-dt
+      const int prev = (current-1+numberOfTimeLevels) % numberOfTimeLevels;
+      solveForPressure( prev, t, dt );
+    }
+
   }
 
 
@@ -535,16 +567,16 @@ solve()
       if( finished ) break;
       if( t >tFinal-.5*dt )
       {
-	// we are done (unless tFinal is increased in the next call to plot). plot solution at final time
-	//	if( plotOptions & 1 )
+        // we are done (unless tFinal is increased in the next call to plot). plot solution at final time
+        //      if( plotOptions & 1 )
       {
-	plotOptions=1;  // plot and wait 
-	plot(current, t, dt );
+        plotOptions=1;  // plot and wait 
+        plot(current, t, dt );
       }
       if( t >tFinal-.5*dt ) // tFinal may have been increased, so check again
       { 
-	finished=true;
-	break;
+        finished=true;
+        break;
       }
       }
 
@@ -562,6 +594,11 @@ solve()
     else if( (stepNumber>0  && pdeVariation==SmParameters::godunov && pdeTypeForGodunovMethod>0 ) ) 
       adjustTimeStep=true;
     
+    if( adjustTimeStep && compressibilityType==SmParameters::incompressibleSolid )
+    {
+      adjustTimeStep=false;
+      printF("CgSm:solve: INFO: not adjusting time-step for incompressible elasticity - not supported yet.\n");
+    }
     
     const real dtOld = dt;
     if( adjustTimeStep )
@@ -576,23 +613,23 @@ solve()
 
       if( false ) // for testing do not adjust dt 
       {
-	printf(" dtOld=%9.3e dtNew=%9.3e\n",dtOld,dtNew);
-	dt=dtOld;
-	dtNew=dtOld;
+        printf(" dtOld=%9.3e dtNew=%9.3e\n",dtOld,dtNew);
+        dt=dtOld;
+        dtNew=dtOld;
       }
       
 
       if( fabs( dtOld - dtNew) > dtOld*REAL_EPSILON*100. )
       {
-	if( debug & 1 )
-	  printF(" *new* time step: step=%i, dt=%9.3e (old=%9.3e) numberOfSubSteps=%i, dt*numberOfSubSteps=%9.3e\n",
-		 globalStepNumber,dtNew,dtOld, numberOfSubSteps,numberOfSubSteps*dtNew );
+        if( debug & 1 )
+          printF(" *new* time step: step=%i, dt=%9.3e (old=%9.3e) numberOfSubSteps=%i, dt*numberOfSubSteps=%9.3e\n",
+                 globalStepNumber,dtNew,dtOld, numberOfSubSteps,numberOfSubSteps*dtNew );
 
-	dt=dtNew;  
+        dt=dtNew;  
       }
       else
       {
-	printF("--SOLVE-- adjustTimeStep: dt has NOT changed: dtOld=%9.3e dtNew=%9.3e\n",dt,dtOld,dtNew);
+        printF("--SOLVE-- adjustTimeStep: dt has NOT changed: dtOld=%9.3e dtNew=%9.3e\n",dt,dtOld,dtNew);
       }
     }
     
@@ -609,44 +646,44 @@ solve()
       for( int subStep=0; subStep<numberOfSubSteps; subStep++)
       {
 
-	if( pdeModel==SmParameters::linearElasticity )
-	{
-	  advance( current,t,dt );
-	}
-	else
-	{
-	  OV_ABORT("Cgsm::solve:ERROR: unknown pdeModel");
-	}
-	t+=dt;
-	current = next;
-	next= (next+1) % numberOfTimeLevels;
+        if( pdeModel==SmParameters::linearElasticity )
+        {
+          advance( current,t,dt );
+        }
+        else
+        {
+          OV_ABORT("Cgsm::solve:ERROR: unknown pdeModel");
+        }
+        t+=dt;
+        current = next;
+        next= (next+1) % numberOfTimeLevels;
 
-	outputResultsAfterEachTimeStep( current,t,dt,stepNumber );
+        outputResultsAfterEachTimeStep( current,t,dt,stepNumber );
 
-	numberOfStepsTaken++;
+        numberOfStepsTaken++;
       }
     }
     else if( timeSteppingMethod==SmParameters::forwardEuler ||
              timeSteppingMethod==SmParameters::improvedEuler ||
              timeSteppingMethod==SmParameters::adamsBashforth2 ||
-	     timeSteppingMethod==SmParameters::adamsPredictorCorrector2 ||
-	     timeSteppingMethod==SmParameters::adamsPredictorCorrector4 )
+             timeSteppingMethod==SmParameters::adamsPredictorCorrector2 ||
+             timeSteppingMethod==SmParameters::adamsPredictorCorrector4 )
     {
       for( int subStep=0; subStep<numberOfSubSteps; subStep++)
       {
-	advanceMethodOfLines(  current, t, dt );
-	t+=dt;
-	current = next;
-	next= (next+1) % numberOfTimeLevels;
+        advanceMethodOfLines(  current, t, dt );
+        t+=dt;
+        current = next;
+        next= (next+1) % numberOfTimeLevels;
 
-	outputResultsAfterEachTimeStep( current,t,dt,stepNumber );
+        outputResultsAfterEachTimeStep( current,t,dt,stepNumber );
       
-	numberOfStepsTaken++;
+        numberOfStepsTaken++;
       
-	// advanceAdamsPredictorCorrectorNew( t,dt, numberOfSubSteps,init,stepNumber );
-	// stepNumber+=numberOfSubSteps; numberOfStepsTaken+=numberOfSubSteps; 
-	// printF("Cgsm:solve: after advanceAdamsPredictorCorrectorNew: t=%8.2e\n",t);
-	// Overture::abort("done");
+        // advanceAdamsPredictorCorrectorNew( t,dt, numberOfSubSteps,init,stepNumber );
+        // stepNumber+=numberOfSubSteps; numberOfStepsTaken+=numberOfSubSteps; 
+        // printF("Cgsm:solve: after advanceAdamsPredictorCorrectorNew: t=%8.2e\n",t);
+        // Overture::abort("done");
       }
     }
     else

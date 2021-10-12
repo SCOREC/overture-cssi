@@ -685,7 +685,9 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
   optimizedBoundaryConditionsMacro();
 
 
-   // *wdh* 090824 -- moved from above 
+  // printF("\n >>>>> assignBC-FOS: extrapolateInterpolationNeighbours=%d, useNewExtrapInterpNeighbours=%d\n",
+  //       parameters.dbase.get<int >("extrapolateInterpolationNeighbours"),parameters.dbase.get<int>("useNewExtrapInterpNeighbours") );
+
   if( parameters.dbase.get<int >("extrapolateInterpolationNeighbours") &&
       parameters.dbase.get<int>("useNewExtrapInterpNeighbours") )
   {

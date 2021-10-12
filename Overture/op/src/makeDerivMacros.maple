@@ -1,0 +1,129 @@
+# =====================================================
+# Define derivative macros (uses output from derivNew.maple)
+# =====================================================
+#
+# restart; read "makeDerivMacros.maple";
+clear;
+
+with(CodeGeneration,Fortran):
+with(codegen,optimize):
+with(codegen,cost):
+
+with(StringTools):
+
+# read in the DuDx array of derivative definitions:
+read "derivativesByChainRule.maple":
+
+
+# Here is the maximum number of derivatives we compute
+maxDerivative:=6:   # 6: ****************
+numberOfDimensions:=3:
+
+outputMacros:=true:
+
+
+ if outputMacros then
+   mfileName := "derivMacroDefinitions.h":
+ else
+   mfileName := "junkMacroDefinitions.h":
+ end if:
+ mfile:=fopen( mfileName,WRITE ):
+   
+
+rxvName:= [ rx(x,y,z), ry(x,y,z), rz(x,y,z), sx(x,y,z), sy(x,y,z), sz(x,y,z), tx(x,y,z), ty(x,y,z), tz(x,y,z) ]:
+rxName:= [ rx, ry, rz, sx, sy, sz, tx, ty, tz ]:
+xName := [ x, y, z ]:
+
+urvName:= [ u(r,s,t) ]:
+urName:= [ u ]:
+rName := [ r, s, t ]:
+
+ndx:=maxDerivative:  # highest x derivative
+ndy:=maxDerivative:  # highest y derivative
+ndz:=maxDerivative:  # highest z derivative
+
+# restart; read "makeDerivMacros.maple";
+
+for dim from 2 to numberOfDimensions do # 2D or 3D
+
+fprintf(mfile,"\n\n! ****** Dimension %d ******\n",dim):
+
+if dim=2 then maxDeriv3:=0: else maxDeriv3:=maxDerivative: end if:
+
+for k from 1 to maxDerivative do
+
+ printf("  *** dim %d, derivative %d ...\n",dim,k):
+
+if dim>1 then mdy := ndy: else mdy:=0: end if:
+if dim>2 then mdz := ndz: else mdz:=0: end if:
+
+for idz from 0 to mdz do
+for idy from 0 to mdy do
+for idx from 0 to ndx do
+if idx+idy+idz = k then
+
+ dn:= "":
+ for i from 1 to idx do  dn := cat(dn,"x"): end do:
+ for i from 1 to idy do  dn := cat(dn,"y"): end do:
+ for i from 1 to idz do  dn := cat(dn,"z"): end do:
+
+ dd:= DuDx[idx,idy,idz,dim]:
+
+ if outputMacros then
+
+   # dn := cat("u",dn,dim):
+   dn := cat("getDuD",dn,dim):
+
+   dc := optimize([ff=dd]);  # returns an expression sequence
+
+   printf(" %s: cost saving=%s\n",dn,convert(cost(dd)-cost(dc),string));
+   fprintf(mfile," ! %s operation count     : %s\n",dn,convert(cost(dc),string));
+   fprintf(mfile," ! %s optimization savings: %s\n",dn,convert(cost(dd)-cost(dc),string));
+
+   fprintf(mfile,"#beginMacro %s(u,aj,ff)\n",convert(dn,string)):
+
+# -----------
+makeSubstitutions :=proc( dc )
+local cc,m:
+  cc:=convert(dc,string):
+  cc:= SubstituteAll(cc,"^","**"):
+  cc:= SubstituteAll(cc,"u","u ##"):
+
+  for m from 1 to 9 do
+    cc:= SubstituteAll(cc,rxName[m],cat("aj ##",rxName[m])):
+  end do:
+RETURN(cc):
+end:
+
+   if whattype(dc) = exprseq then
+     for i from 1 to nops([dc]) do
+       cc:=makeSubstitutions(dc[i]):
+       fprintf(mfile,"%s\n",cc):
+     end do:
+   else
+     cc:=makeSubstitutions(dc):
+     fprintf(mfile,"%s\n",cc):
+   end if:
+   # dc:=convert(dc,string):
+   # dc:= SubstituteAll(dc,",","\n  "):
+   # fprintf(mfile,"  %s\n",dc):
+   fprintf(mfile,"#endMacro\n"):
+   
+ end if;
+
+
+
+end if;
+end do;
+end do;
+end do;
+
+end do; # end for k
+
+end do: # for dim
+
+fclose(mfile):
+
+printf(" **** macro output written to file [%s] ******\n",mfileName);
+
+# restart; read "makeDerivMacros.maple";

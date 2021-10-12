@@ -43,7 +43,7 @@ predictTimeIndependentVariables( const int numberOfTimeLevels, const int *gfInde
   if( className!="Cgins" &&  className!="Cgasf"  )
   {
     printF("WARNING: DomainSolver::predictTimeIndependentVariables: solver is not Cgins or Cgasf! className=%s\n",
-	   (const char*)getClassName() );
+     (const char*)getClassName() );
   }
 
   assert( numberOfTimeLevels>=3 );
@@ -111,9 +111,9 @@ predictTimeIndependentVariables( const int numberOfTimeLevels, const int *gfInde
     // if( true || (debug() & 4) )
     // {
     //   ::display(uCur(I1,I2,I3,pc),sPrintF("--PTIV-- predictTimeIndependentVariables: p-current"
-    // 							   " t=%9.4e grid=%i\n",gf[mNew].t,grid),debugFile,"%10.7f ");
+    //                 " t=%9.4e grid=%i\n",gf[mNew].t,grid),debugFile,"%10.7f ");
     //   ::display(uOld(I1,I2,I3,pc),sPrintF("--PTIV-- predictTimeIndependentVariables: p-old"
-    // 							   " t=%9.4e grid=%i\n",gf[mNew].t,grid),debugFile,"%10.7f ");
+    //                 " t=%9.4e grid=%i\n",gf[mNew].t,grid),debugFile,"%10.7f ");
     // }
     
     if( debug() & 16 )

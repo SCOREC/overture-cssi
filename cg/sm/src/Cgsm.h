@@ -109,25 +109,26 @@ void
 advance( int current, real t, real dt, AdvanceOptions *pAdvanceOptions=NULL );
   
 // advance the solution as a first-order system
-void 
-advanceFOS( int current, real t, real dt,
-            RealCompositeGridFunction *ut = NULL, 
-	    real tForce= 0. );
+void advanceFOS( int current, real t, real dt, RealCompositeGridFunction *ut = NULL, real tForce= 0. );
+
+// advance the solution for the incompressible elasticity equations : modidfied equation
+void advanceIncompressible( int current, real t, real dt, RealCompositeGridFunction *ut = NULL, real tForce= 0. );
+
+// advance the solution for the incompressible elasticity equations: method of lines
+void advanceIncompressibleMethodOfLines( int current, real t, real dt, RealCompositeGridFunction *ut = NULL, real tForce= 0. );
+
+// void advanceIncompressibleOld( int current, real t, real dt, RealCompositeGridFunction *ut = NULL, real tForce= 0. );
 
 // advance a time step using the method of lines
 void
 advanceMethodOfLines( int current, real t, real dt, int correction=0, AdvanceOptions *pAdvanceOptions=NULL );
 
 // advance the solution as a second-order system
-void 
-advanceSOS( int current, real t, real dt,
-            RealCompositeGridFunction *ut = NULL, 
-	    real tForce= 0. );
+void advanceSOS( int current, real t, real dt, RealCompositeGridFunction *ut = NULL, real tForce= 0. );
 
 
 
-void
-applyBoundaryConditions( int option, real dt, int current, int prev );
+void applyBoundaryConditions( int option, real dt, int current, int prev );
 
 // Here is apply BC function from the DomainSolver: 
 virtual int
@@ -195,7 +196,9 @@ computeNumberOfStepsAndAdjustTheTimeStep(const real & t,
 					 real & dtNew,
 					 const bool & adjustTimeStep =true );
 
-// base cale version: 
+int formPressureEquation(); 
+
+// base class version: 
 virtual realCompositeGridFunction & 
 getAugmentedSolution( GridFunction & gf0, realCompositeGridFunction & v );
 
@@ -328,6 +331,9 @@ printTimeStepInfo( const int & step, const real & t, const real & cpuTime );
 int 
 project( int numberOfStepsTaken, int current, real t, real dt );
 
+int
+projectLinearMode( int current, real t, real dt );
+
 int 
 projectInterface( int grid, real dt, int current );
 
@@ -371,6 +377,8 @@ smoothDivergence(realCompositeGridFunction & u, const int numberOfSmooths );
 
 int 
 solve();
+
+int solveForPressure( int current, Real t, Real dt );
   
 virtual int 
 startTimeStep( real & t0, real & dt0, int & currentGF, int & nextGF, AdvanceOptions & advanceOptions );
@@ -418,6 +426,7 @@ bool
 usingPMLBoundaryConditions() const;
 
 
+// --------------------------------------
 protected:
 
 int 

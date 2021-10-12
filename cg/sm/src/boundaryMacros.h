@@ -19,47 +19,47 @@
       if( ( pBoundaryData[side][axis]==NULL || parameters.isAdaptiveGridProblem() ) && 
           mg.boundaryCondition(side,axis)>0 )
       {
-	parameters.getBoundaryData(side,axis,grid,mg);
+        parameters.getBoundaryData(side,axis,grid,mg);
         // RealArray & bd = *pBoundaryData[side][axis]; // this is now done in the above line *wdh* 090819
         // bd=0.;
       }
       
       if( pBoundaryData[side][axis]!=NULL )
       {
-	if( debug & 8 )
-	  printP("+++ Cgsm: add boundary forcing to (side,axis,grid)=(%i,%i,%i) useConservative=%i\n",side,axis,grid,
-		 (int)useConservative);
-	
+        if( debug & 8 )
+          printP("+++ Cgsm: add boundary forcing to (side,axis,grid)=(%i,%i,%i) useConservative=%i\n",side,axis,grid,
+                 (int)useConservative);
+        
         addBoundaryForcing(side,axis)=true;
         RealArray & bd = *pBoundaryData[side][axis];
         pbcf[side][axis] = bd.getDataPointer();
-	
-	// if( debug & 8 )
+        
+        // if( debug & 8 )
         //  ::display(bd," ++++ Cgsm: Here is bd ++++","%4.2f ");
 
 
-	for( int a=0; a<=2; a++ )
-	{
-	  dbc(0,a,side,axis)=bd.getBase(a);
-	  dbc(1,a,side,axis)=bd.getBound(a);
-	}
+        for( int a=0; a<=2; a++ )
+        {
+          dbc(0,a,side,axis)=bd.getBase(a);
+          dbc(1,a,side,axis)=bd.getBound(a);
+        }
       }
       else
       {
         addBoundaryForcing(side,axis)=false;
-	pbcf[side][axis] = fptr;  // should not be used in this case 
-	for( int a=0; a<=2; a++ )
-	{
-	  dbc(0,a,side,axis)=0;
-	  dbc(1,a,side,axis)=0;
-	}
+        pbcf[side][axis] = fptr;  // should not be used in this case 
+        for( int a=0; a<=2; a++ )
+        {
+          dbc(0,a,side,axis)=0;
+          dbc(1,a,side,axis)=0;
+        }
       }
 
       // for now we save the offset in a 4 byte int (double check that this is ok)
       int64_t offset = pbcf[side][axis]- pbcf[0][0];
 //       if( offset > INT_MAX )
 //       {
-// 	printF("ERROR: offset=%li INT_MAX=%li \n",offset,(long int)INT_MAX);
+//      printF("ERROR: offset=%li INT_MAX=%li \n",offset,(long int)INT_MAX);
 //       }
 //       assert( offset < INT_MAX );
       bcfOffset(side,axis) = offset;
@@ -87,14 +87,14 @@
  {
    // Material properties do vary 
    std::vector<GridMaterialProperties> & materialProperties = 
-	parameters.dbase.get<std::vector<GridMaterialProperties> >("materialProperties");
+        parameters.dbase.get<std::vector<GridMaterialProperties> >("materialProperties");
 
    GridMaterialProperties & matProp = materialProperties[grid];
    materialFormat = matProp.getMaterialFormat();
    
    if( materialFormat==GridMaterialProperties::piecewiseConstantMaterialProperties )
    {
-	IntegerArray & matIndex = matProp.getMaterialIndexArray();
+        IntegerArray & matIndex = matProp.getMaterialIndexArray();
      matIndexPtr = matIndex.getDataPointer();
    }
    

@@ -1,4 +1,13 @@
 ********************************************
+***** June 27, 2021
+
+REVIIST --  Could be ok 
+
+
+$cgmpx rotatingDisk.cmd -g=diskDeformFixedBig4e -method=cns -cfl=.75 -tp=.1 -tf=1.0 -tz=none -problem=1 -cnsVariation=godunov -cnsGodunovOrder=2 -smVariation=g -pi=1 -en=max -adCns=10.0 -bcOption=4 -rotationRate=.1 -piGhostOption=3 -piOption=0 -godunovType=2 -stressRelaxation=1 -d1=outerDomain -d2=innerDomain -rho0=14 -pOffset=10 -lambdaSolid=1.0 -muSolid=1.0 -diss=1.0 -multiDomainAlgorithm=1 -show=rotatingDisk4b.show -go=og
+
+
+********************************************
 ***** June 16, 2017
 
 

@@ -12,10 +12,16 @@ public:
 enum PDEModel
 {
   linearElasticity=0,
-  nonlinearMechanics,    // for the future 
+  nonlinearMechanics,    
   numberOfPDEModels
 };
 static aString PDEModelName[numberOfPDEModels+1];
+
+enum CompressibilityTypeEnum
+{
+  compressibleSolid,
+  incompressibleSolid
+};
 
 enum PDEVariation
 {

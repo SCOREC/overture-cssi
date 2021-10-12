@@ -27,7 +27,8 @@ include $(CONFIGDIR)/make.options
 include make
 
 # List of packages to build
-PKGS := src src/godunov src/hemp
+PKGS := src src/godunov src/hemp src/incompressible
+
 
 # include Overture/Oges to get the PETSc solver and Ogmg files
 vpath % $(PKGS) $(GUIDIR)/src $(Overture)/Oges $(OvertureCheckout)/oges
@@ -120,12 +121,15 @@ $(BINDIR)cgsm: $(SHARED_LIBRARY) $(OBJDIR)cgsmMain.o $(CGSM_EXTRA_FILES) $(libCo
 	-@mkdir -p $(BINDIR)
 	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)cgsmMain.o $(CGSM) $(CGSM_EXTRA_FILES) $(LIBS)
 
+mytest:
+	@echo "FNOBJO=" $(FNOBJO)
+
 
 # make the library
 lib_build: $(SHARED_LIBRARY)
 	touch lib_build
 
-LIB_OBJS = $(OBJ) $(OBJCO) $(OBJN) $(OBJO) $(OBJSO)
+LIB_OBJS = $(OBJ) $(OBJCO) $(OBJN) $(OBJO) $(OBJSO) $(FNOBJO)
 
 # build the shared library (also delete and build an almost empty static library so that only 
 # out of date files will be added to the static lib if buildStaticLib := on)

@@ -1,0 +1,27 @@
+********************************************************
+****** Sun Aug 1, 2021
+
+REVISIT
+
+cgsm -noplot annulusEigen -g=annulus4.order2.hdf -pv=nc -diss=0.0 -tf=4.0 -tp=.2 -p0=1.0 -p1=2.0 -modem=2 -moden=1 -bcn=d -go=og
+
+SOS-NC 
+cgsm -noplot annulusEigen -g=annulus2.order2.hdf -pv=nc -diss=0.0 -tf=4.0 -tp=.2 -p0=1.0 -p1=2.0 -modem=1 -bcn=d -go=og
+-->t=2.0000e-01 dt=1.2e-02 maxNorm errors:[1.4756e-03,1.3982e-03,], maxNorm(u):[5.01e-01,5.01e-01,]
+
+SOS-C BC=D
+cgsm -noplot annulusEigen -g=annulus2.order2.hdf -pv=c -diss=0.0 -tf=4.0 -tp=.2 -p0=1.0 -p1=2.0 -modem=1 -bcn=d -go=og
+-->t=4.0000e-01 dt=1.2e-02 maxNorm errors:[3.4282e-03,3.4263e-03,], maxNorm(u):[2.37e-01,2.37e-01,]
+
+SOC-C : BC=SF filter6
+cgsm -noplot annulusEigen -g=annulus2.order2.hdf -pv=c -diss=0.0 -tf=4.0 -tp=.2 -p0=1.0 -p1=2.0 -modem=1 -bcn=sf -go=og
+-->t=2.0000e-01 dt=1.2e-02 maxNorm errors:[1.6484e-04,1.6475e-04,], maxNorm(u):[6.07e-01,6.07e-01,]
+
+
+
+************* OLD
+
+cgsm noplot annulusEigen -g=annulus2.order2.hdf -pv=c -diss=0. -tf=4. -tp=.2 -p0=1. -p1=2. -modem=1 -bcn=sf -go=go -show=annulusMode1.show >! annulusMode1.out
+
+cgsm noplot annulusEigen -g=annulus4.order2.hdf -pv=g -diss=0. -tf=2. -tp=.1 -p0=1. -p1=2. -modem=1 -bcn=sf -go=go -show=annulus4Mode1g.show >! annulus4Mode1g.out
+

@@ -12,7 +12,7 @@ cgcns beamInAChannel -g=beamInAChannelGride2.order2.hdf -tf=1. -tp=.01
 
 (3) Run in batch and save a show file
 
- cgicns -noplot beamInAChannel -g=beamInAChannelGride4.order2.hdf -tf=10. -tp=.1 -show=beam4.show -go=go >! beam4.out
+ cgcns -noplot beamInAChannel -g=beamInAChannelGride4.order2.hdf -tf=10. -tp=.1 -show=beam4.show -go=go >! beam4.out
 
 (4) Plot results from the show file:
 

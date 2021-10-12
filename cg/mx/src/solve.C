@@ -64,9 +64,9 @@ displayBoundaryConditions(FILE *file /* = stdout */)
 void Maxwell::
 computeNumberOfStepsAndAdjustTheTimeStep(const real & t,
                                          const real & tFinal,
-					 const real & nextTimeToPlot, 
-					 int & numberOfSubSteps, 
-					 real & dtNew,
+                                         const real & nextTimeToPlot, 
+                                         int & numberOfSubSteps, 
+                                         real & dtNew,
                                          const bool & adjustTimeStep /* = TRUE */ )
 // =====================================================================================
 // /Description:
@@ -120,7 +120,7 @@ computeNumberOfStepsAndAdjustTheTimeStep(const real & t,
     dtNew=timeInterval/numberOfSubSteps;
     if( true || debug & 2 )
       printF(" ---- adjust time step: timeInterval=%e, numberOfSubSteps=%i, dtNew=%e\n",
-	     timeInterval,numberOfSubSteps,dtNew);
+             timeInterval,numberOfSubSteps,dtNew);
   }
 
   if( dtNew<0. )
@@ -197,26 +197,26 @@ outputResultsAfterEachTimeStep( int current, real t, real dt, int stepNumber, re
       
       if ( cg[grid].getGridType()==MappedGrid::structuredGrid )
       {
-	if( cg.numberOfDimensions()==2 )
-	{
-	  real uex=u(i1,i2,i3,ex), uey=u(i1,i2,i3,ey), uhz=u(i1,i2,i3,hz);
-	  if( okToOutput ) fPrintF(probeFile,"%e %e %e ",uex,uey,uhz);
-	}
-	else
-	{
-	  real uex=u(i1,i2,i3,ex), uey=u(i1,i2,i3,ey), uez=u(i1,i2,i3,ez);
-	  if( okToOutput ) fPrintF(probeFile,"%e %e %e ",uex,uey,uez);
-	}
+        if( cg.numberOfDimensions()==2 )
+        {
+          real uex=u(i1,i2,i3,ex), uey=u(i1,i2,i3,ey), uhz=u(i1,i2,i3,hz);
+          if( okToOutput ) fPrintF(probeFile,"%e %e %e ",uex,uey,uhz);
+        }
+        else
+        {
+          real uex=u(i1,i2,i3,ex), uey=u(i1,i2,i3,ey), uez=u(i1,i2,i3,ez);
+          if( okToOutput ) fPrintF(probeFile,"%e %e %e ",uex,uey,uez);
+        }
       }
       else
       {
-	uprobeLoc(0) = i1;
-	reconstructDSIAtEntities(t, HField, uprobeLoc, u, uprobeVal);
-	if ( cg.numberOfDimensions()==2 && okToOutput)
-	  fPrintF(probeFile,"%e ",uprobeVal(0));
-	else if ( okToOutput )
-	  fPrintF(probeFile,"%e %e %e ",uprobeVal(0),uprobeVal(1),uprobeVal(2));
-	      
+        uprobeLoc(0) = i1;
+        reconstructDSIAtEntities(t, HField, uprobeLoc, u, uprobeVal);
+        if ( cg.numberOfDimensions()==2 && okToOutput)
+          fPrintF(probeFile,"%e ",uprobeVal(0));
+        else if ( okToOutput )
+          fPrintF(probeFile,"%e %e %e ",uprobeVal(0),uprobeVal(1),uprobeVal(2));
+              
       }
       
       
@@ -444,7 +444,7 @@ outputResults( int current, real t, real dt )
           fPrintF(output,"%8.2e,",solutionNorm(c));
 
         fPrintF(output,"]\n");
-	  
+          
       }
     }
   }
@@ -522,11 +522,10 @@ solve(GL_GraphicsInterface &gi )
   if( debug & 1 )
   {
     fprintf(pDebugFile,"--- dt0=%9.3e dt=%9.3e tPlot=%f, tPlot/dt=%f numStepsToPlot=%i numSteps=%i \n",
-	    dt0,dt,tPlot,tPlot/dt,numStepsToPlot,numSteps);
+            dt0,dt,tPlot,tPlot/dt,numStepsToPlot,numSteps);
     fflush(0);
   }
   assert( dt<= dt0 );
-  
 
   // Initial conditions
   assignInitialConditions( current,t,dt ); 
@@ -575,17 +574,17 @@ solve(GL_GraphicsInterface &gi )
       if( finished ) break;
       if( t >tFinal-.5*dt )
       {
-	// we are done (unless tFinal is increased in the next call to plot). plot solution at final time
-	//	if( plotOptions & 1 )
-	{
-	  plotOptions=1;  // plot and wait 
-	  plot(current, t, dt );
-	}
+        // we are done (unless tFinal is increased in the next call to plot). plot solution at final time
+        //      if( plotOptions & 1 )
+        {
+          plotOptions=1;  // plot and wait 
+          plot(current, t, dt );
+        }
         if( t >tFinal-.5*dt ) // tFinal may have been increased, so check again
-	{ 
-	  finished=true;
-	  break;
-	}
+        { 
+          finished=true;
+          break;
+        }
       }
       iPrint++;
     }
@@ -604,7 +603,7 @@ solve(GL_GraphicsInterface &gi )
     {
       if( method==yee )
       {
-	// advance on a rectangular grid
+        // advance on a rectangular grid
         advanceFDTD( numberOfStepsTaken,current,t,dt );
       }
       else if( method==dsi || method==dsiMatVec )      
@@ -613,23 +612,23 @@ solve(GL_GraphicsInterface &gi )
       }
       else if( method==nfdtd )
       {
-	advanceNFDTD( numberOfStepsTaken,current,t,dt );
+        advanceNFDTD( numberOfStepsTaken,current,t,dt );
       }
       else if( method==dsiNew )
       {
-	advanceNew( current,t,dt, fields );
+        advanceNew( current,t,dt, fields );
       }
       else if( method==sosup )
       { // advance using the second-order-system upwind scheme:
-	advanceSOSUP( numberOfStepsTaken,current,t,dt );
+        advanceSOSUP( numberOfStepsTaken,current,t,dt );
       }
       else if( method==bamx )
       { // bianistropic maxwell equations
-	advanceBAMX( numberOfStepsTaken,current,t,dt );
+        advanceBAMX( numberOfStepsTaken,current,t,dt );
       }
       else
       {
-	OV_ABORT("CGMX: ERROR: unknown method");
+        OV_ABORT("CGMX: ERROR: unknown method");
       }
 
       gf[current].t=t;  // *wdh* April 18, 2019 this is probably not needed anymore

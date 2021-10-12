@@ -20,8 +20,8 @@ plotCurve( RealArray & x, GenericGraphicsInterface & gi, PlotStuffParameters & p
   nurbs.interpolate(x);
       
   // interpolate(const RealArray & x, 
-  // 	    const int & option    /* = 0 */,
-  // 	    RealArray & parameterization /* =Overture::nullRealArray() */,
+  //        const int & option    /* = 0 */,
+  //        RealArray & parameterization /* =Overture::nullRealArray() */,
   //       int degree /* = 3 */,
   //       ParameterizationTypeEnum parameterizationType /* =parameterizeByChordLength */,
   //       int numberOfGhostPoints /* =0 */ )
@@ -62,7 +62,7 @@ main(int argc, char **argv)
       else if( arg(0,6)=="-debug=" )
       {
         sScanF(arg(7,arg.length()-1),"%i",&debug);
-	printF("Setting debug=%i\n",debug);
+        printF("Setting debug=%i\n",debug);
       }
       else if( commandFileName=="" )
       {
@@ -106,10 +106,10 @@ main(int argc, char **argv)
   dialog.setExitCommand("exit", "exit");
 
   aString cmds[] = {"plot",
-		    "movie",
+                    "movie",
                     "erase",
                     "save file",
-		    "" };
+                    "" };
   int numberOfPushButtons=0;  // number of entries in cmds
   while( cmds[numberOfPushButtons]!="" ){numberOfPushButtons++;}; // 
   int numRows=(numberOfPushButtons+1)/2;
@@ -168,24 +168,24 @@ main(int argc, char **argv)
       RealArray x;
       for( int step=0; step<nStep; step++ )
       {
-	real t=step*dt;
-	
-	eyeCurves.getEyeCurve( x,t,numPoints );
+        real t=step*dt;
+        
+        eyeCurves.getEyeCurve( x,t,numPoints );
 
         Range R = x.dimension(0);
         real yTop = max(x(R,1));
         if( yTop>yMax )
-	{
+        {
           yMax=yTop;
-	}
-	else if( yTop>yMax*(.99999) )
-	{
+        }
+        else if( yTop>yMax*(.99999) )
+        {
           printF("Eye reaches yMax=%9.3e at t=%9.3e t/(2*pi)=%9.3e\n",yMax,t,t/twoPi);
-	}
-	
+        }
+        
         gi.erase();
         psp.set(GI_TOP_LABEL,sPrintF(buff,"EyeTest: t=%9.2e, yMax=%8.2e",t,yMax));
-	plotCurve( x, gi,psp );
+        plotCurve( x, gi,psp );
         gi.setGlobalBound(xBound); // set plot bounds         
 
         gi.redraw(true);

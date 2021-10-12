@@ -1,0 +1,268 @@
+
+
+
+===== 110418
+
+****Increase buffer zone (but keep regrid ratio)
+
+-- FOS:
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -nbza=4 -pv=g -diss=.0 -filter=0 -tp=.2 -tf=1.6 -tol=.5e-3 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4g.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4ga.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -nbza=4 -pv=g -diss=.0 -filter=0 -tp=.2 -tf=1.6 -tol=2.e-3 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r2g.show" -nrl=2 -ratio=2 -debug=1 -go=go >! diffract8l2r2ga.out &
+
+
+SOS: 
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -nbza=4 -pv=c -diss=0. -filterOrder=4  -filterStages=1 -filter=1 -tp=.2 -tf=1.6 -tol=1.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4f4.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4f4.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -nbza=4 -pv=c -diss=0. -filterOrder=4 -filterStages=1 -filter=1 -tp=.2 -tf=1.6 -tol=4.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r2f4.show" -nrl=2 -ratio=2 -debug=1 -go=go >! diffract8l2r2f4.out &
+
+
+
+
+reduce tol: ** Fixed dt -- recompute dt for AMR ***
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=0. -filterOrder=4  -filterStages=1 -filter=1 -tp=.2 -tf=1.6 -tol=.25e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4f4.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4f4.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=0. -filterOrder=4 -filterStages=1 -filter=1 -tp=.2 -tf=1.6 -tol=1.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r2f4.show" -nrl=2 -ratio=2 -debug=1 -go=go >! diffract8l2r2f4.out &
+
+
+
+===== 110415 ** Re-run comp convergence for revised smog:
+
+       R = running
+       X = done 
+       [] = todo 
+
+
+$ovg/bin/comp compDiffractc.cmd -option=amr -outputFile="compDiffractSOSAmrNew.log"
+
+--- FOS 
+
+== reduce tol:  xed dt -- recompute dt for AMR ***
+
+[] nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -cfl=.5 -pv=g -diss=.0 -filter=0 -tp=.2 -tf=1.6 -tol=.25e-3 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4g.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4ga.out &
+
+R nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=g -diss=.0 -filter=0 -tp=.2 -tf=1.6 -tol=1.e-3 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r2g.show" -nrl=2 -ratio=2 -debug=1 -go=go >! diffract8l2r2ga.out &
+
+
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=g -diss=.0 -filter=0 -tp=.2 -tf=1.6 -tol=.25e-2 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4g.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4ga.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=g -diss=.0 -filter=0 -tp=.2 -tf=1.6 -tol=1.e-2 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r2g.show" -nrl=2 -ratio=2 -debug=1 -go=go >! diffract8l2r2ga.out &
+q
+
+R nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f64 -pv=g -diss=0. -filter=0 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract64g.show" -debug=1 -go=go >! diffract64g.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f32 -pv=g -diss=0. -filter=0 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract32g.show" -debug=1 -go=go >! diffract32g.out &
+
+runs/cgsm/diffract2:
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f16 -pv=g -diss=0. -filter=0 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract16g.show" -debug=1 -go=go >! diffract16g.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=g -diss=0. -filter=0 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract8g.show" -debug=1 -go=go >! diffract8g.out &
+
+
+=================================================================================================
+-- SOS -- redo *** trouble with AMR!!
+
+-- use Filter=4 and no AD4 (fix me!)
+
+== reduce tol: ** Fixed dt -- recompute dt for AMR ***
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=0. -filterOrder=4  -filterStages=1 -filter=1 -tp=.2 -tf=1.6 -tol=1.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4f4.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4f4.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=0. -filterOrder=4 -filterStages=1 -filter=1 -tp=.2 -tf=1.6 -tol=4.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r2f4.show" -nrl=2 -ratio=2 -debug=1 -go=go >! diffract8l2r2f4.out &
+
+
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f64 -pv=c -diss=0. -filterOrder=4 -filterStages=1 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract64cf.show" -debug=1 -go=go >! diffract64f.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f32 -pv=c -diss=0. -filterOrder=4 -filterStages=1 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract32cf.show" -debug=1 -go=go >! diffract32f.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f16 -pv=c -diss=0. -filterOrder=4 -filterStages=1 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract16cf.show" -debug=1 -go=go >! diffract16f.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=0. -filterOrder=4 -filterStages=1 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract8cf.show" -debug=1 -go=go >! diffract8f.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=0. -filterOrder=4  -filterStages=1 -filter=1 -tp=.2 -tf=1.6 -tol=2.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4f4.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4f4.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=0. -filterOrder=4 -filterStages=1 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r2f4.show" -nrl=2 -ratio=2 -debug=1 -go=go >! diffract8l2r2f4.out &
+
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f64 -pv=c -diss=1. -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract64c.show" -debug=1 -go=go >! diffract64a.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f32 -pv=c -diss=1. -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract32c.show" -debug=1 -go=go >! diffract32a.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=1. -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract8c.show" -debug=1 -go=go >! diffract8a.out &
+
+
+
+****** trouble at end: 
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f16 -pv=c -diss=1. -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract16c.show" -debug=1 -go=go >! diffract16a.out &
+
+
+**** SOMETHING WRONG HERE:
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=1. -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=2.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4.out &
+
+**** SOMETHING WRONG HERE:
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=1. -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r2.show" -nrl=2 -ratio=2 -debug=1 -go=go >! diffract8l2r2.out &
+
+
+
+
+========== 100203 -- run godunov with the limiter on : S=started, X=done
+
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=g -diss=.0 -filter=0 -tp=.2 -tf=1.6 -tol=.25e-2 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4glim.show" -nrl=2 -ratio=4 -debug=1 -godunovLimiter=1 -go=go >! diffract8l2r4glim.out &
+
+S nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=g -diss=.0 -filter=0 -tp=.2 -tf=1.6 -tol=1.e-2 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r2glim.show" -nrl=2 -ratio=2 -debug=1 -godunovLimiter=1 -go=go >! diffract8l2r2glim.out &
+
+REDO: no amr
+
+S nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f64 -pv=g -diss=0. -filter=0 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract64glim.show" -debug=1 -godunovLimiter=1 -go=go >! diffract64glim.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f32 -pv=g -diss=0. -filter=0 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract32glim.show" -debug=1 -godunovLimiter=1 -go=go >! diffract32glim.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f16 -pv=g -diss=0. -filter=0 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract16glim.show" -debug=1 -godunovLimiter=1 -go=go >! diffract16glim.out &
+
+
+=========== 100203 -- redo some : S=started, X=done
+
+Redo all SOS with no ad:
+
+S nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=.0 -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=2.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4.out &
+
+X nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=.0 -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r2.show" -nrl=2 -ratio=2 -debug=1 -go=go >! diffract8l2r2.out &
+
+--------------
+
+
+** supposedly fixed dt for art. dissipation but still a little trouble here: 
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=.1 -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r2dp1.show" -nrl=2 -ratio=2 -debug=1 -go=go >! diffract8l2r2dp1.out &
+
+
+
+* blips go away with diss=0. -- maybe need to fix diss term for variable dt ??
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=.0 -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r2dp0.show" -nrl=2 -ratio=2 -debug=1 -go=go >! diffract8l2r2dp0.out &
+
+
+** diss=.1 : some small blips appear near left top and bottom corners
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=.5 -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r2dp5.show" -nrl=2 -ratio=2 -debug=1 -go=go >! diffract8l2r2dp5.out &
+
+
+=========== 100131 -- convergence tests
+
+**************************** FOS ******************************
+
+--- amr is broken for some reason --> bug fixed 
+
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=g -diss=.0 -filter=0 -tp=.2 -tf=1.6 -tol=.25e-2 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4g.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4g.out &
+
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=g -diss=.0 -filter=0 -tp=.2 -tf=1.6 -tol=1.e-2 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r2g.show" -nrl=2 -ratio=2 -debug=1 -go=go >! diffract8l2r2g.out &
+
+REDO: no amr
+
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f64 -pv=g -diss=0. -filter=0 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract64g.show" -debug=1 -go=go >! diffract64g.out &
+
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f32 -pv=g -diss=0. -filter=0 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract32g.show" -debug=1 -go=go >! diffract32g.out &
+
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f16 -pv=g -diss=0. -filter=0 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract16g.show" -debug=1 -go=go >! diffract16g.out &
+
+******************************* SOS *******************************************
+
+-- redo with slipwall bc, slightly bigger tols -- trouble with slip-wall BC
+
+-- amr : trouble --> bug fixed + changed advSmCons for variable dt
+
+# tol=1.e-4 : amr grids cover a lot 
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=.1 -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=2.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4.out &
+
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=.1 -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=1.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4.out &
+
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=.1 -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r2.show" -nrl=2 -ratio=2 -debug=1 -go=go >! diffract8l2r2.out &
+
+
+-- no amr:   ** note: use diss and filter
+
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f16 -pv=c -diss=1. -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract16c.show" -debug=1 -go=go >! diffract16c.out &
+
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f32 -pv=c -diss=1. -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract32c.show" -debug=1 -go=go >! diffract32c.out &
+
+
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f64 -pv=c -diss=1. -dissOrder=4 -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract64c.show" -debug=1 -go=go >! diffract64c.out &
+
+
+
+
+========== 091209 : 
+
+--- SOS-C , no amr
+
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f32 -pv=c -diss=0. -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract32c.show" -debug=1 -go=go >! diffract32c.out &
+
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f16 -pv=g -diss=0. -filter=0 -tp=.2 -tf=1.6  -tol=1.e-2 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract16g.show" -debug=1 -go=go >! diffract16g.out &
+
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f16 -pv=c -diss=0. -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract16c.show" -debug=1 -go=go >! diffract16c.out &
+
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=0. -filter=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract8c.show" -debug=1 -go=go >! diffract8c.out &
+
+
+======== 091205 -- wdh added SOS-NC slipwall BC to SOS-C 
+
+-- redo SOS-C filter=4 
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=0. -filter=1 -filterOrder=4 -filterStages=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4cf4a.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4cf4a.out &
+
+
+======== 090912 -- use slipWall BC at top and bottom (need this in SOS-C)
+
+-- bigger domain 
+
+-- try SOS-C with order 4 dissipation
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=0. -filter=1 -filterOrder=4 -filterStages=1 -tp=.2 -tf=1.6 -tol=5.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4cf4.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4cf4.out &
+
+
+-- finer, no amr: 
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f64 -pv=g -diss=0. -filter=0 -tp=.2 -tf=1.6  -tol=1.e-2 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract64g.show" -nrl=1 -ratio=4 -debug=1 -go=go >! diffract64g.out &
+
+-- run f8  no amr for comparison
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=g -diss=0. -filter=0 -tp=.2 -tf=1.6  -tol=1.e-2 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract8g.show" -nrl=1 -ratio=4 -debug=1 -go=go >! diffract8g.out &
+
+
+-- tol=1.e-3 not small enough
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=c -diss=0. -filter=1 -tp=.2 -tf=1.6 -tol=1.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4c.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4c.out &
+
+
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f32 -pv=g -diss=0. -filter=0 -tp=.2 -tf=1.6  -tol=1.e-2 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract32g.show" -nrl=1 -ratio=4 -debug=1 -go=go >! diffract32g.out &
+
+nohup $sm/bin/cgsm noplot diffract -g=cicex3y3f8 -pv=g -diss=0. -filter=0 -tp=.2 -tf=1.6 -tol=1.e-2 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4g.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4g.out &
+
+========== 090911
+
+-- fine grid no amr:
+
+
+nohup $sm/bin/cgsm noplot diffract -g=cice64.order2 -pv=c -diss=0. -filter=1 -tp=.1 -tf=1.2 -tol=.001 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract64.show" -go=go >! diffract64.out &
+
+nohup $sm/bin/cgsm noplot diffract -g=cice8.order2 -pv=c -diss=0. -filter=1 -tp=.1 -tf=1.2 -tol=.001 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract8.show" -go=go >! diffract8.out &
+
+========== 090902 
+
+-- amr + godunov
+
+cgsm noplot diffract -g=cice16.order2 -pv=g -diss=0. -filter=0 -tp=.1 -tf=1.2 -tol=1.e-2 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract16l2r4g.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract16l2r4g.out &
+
+cgsm noplot diffract -g=cice8.order2 -pv=g -diss=0. -filter=0 -tp=.1 -tf=1.2 -tol=1.e-2 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract8l2r4g.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract8l2r4g.out &
+
+-- tol too small: 
+cgsm noplot diffract -g=cice4.order2 -pv=g -diss=0. -filter=0 -tp=.1 -tf=1.2 -tol=1.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract4l2r4g.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract4l2r4g.out &
+
+-- amr: 
+
+cgsm noplot diffract -g=cice16.order2 -pv=c -diss=0. -filter=1 -tp=.1 -tf=1.2 -tol=1.e-4 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract16l2r4.show" -nrl=2 -ratio=4 -debug=1 -go=go >! diffract16l2r4.out &
+ 
+cgsm noplot diffract -g=cice16.order2 -pv=c -diss=0. -filter=1 -tp=.1 -tf=1.2 -tol=.001 -ic=special -bc=sf -amr=1 -x0=-1.25 -show="diffract16l2r2.show" -go=g0 >! diffract16l2r2.out &
+ 
+
+-- fine grid diffration no AMR: 
+
+cgsm diffract -g=cice16.order2 -pv=c -diss=0. -filter=1 -tp=.1 -tf=1.2 -tol=.001 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract16.show"
+
+cgsm diffract -g=cice32.order2 -pv=c -diss=0. -filter=1 -tp=.1 -tf=1.2 -tol=.001 -ic=special -bc=sf -amr=0 -x0=-1.25 -show="diffract32.show"

@@ -1,3 +1,47 @@
+***************************************************************************************8
+***************************************************************************************8
+***************************************************************************************8
+NOTES FROM DAN CIRCA OCT 2017
+list of work-arounds to fix issues:
+ - If the grid is not initially flat and we want to force grid to be flat, 
+   there can be some issues when
+   advancing in time (future grid may not be flat)
+ - For Projecting initial conditions, there was an issue where
+   the corrector was being called in advaceFreeSurface. Since the
+   corrector overwrites the "xCur" grid, xCur was inaccurate at later
+   times. Added a check to see if dt is 0, if it is 0, then the
+   function returns without going to corrector.
+ - In initializePast in DeformingBodyMotion.C, we had to add
+   if ((step==1) || (step==0)) so the grid is saved at time 0.
+ - In advaceFreeSurface corrector, I changed u to uOld in the 
+   trapezoidal rule formula. I didn't change the code for 3D,
+   but I added a warning.
+ - When computing past grids, the time step is hard coded. 
+   I use the command
+     past time dt: $tPlot
+   and choose a small dt. 
+ - took away stretch factor for overlapping grid
+
+
+
+
+
+***************************
+******* Wed July 21, 2021
+
+REVIST FREE SURFACE
+
+
+cgins freeSurfaceCapillaryFlow -g=freeSurfaceGrid2dFlate2.order2p -dg=share=100 -ts=im -tf=.2 -tp=.01 -model=ins -go=halt -pGrad=0. -ad2=0 -go=og -amp=.0001 -caseNumber=5 -surfacePredictor=leap-frog 
+
+
+--INS-- determineErrors: t=2.000e-01, maxNorm errors: [p,u,v,T]=[4.03e-06,4.13e-06,2.56e-06,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (20 steps)
+   0.200 4.03e-06 4.13e-06 2.56e-06 4.15e-06  1.00e+00 1.00e-02 3.89e+01 
+
+
+ **********************
+
 
 cgins freeSurfaceCapillaryFlow -g=freeSurfaceGrid2dFlate2.order2p -dg=share=100 -ts=im -tf=.2 -tp=.01 -model=ins -go=halt -pGrad=0. -ad2=0 -go=og -amp=.0001 -caseNumber=5 -surfacePredictor=leap-frog 
 

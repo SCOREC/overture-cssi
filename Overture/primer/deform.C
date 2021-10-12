@@ -47,7 +47,7 @@ main(int argc, char *argv[])
       else if( len=line.matches("-numSteps=") )
       {
         sScanF(line(len,line.length()-1),"%i",&numberOfSteps);
-	printF("Setting numberOfSteps=%i\n",numberOfSteps);
+        printF("Setting numberOfSteps=%i\n",numberOfSteps);
       }
       
     }
@@ -230,7 +230,7 @@ main(int argc, char *argv[])
       
       if( ok )
       {
-	uLocal(I1,I2,I3)=cos(freq*xLocal(I1,I2,I3,axis1))*sin(freq*xLocal(I1,I2,I3,axis2));  
+        uLocal(I1,I2,I3)=cos(freq*xLocal(I1,I2,I3,axis1))*sin(freq*xLocal(I1,I2,I3,axis2));  
       }
       
     }

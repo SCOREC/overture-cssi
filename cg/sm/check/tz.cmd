@@ -31,6 +31,8 @@ debug 2
 check errors 1
 * plot errors 1
 continue
+# open graphics
+# 
 movie mode
 finish
 

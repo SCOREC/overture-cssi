@@ -47,6 +47,24 @@ GetOptions( "show=s"=>\$show, "name=s"=>\$name, "opt=s"=>\$opt );
 #
 $show
 #
+#  RPI GRID COLOURS 
+  colour grid lines from chosen name
+  # background: 
+  grid colour 0 MEDIUMBLUE
+  grid colour 1 NAVYBLUE
+  grid colour 2 NAVYBLUE
+  grid colour 3 NAVYBLUE
+# R 
+  grid colour 4 RED
+  grid colour 5 VIOLETRED
+#  P 
+  grid colour 6 MEDIUMAQUAMARINE
+  grid colour 7 SEAGREEN
+# I 
+#  grid colour 8 GOLDENROD
+  grid colour 8 CORAL
+  grid colour 9 SANDYBROWN
+#
   hardcopy vertical resolution:0 2048
   hardcopy horizontal resolution:0 2048  
   line width scale factor:0 3
@@ -63,10 +81,12 @@ $show
   hardcopy save:0
 pause
 #
-  set view:0 0.187103 -0.191008 0 12.3143 1 0 0 0 1 0 0 0 1
+#  set view:0 0.187103 -0.191008 0 12.3143 1 0 0 0 1 0 0 0 1
+set view:0 -0.0276193 -0.232628 0 5.99034 1 0 0 0 1 0 0 0 1  
   $plotName = $name . "Zoom.ps"; 
   hardcopy file name:0 $plotName
   hardcopy save:0
+  
 pause
 #
   set view:0 0.212382 -0.192535 0 45.2724 1 0 0 0 1 0 0 0 1

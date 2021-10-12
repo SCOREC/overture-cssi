@@ -1,0 +1,221 @@
+******************************************
+***** Sat Oct 9, 2021
+
+START: can we project out the linear in time mode? --> seems to work
+
+disk: RE-DO 
+BC=T
+cgsm -noplot random.cmd -g=sicFixede4.order2 -ts=me -tf=100000 -tp=10 -cfl=0.9 -bc1=t -cdv=1 -upwindSOS=1 -useCurlCurl=0  -projectLinearMode=1 -show=randomDiskG4t.show -go=go > randomDiskG4t.out
+
+
+
+cgsm -noplot random.cmd -g=square32.order2 -ts=me -tf=10000 -tp=10 -cfl=0.9 -bc1=t -bc2=t -bc3=t -bc4=t -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -projectLinearMode=1 -show=randomSquare32tttt.show -go=go > randomSquare32tttt.out
+
+
+BC=tttt :   Linear in time mode: (div free)
+    u1 = a1*t + b1*y*t 
+    u2 = a2*t + b2*x*t 
+cgsm -noplot random.cmd -g=square32.order2 -ts=me -tf=1000 -tp=10 -cfl=0.9 -bc1=t -bc2=t -bc3=t -bc4=t -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -projectLinearMode=1 -go=og
+
+
+
+ >>>>>> projectLinearMode called at globalStepNumber=2500, t=4.970e+01
+>>> projectLinearMode: a1/t=1.792e-01, a2/t=-4.183e-01, b1/t=-3.889e-01, b2/t=3.928e-01
+
+
+ >>>>>> projectLinearMode called at globalStepNumber=5500, t=1.093e+02
+>>> projectLinearMode: a1/t=1.803e-01, a2/t=-4.174e-01, b1/t=-3.910e-01, b2/t=3.907e-01
+
+******************************************
+***** Thurs Sept 23, 2021
+
+START TEST LINEAR DAMPING TO REMOVE "t" mode
+
+BC=tttt : Solution for u,v goes to zero 
+cgsm -noplot random.cmd -g=square32.order2 -ts=me -tf=1000 -tp=10 -cfl=0.9 -bc1=d -bc2=t -bc3=t -bc4=t -cdv=.25 -upwindSOS=1 -useCurlCurl=0 -show=randomSquare32dttt.show -go=go
+
+BC=tttt : Solution for u,v goes to a constant, goes to ZERO if cldamp = O(1)
+cgsm -noplot random.cmd -g=square32.order2 -ts=me -tf=1000 -tp=10 -cfl=0.9 -bc1=t -bc2=t -bc3=t -bc4=t -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -show=randomSquare32tttt.show -go=go
+
+******************************************
+***** Tues Sept 21, 2021
+
+disk: 
+BC=T
+cgsm -noplot random.cmd -g=sicFixede4.order2 -ts=me -tf=2000 -tp=10 -cfl=0.9 -bc1=t -cdv=1 -upwindSOS=1 -useCurlCurl=0 -show=randomDiskG4t.show -go=go > randomDiskG4t.out
+
+BC=d
+cgsm -noplot random.cmd -g=sicFixede4.order2 -ts=me -tf=2000 -tp=10 -cfl=0.9 -bc1=d -cdv=1 -upwindSOS=1 -useCurlCurl=0 -show=randomDiskG4d.show -go=go > randomDiskG4d.out
+
+******************************************
+***** Mon/Sun Sept 19/20, 2021
+
+SAVE time-history of solution and divergence 
+
+BC=dtdt -useCurlCurl=0 --> OK 
+cgsm -noplot random.cmd -g=square32.order2 -ts=me -tf=5000 -tp=10 -cfl=0.9 -bc1=d -bc2=t -bc3=d -bc4=t -cdv=1 -upwindSOS=1 -useCurlCurl=0 -show=randomSquare32dtdt.show -go=go
+
+BC=dtdt **TROUBLE*** smooth growth -- trouble with div near td corner !!
+cgsm -noplot random.cmd -g=square32.order2 -ts=me -tf=5000 -tp=10 -cfl=0.9 -bc1=d -bc2=t -bc3=d -bc4=t -cdv=1 -upwindSOS=1 -useCurlCurl=1 -show=randomSquare32dtdt.show -go=go
+
+
+
+cdv=1 : ok till t=1000
+cdv=.25 : *trouble* p is growing 
+cgsm -noplot random.cmd -g=square32.order2 -ts=me -tf=5000 -tp=10 -cfl=0.9 -bc1=t -bc2=d -bc3=t -bc4=t -cdv=1 -upwindSOS=1 -useCurlCurl=1 -show=randomSquare32tdtt.show -go=go
+
+
+cgsm -noplot random.cmd -g=square32.order2 -ts=me -tf=1000 -tp=10 -cfl=0.9 -bc1=t -bc2=t -bc3=t -bc4=t -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -show=randomSquare32tttt.show -go=go
+
+cgsm -noplot random.cmd -g=square32.order2 -ts=me -tf=200 -tp=10 -cfl=0.9 -bc1=t -bc2=t -bc3=t -bc4=t -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -show=randomSquare32tttt.show -go=go
+
+
+******************************************
+***** Sat Sept 11, 2021
+
+REVIST RANDOM -- UPWINDING WAS NOT BEING DONE RIGHT 
+
+LOOK OK
+cgsm -noplot random.cmd -g=sicFixede8.order2 -ts=me -tf=1000 -tp=1 -cfl=0.9 -bc1=t -bc2=d -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -go=og
+
+
+-->t=1.0000e+00 dt=7.30e-03 |div(U)|=1.71e+02 |div(U)|/|grad(U)|=1.63e+00, |grad(U)|=1.05e+02, max(u):[3.85e+00,1.99e+00,3.01e+01,]
+>>> Cgsm: ILE22u: t=1.00e+00, steps=137, dt=7.3e-03 TS=ME |div(U)|=7.42e-01, |curl(U)|=7.57e+01, |div(U)|/|grad(U)|=1.87e-02 |grad(U)|=3.97e+01, cpu=9.94e+00(s)
+-->t=2.0000e+00 dt=7.30e-03 |div(U)|=7.42e-01 |div(U)|/|grad(U)|=1.87e-02, |grad(U)|=3.97e+01, max(u):[6.05e+00,2.91e+00,3.61e+01,]
+>>> Cgsm: ILE22u: t=2.00e+00, steps=274, dt=7.3e-03 TS=ME |div(U)|=4.37e-01, |curl(U)|=5.80e+01, |div(U)|/|grad(U)|=1.24e-02 |grad(U)|=3.52e+01, cpu=1.69e+01(s)
+-->t=3.0000e+00 dt=7.30e-03 |div(U)|=4.37e-01 |div(U)|/|grad(U)|=1.24e-02, |grad(U)|=3.52e+01, max(u):[8.02e+00,4.41e+00,2.53e+01,]
+>>> Cgsm: ILE22u: t=3.00e+00, steps=411, dt=7.3e-03 TS=ME |div(U)|=2.76e-01, |curl(U)|=5.23e+01, |div(U)|/|grad(U)|=1.01e-02 |grad(U)|=2.73e+01, cpu=2.06e+01(s)
+-->t=4.0000e+00 dt=7.30e-03 |div(U)|=2.76e-01 |div(U)|/|grad(U)|=1.01e-02, |grad(U)|=2.73e+01, max(u):[1.05e+01,5.06e+00,2.29e+01,]
+>>> Cgsm: ILE22u: t=4.00e+00, steps=548, dt=7.3e-03 TS=ME |div(U)|=2.73e-01, |curl(U)|=5.15e+01, |div(U)|/|grad(U)|=9.69e-03 |grad(U)|=2.82e+01, cpu=2.29e+01(s)
+-->t=5.0000e+00 dt=7.30e-03 |div(U)|=2.73e-01 |div(U)|/|grad(U)|=9.69e-03, |grad(U)|=2.82e+01, max(u):[1.44e+01,5.90e+00,2.53e+01,]
+
+
+-->t=2.0000e+02 dt=7.30e-03 |div(U)|=1.35e-02 |div(U)|/|grad(U)|=1.97e-04, |grad(U)|=6.85e+01, max(u):[3.83e+02,9.85e+01,1.17e+01,]
+>>> Cgsm: ILE22u: t=2.00e+02, steps=27400, dt=7.3e-03 TS=ME |div(U)|=1.15e-02, |curl(U)|=9.46e+01, |div(U)|/|grad(U)|=2.33e-04 |grad(U)|=4.93e+01, cpu=3.20e+02(s)
+-->t=3.0000e+02 dt=7.30e-03 |div(U)|=1.15e-02 |div(U)|/|grad(U)|=2.33e-04, |grad(U)|=4.93e+01, max(u):[5.47e+02,1.18e+02,6.43e+00,]
+>>> Cgsm: ILE22u: t=3.00e+02, steps=41100, dt=7.3e-03 TS=ME |div(U)|=7.90e-03, |curl(U)|=7.48e+01, |div(U)|/|grad(U)|=2.04e-04 |grad(U)|=3.87e+01, cpu=4.40e+02(s)
+-->t=4.0000e+02 dt=7.30e-03 |div(U)|=7.90e-03 |div(U)|/|grad(U)|=2.04e-04, |grad(U)|=3.87e+01, max(u):[7.47e+02,1.78e+02,6.92e+00,]
+>>> Cgsm: ILE22u: t=4.00e+02, steps=54800, dt=7.3e-03 TS=ME |div(U)|=5.45e-03, |curl(U)|=1.33e+02, |div(U)|/|grad(U)|=7.95e-05 |grad(U)|=6.85e+01, cpu=5.59e+02(s)
+-->t=5.0000e+02 dt=7.30e-03 |div(U)|=5.45e-03 |div(U)|/|grad(U)|=7.95e-05, |grad(U)|=6.85e+01, max(u):[8.67e+02,1.55e+02,5.82e+00,]
+>>> Cgsm: ILE22u: t=5.00e+02, steps=68500, dt=7.3e-03 TS=ME |div(U)|=3.76e-03, |curl(U)|=2.55e+01, |div(U)|/|grad(U)|=2.70e-04 |grad(U)|=1.39e+01, cpu=6.79e+02(s)
+-->t=6.0000e+02 dt=7.30e-03 |div(U)|=3.76e-03 |div(U)|/|grad(U)|=2.70e-04, |grad(U)|=1.39e+01, max(u):[1.09e+03,2.28e+02,5.61e+00,]
+>>> Cgsm: ILE22u: t=6.00e+02, steps=82200, dt=7.3e-03 TS=ME |div(U)|=4.63e-03, |curl(U)|=1.22e+02, |div(U)|/|grad(U)|=7.54e-05 |grad(U)|=6.14e+01, cpu=7.99e+02(s)
+
+-->t=7.0000e+02 dt=7.30e-03 |div(U)|=4.63e-03 |div(U)|/|grad(U)|=7.54e-05, |grad(U)|=6.14e+01, max(u):[1.25e+03,2.50e+02,6.11e+00,]
+>>> Cgsm: ILE22u: t=7.00e+02, steps=95900, dt=7.3e-03 TS=ME |div(U)|=3.27e-03, |curl(U)|=1.04e+02, |div(U)|/|grad(U)|=6.19e-05 |grad(U)|=5.28e+01, cpu=9.18e+02(s)
+-->t=8.0000e+02 dt=7.30e-03 |div(U)|=3.27e-03 |div(U)|/|grad(U)|=6.19e-05, |grad(U)|=5.28e+01, max(u):[1.40e+03,2.55e+02,4.85e+00,]
+>>> Cgsm: ILE22u: t=8.00e+02, steps=109600, dt=7.3e-03 TS=ME |div(U)|=2.93e-03, |curl(U)|=5.92e+01, |div(U)|/|grad(U)|=9.73e-05 |grad(U)|=3.01e+01, cpu=1.04e+03(s)
+-->t=9.0000e+02 dt=7.30e-03 |div(U)|=2.93e-03 |div(U)|/|grad(U)|=9.73e-05, |grad(U)|=3.01e+01, max(u):[1.61e+03,3.23e+02,4.10e+00,]
+>>> Cgsm: ILE22u: t=9.00e+02, steps=123300, dt=7.3e-03 TS=ME |div(U)|=2.41e-03, |curl(U)|=1.32e+02, |div(U)|/|grad(U)|=3.60e-05 |grad(U)|=6.69e+01, cpu=1.16e+03(s)
+-->t=1.0000e+03 dt=7.30e-03 |div(U)|=2.41e-03 |div(U)|/|grad(U)|=3.60e-05, |grad(U)|=6.69e+01, max(u):[1.73e+03,3.08e+02,4.28e+00,]
+>>> Cgsm: ILE22u: t=1.00e+03, steps=137000, dt=7.3e-03 TS=ME |div(U)|=3.39e-03, |curl(U)|=4.58e+01, |div(U)|/|grad(U)|=1.45e-04 |grad(U)|=2.34e+01, cpu=1.28e+03(s)
+
+
+
+******************************************
+***** Thurs Sept 9, 2021
+
+TEST random for disk 
+
+LONG-TIME : TRACTION -looks OK except u= +C*y*t, v= -C*x*t 
+
+cgsm -noplot random.cmd -g=sicFixede8.order2 -ts=me -tf=1000 -tp=1 -cfl=0.9 -bc1=t -bc2=d -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -go=og
+
+-->t=5.0000e+01 dt=7.30e-03 |div(U)|=4.01e-03 |div(U)|/|grad(U)|=1.28e-04, |grad(U)|=3.14e+01, max(u):[1.21e+02,4.96e+01,1.92e+00,]
+>>> Cgsm: ILE22u: t=5.00e+01, steps=6850, dt=7.3e-03 TS=ME |div(U)|=5.69e-03, |curl(U)|=7.30e+01, |div(U)|/|grad(U)|=1.53e-04 |grad(U)|=3.71e+01, cpu=6.17e+01(s)
+CgSm:solve: INFO: not adjusting time-step for incompressible elasticity - not supported yet.
+-->t=1.0000e+02 dt=7.30e-03 |div(U)|=5.69e-03 |div(U)|/|grad(U)|=1.53e-04, |grad(U)|=3.71e+01, max(u):[2.26e+02,8.28e+01,9.25e-01,]
+>>> Cgsm: ILE22u: t=1.00e+02, steps=13700, dt=7.3e-03 TS=ME |div(U)|=2.22e-03, |curl(U)|=1.11e+02, |div(U)|/|grad(U)|=3.98e-05 |grad(U)|=5.57e+01, cpu=9.36e+01(s)
+-->t=2.0000e+02 dt=7.30e-03 |div(U)|=2.22e-03 |div(U)|/|grad(U)|=3.98e-05, |grad(U)|=5.57e+01, max(u):[3.77e+02,9.09e+01,6.94e-01,]
+>>> Cgsm: ILE22u: t=2.00e+02, steps=27400, dt=7.3e-03 TS=ME |div(U)|=7.13e-04, |curl(U)|=6.83e+01, |div(U)|/|grad(U)|=2.08e-05 |grad(U)|=3.43e+01, cpu=1.53e+02(s)
+-->t=3.0000e+02 dt=7.30e-03 |div(U)|=7.13e-04 |div(U)|/|grad(U)|=2.08e-05, |grad(U)|=3.43e+01, max(u):[5.39e+02,1.10e+02,3.12e-01,]
+>>> Cgsm: ILE22u: t=3.00e+02, steps=41100, dt=7.3e-03 TS=ME |div(U)|=2.82e-04, |curl(U)|=4.90e+01, |div(U)|/|grad(U)|=1.15e-05 |grad(U)|=2.46e+01, cpu=2.17e+02(s)
+-->t=4.0000e+02 dt=7.30e-03 |div(U)|=2.82e-04 |div(U)|/|grad(U)|=1.15e-05, |grad(U)|=2.46e+01, max(u):[7.29e+02,1.57e+02,1.22e-01,]
+>>> Cgsm: ILE22u: t=4.00e+02, steps=54800, dt=7.3e-03 TS=ME |div(U)|=2.98e-04, |curl(U)|=8.56e+01, |div(U)|/|grad(U)|=6.97e-06 |grad(U)|=4.28e+01, cpu=4.57e+02(s)
+-->t=5.0000e+02 dt=7.30e-03 |div(U)|=2.98e-04 |div(U)|/|grad(U)|=6.97e-06, |grad(U)|=4.28e+01, max(u):[8.64e+02,1.49e+02,7.70e-02,]
+>>> Cgsm: ILE22u: t=5.00e+02, steps=68500, dt=7.3e-03 TS=ME |div(U)|=1.37e-04, |curl(U)|=1.31e+01, |div(U)|/|grad(U)|=2.08e-05 |grad(U)|=6.57e+00, cpu=5.12e+02(s)
+-->t=6.0000e+02 dt=7.30e-03 |div(U)|=1.37e-04 |div(U)|/|grad(U)|=2.08e-05, |grad(U)|=6.57e+00, max(u):[1.06e+03,2.02e+02,8.21e-02,]
+>>> Cgsm: ILE22u: t=6.00e+02, steps=82200, dt=7.3e-03 TS=ME |div(U)|=2.75e-04, |curl(U)|=6.25e+01, |div(U)|/|grad(U)|=8.78e-06 |grad(U)|=3.13e+01, cpu=5.67e+02(s)
+-->t=7.0000e+02 dt=7.30e-03 |div(U)|=2.75e-04 |div(U)|/|grad(U)|=8.78e-06, |grad(U)|=3.13e+01, max(u):[1.23e+03,2.24e+02,5.86e-02,]
+>>> Cgsm: ILE22u: t=7.00e+02, steps=95900, dt=7.3e-03 TS=ME |div(U)|=2.26e-04, |curl(U)|=4.91e+01, |div(U)|/|grad(U)|=9.19e-06 |grad(U)|=2.46e+01, cpu=6.22e+02(s)
+-->t=8.0000e+02 dt=7.30e-03 |div(U)|=2.26e-04 |div(U)|/|grad(U)|=9.19e-06, |grad(U)|=2.46e+01, max(u):[1.38e+03,2.39e+02,3.16e-02,]
+>>> Cgsm: ILE22u: t=8.00e+02, steps=109600, dt=7.3e-03 TS=ME |div(U)|=1.23e-04, |curl(U)|=2.12e+01, |div(U)|/|grad(U)|=1.15e-05 |grad(U)|=1.06e+01, cpu=6.76e+02(s)
+-->t=9.0000e+02 dt=7.30e-03 |div(U)|=1.23e-04 |div(U)|/|grad(U)|=1.15e-05, |grad(U)|=1.06e+01, max(u):[1.57e+03,2.83e+02,1.36e-02,]
+>>> Cgsm: ILE22u: t=9.00e+02, steps=123300, dt=7.3e-03 TS=ME |div(U)|=2.07e-04, |curl(U)|=5.34e+01, |div(U)|/|grad(U)|=7.76e-06 |grad(U)|=2.67e+01, cpu=7.31e+02(s)
+-->t=1.0000e+03 dt=7.30e-03 |div(U)|=2.07e-04 |div(U)|/|grad(U)|=7.76e-06, |grad(U)|=2.67e+01, max(u):[1.72e+03,2.93e+02,1.12e-02,]
+>>> Cgsm: ILE22u: t=1.00e+03, steps=137000, dt=7.3e-03 TS=ME |div(U)|=8.55e-05, |curl(U)|=1.56e+01, |div(U)|/|grad(U)|=1.10e-05 |grad(U)|=7.78e+00, cpu=7.86e+02(s)
+
+
+
+*******************************************
+**** DATE ??
+
+
+>>>>>>>>>>>>> TEST RANDOM IC's
+
+ANNULUS: LONG TIME -- looks OK
+cgsm -noplot random -g=annulus4.order2.hdf -tf=1000 -tp=100 -upwindSOS=1 -cdv=.5 -go=og
+
+-->t=7.0000e+01 dt=6.10e-03 |div(U)|=3.91e-02 |div(U)|/|grad(U)|=3.31e-03, |grad(U)|=1.18e+01, max(u):[1.06e+00,9.29e-01,1.37e+01,]
+>>> Cgsm: ILE22u: t=7.00e+01, steps=11480, dt=6.1e-03 TS=ME |div(U)|=2.17e-02, |curl(U)|=1.42e+01, |div(U)|/|grad(U)|=2.17e-03 |grad(U)|=1.00e+01, cpu=8.09e+01(s)
+-->t=8.0000e+01 dt=6.10e-03 |div(U)|=2.17e-02 |div(U)|/|grad(U)|=2.17e-03, |grad(U)|=1.00e+01, max(u):[1.38e+00,9.10e-01,1.31e+01,]
+>>> Cgsm: ILE22u: t=8.00e+01, steps=13120, dt=6.1e-03 TS=ME |div(U)|=3.11e-02, |curl(U)|=1.24e+01, |div(U)|/|grad(U)|=3.23e-03 |grad(U)|=9.62e+00, cpu=8.79e+01(s)
+CgSm:solve: INFO: not adjusting time-step for incompressible elasticity - not supported yet.
+-->t=2.0000e+02 dt=6.10e-03 |div(U)|=3.11e-02 |div(U)|/|grad(U)|=3.23e-03, |grad(U)|=9.62e+00, max(u):[7.84e-01,5.73e-01,5.16e+00,]
+>>> Cgsm: ILE22u: t=2.00e+02, steps=32800, dt=6.1e-03 TS=ME |div(U)|=1.30e-02, |curl(U)|=5.99e+00, |div(U)|/|grad(U)|=3.07e-03 |grad(U)|=4.23e+00, cpu=1.76e+02(s)
+-->t=3.0000e+02 dt=6.10e-03 |div(U)|=1.30e-02 |div(U)|/|grad(U)|=3.07e-03, |grad(U)|=4.23e+00, max(u):[4.04e-01,4.07e-01,3.39e+00,]
+>>> Cgsm: ILE22u: t=3.00e+02, steps=49200, dt=6.1e-03 TS=ME |div(U)|=3.19e-03, |curl(U)|=3.80e+00, |div(U)|/|grad(U)|=8.39e-04 |grad(U)|=3.80e+00, cpu=2.42e+02(s)
+-->t=4.0000e+02 dt=6.10e-03 |div(U)|=3.19e-03 |div(U)|/|grad(U)|=8.39e-04, |grad(U)|=3.80e+00, max(u):[3.32e-01,3.28e-01,2.28e+00,]
+>>> Cgsm: ILE22u: t=4.00e+02, steps=65600, dt=6.1e-03 TS=ME |div(U)|=2.38e-03, |curl(U)|=3.45e+00, |div(U)|/|grad(U)|=1.04e-03 |grad(U)|=2.28e+00, cpu=3.09e+02(s)
+-->t=5.0000e+02 dt=6.10e-03 |div(U)|=2.38e-03 |div(U)|/|grad(U)|=1.04e-03, |grad(U)|=2.28e+00, max(u):[5.57e-01,5.50e-01,3.27e+00,]
+>>> Cgsm: ILE22u: t=5.00e+02, steps=82000, dt=6.1e-03 TS=ME |div(U)|=1.74e-03, |curl(U)|=4.84e+00, |div(U)|/|grad(U)|=5.23e-04 |grad(U)|=3.33e+00, cpu=3.75e+02(s)
+-->t=6.0000e+02 dt=6.10e-03 |div(U)|=1.74e-03 |div(U)|/|grad(U)|=5.23e-04, |grad(U)|=3.33e+00, max(u):[3.85e-01,4.06e-01,2.44e+00,]
+>>> Cgsm: ILE22u: t=6.00e+02, steps=98400, dt=6.1e-03 TS=ME |div(U)|=1.07e-03, |curl(U)|=3.16e+00, |div(U)|/|grad(U)|=4.75e-04 |grad(U)|=2.26e+00, cpu=4.46e+02(s)
+-->t=7.0000e+02 dt=6.10e-03 |div(U)|=1.07e-03 |div(U)|/|grad(U)|=4.75e-04, |grad(U)|=2.26e+00, max(u):[1.65e-01,1.53e-01,7.65e-01,]
+>>> Cgsm: ILE22u: t=7.00e+02, steps=114800, dt=6.1e-03 TS=ME |div(U)|=1.31e-03, |curl(U)|=1.49e+00, |div(U)|/|grad(U)|=1.11e-03 |grad(U)|=1.18e+00, cpu=5.15e+02(s)
+-->t=8.0000e+02 dt=6.10e-03 |div(U)|=1.31e-03 |div(U)|/|grad(U)|=1.11e-03, |grad(U)|=1.18e+00, max(u):[3.88e-01,3.37e-01,2.25e+00,]
+>>> Cgsm: ILE22u: t=8.00e+02, steps=131200, dt=6.1e-03 TS=ME |div(U)|=8.60e-04, |curl(U)|=2.63e+00, |div(U)|/|grad(U)|=4.41e-04 |grad(U)|=1.95e+00, cpu=5.81e+02(s)
+-->t=9.0000e+02 dt=6.10e-03 |div(U)|=8.60e-04 |div(U)|/|grad(U)|=4.41e-04, |grad(U)|=1.95e+00, max(u):[4.38e-01,3.88e-01,2.44e+00,]
+>>> Cgsm: ILE22u: t=9.00e+02, steps=147600, dt=6.1e-03 TS=ME |div(U)|=6.77e-04, |curl(U)|=3.20e+00, |div(U)|/|grad(U)|=2.96e-04 |grad(U)|=2.29e+00, cpu=6.48e+02(s)
+-->t=1.0000e+03 dt=6.10e-03 |div(U)|=6.77e-04 |div(U)|/|grad(U)|=2.96e-04, |grad(U)|=2.29e+00, max(u):[2.09e-01,1.99e-01,1.25e+00,]
+
+
+
+******************************************
+***** Wed Sept 1, 2021
+
+
+TEST RANDOM IC's
+
+Long run .. look OK, divergence is decaying 
+cgsm -noplot random -g=case1ChannelGride4np.order2 -tf=1000 -tp=.1 -upwindSOS=1 -cdv=.5 -go=og
+
+-->t=9.0000e+02 dt=6.67e-03 |div(U)|=3.95e-03 |div(U)|/|grad(U)|=1.42e-03, |grad(U)|=2.78e+00, max(u):[5.64e-01,5.58e-01,2.16e+00,]
+>>> Cgsm: ILE22u: t=9.00e+02, steps=135000, dt=6.7e-03 TS=ME |div(U)|=2.69e-03, |curl(U)|=5.21e+00, |div(U)|/|grad(U)|=9.61e-04 |grad(U)|=2.80e+00, cpu=4.12e+02(s)
+-->t=1.0000e+03 dt=6.67e-03 |div(U)|=2.69e-03 |div(U)|/|grad(U)|=9.61e-04, |grad(U)|=2.80e+00, max(u):[4.44e-01,4.99e-01,2.06e+00,]
+
+
+
+DIV-DAMPING FIXED
+
+TRY THIS GRID -- three grids across the strip to test interp points near the boundary
+ogen -noplot channelGrid -prefix=case1ChannelGrid -xa=0 -xb=1 -ya=0 -yb=1.2710078982637464465 -periodic=np -order=2 -factor=4
+
+Long run ... OK till t=1000
+cgsm -noplot surfaceWave -g=case1ChannelGride4np.order2 -tf=1000 -tp=.1 -upwindSOS=1 -cdv=.5 -go=og
+
+>>> Cgsm: ILE22u: t=7.00e+02, steps=105000, dt=6.7e-03 TS=ME |div(U)|=9.27e-04, |curl(U)|=1.37e+00, |div(U)|/|grad(U)|=1.17e-03 |grad(U)|=7.93e-01, cpu=3.01e+02(s)
+-->t=8.0000e+02 dt=6.7e-03 maxNorm errors:[5.7199e-01,2.4906e-01,2.4611e+00,], maxNorm(u):[1.38e-01,6.01e-02,5.93e-01,]
+>>> Cgsm: ILE22u: t=8.00e+02, steps=120000, dt=6.7e-03 TS=ME |div(U)|=7.97e-04, |curl(U)|=1.18e+00, |div(U)|/|grad(U)|=1.17e-03 |grad(U)|=6.82e-01, cpu=3.34e+02(s)
+-->t=9.0000e+02 dt=6.7e-03 maxNorm errors:[5.7275e-01,2.4944e-01,2.4646e+00,], maxNorm(u):[1.19e-01,5.17e-02,5.10e-01,]
+>>> Cgsm: ILE22u: t=9.00e+02, steps=135000, dt=6.7e-03 TS=ME |div(U)|=6.85e-04, |curl(U)|=1.02e+00, |div(U)|/|grad(U)|=1.17e-03 |grad(U)|=5.86e-01, cpu=3.66e+02(s)
+-->t=1.0000e+03 dt=6.7e-03 maxNorm errors:[5.6523e-01,2.4611e-01,2.4323e+00,], maxNorm(u):[1.02e-01,4.44e-02,4.38e-01,]
+>>> Cgsm: ILE22u: t=1.00e+03, steps=150000, dt=6.7e-03 TS=ME |div(U)|=5.88e-04, |curl(U)|=8.73e-01, |div(U)|/|grad(U)|=1.17e-03 |grad(U)|=5.04e-01, cpu=3.98e+02(s)
+
+
+
+
+cgsm -noplot surfaceWave -g=case1Grid4np.order2.hdf -tf=1000 -tp=.1 -upwindSOS=1 -cdv=.5 -go=og
+
+
+

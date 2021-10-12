@@ -194,8 +194,7 @@ coeff(m,i1,i2,i3)=0.
 //   See cg/ins/src/insImp.h     : for fortran version macros
 //       cg/ins/src/insImpINS.bf : for examples
 // ====================================================================================================
-int
-champBoundaryConditions( realCompositeGridFunction & coeffcg, Parameters & parameters, Real dt )
+int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Parameters & parameters, Real dt )
 {
 
   int debug = 0; 
@@ -340,7 +339,21 @@ champBoundaryConditions( realCompositeGridFunction & coeffcg, Parameters & param
 
 
         // --- get the champ parameters and store in the array champParameters ---
-        getChampParameters( grid, side, axis, dt, dxs, parameters, champParameters );
+        if( multiDomainProblem )
+        {
+          getChampParameters( grid, side, axis, dt, dxs, parameters, champParameters );
+        }
+        else
+        {
+          // single domain problem : we must be tesing the CHAMP conditions
+
+          Real pl=1., pr=.1, theta=.5, beta=2.; 
+
+          champParameters(0,side,axis,grid)=pl;     // optimized Scwartz Parameter for side 1 : Sl = pl/dx
+          champParameters(1,side,axis,grid)=pr;     // optimized Scwartz Parameter for side 2 : Sr = pr/dx 
+          champParameters(2,side,axis,grid)=theta;  // K1/K2
+          champParameters(3,side,axis,grid)=beta;   // D1/D2                 
+        }
 
         const Real pl    = champParameters(0,side,axis,grid);    // optimized Scwartz Parameter for side 1
         const Real pr    = champParameters(1,side,axis,grid);    // optimized Scwartz Parameter for side 2
@@ -416,6 +429,11 @@ champBoundaryConditions( realCompositeGridFunction & coeffcg, Parameters & param
                                        + a1*( normal(i1,i2,i3,0)*xCoeff(m,i1,i2,i3) + normal(i1,i2,i3,1)*yCoeff(m,i1,i2,i3) )
                                         +a2*xxCoeff(m,i1,i2,i3) + a3*yyCoeff(m,i1,i2,i3); 
 
+                if( multiDomainProblem==0 )
+                { // debug info 
+                  printF("champBC: (i1,i2,i3)=(%d,%d,%d) (m1,m2,m3)=(%d,%d,%d) coeff = %e\n",i1,i2,i3,m1,m2,m3,coeff(mm,i1m,i2m,i3m));
+                }                                        
+
                 // coeff(mm,i1m,i2m,i3m) = 100; // **TEST ****
 
                 // Specify that the above coeff value is the coefficient of component c at the grid point (j1,j2,j3).
@@ -433,15 +451,26 @@ champBoundaryConditions( realCompositeGridFunction & coeffcg, Parameters & param
 
           // ******* WE NEED THE METRICS FROM THE OPPOSITE SIDE *******
 
-          // --- DO THIS FOR NOW: GET THE SOLVER FOR THE OPPOSITE SIDE --- 
-          bool sameSide=false; 
-          GridFaceDescriptor & gfd = getInterfaceGridFaceDescriptor( grid, side, axis, parameters, sameSide );
-          const int domain2 = gfd.domain, grid2 = gfd.grid, side2=gfd.side, axis2=gfd.axis; 
-          // Here is the Cgmp object:
-          DomainSolver *pCgmp = parameters.dbase.get<DomainSolver*>("multiDomainSolver");
-          assert( pCgmp->domainSolver[domain2]!=NULL );
-          // Here is the solver in the other side: 
-          DomainSolver & solver2 = *(pCgmp->domainSolver[domain2]);
+
+          // For testing the solver on the opposite side is just the the same
+          DomainSolver *pSolver2 = this;
+          int domain2 = 0, grid2 = grid, side2=side, axis2=axis; 
+  
+          if( multiDomainProblem )
+          {
+           // --- GET THE SOLVER FOR THE OPPOSITE SIDE --- 
+            bool sameSide=false; 
+            GridFaceDescriptor & gfd = getInterfaceGridFaceDescriptor( grid, side, axis, parameters, sameSide );
+            domain2 = gfd.domain, grid2 = gfd.grid, side2=gfd.side, axis2=gfd.axis; 
+            // Here is the Cgmp object:
+            DomainSolver *pCgmp = parameters.dbase.get<DomainSolver*>("multiDomainSolver");
+            assert( pCgmp->domainSolver[domain2]!=NULL );
+            // Here is the solver in the other side: 
+            // DomainSolver & solver2 = *(pCgmp->domainSolver[domain2]);
+            pSolver2 = pCgmp->domainSolver[domain2]; 
+
+          }
+          DomainSolver & solver2 = *pSolver2;
 
           const int current2 = solver2.current;   // index of grid function that holds the current solution 
           printF("FILL CHAMP MATRIX: OPPOSITE SIDE: domain2=%d, grid2=%i, side2=%i, axis2=%i className=%s, name=%s current2=%d\n",
@@ -525,17 +554,34 @@ champBoundaryConditions( realCompositeGridFunction & coeffcg, Parameters & param
           Real Sl = -1.; // Set below, first time through the loops 
 
           // --- For twilightzone we save some coefficients ----
-          sameSide=true; 
-          GridFaceDescriptor & myGFD = getInterfaceGridFaceDescriptor( grid, side, axis, parameters, sameSide );
-          if( twilightZoneFlow )
+          printF("Save some coefficients for TZ\n");
+
+          realArray *ccPointer= & NCoeff; // not used by default
+          if( multiDomainProblem )
           {
-            if( !myGFD.dbase.has_key("ccChamp") )
-              myGFD.dbase.put<RealArray>("ccChamp");
-            RealArray & cc = myGFD.dbase.get<RealArray>("ccChamp");
-            cc.redim(Ib1,Ib2,Ib3,6); 
-            cc=0.;           
+            if( twilightZoneFlow )
+            {
+              bool sameSide=true; 
+              GridFaceDescriptor & myGFD = getInterfaceGridFaceDescriptor( grid, side, axis, parameters, sameSide );
+              if( !myGFD.dbase.has_key("ccChamp") )
+                myGFD.dbase.put<RealArray>("ccChamp");
+              RealArray & cc = myGFD.dbase.get<RealArray>("ccChamp");
+              cc.redim(Ib1,Ib2,Ib3,6); 
+              cc=0.;           
+              ccPointer = &cc; 
+            }
           }
-          RealArray & cc = twilightZoneFlow ? myGFD.dbase.get<RealArray>("ccChamp") : NCoeff;
+          else
+          { // single domain testing case 
+            if( twilightZoneFlow )
+            {
+              RealArray & ccChamp = parameters.dbase.put<RealArray>("ccChamp");
+              ccChamp.redim(Ib1,Ib2,Ib3,6); 
+              ccPointer = &ccChamp;
+            }
+          }
+          // RealArray & cc = twilightZoneFlow ? myGFD.dbase.get<RealArray>("ccChamp") : NCoeff;
+          RealArray & cc = *ccPointer;
 
           
 
@@ -625,6 +671,11 @@ champBoundaryConditions( realCompositeGridFunction & coeffcg, Parameters & param
 
                 // Matrix for the Champ condition: 
                 coeff(mm,i1m,i2m,i3m) =  a0*idCoeff(m,i1,i2,i3) + a1*NCoeff(mm) + a2*LCoeff(mm); 
+
+                if( multiDomainProblem==0 )
+                { // debug info 
+                  printF("champBC: (i1,i2,i3)=(%d,%d,%d) (m1,m2,m3)=(%d,%d,%d) coeff = %e\n",i1,i2,i3,m1,m2,m3,coeff(mm,i1m,i2m,i3m));
+                }
 
                 // Specify that the above coeff value is the coefficient of component c at the grid point (j1,j2,j3).
                 const int k1=i1+m1, k2=i2+m2, k3=i3+m3;   // the stencil is centred on the boundary pt (i1,i2,i3)
@@ -756,7 +807,13 @@ champBoundaryConditions( realCompositeGridFunction & coeffcg, Parameters & param
 
           }
 
-          // OV_ABORT("STOP HER FOR NOW");
+          
+
+        } // end curvlinear grid
+
+        if( !multiDomainProblem )
+        {
+          OV_ABORT("chmapBoundaryConditions: TESTING ON SINGLE DOMAIN -- STOP HERE FOR NOW");
 
         }
 

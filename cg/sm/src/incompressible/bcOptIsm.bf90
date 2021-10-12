@@ -1,0 +1,4283 @@
+! *******************************************************************************
+!   Solid Mechanics boundary conditions
+!       INCOMPRESSIBLE ELASTICITY
+! *******************************************************************************
+
+! These next include files will define the macros that will define the difference approximations
+! The actual macro is called below
+#Include "defineDiffNewerOrder2f.h"
+#Include "defineDiffNewerOrder4f.h"
+
+
+
+#beginMacro OGF2D(i1,i2,i3,t,u0,v0)
+ call ogf2d(ep,xy(i1,i2,i3,0),xy(i1,i2,i3,1),t,u0,v0)
+#endMacro
+
+#beginMacro OGF3D(i1,i2,i3,t,u0,v0,w0)
+ call ogf3d(ep,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u0,v0,w0)
+#endMacro
+
+#beginMacro OGDERIV2D(ntd,nxd,nyd,nzd,i1,i2,i3,t,ux,vx)
+  call ogDeriv2(ep, ntd,nxd,nyd,nzd, xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t, u1c,ux, u2c,vx)
+#endMacro
+
+#beginMacro OGDERIV3D(ntd,nxd,nyd,nzd,i1,i2,i3,t,ux,vx,wx)
+  call ogDeriv3(ep, ntd,nxd,nyd,nzd, xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, u1c,ux, u2c,vx, u3c,wx)
+#endMacro
+
+
+#beginMacro beginLoops(n1a,n1b,n2a,n2b,n3a,n3b,na,nb)
+do i3=n3a,n3b
+do i2=n2a,n2b
+do i1=n1a,n1b
+do n=na,nb
+  ! write(*,'(" periodic i1,i2,i3,n=",4i4)') i1,i2,i3,n
+#endMacro
+
+#beginMacro endLoops()
+end do
+end do
+end do
+end do
+#endMacro
+
+
+#beginMacro beginLoops2d()
+ i3=n3a
+ do i2=n2a,n2b
+ do i1=n1a,n1b
+#endMacro
+#beginMacro endLoops2d()
+ end do
+ end do
+#endMacro
+
+#beginMacro beginLoopsMask2d()
+ i3=n3a
+ do i2=n2a,n2b
+ do i1=n1a,n1b
+ if( mask(i1,i2,i3).gt.0 )then
+#endMacro
+#beginMacro endLoopsMask2d()
+ end if
+ end do
+ end do
+#endMacro
+
+#beginMacro beginGhostLoops2d()
+ i3=n3a
+ do i2=nn2a,nn2b
+ do i1=nn1a,nn1b
+#endMacro
+
+#beginMacro beginLoops3d()
+ do i3=n3a,n3b
+ do i2=n2a,n2b
+ do i1=n1a,n1b
+#endMacro
+
+#beginMacro endLoops3d()
+ end do
+ end do
+ end do
+#endMacro
+
+#beginMacro beginLoopsMask3d()
+ do i3=n3a,n3b
+ do i2=n2a,n2b
+ do i1=n1a,n1b
+ if( mask(i1,i2,i3).gt.0 )then
+#endMacro
+
+#beginMacro endLoopsMask3d()
+ end if
+ end do
+ end do
+ end do
+#endMacro
+
+#beginMacro beginGhostLoops3d()
+ do i3=nn3a,nn3b
+ do i2=nn2a,nn2b
+ do i1=nn1a,nn1b
+#endMacro
+
+
+#defineMacro extrap2(uu,k1,k2,k3,kc,ks1,ks2,ks3) \
+            (2.*uu(k1,k2,k3,kc)-uu(k1+ks1,k2+ks2,k3+ks3,kc))
+
+#defineMacro extrap3(uu,k1,k2,k3,kc,ks1,ks2,ks3) \
+            (3.*uu(k1,k2,k3,kc)-3.*uu(k1+ks1,k2+ks2,k3+ks3,kc)\
+            +   uu(k1+2*ks1,k2+2*ks2,k3+2*ks3,kc))
+
+#defineMacro extrap4(uu,k1,k2,k3,kc,ks1,ks2,ks3) \
+            (4.*uu(k1,k2,k3,kc)-6.*uu(k1+ks1,k2+ks2,k3+ks3,kc)\
+            +4.*uu(k1+2*ks1,k2+2*ks2,k3+2*ks3,kc)-uu(k1+3*ks1,k2+3*ks2,k3+3*ks3,kc))
+
+#defineMacro extrap5(uu,k1,k2,k3,kc,ks1,ks2,ks3) \
+            (5.*uu(k1,k2,k3,kc)-10.*uu(k1+ks1,k2+ks2,k3+ks3,kc)\
+            +10.*uu(k1+2*ks1,k2+2*ks2,k3+2*ks3,kc)-5.*uu(k1+3*ks1,k2+3*ks2,k3+3*ks3,kc)\
+            +uu(k1+4*ks1,k2+4*ks2,k3+4*ks3,kc))
+
+
+
+
+
+
+! *************************************************************************************
+!  Macro : adjust the gridIndexRange  to account for adjacent sides
+!    Precedence at corners:
+!       displacement over traction
+!       dirichlet over traction
+!  
+!              |   |   |
+!              |------------
+!  bc=traction |   |   |
+!              |-----------
+!              |   |   |
+!              X------------
+!                     bc=displacement
+!     X = this point removed from boundary loops for bc=traction since
+!         extended boundaries are set on displacement BC's 
+!
+!              |   |   |
+!              |------------
+!  bc=displace |   |   |
+!              |-----------
+!              |   |   |
+!              X------------
+!                     bc=displacement
+!     X = this point removed from boundary loops for bc=displacement since extended
+!         boundaries are set on displacement BC's
+! **************************************************************************************
+#beginMacro getAdjustedGridIndexRange( side,axis )
+  do leftRight=0,1
+    do dir=0,2
+      gid(leftRight,dir) = gridIndexRange(leftRight,dir)
+    end do
+  end do
+
+
+  bcSide = boundaryCondition(side,axis)
+  if( bcSide.eq.tractionBC .or. \
+      bcSide.eq.displacementBC )then
+    ! adjust gridIndexRange at ends of the boundary 
+    !  Note: traction-traction corner assigns the extended ghost on the boundary
+    do dir=1,nd-1
+      axisp = mod(axis+dir,nd)  ! tangential direction
+      do leftRight=0,1
+        bcAdjacent = boundaryCondition(leftRight,axisp)
+        adjustEnds=.false.
+        if( bcSide.eq.displacementBC .and. ( bcAdjacent.eq.displacementBC .or. bcAdjacent.eq.dirichletBoundaryCondition ) )then
+          ! extended boundary has been set, no need to fill ghost on ends
+          adjustEnds=.true.
+        end if 
+        if( bcSide.eq.tractionBC .and. ( bcAdjacent.eq.displacementBC .or. bcAdjacent.eq.dirichletBoundaryCondition ) )then  
+          ! extended boundary has been set, no need to fill ghost on ends
+          adjustEnds=.true.
+        end if
+        ! if( boundaryCondition(leftRight,axisp)==dirichletBoundaryCondition .or. \
+        !     boundaryCondition(leftRight,axisp)==displacementBC             .or. \
+        !     boundaryCondition(leftRight,axisp)==tractionBC      )then
+        if( adjustEnds )then
+          ! shift to avoid the corner
+          gid(leftRight,axisp) = gid(leftRight,axisp) + (1-2*leftRight)
+        end if
+      end do
+    end do
+  end if
+#endMacro
+
+
+! ************************************************************************************************
+!  This macro is used for looping over the faces of a grid to assign booundary conditions
+!
+! extra: extra points to assign
+!          Case 1: extra=numberOfGhostPoints -- for assigning extended boundaries
+!          Case 2: extra=-1 -- for assigning ghost points but not including extended boundaries
+! numberOfGhostPoints : number of ghost points (1 for 2nd order, 2 for fourth-order ...)
+!
+!
+! Output:
+!  n1a,n1b,n2a,n2b,n3a,n3b : from gridIndexRange
+!  nn1a,nn1b,nn2a,nn2b,nn3a,nn3b : includes "extra" points
+!  OPTION : none, or adjustAtCorners : adjust bounds for adjacent boundaries
+! 
+! ***********************************************************************************************
+#beginMacro beginLoopOverSides(extra,numberOfGhostPoints,OPTION)
+ extra1a=extra
+ extra1b=extra
+ extra2a=extra
+ extra2b=extra
+ if( nd.eq.3 )then
+   extra3a=extra
+   extra3b=extra
+ else
+   extra3a=0
+   extra3b=0
+ end if
+ if( boundaryCondition(0,0).lt.0 )then
+   extra1a=max(0,extra1a) ! over-ride extra=-1 : assign ends in periodic directions (or internal parallel boundaries)
+ else if( boundaryCondition(0,0).eq.0 )then
+   extra1a=numberOfGhostPoints  ! include interpolation points since we assign ghost points outside these
+ end if
+ ! **NOTE** the bc on the right may be negative even it is not on the left (for parallel)
+ if( boundaryCondition(1,0).lt.0 )then
+   extra1b=max(0,extra1b) ! over-ride extra=-1 : assign ends in periodic directions
+ else if( boundaryCondition(1,0).eq.0 )then
+   extra1b=numberOfGhostPoints
+ end if
+
+ if( boundaryCondition(0,1).lt.0 )then
+   extra2a=max(0,extra2a) ! over-ride extra=-1 : assign ends in periodic directions (or internal parallel boundaries)
+ else if( boundaryCondition(0,1).eq.0 )then
+   extra2a=numberOfGhostPoints  ! include interpolation points since we assign ghost points outside these
+ end if
+ ! **NOTE** the bc on the right may be negative even it is not on the left (for parallel)
+ if( boundaryCondition(1,1).lt.0 )then
+   extra2b=max(0,extra2b) ! over-ride extra=-1 : assign ends in periodic directions
+ else if( boundaryCondition(1,1).eq.0 )then
+   extra2b=numberOfGhostPoints
+ end if
+
+ if(  nd.eq.3 )then
+  if( boundaryCondition(0,2).lt.0 )then
+    extra3a=max(0,extra3a) ! over-ride extra=-1 : assign ends in periodic directions (or internal parallel boundaries)
+  else if( boundaryCondition(0,2).eq.0 )then
+    extra3a=numberOfGhostPoints  ! include interpolation points since we assign ghost points outside these
+  end if
+  ! **NOTE** the bc on the right may be negative even it is not on the left (for parallel)
+  if( boundaryCondition(1,2).lt.0 )then
+    extra3b=max(0,extra3b) ! over-ride extra=-1 : assign ends in periodic directions
+  else if( boundaryCondition(1,2).eq.0 )then
+    extra3b=numberOfGhostPoints
+  end if
+ end if
+
+ do axis=0,nd-1
+ do side=0,1
+
+   if( boundaryCondition(side,axis).gt.0 )then
+
+     ! write(*,'(" bcOpt: side,axis,bc=",3i2)') side,axis,boundaryCondition(side,axis)
+     ! get gid(0;1,0:2) -- adjusted for priority at corners
+     #If #OPTION eq "adjustAtCorners"
+       getAdjustedGridIndexRange( side,axis )
+     #Elif #OPTION eq "none"
+      do leftRight=0,1
+        do dir=0,2
+          gid(leftRight,dir) = gridIndexRange(leftRight,dir)
+        end do
+      end do       
+     #Else
+      stop 9999
+     #End
+     axisp1=mod(axis+1,nd)
+     axisp2=mod(axis+2,nd)
+     
+     i3=n3a
+
+     n1a=gid(0,0)
+     n1b=gid(1,0)
+     n2a=gid(0,1)
+     n2b=gid(1,1)
+     n3a=gid(0,2)
+     n3b=gid(1,2)
+     if( axis.eq.0 )then
+       n1a=gid(side,axis)
+       n1b=gid(side,axis)
+     else if( axis.eq.1 )then
+       n2a=gid(side,axis)
+       n2b=gid(side,axis)
+     else
+       n3a=gid(side,axis)
+       n3b=gid(side,axis)
+     end if
+
+     ! if( boundaryCondition(side,axis)==tractionBC )then
+     !   if( boundaryCondition(axisp1,0)==dirichletBoundaryCondition )then
+     !     n2a = n2a+1; ! skip boundary
+     !   end if
+     !   if( boundaryCondition(axisp1,1)==dirichletBoundaryCondition )then
+     !     n2b = n2b-1; ! skip boundary
+     !   end if 
+     ! end if
+
+     nn1a=gid(0,0)-extra1a
+     nn1b=gid(1,0)+extra1b
+     nn2a=gid(0,1)-extra2a
+     nn2b=gid(1,1)+extra2b
+     nn3a=gid(0,2)-extra3a
+     nn3b=gid(1,2)+extra3b
+     if( axis.eq.0 )then
+       nn1a=gid(side,axis)
+       nn1b=gid(side,axis)
+     else if( axis.eq.1 )then
+       nn2a=gid(side,axis)
+       nn2b=gid(side,axis)
+     else
+       nn3a=gid(side,axis)
+       nn3b=gid(side,axis)
+     end if
+
+     is=1-2*side
+
+     is1=0
+     is2=0
+     is3=0
+     if( axis.eq.0 )then
+       is1=1-2*side
+     else if( axis.eq.1 )then
+       is2=1-2*side
+     else if( axis.eq.2 )then
+       is3=1-2*side
+     else
+       stop 5
+     end if
+     
+
+     if( debug.gt.7 )then
+       write(*,'(" bcOpt: grid,side,axis=",3i3,",loop bounds: n1a,n1b,n2a,n2b,n3a,n3b=",6i3)') grid,side,axis,n1a,n1b,n2a,n2b,n3a,n3b
+       write(*,'("                                                       gridIndexRange=",6i3)') ((gridIndexRange(m,dir),m=0,1),dir=0,nd-1)
+       write(*,'("                                                                  gid=",6i3)') ((gid(m,dir),m=0,1),dir=0,nd-1)
+
+     end if
+   end if ! if bc>0 
+
+   ! On interfaces we should use the bcf array values even for TZ since then
+   ! we get a coupling at the interface: 
+   !   bcf = n.sigma(fluid) + [ n.sigma_e(solid) - n.sigma_e(fluid) ]
+   if( interfaceType(side,axis,grid).eq.noInterface )then
+     assignTwilightZone=twilightZone
+   else
+     assignTwilightZone=0  ! this will turn off the use of TZ
+   end if
+
+#endMacro
+
+#beginMacro endLoopOverSides()
+ end do ! end side
+ end do ! end axis
+#endMacro
+
+
+#beginMacro getNormal2d(i1,i2,i3,axis)
+ an1 = rsxy(i1,i2,i3,axis,0)
+ an2 = rsxy(i1,i2,i3,axis,1)
+ aNormi = -is/max(epsx,sqrt(an1**2 + an2**2))
+ an1=an1*aNormi
+ an2=an2*aNormi
+#endMacro
+
+#beginMacro getNormal3d(i1,i2,i3,axis)
+ an1 = rsxy(i1,i2,i3,axis,0)
+ an2 = rsxy(i1,i2,i3,axis,1)
+ an3 = rsxy(i1,i2,i3,axis,2)
+ aNormi = -is/max(epsx,sqrt(an1**2 + an2**2+ an3**2))
+ an1=an1*aNormi
+ an2=an2*aNormi
+ an3=an3*aNormi
+#endMacro
+
+
+
+
+! ----------------------------------------------------------------------------------
+!  Macro:
+!    --- perturb a ghost point --- 
+! Ordering of ghost points:
+!    Order=2:
+!       u1(-1), u2(-1),          : 2D 
+!       u1(-1), u2(-1), u3(-1)   : 3D 
+!    Order=4:
+!       u1(-1), u2(-1),         u1(-2), u2(-2)           : 2D 
+!       u1(-1), u2(-1), u3(-1), u1(-2), u2(-2), u3(-2)   : 3D 
+! ----------------------------------------------------------------------------------
+#beginMacro perturbComponent(n2,delta)
+  if( orderOfAccuracy==2 )then
+    u(i1-is1,i2-is2,i3-is3,u1c+n2   )=u(i1-is1,i2-is2,i3-is3,u1c+n2)+(delta)
+  elseif( orderOfAccuracy==4 )then
+    if( n2.lt.nd )then
+      u(i1-  is1,i2-  is2,i3-  is3,u1c+n2   )=u(i1-  is1,i2-  is2,i3-  is3,u1c+n2   )+(delta)
+    else
+      u(i1-2*is1,i2-2*is2,i3-2*is3,u1c+n2-nd)=u(i1-2*is1,i2-2*is2,i3-2*is3,u1c+n2-nd)+(delta)
+    end if
+  else
+    write(*,*) "Unimplemented orderOfAccuracy=", orderOfAccuracy
+    stop 6363
+  end if
+
+#endMacro
+
+
+
+! ----------------------------------------------------------------------------------
+!  Macro:
+!    --- eval matrix coefficients by delta function approach ----
+! Input:
+!   am : matrix of coefficients is stored here 
+!   evalEquations : macro that evaluates the residual of the boundary conditions
+!                   and saves the residual in f(0:*)
+! ----------------------------------------------------------------------------------
+#beginMacro evalCoefficients(i1,i2,i3, numberOfEquations,am,evalEquations )
+
+  ! hw1 = half stencil width
+  hw1=orderOfAccuracy/2
+  hw2=hw1
+  if( nd.eq.2 )then
+    hw3=0
+  else
+    hw3=hw1
+  end if
+
+  !  write(*,'("EVAL-COEFF: i1,i2,i3=",3i3," hw1,hw2,hw3=",3i2)') i1,i2,i3,hw1,hw2,hw3
+
+  ! First eval equartions with no pertutbation --> save in f0 
+  evalEquations()
+  do n1=0,numberOfEquations-1
+   f0(n1)=f(n1)
+  end do
+
+  delta=1.  ! perturb E by this amount 
+  do n2=0,numberOfEquations-1
+
+    ! pertub one component: 
+    perturbComponent(n2,delta)
+
+    evalEquations()
+    
+    ! compute the difference
+    do n1=0,numberOfEquations-1
+     f(n1)=f(n1)-f0(n1)
+     am(n1,n2) = f(n1)
+    end do
+
+    ! reset pertubation
+    perturbComponent(n2,-delta)
+
+  end do 
+
+  ! restore 
+  evalEquations()
+
+#endMacro
+
+! ----------------------------------------------------------------------------------
+!  Macro:
+!    --- perturb the solution for the discrete delta approach --- 
+!
+! ----------------------------------------------------------------------------------
+#beginMacro perturbSolution(n2,delta)
+
+  u(i1+shift1(n2),i2+shift2(n2),i3+shift3(n2),comp(n2))=u(i1+shift1(n2),i2+shift2(n2),i3+shift3(n2),comp(n2))+(delta)
+
+#endMacro
+
+
+
+! ----------------------------------------------------------------------------------
+!  Macro:
+!    --- eval matrix coefficients by delta function approach ----
+! Input:
+!   am : matrix of coefficients is stored here 
+!   evalEquations : macro that evaluates the residual of the boundary conditions
+!                   and saves the residual in f(0:*)
+! ----------------------------------------------------------------------------------
+#beginMacro evalMatrixCoefficients(i1,i2,i3, numberOfEquations,am,evalEquations )
+
+  ! ! hw1 = half stencil width
+  ! hw1=orderOfAccuracy/2
+  ! hw2=hw1
+  ! if( nd.eq.2 )then
+  !   hw3=0
+  ! else
+  !   hw3=hw1
+  ! end if
+
+  !  write(*,'("EVAL-COEFF: i1,i2,i3=",3i3," hw1,hw2,hw3=",3i2)') i1,i2,i3,hw1,hw2,hw3
+
+  ! First eval equartions with no pertutbation --> save in f0 
+  evalEquations()
+  do n1=0,numberOfEquations-1
+   f0(n1)=f(n1)
+  end do
+
+  delta=1.  ! perturb E by this amount 
+  do n2=0,numberOfEquations-1
+
+    ! pertub one component: 
+    perturbSolution(n2,delta)
+
+    evalEquations()
+    
+    ! compute the difference
+    do n1=0,numberOfEquations-1
+      f(n1)=f(n1)-f0(n1)
+      am(n1,n2) = f(n1)
+    end do
+
+    ! reset pertubation
+    perturbSolution(n2,-delta)
+
+  end do 
+
+  ! restore f -- not needed here
+  ! evalEquations()
+
+#endMacro
+
+
+
+! ==========================================================================
+! Apply a stress free BC -- rectangular and 2d
+! 
+! FORCING equals noForcing or forcing
+! ==========================================================================
+#beginMacro tractionBCRectangular3dMacro(FORCING)
+alpha=lambda/(lambda+2.*mu)
+beta=1./(lambda+2.*mu)
+if( axis.eq.0 )then
+  ! u.x = -alpha*(v.y+w.z)
+  ! v.x = -u.y  
+  ! w.x = -u.z
+ beginLoopsMask3d()
+  vy=uy23r(i1,i2,i3,u2c)
+  wz=uz23r(i1,i2,i3,u3c)
+  uy=uy23r(i1,i2,i3,u1c)
+  uz=uz23r(i1,i2,i3,u1c)
+  #If #FORCING eq "forcing" 
+   if( assignTwilightZone.eq.0 )then
+    u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)+dx(0)*2.*(\
+                          is1*alpha*(vy+wz)+ beta*bcf(side,axis,i1,i2,i3,u1c) )
+    u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)+dx(0)*2.*(\
+                          is1*uy+         (1./mu)*bcf(side,axis,i1,i2,i3,u2c) )
+    u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)+dx(0)*2.*(\
+                          is1*uz+         (1./mu)*bcf(side,axis,i1,i2,i3,u3c) )
+   else
+    OGDERIV3D(0,1,0,0,i1,i2,i3,t,ux0,vx0,wx0)
+    OGDERIV3D(0,0,1,0,i1,i2,i3,t,uy0,vy0,wy0)
+    OGDERIV3D(0,0,0,1,i1,i2,i3,t,uz0,vz0,wz0)
+    u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)-is1*dx(0)*2.*(-alpha*(vy+wz)+ux0+alpha*(vy0+wz0))
+    u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)-is1*dx(0)*2.*(-uy           +vx0+uy0)
+    u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)-is1*dx(0)*2.*(-uz           +wx0+uz0)
+   end if
+  #Else
+   u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)-is1*dx(0)*2.*(-alpha*(vy+wz))
+   u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)-is1*dx(0)*2.*(-uy)
+   u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)-is1*dx(0)*2.*(-uz)
+  #End
+
+ endLoopsMask3d()
+
+else if( axis.eq.1 )then
+! u.y = - v.x
+! v.y = -alpha*(u.x+w.z)
+! w.y = - v.z
+ beginLoopsMask3d()
+  vx=ux23r(i1,i2,i3,u2c)
+  ux=ux23r(i1,i2,i3,u1c)
+  wz=uz23r(i1,i2,i3,u3c)
+  vz=uz23r(i1,i2,i3,u2c)
+  #If #FORCING eq "forcing" 
+   if( assignTwilightZone.eq.0 )then
+    u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)+dx(1)*2.*(\
+                          is2*vx +         (1./mu)*bcf(side,axis,i1,i2,i3,u1c))
+    u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)+dx(1)*2.*(\
+                          is2*alpha*(ux+wz) + beta*bcf(side,axis,i1,i2,i3,u2c))
+    u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)+dx(1)*2.*(\
+                          is2*vz +         (1./mu)*bcf(side,axis,i1,i2,i3,u3c) )
+   else
+    OGDERIV3D(0,1,0,0,i1,i2,i3,t,ux0,vx0,wx0)
+    OGDERIV3D(0,0,1,0,i1,i2,i3,t,uy0,vy0,wy0)
+    OGDERIV3D(0,0,0,1,i1,i2,i3,t,uz0,vz0,wz0)
+    u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)-is2*dx(1)*2.*(-vx            +uy0+vx0)
+    u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)-is2*dx(1)*2.*(-alpha*(ux+wz) +vy0+alpha*(ux0+wz0))
+    u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)-is2*dx(1)*2.*(-vz            +wy0+vz0)
+   end if
+  #Else
+   u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)-is2*dx(1)*2.*(-vx)
+   u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)-is2*dx(1)*2.*(-alpha*(ux+wz))
+   u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)-is2*dx(1)*2.*(-vz)
+  #End
+ endLoopsMask3d()
+
+else 
+
+! u.z = - w.x
+! v.z = - w.y
+! w.z = -alpha*(u.x+v.y)
+ beginLoopsMask3d()
+  wx=ux23r(i1,i2,i3,u3c)
+  wy=uy23r(i1,i2,i3,u3c)
+  ux=ux23r(i1,i2,i3,u1c)
+  vy=uy23r(i1,i2,i3,u2c)
+  #If #FORCING eq "forcing" 
+   if( assignTwilightZone.eq.0 )then
+    u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)+dx(2)*2.*( \
+                          is3*wx +         (1./mu)*bcf(side,axis,i1,i2,i3,u1c))
+    u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)+dx(2)*2.*( \
+                          is3*wy +         (1./mu)*bcf(side,axis,i1,i2,i3,u2c))
+    u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)+dx(2)*2.*(\
+                          is3*alpha*(ux+vy) + beta*bcf(side,axis,i1,i2,i3,u3c))
+   else
+    OGDERIV3D(0,1,0,0,i1,i2,i3,t,ux0,vx0,wx0)
+    OGDERIV3D(0,0,1,0,i1,i2,i3,t,uy0,vy0,wy0)
+    OGDERIV3D(0,0,0,1,i1,i2,i3,t,uz0,vz0,wz0)
+    u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)-is3*dx(2)*2.*(-wx            +uz0+wx0)
+    u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)-is3*dx(2)*2.*(-wy            +vz0+wy0)
+    u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)-is3*dx(2)*2.*(-alpha*(ux+vy) +wz0+alpha*(ux0+vy0))
+   end if
+  #Else
+   u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)-is3*dx(2)*2.*(-wx)
+   u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)-is3*dx(2)*2.*(-wy)
+   u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)-is3*dx(2)*2.*(-alpha*(ux+vy))
+  #End
+ endLoopsMask3d()
+
+end if      
+#endMacro
+
+
+
+! -----------------------------------------------------------------------
+! Evaluate first derivatives using a wide formula in the axis direction
+! ---------------------------------------------------------------------
+#beginMacro evalWideFirstDerivatives2d(iw1,iw2,ghost)
+  urv(u1c) = (u(i1+iw1,i2,i3,u1c) - u(i1-iw1,i2,i3,u1c))/(2.*iw1*dr(0))
+  urv(u2c) = (u(i1+iw1,i2,i3,u2c) - u(i1-iw1,i2,i3,u2c))/(2.*iw1*dr(0))
+
+  usv(u1c) = (u(i1,i2+iw2,i3,u1c) - u(i1,i2-iw2,i3,u1c))/(2.*iw2*dr(1))
+  usv(u2c) = (u(i1,i2+iw2,i3,u2c) - u(i1,i2-iw2,i3,u2c))/(2.*iw2*dr(1))
+
+  ux=rsxy(i1,i2,i3,0,0)*urv(u1c) + rsxy(i1,i2,i3,1,0)*usv(u1c)
+  vx=rsxy(i1,i2,i3,0,0)*urv(u2c) + rsxy(i1,i2,i3,1,0)*usv(u2c)
+
+  uy=rsxy(i1,i2,i3,0,1)*urv(u1c) + rsxy(i1,i2,i3,1,1)*usv(u1c)
+  vy=rsxy(i1,i2,i3,0,1)*urv(u2c) + rsxy(i1,i2,i3,1,1)*usv(u2c)
+#endMacro
+
+
+! ==========================================================================
+! **OLD**
+! Apply a stress free BC -- curvilinear and 2d
+! 
+! FORCING equals noForcing or forcing
+!    ------ TRACTION BC ----
+!    Compressible case was
+!     (lambda+2*mu) u_x + lambda*v_y = f   left/right
+!     mu*( u_y + v_x ) = 0                 left/right
+!
+!    Incompressible:
+!      (1)  u_x + v_y =0 
+!      (2) n1*( -p + 2*mu*u_x) + n2*mu*( u_y _ v_x  ) = 0 
+!      (3) n1*mu*( u_y + v_x)  + n2*( -p + 2*mu*v_y ) = 0 
+!  n1*(2) - n2*(2) : 
+!       (2') -p = 2*mu*( n1^2*u_x + n2^2*v_y ) = 0 
+!  n2*(1) - n1*(2) :
+!       (3') 2*mu*n1*n2*( u_x - v_y ) + (n2^2-n1^2)*mu*( u_y + v_x ) = 0 
+! ==========================================================================
+#beginMacro tractionBCCurvilinear2dMacroOLD(FORCING)
+
+
+  fe(0)=0.; fe(1)=0.;  ! holds forcing 
+
+  beginLoops2d()
+
+    ! here is the normal (assumed to be the same on both sides)
+    getNormal2d(i1,i2,i3,axis)
+
+    #If #FORCING eq "forcing" 
+      if( assignTwilightZone.eq.1 )then
+       OGDERIV2D(0,1,0,0,i1,i2,i3,t,ux0,vx0)
+       OGDERIV2D(0,0,1,0,i1,i2,i3,t,uy0,vy0)
+       fe(0) = ux0 + vy0
+       fe(1) = 2*an1*an2*( ux0 - vy0 ) + ( an2**2 -an1**2 )*( uy0 + vx0 )
+      end if
+    #End
+
+    ! --- here are  the equations we mean to satisfy ----
+    !  --> evaluate with the wrong values in the ghost  
+    ux=ux22(i1,i2,i3,u1c)
+    uy=uy22(i1,i2,i3,u1c)
+    vx=ux22(i1,i2,i3,u2c)
+    vy=uy22(i1,i2,i3,u2c) 
+    f(0) = ux + vy                                                - fe(0)
+    f(1) = 2.*an1*an2*( ux - vy ) + ( an2**2 -an1**2 )*( uy + vx ) - fe(1)
+   
+    !  [ a2(0,0) a2(0,1) ][ u(-1) ] =  RHS
+    !  [ a2(1,0) a2(1,1) ][ v(-1) ]   
+    ! u_x + v_y = rx*ur + ry*vy  + sx*us + sy*vs 
+    a2(0,0)=-is*( rsxy(i1,i2,i3,axis,0) )/(2.*dr(axis) )  ! coeff of u(-1) in u_x + v_y = 0 
+    a2(0,1)=-is*( rsxy(i1,i2,i3,axis,1) )/(2.*dr(axis) )  ! coeff of v(-1) in u_x + v_y = 0
+   
+    ! 2*an1*an2*( ux - vy ) + (an2**2 -an1**2 )*( uy + vx )
+    !   ux = rx*ur + sx*us   vx = rx*vr + sx*vs   
+    !   uy = ry*ur + sy*us   vy = ry*vr + sy*vs
+    a2(1,0)=-is*( 2.*an1*an2*(  rsxy(i1,i2,i3,axis,0) ) + ( an2**2 -an1**2 )*( rsxy(i1,i2,i3,axis,1) ) )/(2.*dr(axis))   ! coeff of u(-1)
+    a2(1,1)=-is*( 2.*an1*an2*( -rsxy(i1,i2,i3,axis,1) ) + ( an2**2 -an1**2 )*( rsxy(i1,i2,i3,axis,0) ) )/(2.*dr(axis))   ! coeff of v(-1)
+   
+    ! here are the wrong ghost point values
+    q(0) = u(i1-is1,i2-is2,i3,u1c)
+    q(1) = u(i1-is1,i2-is2,i3,u2c)
+   
+    ! subtract off the contributions from the wrong values at the ghost points:
+    do n=0,1
+      f(n) = (a2(n,0)*q(0)+a2(n,1)*q(1)) - f(n)
+    end do
+   
+    ! *optimize me* solve this by hand 
+    call dgeco( a2(0,0), 2, 2, ipvt(0),rcond,work(0))
+    call dgesl( a2(0,0), 2, 2, ipvt(0), f(0), job)
+   
+    u(i1-is1,i2-is2,i3,u1c)=f(0)
+    u(i1-is1,i2-is2,i3,u2c)=f(1)
+   
+    if( debug.gt.3 )then ! re-evaluate
+      ux=ux22(i1,i2,i3,u1c)
+      uy=uy22(i1,i2,i3,u1c)
+      vx=ux22(i1,i2,i3,u2c)
+      vy=uy22(i1,i2,i3,u2c) 
+      f(0) = ux + vy                                                - fe(0)
+      f(1) = 2*an1*an2*( ux - vy ) + ( an2**2 -an1**2 )*( uy + vx ) - fe(1)  
+      resMax = max(abs(f(0)),abs(f(1)))      
+      write(*,'(" --> traction BC: curvilinear fill ghost: residuals =",2(1pe12.4))') f(0),f(1)
+   
+    end if
+
+    ! ------ get second ghost by using a wide formula ----
+    !  axis=0: use
+    !     D0r with dr -> 2*dr
+    !  axis=1: use
+    !     D0s with ds -> 2*ds
+    if( numGhost.gt.1 )then
+      ghost=2;                          ! fill this ghost line 
+      js1=ghost*is1; js2=ghost*is2;     ! shift from boundary point (i1,i2,i3) to ghost point
+      if( axis.eq.0 )then
+        iw1=ghost; iw2=1;               ! use wide stencil for i1
+      else
+        iw1=1;     iw2=ghost;           ! use wide stencil for i2
+      end if
+
+      evalWideFirstDerivatives2d(iw1,iw2,ghost)
+
+      ! --- here are  the equations we mean to satisfy ----
+      !  --> evaluate with the wrong values in the ghost 
+      f(0) = ux + vy                                                - fe(0)
+      f(1) = 2*an1*an2*( ux - vy ) + ( an2**2 -an1**2 )*( uy + vx ) - fe(1)
+     
+      !  [ a2(0,0) a2(0,1) ][ u(-1) ] =  RHS
+      !  [ a2(1,0) a2(1,1) ][ v(-1) ]   
+      ! u_x + v_y = rx*ur + ry*vy  + sx*us + sy*vs 
+      a2(0,0)=-is*( rsxy(i1,i2,i3,axis,0) )/(2.*ghost*dr(axis) )  ! coeff of u(-ghost) in u_x + v_y = 0 
+      a2(0,1)=-is*( rsxy(i1,i2,i3,axis,1) )/(2.*ghost*dr(axis) )  ! coeff of v(-ghost) in u_x + v_y = 0
+     
+      ! 2*an1*an2*( ux - vy ) + (an2**2 -an1**2 )*( uy + vx )
+      !   ux = rx*ur + sx*us   vx = rx*vr + sx*vs   
+      !   uy = ry*ur + sy*us   vy = ry*vr + sy*vs
+      a2(1,0)=-is*( 2*an1*an2*(  rsxy(i1,i2,i3,axis,0) ) + ( an2**2 -an1**2 )*( rsxy(i1,i2,i3,axis,1) ) )/(2.*ghost*dr(axis))  ! coeff of u(-ghost)
+      a2(1,1)=-is*( 2*an1*an2*( -rsxy(i1,i2,i3,axis,1) ) + ( an2**2 -an1**2 )*( rsxy(i1,i2,i3,axis,0) ) )/(2.*ghost*dr(axis))  ! coeff of v(-ghost)
+     
+      ! here are the wrong ghost point values
+      q(0) = u(i1-js1,i2-js2,i3,u1c)
+      q(1) = u(i1-js1,i2-js2,i3,u2c)
+     
+      ! subtract off the contributions from the wrong values at the ghost points:
+      do n=0,1
+        f(n) = (a2(n,0)*q(0)+a2(n,1)*q(1)) - f(n)
+      end do
+     
+      ! *optimize me* solve this by hand 
+      call dgeco( a2(0,0), 2, 2, ipvt(0),rcond,work(0))
+      call dgesl( a2(0,0), 2, 2, ipvt(0), f(0), job)
+     
+      u(i1-js1,i2-js2,i3,u1c)=f(0)
+      u(i1-js1,i2-js2,i3,u2c)=f(1)
+     
+      if( debug.gt.3 )then ! re-evaluate
+        evalWideFirstDerivatives2d(iw1,iw2,ghost)
+        f(0) = ux + vy                                                - fe(0)
+        f(1) = 2*an1*an2*( ux - vy ) + ( an2**2 -an1**2 )*( uy + vx ) - fe(1)  
+        resMax = max(abs(f(0)),abs(f(1)))      
+        write(*,'(" --> traction BC: curvilinear fill ghost=2 using wide approx: residuals =",2(1pe12.4))') f(0),f(1)
+     
+      end if      
+
+
+    end if
+  
+    ! --- Extrapolate any extra ghost --- 
+    do ghost=3,numGhost
+      ! (j1,j2,j3) is the ghost point index
+      j1 = i1 - is1*ghost 
+      j2 = i2 - is2*ghost 
+      j3 = i3 - is3*ghost 
+      u(j1,j2,j3,u1c)=extrap3(u,j1+is1,j2+is2,j3+is3,u1c,is1,is2,is3)
+      u(j1,j2,j3,u2c)=extrap3(u,j1+is1,j2+is2,j3+is3,u2c,is1,is2,is3)
+      #If #DIM eq "3"
+        u(j1,j2,j3,u3c)=extrap3(u,j1+is1,j2+is2,j3+is3,u3c,is1,is2,is3)
+      #End
+    end do  
+
+  endLoops2d()
+
+
+#endMacro
+
+! ==========================================================================
+! COMPRESSIBLE CASE
+! Apply a stress free BC -- curvilinear and 3d
+! 
+! FORCING equals noForcing or forcing
+! ==========================================================================
+#beginMacro tractionBCCurvilinear3dMacroOLD(FORCING)
+
+
+  write(*,*) 'bcOptIsm -- finish me for 3d curvlinear'
+  stop 6678
+
+alpha=lambda+2*mu
+
+beginLoopsMask3d()
+
+ ! Solve n.tauv = 0 
+ !    -->   A uv.r + B uv.s = 0
+
+ ! here is the normal (assumed to be the same on both sides)
+ an1=rsxy(i1,i2,i3,axis,0)   ! normal (an1,an2,an3)
+ an2=rsxy(i1,i2,i3,axis,1)
+ an3=rsxy(i1,i2,i3,axis,2)
+ aNorm=max(epsx,sqrt(an1**2+an2**2+an3**2))
+ an1=an1/aNorm
+ an2=an2/aNorm
+ an3=an3/aNorm
+
+ ux=ux23(i1,i2,i3,u1c)
+ uy=uy23(i1,i2,i3,u1c)
+ uz=uz23(i1,i2,i3,u1c)
+ vx=ux23(i1,i2,i3,u2c)
+ vy=uy23(i1,i2,i3,u2c)
+ vz=uz23(i1,i2,i3,u2c)
+ wx=ux23(i1,i2,i3,u3c)
+ wy=uy23(i1,i2,i3,u3c)
+ wz=uz23(i1,i2,i3,u3c)
+
+ tau11 = alpha*ux + lambda*(vy+wz)
+ tau12 = mu*( uy + vx )
+ tau13 = mu*( uz + wx )
+ tau21 = tau12
+ tau22 = lambda*(ux+wz) + alpha*vy
+ tau23 = mu*( vz + wy )
+ tau31 = tau13
+ tau32 = tau23
+ tau33 = lambda*(ux+vy) + alpha*wz
+
+ ! here are  the equations we mean to satisfy:  
+ f(0) = an1*tau11+an2*tau21+an3*tau31
+ f(1) = an1*tau12+an2*tau22+an3*tau32
+ f(2) = an1*tau13+an2*tau23+an3*tau33
+
+ #If #FORCING eq "forcing" 
+
+  if( assignTwilightZone.eq.0 )then
+   ! forced case: solve n.tau - f = 0 
+   ! *wdh* 080523 multiply bcf by is since (an1,an2) is not the outward normal
+   f(0) = f(0) + is*bcf(side,axis,i1,i2,i3,u1c)
+   f(1) = f(1) + is*bcf(side,axis,i1,i2,i3,u2c)
+   f(2) = f(2) + is*bcf(side,axis,i1,i2,i3,u3c)
+  else
+
+   OGDERIV3D(0,1,0,0,i1,i2,i3,t,ux0,vx0,wx0)
+   OGDERIV3D(0,0,1,0,i1,i2,i3,t,uy0,vy0,wy0)
+   OGDERIV3D(0,0,0,1,i1,i2,i3,t,uz0,vz0,wz0) 
+
+   f(0) = f(0) - ( an1*(alpha*ux0+lambda*(vy0+wz0))+an2*(mu*(uy0+vx0))+an3*(mu*(uz0+wx0)) )
+   f(1) = f(1) - ( an1*(mu*(uy0+vx0))+an2*(lambda*(ux0+wz0)+alpha*vy0)+an3*(mu*(vz0+wy0)) )
+   f(2) = f(2) - ( an1*(mu*(uz0+wx0))+an2*(mu*(vz0+wy0))+an3*(lambda*(ux0+vy0)+alpha*wz0) )
+  end if
+ #End
+
+ !  [ a3(0,0) a3(0,1) a3(0,2) ][ u(-1) ] =  RHS
+ !  [ a3(1,0) a3(1,1) a3(1,2) ][ v(-1) ]   
+ !  [ a3(2,0) a3(2,1) a3(2,2) ][ w(-1) ]   
+ a3(0,0)=-is*( an1*alpha* rsxy(i1,i2,i3,axis,0)+\
+               an2*mu*    rsxy(i1,i2,i3,axis,1)+\
+               an3*mu*    rsxy(i1,i2,i3,axis,2) )/(2.*dr(axis))
+ a3(0,1)=-is*( an1*lambda*rsxy(i1,i2,i3,axis,1)+\
+               an2*mu*    rsxy(i1,i2,i3,axis,0) )/(2.*dr(axis))
+ a3(0,2)=-is*( an1*lambda*rsxy(i1,i2,i3,axis,2)+\
+               an3*mu*    rsxy(i1,i2,i3,axis,0) )/(2.*dr(axis))
+
+ a3(1,0)=-is*( an1*mu*    rsxy(i1,i2,i3,axis,1)+\
+               an2*lambda*rsxy(i1,i2,i3,axis,0) )/(2.*dr(axis))
+ a3(1,1)=-is*( an1*mu*    rsxy(i1,i2,i3,axis,0)+\
+               an2*alpha* rsxy(i1,i2,i3,axis,1)+\
+               an3*mu*    rsxy(i1,i2,i3,axis,2) )/(2.*dr(axis))
+ a3(1,2)=-is*( an2*lambda*rsxy(i1,i2,i3,axis,2)+\
+               an3*mu*    rsxy(i1,i2,i3,axis,1) )/(2.*dr(axis))
+
+ a3(2,0)=-is*( an1*mu*    rsxy(i1,i2,i3,axis,2)+\
+               an3*lambda*rsxy(i1,i2,i3,axis,0) )/(2.*dr(axis))
+ a3(2,1)=-is*( an2*mu*    rsxy(i1,i2,i3,axis,2)+\
+               an3*lambda*rsxy(i1,i2,i3,axis,1) )/(2.*dr(axis))
+ a3(2,2)=-is*( an1*mu*    rsxy(i1,i2,i3,axis,0)+\
+               an2*mu*    rsxy(i1,i2,i3,axis,1)+\
+               an3*alpha* rsxy(i1,i2,i3,axis,2) )/(2.*dr(axis))
+
+ ! here are the wrong ghostpoint values
+ q(0) = u(i1-is1,i2-is2,i3-is3,u1c)
+ q(1) = u(i1-is1,i2-is2,i3-is3,u2c)
+ q(2) = u(i1-is1,i2-is2,i3-is3,u3c)
+
+ ! subtract off the contributions from the wrong values at the ghost points:
+ do n=0,2
+   f(n) = (a3(n,0)*q(0)+a3(n,1)*q(1)+a3(n,2)*q(2)) - f(n)
+ end do
+
+ call dgeco( a3(0,0), 3, 3, ipvt(0),rcond,work(0))
+ call dgesl( a3(0,0), 3, 3, ipvt(0), f(0), job)
+
+ u(i1-is1,i2-is2,i3-is3,u1c)=f(0)
+ u(i1-is1,i2-is2,i3-is3,u2c)=f(1)
+ u(i1-is1,i2-is2,i3-is3,u3c)=f(2)
+
+ if( debug.gt.0 )then ! re-evaluate
+
+   ux=ux23(i1,i2,i3,u1c)
+   uy=uy23(i1,i2,i3,u1c)
+   uz=uz23(i1,i2,i3,u1c)
+   vx=ux23(i1,i2,i3,u2c)
+   vy=uy23(i1,i2,i3,u2c)
+   vz=uz23(i1,i2,i3,u2c)
+   wx=ux23(i1,i2,i3,u3c)
+   wy=uy23(i1,i2,i3,u3c)
+   wz=uz23(i1,i2,i3,u3c)
+
+   tau11 = alpha*ux + lambda*(vy+wz)
+   tau12 = mu*( uy + vx )
+   tau13 = mu*( uz + wx )
+   tau21 = tau12
+   tau22 = lambda*(ux+wz) + alpha*vy
+   tau23 = mu*( vz + wy )
+   tau31 = tau13
+   tau32 = tau23
+   tau33 = lambda*(ux+vy) + alpha*wz
+
+   ! here are  the equations we mean to satisfy:  
+   f(0) = an1*tau11+an2*tau21+an3*tau31
+   f(1) = an1*tau12+an2*tau22+an3*tau32
+   f(2) = an1*tau13+an2*tau23+an3*tau33
+   #If #FORCING eq "forcing" 
+  
+    if( assignTwilightZone.eq.0 )then
+     ! forced case: solve n.tau - f = 0 
+     ! *wdh* 080523 multiply bcf by is since (an1,an2) is not the outward normal
+     f(0) = f(0) + is*bcf(side,axis,i1,i2,i3,u1c)
+     f(1) = f(1) + is*bcf(side,axis,i1,i2,i3,u2c)
+     f(2) = f(2) + is*bcf(side,axis,i1,i2,i3,u3c)
+    else
+     OGDERIV3D(0,1,0,0,i1,i2,i3,t,ux0,vx0,wx0)
+     OGDERIV3D(0,0,1,0,i1,i2,i3,t,uy0,vy0,wy0)
+     OGDERIV3D(0,0,0,1,i1,i2,i3,t,uz0,vz0,wz0)
+  
+     f(0) = f(0) - ( an1*(alpha*ux0+lambda*(vy0+wz0))+an2*(mu*(uy0+vx0))+an3*(mu*(uz0+wx0)) )
+     f(1) = f(1) - ( an1*(mu*(uy0+vx0))+an2*(lambda*(ux0+wz0)+alpha*vy0)+an3*(mu*(vz0+wy0)) )
+     f(2) = f(2) - ( an1*(mu*(uz0+wx0))+an2*(mu*(vz0+wy0))+an3*(lambda*(ux0+vy0)+alpha*wz0) )
+    end if 
+   #End
+
+   write(*,'(" --> bc: (",i1,",",i1,") i1,i2,i3=",3i4," n.tau=",4e10.2)') side,axis,i1,i2,i3,f(0),f(1),f(2)
+     ! '
+ end if
+
+endLoopsMask3d()
+
+#endMacro
+
+
+! ==========================================================================
+! Macro: Evaluate the traction BCs, order=4, curvilinear, 2d
+!      ORDER=4 CURVLINEAR
+!   0 :  u1.x + u2.y 
+!   1 :  n.grad( u1.x + u2.y  ) 
+!   2 :  u2.x + u1.y 
+!   3 : mu*( v_xxx + v_xyy ) + mu*( u_xxy + u_yyy ) - 2 p_xy 
+! ==========================================================================
+#beginMacro evalEquationsTractionCurvlinear2dOrder4()
+   f(0) = ux42(i1,i2,i3,u1c)  + uy42(i1,i2,i3,u2c)                                                                                       - fe(0);    ! u1.x + u2.y 
+   f(1) = an1*( uxx42(i1,i2,i3,u1c) + uxy42(i1,i2,i3,u2c) ) + an2*( uxy42(i1,i2,i3,u1c) + uyy42(i1,i2,i3,u2c) )                          - fe(1);
+   f(2) = ux42(i1,i2,i3,u2c)  + uy42(i1,i2,i3,u1c)                                                                                       - fe(2);    ! u2.x + u1.y 
+   f(3) = mu*( uxxx22(i1,i2,i3,u2c) + uxyy22(i1,i2,i3,u2c) ) + mu*( uxxy22(i1,i2,i3,u1c) + uyyy22(i1,i2,i3,u1c) ) -2.*uxy42(i1,i2,i3,pc) - fe(3);
+#endMacro
+
+
+
+! ==========================================================================
+! Macro: Apply a traction BC
+!      ORDER=4 CURVLINEAR
+! ==========================================================================
+#beginMacro tractionOrder4CurvlinearMacro(DIM,FORCING)
+  ! write(*,*) "FINISH ME - traction BC order=4 curvlinear"
+
+
+  #If #FORCING eq "twilightZone" 
+
+    call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1ex)
+    call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1ey)
+
+    call ogDeriv(ep,0,2,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1exx)
+    call ogDeriv(ep,0,1,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1exy)
+
+    call ogDeriv(ep,0,2,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1exxy)
+    call ogDeriv(ep,0,0,3,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1eyyy)
+
+
+    call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2ex)
+    call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2ey)
+
+    call ogDeriv(ep,0,1,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2exy)
+    call ogDeriv(ep,0,0,2,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2eyy)
+
+    call ogDeriv(ep,0,3,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2exxx)
+    call ogDeriv(ep,0,1,2,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2exyy)
+
+    call ogDeriv(ep,0,1,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,pc,pexy)
+
+    fe(0) = u1ex + u2ey
+    fe(1) = an1*( u1exx + u2exy ) + an2*( u1exy + u2eyy )
+    fe(2) = u2ex + u1ey 
+    fe(3) = mu*( u2exxx + u2exyy ) + mu*( u1exxy + u1eyyy ) - 2.*pexy 
+
+  #End
+
+  ! eval coefficients in matrix a4 for ghost points by discrete delta
+  evalCoefficients(i1,i2,i3, numberOfEquations,a4,evalEquationsTractionCurvlinear2dOrder4 )
+
+  ! write(*,'("traction: i1,i2=",2i3," a4=",4(1pe12.4,1x))') i1,i2,((a4(n,n2),n=0,3),n2=0,3)
+
+
+  ! evaluate equations with wrong values in the ghost        
+  evalEquationsTractionCurvlinear2dOrder4()
+
+  ! adjust rhs for wrong values on ghost 
+  do n=0,numberOfEquations-1
+    f(n) = -f(n) + a4(n,0)*u(i1-  is1,i2-  is2,i3,u1c) + a4(n,1)*u(i1-  is1,i2-  is2,i3,u2c) + \
+                   a4(n,2)*u(i1-2*is1,i2-2*is2,i3,u1c) + a4(n,3)*u(i1-2*is1,i2-2*is2,i3,u2c);
+  end do
+  ! solve for ghost
+  call dgeco( a4(0,0), 4, 4, ipvt(0),rcond,work(0))
+  call dgesl( a4(0,0), 4, 4, ipvt(0), f(0), job)
+
+  ! write(*,'(" rcond=",1pe10.2)') rcond
+  ! stop 555
+
+  ! assign ghost
+  u(i1-  is1,i2-  is2,i3,u1c) = f(0)
+  u(i1-  is1,i2-  is2,i3,u2c) = f(1)
+  u(i1-2*is1,i2-2*is2,i3,u1c) = f(2)
+  u(i1-2*is1,i2-2*is2,i3,u2c) = f(3)
+
+  ! if( .true. )then
+  !   call ogDeriv(ep,0,0,0,0,xy(i1-is1,i2-is2,i3,0),xy(i1-is2,i2-is2,i3,1),0.,t,u1c,u1e)
+  !   call ogDeriv(ep,0,0,0,0,xy(i1-is1,i2-is2,i3,0),xy(i1-is2,i2-is2,i3,1),0.,t,u2c,u2e)
+  !   write(*,'("traction: i1,i2=",2i3," u1(-1)=",1pe12.4," err=",1pe10.2," u2(-1)=",1pe12.4," err=",1pe10.2)') \
+  !          i1,i2,f(0),f(0)-u1e,f(1),f(1)-u2e
+  ! end if
+
+  if( checkResiduals )then
+    ! re-evaluate the equations
+    evalEquationsTractionCurvlinear2dOrder4()
+    resMax=0.
+    do n=0,numberOfEquations-1
+      resMax = max(resMax,abs(f(n)))
+    end do
+    if( resMax>resTol )then
+      write(*,'("Traction BC: order 4, CURV: ERROR residuals are large =",4(1pe12.4,1x))') (f(n),n=0,3)
+    end if
+
+  end if
+
+  ! --- Extrapolate any extra ghost --- 
+  do ghost=3,numGhost
+    ! (j1,j2,j3) is the ghost point index
+    j1 = i1 - is1*ghost 
+    j2 = i2 - is2*ghost 
+    j3 = i3 - is3*ghost 
+    u(j1,j2,j3,u1c)=extrap3(u,j1+is1,j2+is2,j3+is3,u1c,is1,is2,is3)
+    u(j1,j2,j3,u2c)=extrap3(u,j1+is1,j2+is2,j3+is3,u2c,is1,is2,is3)
+    #If #DIM eq "3"
+      u(j1,j2,j3,u3c)=extrap3(u,j1+is1,j2+is2,j3+is3,u3c,is1,is2,is3)
+    #End
+  end do  
+
+#endMacro
+
+! ==========================================================================
+! Macro: Evaluate traction 3D curvilinear equations
+! ==========================================================================
+#beginMacro evalTractionCurvilinear3d()
+  !    (div(u)) n + mu* ( I - n n^T) epsm * n 
+  u1x = ux23(i1,i2,i3,u1c); u1y = uy23(i1,i2,i3,u1c); u1z = uz23(i1,i2,i3,u1c);
+  u2x = ux23(i1,i2,i3,u2c); u2y = uy23(i1,i2,i3,u2c); u2z = uz23(i1,i2,i3,u2c);
+  u3x = ux23(i1,i2,i3,u3c); u3y = uy23(i1,i2,i3,u3c); u3z = uz23(i1,i2,i3,u3c);
+  divu = u1x + u2y + u3z 
+  ! traction = epsm*n : 
+  trac1 = mu*( ( u1x + u1x )*an1 + ( u1y + u2x )*an2 + ( u1z + u3x )*an3 )
+  trac2 = mu*( ( u2x + u1y )*an1 + ( u2y + u2y )*an2 + ( u2z + u3y )*an3 )
+  trac3 = mu*( ( u3x + u1z )*an1 + ( u3y + u2z )*an2 + ( u3z + u3z )*an3 )
+  f(0) = divu*an1 +  (1.-an1*an1)*trac1 -    an1*an2 *trac2     - an1*an3 *trac3  - fe(0)
+  f(1) = divu*an2 +     -an2*an1 *trac1 +(1.-an2*an2)*trac2     - an2*an3 *trac3  - fe(1)
+  f(2) = divu*an3 +     -an3*an1 *trac1 +   -an3*an2 *trac2 + (1.-an3*an3)*trac3  - fe(2)         
+
+#endMacro  
+
+! ==========================================================================
+! Macro: Evaluate traction 3D curvlinear forcings
+! ==========================================================================
+#beginMacro evalTractionCurvilinear3dForcing(DIM,FORCING)
+  !    (div(u)) n + mu* ( I - n n^T) epsm * n 
+  #If #FORCING eq "twilightZone" || #FORCING eq "TZ" 
+    call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u1c,u1x)
+    call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u1c,u1y)
+    call ogDeriv(ep,0,0,0,1,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u1c,u1z)
+
+    call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u2c,u2x)
+    call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u2c,u2y)
+    call ogDeriv(ep,0,0,0,1,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u2c,u2z)
+
+    call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u3c,u3x)
+    call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u3c,u3y)
+    call ogDeriv(ep,0,0,0,1,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u3c,u3z)        
+
+    divu = u1x + u2y + u3z 
+    trac1 = mu*( ( u1x + u1x )*an1 + ( u1y + u2x )*an2 + ( u1z + u3x )*an3 )
+    trac2 = mu*( ( u2x + u1y )*an1 + ( u2y + u2y )*an2 + ( u2z + u3y )*an3 )
+    trac3 = mu*( ( u3x + u1z )*an1 + ( u3y + u2z )*an2 + ( u3z + u3z )*an3 )
+    fe(0) = divu*an1 +  (1.-an1*an1)*trac1 -    an1*an2 *trac2     - an1*an3 *trac3  
+    fe(1) = divu*an2 +     -an2*an1 *trac1 +(1.-an2*an2)*trac2     - an2*an3 *trac3  
+    fe(2) = divu*an3 +     -an3*an1 *trac1 +   -an3*an2 *trac2 + (1.-an3*an3)*trac3      
+
+  #End
+#endMacro   
+
+! ==========================================================================
+! Macro: Apply a traction BC
+! 
+! FORCING : forcing, twilightZone or noForcing
+! 
+!    ------ TRACTION BC ----
+!    Compressible case was
+!     (lambda+2*mu) u_x + lambda*v_y = f   left/right
+!     mu*( u_y + v_x ) = 0                 left/right
+!
+!    Incompressible:
+!      (1)  u_x + v_y =0 
+!      (2) n1*( -p + 2*mu*u_x) + n2*mu*( u_y _ v_x  ) = 0 
+!      (3) n1*mu*( u_y + v_x)  + n2*( -p + 2*mu*v_y ) = 0 
+!  n1*(2) - n2*(2) : 
+!       (2') -p = 2*mu*( n1^2*u_x + n2^2*v_y ) = 0 
+!  n2*(1) - n1*(2) :
+!       (3') 2*mu*n1*n2*( u_x - v_y ) + (n2^2-n1^2)*mu*( u_y + v_x ) = 0 
+!
+! THREE DIMENSIONS:
+! We can write the three conditions in the form:
+!        (div(u)) n + (I- n n^T) tau n = 0 
+!  where
+!    tau_ij = mu*( D_j u_i + D_i u_j )
+! ==========================================================================
+#beginMacro tractionBCMacro(DIM,ORDER,GRIDTYPE,FORCING)
+
+
+  fe(0)=0.; fe(1)=0.;  fe(2)=0.; fe(3)=0.;   ! holds forcing 
+  numberOfEquations=4;      ! number of ghost points we solve for   
+
+  #If #GRIDTYPE eq "rectangular"
+    ! outward normal for rectangular
+    if( axis==0 )then
+      an1=-is1; an2=0.; an3=0.;
+    elseif( axis==1 )then
+      an1=0.; an2=-is2; an3=0.;
+    else
+      an1=0.; an2=0.; an3=-is3; 
+    end if
+  #End
+
+  beginLoops3d()
+
+    ! here is the normal
+    #If #GRIDTYPE eq "curvilinear"
+      #If #DIM eq "2"
+        getNormal2d(i1,i2,i3,axis)
+      #Else
+        getNormal3d(i1,i2,i3,axis)
+      #End
+    #End
+
+    ! *** FIX ME : USE THIS BELOW FOR RECTANGULAR CASE ######################################
+    ! #If #ORDER eq "2"
+    !   #If #FORCING eq "twilightZone" 
+    !     #If #DIM eq "2"
+    !       OGDERIV2D(0,1,0,0,i1,i2,i3,t,ux0,vx0)
+    !       OGDERIV2D(0,0,1,0,i1,i2,i3,t,uy0,vy0)
+    !       fe(0) = ux0 + vy0
+    !       fe(1) = 2*an1*an2*( ux0 - vy0 ) + ( an2**2 -an1**2 )*( uy0 + vx0 )
+    !     #Else
+    !       stop 333
+    !     #End
+    !   #End
+    ! #End
+
+    #If #FORCING eq "twilightZone" 
+      #If #DIM eq "2"
+        call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,ux0)
+        call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,uy0)
+
+        call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,vx0)
+        call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,vy0)
+
+        fe(0) = ux0 + vy0
+        fe(1) = 2*an1*an2*( ux0 - vy0 ) + ( an2**2 -an1**2 )*( uy0 + vx0 )
+
+      #Else
+        call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u1c,ux0)
+        call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u1c,uy0)
+        call ogDeriv(ep,0,0,0,1,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u1c,uz0)
+
+        call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u2c,vx0)
+        call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u2c,vy0)
+        call ogDeriv(ep,0,0,0,1,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u2c,vz0) 
+
+        call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u3c,wx0)
+        call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u3c,wy0)
+        call ogDeriv(ep,0,0,0,1,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u3c,wz0)               
+
+      #End
+    #End             
+
+    #If #GRIDTYPE eq "rectangular"
+      ! ----- TRACTION RECTANGULAR ----
+      ! 
+     
+      ! write(*,'(" tractionBC: side,axis=",2i3," assignTwilightZone=",i2," numGhost=",i2)') side,axis,assignTwilightZone,numGhost
+
+      #If #ORDER eq "2"
+        #If #DIM eq "2"
+          #defineMacro UX(i1,i2,i3,u1c) ux22r(i1,i2,i3,u1c)
+          #defineMacro UY(i1,i2,i3,u1c) uy22r(i1,i2,i3,u1c)
+        #Else
+          #defineMacro UX(i1,i2,i3,u1c) ux23r(i1,i2,i3,u1c)
+          #defineMacro UY(i1,i2,i3,u1c) uy23r(i1,i2,i3,u1c)
+          #defineMacro UZ(i1,i2,i3,u1c) uz23r(i1,i2,i3,u1c)
+        #End
+      #Elif #ORDER eq "4"
+        #If #DIM eq "2"
+          #defineMacro UX(i1,i2,i3,u1c) ux42r(i1,i2,i3,u1c)
+          #defineMacro UY(i1,i2,i3,u1c) uy42r(i1,i2,i3,u1c)
+        #Else
+          #defineMacro UX(i1,i2,i3,u1c) ux43r(i1,i2,i3,u1c)
+          #defineMacro UY(i1,i2,i3,u1c) uy43r(i1,i2,i3,u1c)
+          #defineMacro UZ(i1,i2,i3,u1c) uz43r(i1,i2,i3,u1c)
+        #End      
+      #Else
+        stop 6666
+      #End
+
+
+      #If #ORDER eq "2"
+         ! ------- TRACTION BC ORDER=2 RECTANGULAR -----
+        if( axis.eq.0 )then
+          ! u.x = -v.y - w.z 
+          ! v.x = -u.y   
+          ! w.x = -u.z    
+          #If #FORCING eq "noForcing"
+            ! no forcing 
+            do ghost=1,numGhost
+              js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3; 
+              ! Note: Use wider stencil on farther ghost  
+              !  u(-2)  = u(2) + (2 * 2*dx) ( ... )  
+              #If #DIM eq "2"       
+                u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) +js1*dx(0)*2.*UY(i1,i2,i3,u2c)
+                u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) +js1*dx(0)*2.*UY(i1,i2,i3,u1c)
+              #Else
+                u(i1-js1,i2-js2,i3-js3,u1c)=u(i1+js1,i2+js2,i3+js3,u1c) +js1*dx(0)*2.*( UY(i1,i2,i3,u2c) + UZ(i1,i2,i3,u3c) )
+                u(i1-js1,i2-js2,i3-js3,u2c)=u(i1+js1,i2+js2,i3+js3,u2c) +js1*dx(0)*2.*( UY(i1,i2,i3,u1c) )
+                u(i1-js1,i2-js2,i3-js3,u3c)=u(i1+js1,i2+js2,i3+js3,u3c) +js1*dx(0)*2.*( UZ(i1,i2,i3,u1c) )
+              #End
+            end do
+
+          #Elif #FORCING eq "forcing"
+            ! include forcing terms 
+            ! beginLoopsMask2d()
+            do ghost=1,numGhost
+              js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+              #If #DIM eq "2"                              
+                u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) +dx(0)*2.*( js1*uy22r(i1,i2,i3,u2c) +         bcf(side,axis,i1,i2,i3,u1c) )
+                u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) +dx(0)*2.*( js1*uy22r(i1,i2,i3,u1c) + (1./mu)*bcf(side,axis,i1,i2,i3,u2c) )
+              #Else
+                ! *check me* added Sept 15, 2021
+                u(i1-js1,i2-js2,i3-js3,u1c)=u(i1+js1,i2+js2,i3+js3,u1c) +dx(0)*2.*( js1*(UY(i1,i2,i3,u2c) + UZ(i1,i2,i3,u3c)) +bcf(side,axis,i1,i2,i3,u1c) )
+                u(i1-js1,i2-js2,i3-js3,u2c)=u(i1+js1,i2+js2,i3+js3,u2c) +dx(0)*2.*( js1*UY(i1,i2,i3,u1c)             + (1./mu)*bcf(side,axis,i1,i2,i3,u2c) )
+                u(i1-js1,i2-js2,i3-js3,u3c)=u(i1+js1,i2+js2,i3+js3,u3c) +dx(0)*2.*( js1*UZ(i1,i2,i3,u1c)             + (1./mu)*bcf(side,axis,i1,i2,i3,u3c) )              
+              #End
+            end do
+
+          #Else
+
+            ! Twilight-zone: 
+            ! u.x = -v.y + ue.x -ve.y 
+            ! write(*,'(" bcOptIsm: assign traction values for axis==0 and TZ")')
+            do ghost=1,numGhost
+              js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+              #If #DIM eq "2"                
+                u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) -js1*dx(0)*2.*(-uy22r(i1,i2,i3,u2c) + ux0 + vy0 )
+                u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) -js1*dx(0)*2.*(-uy22r(i1,i2,i3,u1c) + vx0 + uy0 )
+              #Else
+                ! *check me* added Sept 15, 2021                
+                u(i1-js1,i2-js2,i3-js3,u1c)=u(i1+js1,i2+js2,i3+js3,u1c) + js1*dx(0)*2.*( UY(i1,i2,i3,u2c) + UZ(i1,i2,i3,u3c) - ( ux0 +vy0 + wz0 ) )
+                u(i1-js1,i2-js2,i3-js3,u2c)=u(i1+js1,i2+js2,i3+js3,u2c) + js1*dx(0)*2.*( UY(i1,i2,i3,u1c) - ( vx0 + uy0 ) )
+                u(i1-js1,i2-js2,i3-js3,u3c)=u(i1+js1,i2+js2,i3+js3,u3c) + js1*dx(0)*2.*( UZ(i1,i2,i3,u1c) - ( wx0 + uz0 ) ) 
+
+                call ogDeriv(ep,0,0,0,0,xy(i1-js1,i2,i3,0),xy(i1-js1,i2,i3,1),xy(i1-js1,i2,i3,2),t,u1c,u0)
+                call ogDeriv(ep,0,0,0,0,xy(i1-js1,i2,i3,0),xy(i1-js1,i2,i3,1),xy(i1-js1,i2,i3,2),t,u2c,v0)
+                ! write(*,'("tractionBC: i1,i2,i3=",3i3," u(ghost)=",1pe12.4," err=",1pe12.4)') i1,i2,i3,u(i1-js1,i2-js2,i3-js3,u1c),u(i1-js1,i2-js2,i3-js3,u1c)-u0
+                ! write(*,'("tractionBC: i1,i2,i3=",3i3," v(ghost)=",1pe12.4," err=",1pe12.4)') i1,i2,i3,u(i1-js1,i2-js2,i3-js3,u2c),u(i1-js1,i2-js2,i3-js3,u2c)-v0
+
+              #End
+
+              ! OGF2D(i1-js1,i2-js2,i3,t,u0,v0)
+              ! write(*,'("tractionBC: i1,i2=",2i3," j1,j2=",2i3," v(ghost)=",1pe12.4," ve=",1pe12.4)') i1,i2,i1-js1,i2-js2,u(i1-js1,i2-js2,i3,u2c),v0 
+              ! write(*,'("i1,i2=",2i3," ux0,vx0,uy0,vy0=",4e10.2)') i1,i2, ux0,vx0,uy0,vy0 
+            end do  
+
+          #End
+
+        elseif( axis==1 )then 
+
+          ! u.y = - v.x  
+          ! v.y = - u.x - w.z 
+          ! w.y = - v.z 
+          #If #FORCING eq "noForcing"
+            do ghost=1,numGhost
+              js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+              #If #DIM eq "2"                               
+                u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) +js2*dx(1)*2.*UX(i1,i2,i3,u2c)
+                u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) +js2*dx(1)*2.*UX(i1,i2,i3,u1c)
+              #Else
+                u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) +js2*dx(1)*2.*( UX(i1,i2,i3,u2c) )
+                u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) +js2*dx(1)*2.*( UX(i1,i2,i3,u1c) + UZ(i1,i2,i3,u3c) )               
+                u(i1-js1,i2-js2,i3,u3c)=u(i1+js1,i2+js2,i3,u3c) +js2*dx(1)*2.*( UZ(i1,i2,i3,u2c) )
+              #End
+            end do
+          #Elif #FORCING eq "forcing"
+            ! include forcing terms
+            do ghost=1,numGhost
+              js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+              #If #DIM eq "2"                               
+                u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) +dx(1)*2.*(js2*UX(i1,i2,i3,u2c) + (1./mu)*bcf(side,axis,i1,i2,i3,u1c) )
+                u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) +dx(1)*2.*(js2*UX(i1,i2,i3,u1c) + bcf(side,axis,i1,i2,i3,u2c) )
+              #Else
+                ! *check me* added Sept 15, 2021                       
+                u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) + dx(1)*2.*( js2*UX(i1,i2,i3,u2c)  +             (1./mu)*bcf(side,axis,i1,i2,i3,u1c) )
+                u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) + dx(1)*2.*( js2*(UX(i1,i2,i3,u1c) + UZ(i1,i2,i3,u3c)) + bcf(side,axis,i1,i2,i3,u2c) )               
+                u(i1-js1,i2-js2,i3,u3c)=u(i1+js1,i2+js2,i3,u3c) + dx(1)*2.*( js2*UZ(i1,i2,i3,u2c)  +             (1./mu)*bcf(side,axis,i1,i2,i3,u3c))                
+              #End
+            end do
+          #Else
+            ! Twilight-zone: 
+            do ghost=1,numGhost
+              js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+              #If #DIM eq "2"                                   
+                u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) -js2*dx(1)*2.*(-UX(i1,i2,i3,u2c) +uy0+vx0)
+                u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) -js2*dx(1)*2.*(-UX(i1,i2,i3,u1c) +vy0+ux0)
+              #Else
+                ! *check me* added Sept 15, 2021                       
+                u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) +js2*dx(1)*2.*( UX(i1,i2,i3,u2c) - ( uy0 + vx0) )
+                u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) +js2*dx(1)*2.*( (UX(i1,i2,i3,u1c) + UZ(i1,i2,i3,u3c)) -( ux0 + vy0 + wz0 ) )               
+                u(i1-js1,i2-js2,i3,u3c)=u(i1+js1,i2+js2,i3,u3c) +js2*dx(1)*2.*( UZ(i1,i2,i3,u2c) - ( wy0 + vz0 ) )  
+
+                call ogDeriv(ep,0,0,0,0,xy(i1-js1,i2-js2,i3-js3,0),xy(i1-js1,i2-js2,i3-js3,1),xy(i1-js1,i2-js2,i3-js3,2),t,u1c,u0)
+                call ogDeriv(ep,0,0,0,0,xy(i1-js1,i2-js2,i3-js3,0),xy(i1-js1,i2-js2,i3-js3,1),xy(i1-js1,i2-js2,i3-js3,2),t,u2c,v0)
+                call ogDeriv(ep,0,0,0,0,xy(i1-js1,i2-js2,i3-js3,0),xy(i1-js1,i2-js2,i3-js3,1),xy(i1-js1,i2-js2,i3-js3,2),t,u3c,w0)
+                ! write(*,'("tractionBC: i1,i2,i3=",3i3," u(ghost)=",1pe12.4," err=",1pe12.4)') i1,i2,i3,u(i1-js1,i2-js2,i3-js3,u1c),u(i1-js1,i2-js2,i3-js3,u1c)-u0
+                ! write(*,'("tractionBC: i1,i2,i3=",3i3," v(ghost)=",1pe12.4," err=",1pe12.4)') i1,i2,i3,u(i1-js1,i2-js2,i3-js3,u2c),u(i1-js1,i2-js2,i3-js3,u2c)-v0
+                ! write(*,'("tractionBC: i1,i2,i3=",3i3," w(ghost)=",1pe12.4," err=",1pe12.4)') i1,i2,i3,u(i1-js1,i2-js2,i3-js3,u3c),u(i1-js1,i2-js2,i3-js3,u3c)-w0
+
+              #End
+            end do 
+          #End
+
+        else 
+          ! axis==2 
+          ! u.z = - w.x  
+          ! v.z = - w.y
+          ! w.z = - ( u.x + v.y )
+          #If #DIM eq "3"
+            #If #FORCING eq "noForcing"
+              do ghost=1,numGhost
+                js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+                u(i1-js1,i2-js2,i3-js3,u1c)=u(i1+js1,i2+js2,i3+js3,u1c) +js3*dx(2)*2.*( UX(i1,i2,i3,u3c) )
+                u(i1-js1,i2-js2,i3-js3,u2c)=u(i1+js1,i2+js2,i3+js3,u2c) +js3*dx(2)*2.*( UY(i1,i2,i3,u3c)  )               
+                u(i1-js1,i2-js2,i3-js3,u3c)=u(i1+js1,i2+js2,i3+js3,u3c) +js3*dx(2)*2.*( UX(i1,i2,i3,u1c) + UY(i1,i2,i3,u2c) )
+
+              end do
+            #Elif #FORCING eq "forcing"
+              ! include forcing terms
+              do ghost=1,numGhost
+                js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+                ! *check me* added Sept 15, 2021                       
+                u(i1-js1,i2-js2,i3-js3,u1c)=u(i1+js1,i2+js2,i3+js3,u1c) + dx(2)*2.*( js3*( UX(i1,i2,i3,u3c) ) +              (1./mu)*bcf(side,axis,i1,i2,i3,u1c) )
+                u(i1-js1,i2-js2,i3-js3,u2c)=u(i1+js1,i2+js2,i3+js3,u2c) + dx(2)*2.*( js3*( UY(i1,i2,i3,u3c) ) +              (1./mu)*bcf(side,axis,i1,i2,i3,u2c) )               
+                u(i1-js1,i2-js2,i3-js3,u3c)=u(i1+js1,i2+js2,i3+js3,u3c) + dx(2)*2.*( js3*( UX(i1,i2,i3,u1c) + UY(i1,i2,i3,u2c) )   + bcf(side,axis,i1,i2,i3,u3c) )                
+
+              end do
+            #Else
+              ! Twilight-zone: 
+              do ghost=1,numGhost
+                js1 = ghost*is1
+                js2 = ghost*is2 
+                js3 = ghost*is3                
+                ! *check me* added Sept 15, 2021                       
+                u(i1-js1,i2-js2,i3-js3,u1c)=u(i1+js1,i2+js2,i3+js3,u1c) +js3*dx(2)*2.*( UX(i1,i2,i3,u3c) - ( uz0 + wx0 ) )
+                u(i1-js1,i2-js2,i3-js3,u2c)=u(i1+js1,i2+js2,i3+js3,u2c) +js3*dx(2)*2.*( UY(i1,i2,i3,u3c) - ( vz0 + wy0 ) )               
+                u(i1-js1,i2-js2,i3-js3,u3c)=u(i1+js1,i2+js2,i3+js3,u3c) +js3*dx(2)*2.*( (UX(i1,i2,i3,u1c) + UY(i1,i2,i3,u2c)) - ( ux0 + vy0 + wz0 ) )                
+              end do 
+            #End
+          #End
+
+        end if  
+
+      #Else
+
+        ! --------------------------------------------------
+        ! ------------ TRACTION BC order=4 RECTANGULAR -----
+        ! --------------------------------------------------
+
+        ! fprintf('Traction BC: order 4: (side,axis)=(%d,%d) t=%12.4e\n',side,axis,t);
+        if( axis==0 )then
+
+          ! u1.x + u2.y = 0 
+          ! u1.xx - u1.yy = 0 
+
+          ! Au = zeros(2,2);
+          Au(1,1) = -is1* 8./(12.*dx(axis));     ! coeff of u2(-1) u1.x
+          Au(1,2) =  is1* 1./(12.*dx(axis));     ! coeff of u2(-2) u1.x 
+          Au(2,1) =      16./(12.*dx(axis)**2);  ! coeff of u2(-1) in u1.xx
+          Au(2,2) =      -1./(12.*dx(axis)**2);  ! coeff of u2(-2) in u1.xx
+          ! C = A^{-1} 
+          det  = Au(1,1)*Au(2,2) -  Au(2,1)*Au(1,2); 
+          cu11 = Au(2,2)/det; cu12=-Au(1,2)/det;
+          cu21 =-Au(2,1)/det; cu22= Au(1,1)/det;
+
+          if( twilightZone==1 )then
+            call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1ex)
+            call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2ey)
+
+            call ogDeriv(ep,0,2,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1exx)
+            call ogDeriv(ep,0,0,2,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1eyy)
+            f1e =  u1ex + u2ey
+            f2e = u1exx - u1eyy
+          else
+            f1e = 0.;
+            f2e = 0.;
+          end if
+
+          ! evaluate equations with wrong values in the ghost
+          f1 = ux42r(i1,i2,i3,u1c)  + uy42r(i1,i2,i3,u2c)  - f1e;    ! u1.x + u2.y 
+          f2 = uxx42r(i1,i2,i3,u1c) - uyy42r(i1,i2,i3,u1c) - f2e;    ! u1.xx - u1.yy 
+          f1 = -f1 + Au(1,1)*u(i1-is1,i2-is2,i3,u1c) + Au(1,2)*u(i1-2*is1,i2-2*is2,i3,u1c); 
+          f2 = -f2 + Au(2,1)*u(i1-is1,i2-is2,i3,u1c) + Au(2,2)*u(i1-2*is1,i2-2*is2,i3,u1c); 
+          ! assign two ghost
+          u(i1-  is1,i2-  is2,i3,u1c) = cu11*f1 + cu12*f2;
+          u(i1-2*is1,i2-2*is2,i3,u1c) = cu21*f1 + cu22*f2;                
+          if( checkResiduals )then
+            ! check residual
+            f1 = ux42r(i1,i2,i3,u1c)  + uy42r(i1,i2,i3,u2c)  - f1e;    ! u1.x + u2.y 
+            f2 = uxx42r(i1,i2,i3,u1c) - uyy42r(i1,i2,i3,u1c) - f2e;    ! u1.xx - u1.yy             
+            res1 = abs(f1); 
+            res2 = abs(f2); 
+
+            ! write(*,'("Traction BC: order 4: i1,i2=",2i4," residuals in u1 BC=",2(1pe12.4,1x)," (ghost=1,2) (side,axis)=",2i2)') i1,i2,res1,res2,side,axis
+            if( max(res1,res2)>resTol )then
+              write(*,'("Traction BC: order 4:ERROR residuals in u1 BC=",2(1pe12.4,1x)," (ghost=1,2) (side,axis)=",2i2)') res1,res2,side,axis
+              stop 4444
+            end if
+          end if
+
+          if( numGhost>2 )then
+            ! get 3rd ghost line for upwinding
+            ! Use a wide formula fo
+            !    u1.x = - u2.y 
+            !  D0x(3h)   - h^2/6 D0x(2h) D+xD-x )
+
+            f1 = (u(i1+3,i2,i3,u1c) - u(i1-3,i2,i3,u1c))/(6.*dx(axis)) \
+                         - (dx(axis)**2/6.)*(uxx22r(i1+2,i2,i3,u1c) - uxx22r(i1-2,i2,i3,u1c))/(4.*dx(axis)) \
+                         + uy42r(i1,i2,i3,u2c) \
+                         - f1e;
+            cu11 =  is1*( -1./(6.*dx(axis)) + 1./(24.*dx(axis)) );                 ! coeff of u2(-3)
+            u(i1-3*is1,i2-3*is2,i3,u1c) = ( cu11*u(i1-3*is1,i2-3*is2,i3,u1c) - f1 )/cu11;
+
+            if( checkResiduals )then
+              ! check residual
+              f1 = (u(i1+3,i2,i3,u1c) - u(i1-3,i2,i3,u1c))/(6.*dx(axis)) \
+                             - (dx(axis)**2/6.)*(uxx22r(i1+2,i2,i3,u1c) - uxx22r(i1-2,i2,i3,u1c))/(4.*dx(axis)) \
+                             + uy42r(i1,i2,i3,u2c) \
+                             - f1e;              
+
+
+              res1 = abs(f1);
+              if( res1>resTol )then
+                write(*,'("Traction BC: order 4:ERROR residuals in u1 BC="1pe12.4," (ghost=3)")') res1
+                stop 5555
+              end if
+
+            end if
+
+          
+          end if ! end numGhost>2
+
+          !    u2.x + u1.y = 0
+          !    u2.xxx - (2/mu)*p.xy + u1.yyy  = 0   (from (u2.x+u1.y)_tt = 0 )
+
+
+
+          Av(1,1) = -is1*8./(12.*dx(axis));     ! coeff of u2(-1) u2.x
+          Av(1,2) =  is1*1./(12.*dx(axis));     ! coeff of u2(-2) u2.x 
+          Av(2,1) =  is1*2./( 2.*dx(axis)**3);  ! coeff of u2(-1) in u2.xxx
+          Av(2,2) = -is1*1./( 2.*dx(axis)**3);  ! coeff of u2(-2) in u2.xxx
+          ! C = A^{-1} 
+          det = Av(1,1)*Av(2,2) - Av(2,1)*Av(1,2); 
+          cv11 = Av(2,2)/det; cv12=-Av(1,2)/det;
+          cv21 =-Av(2,1)/det; cv22= Av(1,1)/det;
+
+          if( twilightZone==1 )then
+            call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2ex)
+            call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1ey)
+
+            call ogDeriv(ep,0,3,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2exxx)
+            call ogDeriv(ep,0,0,3,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1eyyy)
+
+            call ogDeriv(ep,0,1,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,pc,pexy)
+
+            f1e =   u2ex +  u1ey;
+            f2e = u2exxx - (2./mu)*pexy + u1eyyy; 
+          else
+            f1e = 0.;
+            f2e = 0.;
+          end if
+
+          ! evaluate equations with wrong values in the ghost
+          ! NOTE: 4th-order for p.xy would fit 
+          f1 = ux42r(i1,i2,i3,u2c) + uy42r(i1,i2,i3,u1c)                                    - f1e;
+          f2 = uxxx22r(i1,i2,i3,u2c) - (2./mu)*uxy42r(i1,i2,i3,pc) + uyyy22r(i1,i2,i3,u1c)  - f2e; 
+          
+          f1 = -f1 + Av(1,1)*u(i1-is1,i2-is2,i3,u2c) + Av(1,2)*u(i1-2*is1,i2-2*is2,i3,u2c); 
+          f2 = -f2 + Av(2,1)*u(i1-is1,i2-is2,i3,u2c) + Av(2,2)*u(i1-2*is1,i2-2*is2,i3,u2c); 
+          ! assign two ghost
+          u(i1-  is1,i2-  is2,i3,u2c) = cv11*f1 + cv12*f2;
+          u(i1-2*is1,i2-2*is2,i3,u2c) = cv21*f1 + cv22*f2;                
+
+          if( checkResiduals)then
+            ! check residual
+            f1 = ux42r(i1,i2,i3,u2c) + uy42r(i1,i2,i3,u1c)                                    - f1e;
+            f2 = uxxx22r(i1,i2,i3,u2c) - (2./mu)*uxy42r(i1,i2,i3,pc) + uyyy22r(i1,i2,i3,u1c)  - f2e;             
+            res1 = abs(f1); 
+            res2 = abs(f2); 
+            ! write(*,'("Traction BC: order 4: i1,i2=",2i4," residuals in u2 BC=",2(1pe12.4,1x)," (ghost=1,2)")') i1,i2,res1,res2
+            if( max(res1,res2)>resTol )then
+              write(*,'("Traction BC: order 4: residuals in u2 BC=",2(1pe12.4,1x)," (ghost=1,2)")') res1,res2
+              stop 9999
+            end if
+            ! if( twilightZone==1 )then
+            !   call ogDeriv(ep,0,0,0,0,xy(i1-  is1,i2,i3,0),xy(i1-  is1,i2,i3,1),0.,t,u2c,u0)
+            !   call ogDeriv(ep,0,0,0,0,xy(i1-2*is1,i2,i3,0),xy(i1-2*is1,i2,i3,1),0.,t,u2c,v0)
+            !   write(*,'(" error in u2 ghost=",2(1pe10.2)," err in pxy=",1pe10.2)') u(i1-  is1,i2-  is2,i3,u2c)-u0, u(i1-2*is1,i2-2*is2,i3,u2c)-v0,\
+            !           uxy42r(i1,i2,i3,pc)-pexy
+            ! end if
+          end if
+          if( numGhost>2 )then
+            ! get 3rd ghost line for upwinding
+            ! Use a wide formula for u2.xxx
+            !    u2.xxx = (2/mu)*p.xy - u1.yyy
+            !  D0x(2h) D+xD-x 
+            f2 = (uxx22r(i1+2,i2,i3,u2c) - uxx22r(i1-2,i2,i3,u2c))/(4.*dx(axis)) - (2./mu)*uxy42r(i1,i2,i3,pc) - uyyy22r(i1,i2,i3,u1c) -f2e;
+            c1 = -is1*1/(4*dx(axis)**3);      ! coeff of u2(-3)
+            u(i1-3*is1,i2-3*is2,i3,u2c) = ( c1*u(i1-3*is1,i2-3*is2,i3,u2c) - f2 )/c1;
+            if( checkResiduals )then
+              ! check residual
+              f2 = (uxx22r(i1+2,i2,i3,u2c) - uxx22r(i1-2,i2,i3,u2c))/(4.*dx(axis)) - (2./mu)*uxy42r(i1,i2,i3,pc) - uyyy22r(i1,i2,i3,u1c) -f2e;              
+
+              res2 = abs(f2); 
+              if( res2>resTol )then
+                write(*,'("Traction BC: order 4: residuals in u2 BC=",1pe12.4," (ghost=3)")') res2
+                stop 5656
+              end if
+            end if
+          end if              
+
+
+
+        elseif( axis==1 )then
+          write(*,*)  'Traction BC finish me for order=4 axis=1'
+          stop 2222
+        else
+          stop 3333
+        end if
+ 
+      ! end order=4 rectangular
+      #End
+
+    #Else
+
+      ! ----- TRACTION CURVILINEAR ----
+      ! --- here are  the equations we mean to satisfy ----
+      !  --> evaluate with the wrong values in the ghost  
+      #If #ORDER eq "2"
+        ! --------- ORDER 2 -----------
+
+        #If #DIM eq "2" 
+          ! --------------- TRACTION, ORDER=2, DIM=2, CURVILINEAR -----------------
+          ux=ux22(i1,i2,i3,u1c)
+          uy=uy22(i1,i2,i3,u1c)
+          vx=ux22(i1,i2,i3,u2c)
+          vy=uy22(i1,i2,i3,u2c) 
+          f(0) = ux + vy                                                 - fe(0)
+          f(1) = 2.*an1*an2*( ux - vy ) + ( an2**2 -an1**2 )*( uy + vx ) - fe(1)
+         
+          !  [ a2(0,0) a2(0,1) ][ u(-1) ] =  RHS
+          !  [ a2(1,0) a2(1,1) ][ v(-1) ]   
+          ! u_x + v_y = rx*ur + ry*vy  + sx*us + sy*vs 
+          a2(0,0)=-is*( rsxy(i1,i2,i3,axis,0) )/(2.*dr(axis) )  ! coeff of u(-1) in u_x + v_y = 0 
+          a2(0,1)=-is*( rsxy(i1,i2,i3,axis,1) )/(2.*dr(axis) )  ! coeff of v(-1) in u_x + v_y = 0
+         
+          ! 2*an1*an2*( ux - vy ) + (an2**2 -an1**2 )*( uy + vx )
+          !   ux = rx*ur + sx*us   vx = rx*vr + sx*vs   
+          !   uy = ry*ur + sy*us   vy = ry*vr + sy*vs
+          a2(1,0)=-is*( 2.*an1*an2*(  rsxy(i1,i2,i3,axis,0) ) + ( an2**2 -an1**2 )*( rsxy(i1,i2,i3,axis,1) ) )/(2.*dr(axis))   ! coeff of u(-1)
+          a2(1,1)=-is*( 2.*an1*an2*( -rsxy(i1,i2,i3,axis,1) ) + ( an2**2 -an1**2 )*( rsxy(i1,i2,i3,axis,0) ) )/(2.*dr(axis))   ! coeff of v(-1)
+         
+          ! here are the wrong ghost point values
+          q(0) = u(i1-is1,i2-is2,i3,u1c)
+          q(1) = u(i1-is1,i2-is2,i3,u2c)
+         
+          ! subtract off the contributions from the wrong values at the ghost points:
+          do n=0,1
+            f(n) = (a2(n,0)*q(0)+a2(n,1)*q(1)) - f(n)
+          end do
+         
+          ! *optimize me* solve this by hand 
+          call dgeco( a2(0,0), 2, 2, ipvt(0),rcond,work(0))
+          call dgesl( a2(0,0), 2, 2, ipvt(0), f(0), job)
+         
+          u(i1-is1,i2-is2,i3,u1c)=f(0)
+          u(i1-is1,i2-is2,i3,u2c)=f(1)
+         
+          if( debug.gt.3 )then ! re-evaluate
+            ux=ux22(i1,i2,i3,u1c)
+            uy=uy22(i1,i2,i3,u1c)
+            vx=ux22(i1,i2,i3,u2c)
+            vy=uy22(i1,i2,i3,u2c) 
+            f(0) = ux + vy                                                - fe(0)
+            f(1) = 2*an1*an2*( ux - vy ) + ( an2**2 -an1**2 )*( uy + vx ) - fe(1)  
+            resMax = max(abs(f(0)),abs(f(1)))      
+            write(*,'(" --> traction BC: curvilinear fill ghost: residuals =",2(1pe12.4))') f(0),f(1)
+         
+          end if
+
+          ! ------ get second ghost by using a wide formula ----
+          !  axis=0: use
+          !     D0r with dr -> 2*dr
+          !  axis=1: use
+          !     D0s with ds -> 2*ds
+          if( numGhost.gt.1 )then
+            ghost=2;                          ! fill this ghost line 
+            js1=ghost*is1; js2=ghost*is2;     ! shift from boundary point (i1,i2,i3) to ghost point
+            if( axis.eq.0 )then
+              iw1=ghost; iw2=1;               ! use wide stencil for i1
+            else
+              iw1=1;     iw2=ghost;           ! use wide stencil for i2
+            end if
+
+            evalWideFirstDerivatives2d(iw1,iw2,ghost)
+
+            ! --- here are  the equations we mean to satisfy ----
+            !  --> evaluate with the wrong values in the ghost 
+            f(0) = ux + vy                                                - fe(0)
+            f(1) = 2*an1*an2*( ux - vy ) + ( an2**2 -an1**2 )*( uy + vx ) - fe(1)
+           
+            !  [ a2(0,0) a2(0,1) ][ u(-1) ] =  RHS
+            !  [ a2(1,0) a2(1,1) ][ v(-1) ]   
+            ! u_x + v_y = rx*ur + ry*vy  + sx*us + sy*vs 
+            a2(0,0)=-is*( rsxy(i1,i2,i3,axis,0) )/(2.*ghost*dr(axis) )  ! coeff of u(-ghost) in u_x + v_y = 0 
+            a2(0,1)=-is*( rsxy(i1,i2,i3,axis,1) )/(2.*ghost*dr(axis) )  ! coeff of v(-ghost) in u_x + v_y = 0
+           
+            ! 2*an1*an2*( ux - vy ) + (an2**2 -an1**2 )*( uy + vx )
+            !   ux = rx*ur + sx*us   vx = rx*vr + sx*vs   
+            !   uy = ry*ur + sy*us   vy = ry*vr + sy*vs
+            a2(1,0)=-is*( 2*an1*an2*(  rsxy(i1,i2,i3,axis,0) ) + ( an2**2 -an1**2 )*( rsxy(i1,i2,i3,axis,1) ) )/(2.*ghost*dr(axis))  ! coeff of u(-ghost)
+            a2(1,1)=-is*( 2*an1*an2*( -rsxy(i1,i2,i3,axis,1) ) + ( an2**2 -an1**2 )*( rsxy(i1,i2,i3,axis,0) ) )/(2.*ghost*dr(axis))  ! coeff of v(-ghost)
+           
+            ! here are the wrong ghost point values
+            q(0) = u(i1-js1,i2-js2,i3,u1c)
+            q(1) = u(i1-js1,i2-js2,i3,u2c)
+           
+            ! subtract off the contributions from the wrong values at the ghost points:
+            do n=0,1
+              f(n) = (a2(n,0)*q(0)+a2(n,1)*q(1)) - f(n)
+            end do
+           
+            ! *optimize me* solve this by hand 
+            call dgeco( a2(0,0), 2, 2, ipvt(0),rcond,work(0))
+            call dgesl( a2(0,0), 2, 2, ipvt(0), f(0), job)
+           
+            u(i1-js1,i2-js2,i3,u1c)=f(0)
+            u(i1-js1,i2-js2,i3,u2c)=f(1)
+           
+            if( debug.gt.3 )then ! re-evaluate
+              evalWideFirstDerivatives2d(iw1,iw2,ghost)
+              f(0) = ux + vy                                                - fe(0)
+              f(1) = 2*an1*an2*( ux - vy ) + ( an2**2 -an1**2 )*( uy + vx ) - fe(1)  
+              resMax = max(abs(f(0)),abs(f(1)))      
+              write(*,'(" --> traction BC: curvilinear fill ghost=2 using wide approx: residuals =",2(1pe12.4))') f(0),f(1)
+           
+            end if      
+
+
+          end if
+
+        #Else
+          ! --------------- TRACTION, ORDER=2, DIM=3, CURVILINEAR -----------------
+          ! write(*,*) '--------------- TRACTION, order=2, dim=3, CURVILINEAR -----------------'          
+
+          numberOfEquations = 3 
+          ! Here are the realtive index positions of the 3 ghost we solve for 
+          shift1(0) = -is1; shift2(0) = -is2; shift3(0) = -is3; comp(0)=u1c; 
+          shift1(1) = -is1; shift2(1) = -is2; shift3(1) = -is3; comp(1)=u2c; 
+          shift1(2) = -is1; shift2(2) = -is2; shift3(2) = -is3; comp(2)=u3c; 
+
+          ! --- eval any forcing ---
+          evalTractionCurvilinear3dForcing(DIM,FORCING) 
+          ! write(*,'("traction:3d: i1,i2,i3=",3i3," fe=",3(1pe12.4,1x))') i1,i2,i3,fe(0),fe(1),fe(2)
+        
+          ! Fill in the matrix using the discrete delta approach
+          evalMatrixCoefficients(i1,i2,i3, numberOfEquations,a3,evalTractionCurvilinear3d )
+
+          ! print the matrix: 
+          ! write(*,'("traction 3d curv: i1,i2=",2i3,/," a3=[",3(1pe12.4,1x),"; ...")') i1,i2,((a3(n,n2),n2=0,2),n=0,2) 
+
+
+          ! evaluate equations with wrong values in the ghost        
+          evalTractionCurvilinear3d()
+
+          ! adjust rhs for wrong values on ghost 
+          do n=0,numberOfEquations-1
+            f(n) = -f(n) 
+            do n2=0,numberOfEquations-1
+              f(n) = f(n) + a3(n,n2)*u(i1+shift1(n2),i2+shift2(n2),i3+shift3(n2),comp(n2))
+            end do
+          end do
+  
+          ! solve for ghost
+          call dgeco( a3(0,0), numberOfEquations, numberOfEquations, ipvt(0),rcond,work(0) )
+          call dgesl( a3(0,0), numberOfEquations, numberOfEquations, ipvt(0), f(0), job )
+  
+          ! write(*,'(" traction curvilinear 3d: rcond=",1pe10.2)') rcond
+
+
+          ! assign values 
+          do n2=0,numberOfEquations-1
+            u(i1+shift1(n2),i2+shift2(n2),i3+shift3(n2),comp(n2)) = f(n2)
+          end do    
+          ! call ogDeriv(ep,0,0,0,0,xy(i1-is1,i2-is2,i3-is3,0),xy(i1-is1,i2-is2,i3-is3,1),xy(i1-is1,i2-is2,i3-is3,2),t,u1c,u1e)
+          ! call ogDeriv(ep,0,0,0,0,xy(i1-is1,i2-is2,i3-is3,0),xy(i1-is1,i2-is2,i3-is3,1),xy(i1-is1,i2-is2,i3-is3,2),t,u2c,u2e)
+          ! write(*,'("traction:3d: i1,i2,i3=",3i3," u1(-1)=",1pe12.4," err=",1pe10.2," u2(-1)=",1pe12.4," err=",1pe10.2)') \
+          !        i1,i2,i3,f(0),f(0)-u1e,f(1),f(1)-u2e           
+
+          ! ---- check residuals ---   
+          if( checkResiduals )then
+            ! re-evaluate the equations
+            evalTractionCurvilinear3d()
+            resMax=0.
+            do n=0,numberOfEquations-1
+              resMax = max(resMax,abs(f(n)))
+            end do
+            if( resMax>resTol )then
+              write(*,'("Traction 3d curvilinear: ERROR residuals are large =",4(1pe12.4,1x))') (f(n),n=0,numberOfEquations-1)
+            else
+              ! write(*,'("Traction 3d curvilinear resMax=",1pe8.2)') resMax
+            end if
+            
+          end if          
+
+        #End
+
+
+        ! --- Extrapolate any extra ghost --- 
+        do ghost=3,numGhost
+          ! (j1,j2,j3) is the ghost point index
+          j1 = i1 - is1*ghost 
+          j2 = i2 - is2*ghost 
+          j3 = i3 - is3*ghost 
+          u(j1,j2,j3,u1c)=extrap3(u,j1+is1,j2+is2,j3+is3,u1c,is1,is2,is3)
+          u(j1,j2,j3,u2c)=extrap3(u,j1+is1,j2+is2,j3+is3,u2c,is1,is2,is3)
+          #If #DIM eq "3"
+            u(j1,j2,j3,u3c)=extrap3(u,j1+is1,j2+is2,j3+is3,u3c,is1,is2,is3)
+          #End
+        end do
+
+      #Elif #ORDER eq "4"
+        !-------------------------------------------------------------------------------
+        !-------------- TRACTION ORDER=4 CURVLINEAR ------------------------------------
+        !-------------------------------------------------------------------------------
+        tractionOrder4CurvlinearMacro(DIM,FORCING)
+
+
+
+      #Else
+        write(*,*) "Unimplemented orderOfAccuracy=",orderOfAccuracy
+        stop 6661
+      #End
+    #End
+
+  endLoops3d()
+
+
+#endMacro
+
+
+! ==========================================================================
+! Macro: Evaluate the displacement BCs, order=4, curvilinear, 2d
+!      ORDER=4 CURVLINEAR
+!   0 :  u1.x + u2.y 
+!   1 :  n.grad( u1.x + u2.y  ) 
+!   2 :  tv.( mu*Delta(uv) - grad(p) ) 
+!   3 :  Extrap (tv.u(-2) ) 
+! ==========================================================================
+#beginMacro evalEquationsDisplacementCurvilinear2dOrder4()
+   f(0) = ux42(i1,i2,i3,u1c)  + uy42(i1,i2,i3,u2c)                                                               - fe(0);    ! u1.x + u2.y 
+   f(1) = an1*( uxx42(i1,i2,i3,u1c) + uxy42(i1,i2,i3,u2c) ) + an2*( uxy42(i1,i2,i3,u1c) + uyy42(i1,i2,i3,u2c) )  - fe(1);
+   f(2) = tn1*( mu*( uxx42(i1,i2,i3,u1c) + uyy42(i1,i2,i3,u1c) ) - ux42(i1,i2,i3,pc) ) + \
+          tn2*( mu*( uxx42(i1,i2,i3,u2c) + uyy42(i1,i2,i3,u2c) ) - uy42(i1,i2,i3,pc) )                           - fe(2);  
+   ! f(2) =  uxx42(i1,i2,i3,u2c) - fe(2)
+   f(3) = tn1*( u(i1-2*is1,i2-2*is2,i3,u1c) - (extrap5(u,i1-is1,i2-is2,i3,u1c,is1,is2,is3)) ) + \
+          tn2*( u(i1-2*is1,i2-2*is2,i3,u2c) - (extrap5(u,i1-is1,i2-is2,i3,u2c,is1,is2,is3)) ) 
+   ! f(3) = ux42(i1,i2,i3,u2c) - fe(3)
+#endMacro
+
+
+
+! ==========================================================================
+! Macro: Apply a displacement BC
+!      ORDER=4 CURVLINEAR
+! ==========================================================================
+#beginMacro displacementOrder4CurvlinearMacro(DIM,FORCING)
+
+  #If #DIM eq "2"
+    getNormal2d(i1,i2,i3,axis)
+  #Else
+    getNormal3d(i1,i2,i3,axis)
+  #End
+
+  ! tangent vector 
+  tn1 = -an2
+  tn2 =  an1
+
+  #If #FORCING eq "TZ" 
+
+    call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1ex)
+
+    call ogDeriv(ep,0,2,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1exx)
+    call ogDeriv(ep,0,1,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1exy)
+    call ogDeriv(ep,0,0,2,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1eyy)
+
+    ! call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2ex)
+    call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2ey)
+
+    call ogDeriv(ep,0,2,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2exx)
+    call ogDeriv(ep,0,1,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2exy)
+    call ogDeriv(ep,0,0,2,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2eyy)
+
+    call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,pc,pex)
+    call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,pc,pey)
+
+    fe(0) = u1ex + u2ey
+    fe(1) = an1*( u1exx + u2exy ) + an2*( u1exy + u2eyy )
+    fe(2) = tn1*( mu*( u1exx+u1eyy ) - pex ) + tn2*( mu*( u2exx+u2eyy ) - pey )
+    ! fe(2) = u2exx 
+    fe(3) = 0.
+    ! fe(3) = u2ex
+    ! write(*,'("displacement: i1,i2=",2i3," fe=",4(1pe12.4,1x))') i1,i2,(fe(n),n=0,3)
+
+  #End
+
+  ! eval coefficients in matrix a4 for ghost points by discrete delta
+  evalCoefficients(i1,i2,i3, numberOfEquations,a4,evalEquationsDisplacementCurvilinear2dOrder4 )
+
+  ! write(*,'("displacement: i1,i2=",2i3," a4=",4(1pe12.4,1x))') i1,i2,((a4(n,n2),n=0,3),n2=0,3)
+
+
+  ! evaluate equations with wrong values in the ghost        
+  evalEquationsDisplacementCurvilinear2dOrder4()
+
+  ! adjust rhs for wrong values on ghost 
+  do n=0,numberOfEquations-1
+    f(n) = -f(n) + a4(n,0)*u(i1-  is1,i2-  is2,i3,u1c) + a4(n,1)*u(i1-  is1,i2-  is2,i3,u2c) + \
+                   a4(n,2)*u(i1-2*is1,i2-2*is2,i3,u1c) + a4(n,3)*u(i1-2*is1,i2-2*is2,i3,u2c);
+  end do
+  ! solve for ghost
+  call dgeco( a4(0,0), 4, 4, ipvt(0),rcond,work(0))
+  call dgesl( a4(0,0), 4, 4, ipvt(0), f(0), job)
+
+  ! write(*,'(" rcond=",1pe10.2)') rcond
+  ! stop 555
+
+  ! assign ghost
+  u(i1-  is1,i2-  is2,i3,u1c) = f(0)
+  u(i1-  is1,i2-  is2,i3,u2c) = f(1)
+  u(i1-2*is1,i2-2*is2,i3,u1c) = f(2)
+  u(i1-2*is1,i2-2*is2,i3,u2c) = f(3)
+
+  if( .true. )then
+    call ogDeriv(ep,0,0,0,0,xy(i1-is1,i2-is2,i3,0),xy(i1-is1,i2-is2,i3,1),0.,t,u1c,u1e)
+    call ogDeriv(ep,0,0,0,0,xy(i1-is1,i2-is2,i3,0),xy(i1-is1,i2-is2,i3,1),0.,t,u2c,u2e)
+    write(*,'("Displacement: i1,i2=",2i3," u1(-1)=",1pe12.4," err=",1pe10.2," u2(-1)=",1pe12.4," err=",1pe10.2)') \
+           i1,i2,f(0),f(0)-u1e,f(1),f(1)-u2e
+
+    ! u(i1-  is1,i2-  is2,i3,u1c) = u1e
+    ! u(i1-  is1,i2-  is2,i3,u2c) = u2e
+
+    call ogDeriv(ep,0,0,0,0,xy(i1-2*is1,i2-2*is2,i3,0),xy(i1-2*is1,i2-2*is2,i3,1),0.,t,u1c,u1e)
+    call ogDeriv(ep,0,0,0,0,xy(i1-2*is1,i2-2*is2,i3,0),xy(i1-2*is1,i2-2*is2,i3,1),0.,t,u2c,u2e)
+    write(*,'("Displacement: i1,i2=",2i3," u1(-2)=",1pe12.4," err=",1pe10.2," u2(-2)=",1pe12.4," err=",1pe10.2)') \
+           i1,i2,f(2),f(2)-u1e,f(3),f(3)-u2e  
+
+    ! u(i1-2*is1,i2-2*is2,i3,u1c) = u1e
+    ! u(i1-2*is1,i2-2*is2,i3,u2c) = u2e
+
+  end if
+
+
+  if( .true. .or. checkResiduals )then
+    ! re-evaluate the equations
+    evalEquationsDisplacementCurvilinear2dOrder4()
+    resMax=0.
+    do n=0,numberOfEquations-1
+      resMax = max(resMax,abs(f(n)))
+    end do
+    if( resMax>resTol )then
+      write(*,'("Displacement BC: order 4, CURV: ERROR residuals are large =",4(1pe12.4,1x))') (f(n),n=0,3)
+    end if
+
+  end if
+
+  ! --- Extrapolate any extra ghost --- 
+  do ghost=3,numGhost
+    ! (j1,j2,j3) is the ghost point index
+    j1 = i1 - is1*ghost 
+    j2 = i2 - is2*ghost 
+    j3 = i3 - is3*ghost 
+    u(j1,j2,j3,u1c)=extrap3(u,j1+is1,j2+is2,j3+is3,u1c,is1,is2,is3)
+    u(j1,j2,j3,u2c)=extrap3(u,j1+is1,j2+is2,j3+is3,u2c,is1,is2,is3)
+    #If #DIM eq "3"
+      u(j1,j2,j3,u3c)=extrap3(u,j1+is1,j2+is2,j3+is3,u3c,is1,is2,is3)
+    #End
+  end do  
+
+#endMacro
+
+
+
+! ==========================================================================
+!     Apply displacement BOUNDARY VALUES
+!
+! New general version - Aug 14, 2021 wdh
+! 
+! FORCING equals noForcing or TZ or forcing
+! DIM : 2 or 3
+! ORDER : 2 or 4
+! GRIDTYPE rectangular or curvilinear
+! ==========================================================================
+#beginMacro displacementBCMacro(FORCING,DIM,ORDER,GRIDTYPE)
+
+ if( .false. )then
+   write(*,*) 'Displacement BC -- assign extended boundaries:'
+   write(*,'(" bcOpt: grid,side,axis=",3i3,",loop bounds: nn1a,nn1b,nn2a,nn2b,nn3a,nn3b=",6i3)') grid,side,axis,nn1a,nn1b,nn2a,nn2b,nn3a,nn3b
+   write(*,'("                                                           gridIndexRange=",6i3)') ((gridIndexRange(m,dir),m=0,1),dir=0,nd-1)
+   write(*,'("                                                                      gid=",6i3)') ((gid(m,dir),m=0,1),dir=0,nd-1)
+ end if
+
+  ! ------ Assigned extended boundaries with dirichlet values ------
+  beginGhostLoops3d()
+    #If #FORCING eq "noForcing"
+      u(i1,i2,i3,u1c)=0.
+      u(i1,i2,i3,u2c)=0.
+      #If #DIM eq "3"
+        u(i1,i2,i3,u3c)=0.
+      #End
+    #Elif #FORCING eq "TZ"
+      #If #DIM eq "2"
+        OGF2D(i1,i2,i3,t,u0,v0)
+        u(i1,i2,i3,u1c)=u0
+        u(i1,i2,i3,u2c)=v0
+      #Else
+        OGF3D(i1,i2,i3,t,u0,v0,w0)
+        u(i1,i2,i3,u1c)=u0
+        u(i1,i2,i3,u2c)=v0
+        u(i1,i2,i3,u3c)=w0       
+      #End  
+    #Elif #FORCING eq "forcing"
+      ! Use forcing in array bcf(..)  
+      stop 1234 
+    #Else
+      stop 8888            
+    #End
+  endLoops3d()
+#endMacro
+
+
+! ==========================================================================
+!   Macro: Assign displacementBC GHOST VALUES 
+!
+! New general version - Aug 14, 2021 wdh
+! 
+! FORCING equals noForcing or TZ or forcing
+! DIM : 2 or 3
+! ORDER : 2 or 4
+! GRIDTYPE rectangular or curvilinear
+! ==========================================================================
+#beginMacro displacementGhostMacro(FORCING,DIM,ORDER,GRIDTYPE)
+
+  ! ----------- Assign ghost points ----------
+
+  fe(0)=0.; fe(1)=0.; fe(2)=0.; fe(3)=0.;   ! holds forcing 
+  numberOfEquations=4;                      ! number of ghost points we solve for   
+
+ if( .false. )then
+   write(*,*) 'Displacement BC -- assign GHOST:'
+   write(*,'(" bcOpt: grid,side,axis=",3i3,",loop bounds: n1a,n1b,n2a,n2b,n3a,n3b=",6i3)') grid,side,axis,n1a,n1b,n2a,n2b,n3a,n3b
+   write(*,'("                                                     gridIndexRange=",6i3)') ((gridIndexRange(m,dir),m=0,1),dir=0,nd-1)
+   write(*,'("                                                                gid=",6i3)') ((gid(m,dir),m=0,1),dir=0,nd-1)
+ end if
+
+  beginLoops3d()
+    !   Set div(u) = 0 
+    !      u.x + v.y + w.z = 0
+    #If #ORDER eq "2" 
+      #If #GRIDTYPE eq "rectangular"
+
+        if( axis==0 )then
+          #If #FORCING eq "noForcing"
+            #If #DIM eq "2"
+              ! (1) u.x = - v.y
+              ! (2) Extrap v 
+              u(i1-is1,i2-is2,i3,u1c)=u(i1+is1,i2+is2,i3,u1c) + is1*dx(0)*2.*uy22r(i1,i2,i3,u2c)
+              u(i1-is1,i2-is2,i3,u2c)=extrap3(u,i1,i2,i3,u2c,is1,is2,is3)
+              ! write(*,'(" DBC: i1,i2=",2i3," div(u)=",1pe12.4)') i1,i2, ux22r(i1,i2,i3,u1c) + uy22r(i1,i2,i3,u2c)
+            #Else
+              ! u.x = - (v.y + w.z)
+              u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3,u1c) + is1*dx(0)*2.*( uy23r(i1,i2,i3,u2c) + uz23r(i1,i2,i3,u3c) ) 
+              u(i1-is1,i2-is2,i3-is3,u2c)=extrap3(u,i1,i2,i3,u2c,is1,is2,is3)
+              u(i1-is1,i2-is2,i3-is3,u3c)=extrap3(u,i1,i2,i3,u3c,is1,is2,is3)          
+            #End
+          #Elif #FORCING eq "TZ"
+            ! Twilight-zone: 
+            ! u.x = -v.y + ue.x -ve.y 
+            #If #DIM eq "2"         
+              OGDERIV2D(0,1,0,0,i1,i2,i3,t,ux0,vx0)
+              OGDERIV2D(0,0,1,0,i1,i2,i3,t,uy0,vy0) 
+              u(i1-is1,i2-is2,i3,u1c)=u(i1+is1,i2+is2,i3,u1c) - is1*dx(0)*2.*( -uy22r(i1,i2,i3,u2c) + ux0 +vy0 )
+              u(i1-is1,i2-is2,i3,u2c)=extrap3(u,i1,i2,i3,u2c,is1,is2,is3)
+            #Else
+              call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u1c,ux0)
+              call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u2c,vy0)
+              call ogDeriv(ep,0,0,0,1,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u3c,wz0)
+
+              u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c) - is1*dx(0)*2.*( -uy23r(i1,i2,i3,u2c) -uz23r(i1,i2,i3,u3c) + ux0 + vy0 + wz0 )
+              u(i1-is1,i2-is2,i3-is3,u2c)=extrap3(u,i1,i2,i3,u2c,is1,is2,is3)
+              u(i1-is1,i2-is2,i3-is3,u3c)=extrap3(u,i1,i2,i3,u3c,is1,is2,is3)
+
+            #End
+          #Else  
+            ! Use forcing in array bcf(..)  
+            stop 1234     
+          #End
+
+        else if( axis==1 )then
+          #If #FORCING eq "noForcing"
+            ! (1) extrap u
+            ! (2) v.y = - u.x
+            #If #DIM eq "2"
+              u(i1-is1,i2-is2,i3,u1c)=extrap3(u,i1,i2,i3,u1c,is1,is2,is3)
+              u(i1-is1,i2-is2,i3,u2c)=u(i1+is1,i2+is2,i3,u2c) + is2*dx(1)*2.*ux22r(i1,i2,i3,u1c)
+            #Else
+              u(i1-is1,i2-is2,i3-is3,u1c)=extrap3(u,i1,i2,i3,u1c,is1,is2,is3)
+              u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3,u2c) + is2*dx(1)*2.*( ux23r(i1,i2,i3,u1c) + uz23r(i1,i2,i3,u3c) ) 
+              u(i1-is1,i2-is2,i3-is3,u3c)=extrap3(u,i1,i2,i3,u3c,is1,is2,is3)
+            #End
+          #Elif #FORCING eq "TZ"
+            ! Twilight-zone: 
+            #If #DIM eq "2"         
+              OGDERIV2D(0,1,0,0,i1,i2,i3,t,ux0,vx0)
+              OGDERIV2D(0,0,1,0,i1,i2,i3,t,uy0,vy0) 
+              u(i1-is1,i2-is2,i3,u1c)=extrap3(u,i1,i2,i3,u1c,is1,is2,is3)
+              u(i1-is1,i2-is2,i3,u2c)=u(i1+is1,i2+is2,i3,u2c) -is2*dx(1)*2.*( -ux22r(i1,i2,i3,u1c) + vy0 + ux0 )
+            #Else
+              ! 3D
+              call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u1c,ux0)
+              call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u2c,vy0)
+              call ogDeriv(ep,0,0,0,1,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u3c,wz0) 
+              u(i1-is1,i2-is2,i3-is3,u1c)=extrap3(u,i1,i2,i3,u1c,is1,is2,is3)
+              u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c) -is2*dx(1)*2.*( -ux23r(i1,i2,i3,u1c) - uz23r(i1,i2,i3,u3c) + ux0 + vy0 + wz0 )                           
+              u(i1-is1,i2-is2,i3-is3,u3c)=extrap3(u,i1,i2,i3,u3c,is1,is2,is3)
+
+            #End
+          #Else  
+            ! Use forcing in array bcf(..)  
+            stop 1234     
+          #End 
+
+        else
+          ! axis==2 
+          ! w.z = - ( u.x + v.y )
+          #If #FORCING eq "noForcing"
+            ! (1) extrap u
+            ! (2) v.y = - u.x
+            u(i1-is1,i2-is2,i3-is3,u1c)=extrap3(u,i1,i2,i3,u1c,is1,is2,is3)
+            u(i1-is1,i2-is2,i3-is3,u2c)=extrap3(u,i1,i2,i3,u2c,is1,is2,is3)
+            u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c) + is3*dx(2)*2.*( ux23r(i1,i2,i3,u1c) + uy23r(i1,i2,i3,u2c) ) 
+          #Elif #FORCING eq "TZ"
+            ! Twilight-zone: 
+              ! 3D
+            call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u1c,ux0)
+            call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u2c,vy0)
+            call ogDeriv(ep,0,0,0,1,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u3c,wz0) 
+            u(i1-is1,i2-is2,i3-is3,u1c)=extrap3(u,i1,i2,i3,u1c,is1,is2,is3)
+            u(i1-is1,i2-is2,i3-is3,u2c)=extrap3(u,i1,i2,i3,u2c,is1,is2,is3)
+            u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c) -is3*dx(2)*2.*( -ux23r(i1,i2,i3,u1c) - uy23r(i1,i2,i3,u2c) + ux0 + vy0 + wz0 )                           
+          #Else  
+            ! Use forcing in array bcf(..)  
+            stop 1234     
+          #End           
+
+        end if
+
+      #Else
+
+        ! --- displacement ghost : curvilinear  -----
+
+        #If #DIM eq "2" 
+          getNormal2d(i1,i2,i3,axis)
+          ! tangent
+          t1=-an2
+          t2= an1
+        #Else
+          getNormal3d(i1,i2,i3,axis)
+        #End
+
+        #If #FORCING eq "forcing" 
+         if( assignTwilightZone.eq.1 )then
+          #If #DIM eq "2"
+            call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,ux0)
+            call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,vy0)
+            fe(0) = ux0 + vy0
+          #Else
+            call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u1c,ux0)
+            call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u2c,vy0)
+            call ogDeriv(ep,0,0,0,1,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u3c,wz0)            
+            fe(0) = ux0 + vy0 + wz0
+          #End
+          fe(1) = 0.
+         end if
+        #End       
+
+        #If #DIM eq "2"
+          ! here are  the equations we mean to satisfy: 
+          !   u.x + v.y = 0
+          !   Extrapolate t.uv
+
+          ux = ux22(i1,i2,i3,u1c)
+          vy = uy22(i1,i2,i3,u2c)
+          j1 = i1-is1; j2=i2-is2; j3=i3;
+          f(0) = ux + vy - fe(0) 
+          f(1) =  t1*( u(j1,j2,j3,u1c)-extrap3(u,j1+is1,j2+is2,j3+is3,u1c,is1,is2,is3) ) \
+                 +t2*( u(j1,j2,j3,u2c)-extrap3(u,j1+is1,j2+is2,j3+is3,u2c,is1,is2,is3) )
+
+
+          !  u.x + v.y =  r.x u.r + s.x u.s  + r.y v.r + s.y v.s
+          !            =  
+          !  [ a2(0,0) a2(0,1) ][ u(-1) ] =  RHS
+          !  [ a2(1,0) a2(1,1) ][ v(-1) ]   
+          a2(0,0)=-is*( rsxy(i1,i2,i3,axis,0) )/(2.*dr(axis))
+          a2(0,1)=-is*( rsxy(i1,i2,i3,axis,1) )/(2.*dr(axis))
+
+          a2(1,0)= t1 
+          a2(1,1)= t2
+
+          ! here are the wrong ghostpoint values
+          q(0) = u(i1-is1,i2-is2,i3,u1c)
+          q(1) = u(i1-is1,i2-is2,i3,u2c)
+
+          ! subtract off the contributions from the wrong values at the ghost points:
+          do n=0,1
+            f(n) = (a2(n,0)*q(0)+a2(n,1)*q(1)) - f(n)
+          end do
+
+          ! could optimize and do this by hand 
+          call dgeco( a2(0,0), 2, 2, ipvt(0),rcond,work(0))
+          call dgesl( a2(0,0), 2, 2, ipvt(0), f(0), job)
+         
+          u(i1-is1,i2-is2,i3,u1c)=f(0)
+          u(i1-is1,i2-is2,i3,u2c)=f(1)
+
+          if( debug.gt.3 )then 
+            ! re-evaluate and check residuals
+        
+            ux=ux22(i1,i2,i3,u1c)
+            vy=uy22(i1,i2,i3,u2c)
+            f(0) = ux + vy - fe(0) 
+            f(1) =  t1*( u(j1,j2,j3,u1c)-extrap3(u,j1+is1,j2+is2,j3+is3,u1c,is1,is2,is3) ) \
+                   +t2*( u(j1,j2,j3,u2c)-extrap3(u,j1+is1,j2+is2,j3+is3,u2c,is1,is2,is3) )      
+
+            resMax = max(abs(f(0)),abs(f(1)))      
+            write(*,'(" --> displacement BC: curvilinear fill ghost: residuals =",2(1pe12.4))') f(0),f(1)
+
+          end if
+
+        #Else
+          ! --- 3D Displacement ghost curvlinear ----
+          ! here are  the equations we mean to satisfy: 
+          !   u.x + v.y + w.z = 0
+          !   Extrapolate t.uv
+          ! This can be written as: 
+          !   div(u)* n  + (I - n n^T)*( u - extrap( u ) ) 
+          ! 
+
+          ! first ghost:
+          j1 = i1-is1; j2 = i2-is2; j3 = i3-is3;
+
+          ux = ux23(i1,i2,i3,u1c)
+          vy = uy23(i1,i2,i3,u2c)          
+          wz = uz23(i1,i2,i3,u3c)   
+
+          divu = ux + vy + wz - fe(0) 
+          g(0) = u(j1,j2,j3,u1c)-extrap3(u,j1+is1,j2+is2,j3+is3,u1c,is1,is2,is3)
+          g(1) = u(j1,j2,j3,u2c)-extrap3(u,j1+is1,j2+is2,j3+is3,u2c,is1,is2,is3)                 
+          g(2) = u(j1,j2,j3,u3c)-extrap3(u,j1+is1,j2+is2,j3+is3,u3c,is1,is2,is3)    
+
+          f(0) = divu*an1 + (1.-an1*an1)*g(0) + (  -an1*an2)*g(1) +(  -an1*an3)*g(2)               
+          f(1) = divu*an2 + (  -an2*an1)*g(0) + (1.-an2*an2)*g(1) +(  -an2*an3)*g(2)               
+          f(2) = divu*an3 + (  -an3*an1)*g(0) + (  -an3*an2)*g(1) +(1.-an3*an3)*g(2)    
+
+
+          a3(0,0)=-is*( rsxy(i1,i2,i3,axis,0) )/(2.*dr(axis)) *an1 + (1.-an1*an1)  ! coeff of u1(-1) in f(0)
+          a3(0,1)=-is*( rsxy(i1,i2,i3,axis,1) )/(2.*dr(axis)) *an1 + (  -an1*an2)  ! coeff of u2(-1) in f(0)
+          a3(0,2)=-is*( rsxy(i1,i2,i3,axis,2) )/(2.*dr(axis)) *an1 + (  -an1*an3)  ! coeff of u3(-1) in f(0)
+
+          a3(1,0)=-is*( rsxy(i1,i2,i3,axis,0) )/(2.*dr(axis)) *an2 + (  -an2*an1)  ! coeff of u1(-1) in f(1)
+          a3(1,1)=-is*( rsxy(i1,i2,i3,axis,1) )/(2.*dr(axis)) *an2 + (1.-an2*an2)
+          a3(1,2)=-is*( rsxy(i1,i2,i3,axis,2) )/(2.*dr(axis)) *an2 + (  -an2*an3)
+
+          a3(2,0)=-is*( rsxy(i1,i2,i3,axis,0) )/(2.*dr(axis)) *an3 + (  -an3*an1)
+          a3(2,1)=-is*( rsxy(i1,i2,i3,axis,1) )/(2.*dr(axis)) *an3 + (  -an3*an2)
+          a3(2,2)=-is*( rsxy(i1,i2,i3,axis,2) )/(2.*dr(axis)) *an3 + (1.-an3*an3)                    
+
+
+          ! here are the wrong ghostpoint values
+          q(0) = u(i1-is1,i2-is2,i3-is3,u1c)
+          q(1) = u(i1-is1,i2-is2,i3-is3,u2c)
+          q(2) = u(i1-is1,i2-is2,i3-is3,u3c)
+
+          ! subtract off the contributions from the wrong values at the ghost points:
+          do n=0,2
+            f(n) = ( a3(n,0)*q(0) +a3(n,1)*q(1)+ a3(n,2)*q(2) ) - f(n)
+          end do
+
+          ! could optimize and do this by hand 
+          call dgeco( a3(0,0), 3, 3, ipvt(0),rcond,work(0))
+          call dgesl( a3(0,0), 3, 3, ipvt(0), f(0), job)
+         
+          u(i1-is1,i2-is2,i3-is3,u1c)=f(0)
+          u(i1-is1,i2-is2,i3-is3,u2c)=f(1)
+          u(i1-is1,i2-is2,i3-is3,u3c)=f(2)
+
+          if( .true. .or. checkResiduals )then 
+            ! re-evaluate and check residuals
+            ux = ux23(i1,i2,i3,u1c)
+            vy = uy23(i1,i2,i3,u2c)          
+            wz = uz23(i1,i2,i3,u3c)   
+
+            divu = ux + vy + wz - fe(0) 
+            g(0) = u(j1,j2,j3,u1c)-extrap3(u,j1+is1,j2+is2,j3+is3,u1c,is1,is2,is3)
+            g(1) = u(j1,j2,j3,u2c)-extrap3(u,j1+is1,j2+is2,j3+is3,u2c,is1,is2,is3)                 
+            g(2) = u(j1,j2,j3,u3c)-extrap3(u,j1+is1,j2+is2,j3+is3,u3c,is1,is2,is3)    
+
+            f(0) = divu*an1 + (1.-an1*an1)*g(0) + (  -an1*an2)*g(1) +(  -an1*an3)*g(2)               
+            f(1) = divu*an2 + (  -an2*an1)*g(0) + (1.-an2*an2)*g(1) +(  -an2*an3)*g(2)               
+            f(2) = divu*an3 + (  -an3*an1)*g(0) + ( - an3*an2)*g(1) +(1.-an3*an3)*g(2)               
+        
+            resMax = max(abs(f(0)),abs(f(1)),abs(f(2)))      
+            if( resMax > resTol )then
+              write(*,'(" --> displacement BC:ERROR curvilinear fill ghost 3D: residuals =",3(1pe12.4))') f(0),f(1),f(2)
+              stop 3232
+            end if
+          end if
+
+
+
+        #End
+
+      #End
+
+      ! --- Extrapolate any extra ghost --- 
+      do ghost=2,numGhost
+        ! (j1,j2,j3) is the ghost point index
+        j1 = i1 - is1*ghost 
+        j2 = i2 - is2*ghost 
+        j3 = i3 - is3*ghost 
+        u(j1,j2,j3,u1c)=extrap3(u,j1+is1,j2+is2,j3+is3,u1c,is1,is2,is3)
+        u(j1,j2,j3,u2c)=extrap3(u,j1+is1,j2+is2,j3+is3,u2c,is1,is2,is3)
+        #If #DIM eq "3"
+          u(j1,j2,j3,u3c)=extrap3(u,j1+is1,j2+is2,j3+is3,u3c,is1,is2,is3)
+        #End
+      end do 
+
+    #Elif #ORDER eq "4"
+      ! stop 1234
+      ! u(i1-is1,i2-is2,i3,u1c)=extrap5(u,i1,i2,i3,u1c,is1,is2,is3)
+      ! u(i1-is1,i2-is2,i3,u2c)=extrap5(u,i1,i2,i3,u2c,is1,is2,is3)
+
+      #If #GRIDTYPE eq "rectangular"
+        ! -------- RECTANGULAR ORDER 4 ------
+
+        if( axis==0 )then
+          ! --------------------------
+          !    u1.x + u2.y =0
+          !    Extrap(u1)
+          ! -------------------------
+
+
+          Au(1,1) = -is1* 8/(12*dx(axis))    ! coeff of u1(-1) u1.x
+          Au(1,2) =  is1* 1/(12*dx(axis))    ! coeff of u1(-2) u1.x 
+          Au(2,1) =      -5                  ! coeff of u1(-1) in extrapolation
+          Au(2,2) =       1                  ! coeff of u1(-2) in extrapolation
+          ! C = A^{-1} 
+          det = Au(1,1)*Au(2,2) - Au(2,1)*Au(1,2); 
+          cu11 = Au(2,2)/det; cu12=-Au(1,2)/det;
+          cu21 =-Au(2,1)/det; cu22= Au(1,1)/det;
+
+          if( twilightZone==1 )then
+            call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1ex)
+            call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2ey)
+            f1e =  u1ex + u2ey
+            f2e = 0.;
+          else
+            f1e = 0.;
+            f2e = 0.;
+          end if           
+          ! --- evaluate equations with wrong values in the ghost ----
+          j1 = i1-2*is1; j2=i2; j3=i3;   ! 2nd ghost 
+          f1 = ux42r(i1,i2,i3,u1c) + uy42r(i1,i2,i3,u2c) - f1e;                      ! u1.x + u2.y 
+          f2 = u(j1,j2,j3,u1c) - extrap5(u,j1+is1,j2,j3,u1c,is1,is2,is3);            ! extrapolate 2nd ghost 
+          f1 = -f1 + Au(1,1)*u(i1-1*is1,i2-1*is2,i3,u1c) + Au(1,2)*u(i1-2*is1,i2-2*is2,i3,u1c); 
+          f2 = -f2 + Au(2,1)*u(i1-1*is1,i2-1*is2,i3,u1c) + Au(2,2)*u(i1-2*is1,i2-2*is2,i3,u1c);    
+          ! assign two ghost
+          u(i1-  is1,i2-  is2,i3,u1c) = cu11*f1 + cu12*f2;
+          u(i1-2*is1,i2-2*is2,i3,u1c) = cu21*f1 + cu22*f2; 
+
+          if( checkResiduals )then
+            ! check residual
+            f1 = ux42r(i1,i2,i3,u1c) + uy42r(i1,i2,i3,u2c) - f1e;     
+            f2 = u(j1,j2,j3,u1c) - extrap5(u,j1+is1,j2,j3,u1c,is1,is2,is3);  
+            res1 = abs(f1); 
+            res2 = abs(f2); 
+            if( max(res1,res2)>resTol )then
+              write(*,'("DISPLACEMENT BC: order 4: residuals in u1 BC=",2(1pe12.4,1x)," (ghost=1,2) (side,axis)=",2i3)') res1,res2,side,axis
+              write(*,*) 'res too big'
+              stop 7777
+            end if
+          end if
+
+          ! u2.xx - (1/mu) p_y = 0 
+          ! Extrap u2(-2)
+
+          Av(1,1) =     16./(12.*dx(axis)**2)    ! coeff of u2(-1) u2.xx
+          Av(1,2) =     -1./(12.*dx(axis)**2)    ! coeff of u2(-2) u2.xx
+          Av(2,1) =      -5.                     ! coeff of u2(-1) in extrapolation 5 
+          Av(2,2) =       1.                     ! coeff of u2(-2) int extrapolation 5
+          ! C = A^{-1} 
+          det =  Av(1,1)*Av(2,2) -  Av(2,1)*Av(1,2); 
+          cv11 = Av(2,2)/det; cv12=-Av(1,2)/det;
+          cv21 =-Av(2,1)/det; cv22= Av(1,1)/det;
+          if( twilightZone==1 )then
+            call ogDeriv(ep,0,2,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2exx)
+            call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,pc,pey)
+            f1e = u2exx - (1./mu)*pey
+            f2e = 0.;
+            ! write(*,'("DISPLACEMENT BC: i1,i2=",2i3," py,pey=",2(1pe12.4)," err=",1pe10.2)') i1,i2,uy42r(i1,i2,i3,pc),pey,uy42r(i1,i2,i3,pc)-pey
+          else
+            f1e = 0.;
+            f2e = 0.;
+          end if
+          ! ---- evaluate equations with wrong values in the ghost ----
+          f1 = uxx42r(i1,i2,i3,u2c) - (1./mu)*uy42r(i1,i2,i3,pc)  - f1e;
+          f2 = u(j1,j2,j3,u2c) - extrap5(u,j1+is1,j2,j3,u2c,is1,is2,is3);            ! extrapolate u2
+
+            
+          f1 = -f1 + Av(1,1)*u(i1-1*is1,i2-1*is2,i3,u2c) + Av(1,2)*u(i1-2*is1,i2-2*is2,i3,u2c); 
+          f2 = -f2 + Av(2,1)*u(i1-1*is1,i2-1*is2,i3,u2c) + Av(2,2)*u(i1-2*is1,i2-2*is2,i3,u2c); 
+          ! assign two ghost
+          u(i1-  is1,i2-  is2,i3,u2c) = cv11*f1 + cv12*f2;
+          u(i1-2*is1,i2-2*is2,i3,u2c) = cv21*f1 + cv22*f2;                
+
+          if( checkResiduals )then
+            ! check residual
+            f1 = uxx42r(i1,i2,i3,u2c) - (1./mu)*uy42r(i1,i2,i3,pc)  - f1e;
+            f2 = u(j1,j2,j3,u2c) - extrap5(u,j1+is1,j2,j3,u2c,is1,is2,is3);      
+            res1 = abs(f1); 
+            res2 = abs(f2); 
+            if( max(res1,res2)>resTol )then
+              write(*,'("Displacement BC: order 4: residuals in u2 BC=",2(1pe12.4,1x)," (ghost 1 and 2)")') res1,res2;
+              stop 888
+            end if
+          end if
+
+          ! Extrapolate any additional ghost 
+          do ghost=3,numGhost 
+            j1 = i1-ghost*is1; j2=i2; j3=i3; 
+            u(j1,j2,j3,u1c) = extrap5(u,j1+is1,j2,j3,u1c,is1,is2,is3);
+            u(j1,j2,j3,u2c) = extrap5(u,j1+is1,j2,j3,u2c,is1,is2,is3);
+          end do           
+
+        elseif( axis==1 )then
+          write(*,*) 'finish me Dirichlet BC, order=4, axis==2';
+          stop 222
+        else
+          stop 333
+        end if
+
+      #Else
+        ! -------- CURVILINEAR ORDER 4 ------
+        displacementOrder4CurvlinearMacro(DIM,FORCING)
+      #End
+
+
+    #Else
+      ! order = ?
+      stop 6666
+    #End
+  endLoops3d()
+
+  ! write(*,'("Traction BC -- stop here for now")')
+  ! stop 9999
+#endMacro
+
+
+
+
+! ==========================================================================
+! Apply a displacementBC BC -- 2d  *OLD**
+! 
+! FORCING equals noForcing or forcing
+! ORDER : 2 or 4
+! ==========================================================================
+#beginMacro displacementBC2dMacro(FORCING,ORDER)
+
+ stop 2222
+ beginGhostLoops3d()
+   #If #FORCING ne "forcing"
+     u(i1,i2,i3,u1c)=0.
+     u(i1,i2,i3,u2c)=0.
+   #Else
+     OGF2D(i1,i2,i3,t,u0,v0)
+     u(i1,i2,i3,u1c)=u0
+     u(i1,i2,i3,u2c)=v0
+   #End
+   ! Ghost points: 
+   !   u.x + v.y = 0
+   #If #ORDER eq "2" 
+     u(i1-is1,i2-is2,i3,u1c)=extrap3(u,i1,i2,i3,u1c,is1,is2,is3)
+     u(i1-is1,i2-is2,i3,u2c)=extrap3(u,i1,i2,i3,u2c,is1,is2,is3)
+   #Else
+     u(i1-is1,i2-is2,i3,u1c)=extrap5(u,i1,i2,i3,u1c,is1,is2,is3)
+     u(i1-is1,i2-is2,i3,u2c)=extrap5(u,i1,i2,i3,u2c,is1,is2,is3)
+   #End
+ endLoops3d()
+#endMacro
+
+
+! ==========================================================================
+! Apply a displacementBC BC -- 3d  *** OLD ****
+! 
+! FORCING equals noForcing or forcing
+! ==========================================================================
+#beginMacro displacementBC3dMacro(FORCING,ORDER)
+ stop 333
+ beginGhostLoops3d()
+   #If #FORCING ne "forcing"
+     u(i1,i2,i3,u1c)=0.
+     u(i1,i2,i3,u2c)=0.
+     u(i1,i2,i3,u3c)=0.
+   #Else
+     OGF3D(i1,i2,i3,t,u0,v0,w0)
+     u(i1,i2,i3,u1c)=u0
+     u(i1,i2,i3,u2c)=v0
+     u(i1,i2,i3,u3c)=w0
+   #End
+   #If #ORDER eq "2"
+     u(i1-is1,i2-is2,i3-is3,u1c)=extrap3(u,i1,i2,i3,u1c,is1,is2,is3)
+     u(i1-is1,i2-is2,i3-is3,u2c)=extrap3(u,i1,i2,i3,u2c,is1,is2,is3)
+     u(i1-is1,i2-is2,i3-is3,u3c)=extrap3(u,i1,i2,i3,u3c,is1,is2,is3)
+   #Else
+     u(i1-is1,i2-is2,i3-is3,u1c)=extrap5(u,i1,i2,i3,u1c,is1,is2,is3)
+     u(i1-is1,i2-is2,i3-is3,u2c)=extrap5(u,i1,i2,i3,u2c,is1,is2,is3)
+     u(i1-is1,i2-is2,i3-is3,u3c)=extrap5(u,i1,i2,i3,u3c,is1,is2,is3)
+   #End
+ endLoops3d()
+#endMacro
+
+! ====================================================================================
+! Evaluate the slip-wall equations
+! ====================================================================================
+#beginMacro evalSlipWallEquations2d(FORCING)
+ ux=ux22(i1,i2,i3,u1c)
+ uy=uy22(i1,i2,i3,u1c)
+ vx=ux22(i1,i2,i3,u2c)
+ vy=uy22(i1,i2,i3,u2c)
+
+ ! components of the stress tensor: 
+ tau11 = alpha*ux + lambda*vy
+ tau12 = mu*( uy + vx )
+ tau21 = tau12
+ tau22 = lambda*ux + alpha*vy
+
+ ! f(m) holds the current residuals in the equations we mean to satisfy:  
+ ! f(0) = an1*u(i1-is1,i2-is2,i3,u1c)+an2*u(i1-is1,i2-is2,i3,u2c) - ( an1*um + an2*vm )
+ f(0) = 0.
+ f(1) = t1*(an1*tau11+an2*tau21) + t2*(an1*tau12+an2*tau22)
+
+ #If #FORCING eq "forcing" 
+  if( assignTwilightZone.eq.0 )then
+   ! forced case: what should this be ??  do nothing for now 
+   !f(0) = f(0) + is*bcf(side,axis,i1,i2,i3,u1c)
+   !f(1) = f(1) + is*bcf(side,axis,i1,i2,i3,u2c)
+  else
+   ! We could do the following: 
+   !OGF2D(i1-is1,i2-is2,i3,t,um,vm)
+   !f(0) = an1*u(i1-is1,i2-is2,i3,u1c)+an2*u(i1-is1,i2-is2,i3,u2c) - ( an1*um + an2*vm )
+   OGDERIV2D(0,1,0,0,i1,i2,i3,t,ux0,vx0)
+   OGDERIV2D(0,0,1,0,i1,i2,i3,t,uy0,vy0)
+   f(1) = f(1) - t1*( an1*(alpha*ux0 + lambda*vy0) + an2*(mu*(uy0+vx0) ) )\
+               - t2*( an1*(mu*(uy0+vx0) )          + an2*(lambda*ux0 + alpha*vy0) )
+  end if
+ #End
+#endMacro
+
+! ==========================================================================
+! Apply a slip-wall BC -- curvilinear and 2d
+! 
+! FORCING equals noForcing or forcing
+! ==========================================================================
+#beginMacro slipWallBCCurvilinear2dMacro(FORCING)
+
+alpha=lambda+2*mu
+
+beginLoops2d()
+
+!  if( debug.gt.2 )then ! re-evaluate
+! 
+!    OGF2D(i1-is1,i2-is2,i3,t,u0,v0)
+!    write(*,'(" --> slipWall:curv:START i1,i2=",2i4," ghost: (u,v)=",2e10.2," (ue,ve)=",2e10.2)') i1,i2,u(i1-is1,i2-is2,i3,u1c),u(i1-is1,i2-is2,i3,u2c),u0,v0
+!    ! ' 
+!  end if
+
+ ! Solve 
+ !       n.u(-1) = given (by extrapolation)
+ !       n.tauv.t = 0 
+ !    -->   A uv.r + B uv.s = 0
+
+ ! here is the normal 
+ getNormal2d(i1,i2,i3,axis)
+
+ ! tangent: 
+ t1 =-an2
+ t2 = an1 
+
+ evalSlipWallEquations2d(FORCING)
+
+ !  [ a2(0,0) a2(0,1) ][ u(-1) ] =  RHS
+ !  [ a2(1,0) a2(1,1) ][ v(-1) ]   
+ !a2(0,0)=-is*( an1*alpha *rsxy(i1,i2,i3,axis,0)+an2*mu*rsxy(i1,i2,i3,axis,1) )/(2.*dr(axis))
+ !a2(0,1)=-is*( an1*lambda*rsxy(i1,i2,i3,axis,1)+an2*mu*rsxy(i1,i2,i3,axis,0) )/(2.*dr(axis))
+ !
+ !a2(1,0)=-is*( an1*mu*rsxy(i1,i2,i3,axis,1)+an2*lambda*rsxy(i1,i2,i3,axis,0) )/(2.*dr(axis))
+ !a2(1,1)=-is*( an1*mu*rsxy(i1,i2,i3,axis,0)+an2*alpha *rsxy(i1,i2,i3,axis,1) )/(2.*dr(axis))
+
+ a2(0,0)=an1
+ a2(0,1)=an2
+
+ a2(1,0)=-is*( t1*( an1*alpha *rsxy(i1,i2,i3,axis,0)+an2*mu*rsxy(i1,i2,i3,axis,1) )\
+              +t2*( an1*mu*rsxy(i1,i2,i3,axis,1)+an2*lambda*rsxy(i1,i2,i3,axis,0) ) )/(2.*dr(axis))
+ a2(1,1)=-is*( t1*( an1*lambda*rsxy(i1,i2,i3,axis,1)+an2*mu*rsxy(i1,i2,i3,axis,0) )\
+              +t2*( an1*mu*rsxy(i1,i2,i3,axis,0)+an2*alpha *rsxy(i1,i2,i3,axis,1) ) )/(2.*dr(axis))
+
+ ! here are the wrong ghostpoint values
+ q(0) = u(i1-is1,i2-is2,i3,u1c)
+ q(1) = u(i1-is1,i2-is2,i3,u2c)
+
+ ! subtract off the contributions from the wrong values at the ghost points:
+ do n=0,1
+   f(n) = (a2(n,0)*q(0)+a2(n,1)*q(1)) - f(n)
+ end do
+
+ ! write(*,'(" --> slipWall:curv:Before solve q=",2e10.2," f=",2e10.2)') q(0),q(1),f(0),f(1)
+ ! write(*,'(" --> slipWall:curv:Before solve a2=",4e10.2)') a2(0,0),a2(0,1),a2(1,0),a2(1,1)
+
+ call dgeco( a2(0,0), 2, 2, ipvt(0),rcond,work(0))
+ call dgesl( a2(0,0), 2, 2, ipvt(0), f(0), job)
+
+ u(i1-is1,i2-is2,i3,u1c)=f(0)
+ u(i1-is1,i2-is2,i3,u2c)=f(1)
+
+ if( debug.gt.3 )then ! re-evaluate
+
+!    OGF2D(i1-is1,i2-is2,i3,t,u0,v0)
+!    write(*,'(" --> slipWall:curv: i1,i2=",2i4," (u,v)=",2e10.2," (ue,ve)=",2e10.2)') i1,i2,u(i1-is1,i2-is2,i3,u1c),u(i1-is1,i2-is2,i3,u2c),u0,v0
+!    u(i1-is1,i2-is2,i3,u1c)=u0
+!    u(i1-is1,i2-is2,i3,u2c)=v0
+
+
+   evalSlipWallEquations2d(FORCING)
+
+   write(*,'(" --> slipWall:curv: i1,i2=",2i4," f=",2e10.2," an1,an2=",2f6.2," is,is1,is2=",3i2)') i1,i2,f(0),f(1),an1,an2,is,is1,is2
+   !'
+
+   ! write(*,'(" --> slipWall:curv: i1,i2,i3=",3i4," dr=",2e10.2)') i1,i2,i3,dr(0),dr(1)
+   ! write(*,'(" --> slipWall:curv: i1,i2,i3=",3i4," assignTwilightZone,addBoundaryForcing=",2i3,", rcond=",e10.2)') i1,i2,i3,assignTwilightZone,addBoundaryForcing(side,axis),rcond
+   ! write(*,'(" --> slipWall:curv: i1,i2=",2i4," rsxy=",4e10.2)') i1,i2,rsxy(i1,i2,i3,0,0),rsxy(i1,i2,i3,1,0),rsxy(i1,i2,i3,0,1),rsxy(i1,i2,i3,1,1)
+     ! '
+ end if
+
+endLoops2d()
+
+#endMacro
+
+
+
+! =================================================================================
+!   Assign values in the corners in 2D (see bcMaxwellCorners.bf)
+!
+!  Set the normal component of the solution on the extended boundaries (points N in figure)
+!  Set the corner points "C" 
+!              |
+!              X
+!              |
+!        N--N--X--X----
+!              |
+!        C  C  N
+!              |
+!        C  C  N
+!
+! ORDER: 2 or 4
+! GRIDTYPE: rectangular, curvilinear
+! FORCING: none, twilightZone
+! =================================================================================
+#beginMacro assignCorners2d(ORDER,GRIDTYPE,FORCING)
+
+  axis=0
+  axisp1=1
+
+  i3=gridIndexRange(0,2)
+  numberOfGhostPoints=orderOfAccuracy/2
+
+
+  do side1=0,1
+  do side2=0,1
+  if( boundaryCondition(side1,0).eq.tractionBC .and.\
+      boundaryCondition(side2,1).eq.tractionBC )then
+
+    i1=gridIndexRange(side1,0) ! (i1,i2,i3)=corner point
+    i2=gridIndexRange(side2,1)
+
+    ! write(*,'("bcOpt: assign corner side1,side2,i1,i2,i3=",2i2,3i5)') side1,side2,i1,i2,i3
+
+    is1=1-2*side1
+    is2=1-2*side2
+
+!   dra=dr(0)*is1
+!   dsa=dr(1)*is2
+
+    ! First assign normal component of the displacement:
+    ! u.x=u.xxx=0 --> u is even in x
+    ! v.y=v.yyy=0 --> v is even in y
+    do m=1,numberOfGhostPoints
+
+      js1=is1*m  ! shift to ghost point "m"
+      js2=is2*m
+
+      #If #GRIDTYPE == "rectangular"
+
+        u(i1-js1,i2,i3,u1c)=u(i1+js1,i2,i3,u1c)
+        u(i1,i2-js2,i3,u2c)=u(i1,i2+js2,i3,u2c)
+
+        #If #FORCING == "TZ"
+          OGF2D(i1-js1,i2,i3,t,um,vm)
+          OGF2D(i1+js1,i2,i3,t,up,vp)
+          u(i1-js1,i2,i3,u1c)=u(i1-js1,i2,i3,u1c) + um-up
+
+          OGF2D(i1,i2-js2,i3,t,um,vm)
+          OGF2D(i1,i2+js2,i3,t,up,vp)
+          u(i1,i2-js2,i3,u2c)=u(i1,i2-js2,i3,u2c) + vm-vp
+
+        #Elif #FORCING == "none"
+        #Else
+          stop 6767
+        #End
+
+      #Elif #GRIDTYPE == "curvlinear"
+        stop 1116
+      #Else
+        stop 1117
+      #End
+    end do 
+
+    ! Now assign the tangential components of the displacement 
+    alpha=lambda/(lambda+2.*mu)  
+    #If #ORDER eq "2" 
+      js1=is1
+      js2=is2
+      #If #GRIDTYPE == "rectangular"
+        ! u.yy = alpha*u.xx
+        ! v.xx = alpha*v.yy
+
+        u(i1,i2-js2,i3,u1c)=2.*u(i1,i2,i3,u1c)-u(i1,i2+js2,i3,u1c) +dx(1)**2*alpha*uxx22r(i1,i2,i3,u1c)
+        u(i1-js1,i2,i3,u2c)=2.*u(i1,i2,i3,u2c)-u(i1+js1,i2,i3,u2c) +dx(0)**2*alpha*uyy22r(i1,i2,i3,u2c)
+      
+        #If #FORCING == "TZ"
+
+          OGDERIV2D(0,2,0,0,i1,i2,i3,t,uxx0,vxx0)
+          OGDERIV2D(0,0,2,0,i1,i2,i3,t,uyy0,vyy0)
+
+          u(i1,i2-js2,i3,u1c)=u(i1,i2-js2,i3,u1c) +dx(1)**2*( -alpha*uxx0+ uyy0)
+          u(i1-js1,i2,i3,u2c)=u(i1-js1,i2,i3,u2c) +dx(0)**2*( -alpha*vyy0+ vxx0)
+
+          if( debug.gt.0 )then
+            OGF2D(i1-js1,i2,i3,t,um,vm)
+            OGF2D(i1,i2-js2,i3,t,up,vp)
+            write(*,'(" bcOpt:corner: i1,i2=",2i4," uerr,verr=",4e10.2)') i1,i2,\
+                  u(i1-js1,i2,i3,u1c)-um,u(i1-js1,i2,i3,u2c)-vm,\
+                  u(i1,i2-js2,i3,u1c)-up,u(i1,i2-js2,i3,u2c)-vp
+            ! '
+          end if
+
+        #Elif #FORCING == "none"
+        #Else
+          stop 6767
+        #End
+          
+      #Elif #GRIDTYPE == "curvlinear"
+        stop 1116
+      #Else
+        stop 1117
+      #End
+
+    #Elif #ORDER eq "4" 
+      stop 2221
+    #Else
+    #End
+
+
+    ! Now do corner (C) points
+    ! Taylor series: 
+    !   u(-x,-y) = u(x,y) - 2*x*u.x(0,0) - 2*y*u.y(0,0) + O( h^3 )
+  ! ** u(i1-is1,i2-is2,i3,u1c)=u(i1+is1,i2+is2,i3,u1c) -2.*is1*dx(0)*ux22r(i1,i2,i3,u1c) -2.*is2*dx(1)*uy22r(i1,i2,i3,u1c)
+  ! ** u(i1-is1,i2-is2,i3,u2c)=u(i1+is1,i2+is2,i3,u2c) -2.*is1*dx(0)*ux22r(i1,i2,i3,u2c) -2.*is2*dx(1)*uy22r(i1,i2,i3,u2c)
+
+    ! This version uses u.xy = - v.xx, v.xy = - u.yy
+    u(i1-is1,i2-is2,i3,u1c)=2.*u(i1,i2,i3,u1c) - u(i1+is1,i2+is2,i3,u1c) \
+                     +dx(0)**2*uxx22r(i1,i2,i3,u1c) - 2.*dx(0)*dx(1)*uxx22r(i1,i2,i3,u2c) +dx(1)**2*uyy22r(i1,i2,i3,u1c)
+    u(i1-is1,i2-is2,i3,u2c)=2.*u(i1,i2,i3,u2c) - u(i1+is1,i2+is2,i3,u2c) \
+                     +dx(0)**2*uxx22r(i1,i2,i3,u2c) - 2.*dx(0)*dx(1)*uyy22r(i1,i2,i3,u1c) +dx(1)**2*uyy22r(i1,i2,i3,u2c)
+
+  else if( (boundaryCondition(side1,0).eq.tractionBC .and. boundaryCondition(side2,1).eq.displacementBC) .or.\
+           (boundaryCondition(side1,0).eq.displacementBC  .and. boundaryCondition(side2,1).eq.tractionBC) )then 
+
+    ! displacementBC next to stress free
+    stop 2311
+
+  else if( boundaryCondition(side1,0).eq.displacementBC .and. boundaryCondition(side2,1).eq.displacementBC )then
+
+    ! displacementBC next to displacementBC
+    ! do we need to do anything in this case ? *wdh* 071012
+    ! stop 2312
+
+  else if( boundaryCondition(side1,0).gt.0 .and. boundaryCondition(side2,1).gt.0 )then
+
+    ! unknown 
+    stop 2313
+
+  end if
+  end do
+  end do
+
+#endMacro
+
+
+! ======================================================================================
+!   Assign edges and corner points next to edges in 3D
+!
+!  Set the corner points "C" and points outside vertices
+!              |
+!              X
+!              |
+!        N--N--X--X----
+!              |
+!        C  C  N
+!              |
+!        C  C  N
+!
+! =================================================================================
+#beginMacro assignEdges3d(ORDER,GRIDTYPE,FORCING)
+
+  #If #ORDER eq "2"
+    #defineMacro extrap(u,i1,i2,i3,u1c,is1,is2,is3) extrap3(u,i1,i2,i3,u1c,is1,is2,is3)
+  #Elif #ORDER eq "4"
+    #defineMacro extrap(u,i1,i2,i3,u1c,is1,is2,is3) extrap5(u,i1,i2,i3,u1c,is1,is2,is3)
+  #Else
+    write(*,*) 'assignEdges3d: finish me for orderOfAccuracy=',orderOfAccuracy      
+    stop 666
+  #End
+
+  do edgeDirection=0,2 ! direction parallel to the edge
+    do sidea=0,1
+    do sideb=0,1
+      if( edgeDirection.eq.0 )then
+        side1=0
+        side2=sidea
+        side3=sideb
+      else if( edgeDirection.eq.1 )then
+        side1=sideb 
+        side2=0
+        side3=sidea
+      else
+        side1=sidea
+        side2=sideb
+        side3=0
+      end if
+  
+      is1=1-2*(side1)
+      is2=1-2*(side2)
+      is3=1-2*(side3)
+      if( edgeDirection.eq.2 )then
+       is3=0
+       n1a=gridIndexRange(side1,0)
+       n1b=gridIndexRange(side1,0)
+       n2a=gridIndexRange(side2,1)
+       n2b=gridIndexRange(side2,1)
+       n3a=gridIndexRange(0,2)
+       n3b=gridIndexRange(1,2)
+       bc1=boundaryCondition(side1,0)
+       bc2=boundaryCondition(side2,1)
+      else if( edgeDirection.eq.1 )then
+       is2=0
+       n1a=gridIndexRange(side1,0)
+       n1b=gridIndexRange(side1,0)
+       n2a=gridIndexRange(    0,1)
+       n2b=gridIndexRange(    1,1)
+       n3a=gridIndexRange(side3,2)
+       n3b=gridIndexRange(side3,2)
+       bc1=boundaryCondition(side1,0)
+       bc2=boundaryCondition(side3,2)
+      else 
+       is1=0  
+       n1a=gridIndexRange(    0,0)
+       n1b=gridIndexRange(    1,0)
+       n2a=gridIndexRange(side2,1)
+       n2b=gridIndexRange(side2,1)
+       n3a=gridIndexRange(side3,2)
+       n3b=gridIndexRange(side3,2)
+       bc1=boundaryCondition(side2,1)
+       bc2=boundaryCondition(side3,2)
+      end if
+     
+      ! ************ assign corner points outside edges ***********************
+      if( bc1.gt.0 .and. bc2.gt.0 )then
+        write(*,'(" assign edges: edgeDirection=",i2," sidea,sideb=",2i3)') edgeDirection,sidea,sideb
+
+        do ghost1=1,numGhost
+        do ghost2=1,numGhost
+       
+          ! shift to ghost point "(m1,m2)"
+          if( edgeDirection.eq.2 )then 
+            js1=is1*ghost1  
+            js2=is2*ghost2
+            js3=0
+          else if( edgeDirection.eq.1 )then 
+            js1=is1*ghost1  
+            js2=0
+            js3=is3*ghost2
+          else 
+            js1=0
+            js2=is2*ghost1
+            js3=is3*ghost2
+          end if      
+      
+          beginLoops3d()
+
+            j1 = i1-js1; j2=i2-js2; j3=i3-js3;  ! ghost point 
+
+            u(j1,j2,j3,u1c) = extrap(u,j1+is1,j2+is2,j3+is3,u1c,is1,is2,is3)
+            u(j1,j2,j3,u2c) = extrap(u,j1+is1,j2+is2,j3+is3,u2c,is1,is2,is3)
+            u(j1,j2,j3,u3c) = extrap(u,j1+is1,j2+is2,j3+is3,u3c,is1,is2,is3)
+
+          endLoops3d()
+
+         end do ! ghost1
+         end do ! ghost2
+
+      end if ! end if bc1>0 and bc2>0
+    
+    end do ! end do sideb
+    end do ! end do sidea
+  end do ! end do edgeDirection
+  
+#endMacro
+
+
+!*****************************************************************************************************
+!   Assign corners and edges in 3D
+! 
+!  ORDER: 2,4,6,8
+!  GRIDTYPE: 
+!  FORCING:
+! 
+!*****************************************************************************************************
+#beginMacro assignCorners3d(ORDER,GRIDTYPE,FORCING)
+
+  ! numberOfGhostPoints=orderOfAccuracy/2
+
+  ! ----- Assign the edges -------
+  ! write(*,*) ' finish me: assign edges in 3D'
+  assignEdges3d(ORDER,GRIDTYPE,FORCING)
+
+  #If #ORDER eq "2"
+    #defineMacro extrap(u,i1,i2,i3,u1c,is1,is2,is3) extrap3(u,i1,i2,i3,u1c,is1,is2,is3)
+  #Elif #ORDER eq "4"
+    #defineMacro extrap(u,i1,i2,i3,u1c,is1,is2,is3) extrap5(u,i1,i2,i3,u1c,is1,is2,is3)
+  #Else
+    write(*,*) 'assignCorners3d: finish me for orderOfAccuracy=',orderOfAccuracy      
+    stop 666
+  #End
+
+  do side3=0,1
+  do side2=0,1
+  do side1=0,1
+
+    ! ----- assign ghost values outside the corner (vertex) -----
+    i1=gridIndexRange(side1,0)
+    i2=gridIndexRange(side2,1)
+    i3=gridIndexRange(side3,2)
+    is1=1-2*side1
+    is2=1-2*side2
+    is3=1-2*side3
+
+    if( boundaryCondition(side1,0).gt.0 .and.\
+        boundaryCondition(side2,1).gt.0 .and.\
+        boundaryCondition(side3,2).gt.0 )then
+
+     do ghost=1,numGhost
+       j1 = i1 - ghost*is1
+       j2 = i2 - ghost*is2
+       j3 = i3 - ghost*is3
+       u(j1,j2,j3,u1c) = extrap(u,j1+is1,j2+is2,j3+is3,u1c,is1,is2,is3) 
+       u(j1,j2,j3,u2c) = extrap(u,j1+is1,j2+is2,j3+is3,u2c,is1,is2,is3) 
+       u(j1,j2,j3,u3c) = extrap(u,j1+is1,j2+is2,j3+is3,u3c,is1,is2,is3) 
+     end do
+    end if
+
+  end do
+  end do
+  end do
+#endMacro
+
+
+
+! =======================================================================================
+! Macro: evaluate the equations for a traction traction corner 
+!    
+!     Traction conditions
+!           ux + vy = 0    :  x=0 and y=0 (left and bottom)
+!           vx + uy = 0    :  x=0 and y=0 (left and bottom)
+!           p = 2*mu*ux    : x=0
+!           p = 2*mu*vy    : y=0
+!  At the corner we thus have
+!           p = 0
+!           ux = 0 
+!           vy = 0 
+!           uxx - uyy =0 
+!           vxx - vyy =0
+!           uxy + vyy = 0
+!           vxy + uyy = 0
+!
+!     (0)  ux + vy = 0 
+!     (1)  vx + uy = 0 
+!     (2)  uxx + vxy = uxx - uyy = 0
+!     (3)  vxx + uxy = vxx - vyy = 0
+!
+!     (4)  uxy + vyy = 0        (for u(-1,-1) )
+!     (5)  vxy + uyy = 0        (for v(-1,-1) )
+!
+! ========================================================================================
+#beginMacro evalTractionTractionCornerRectangular2d()    
+
+  f(0) =  ux22r(i1,i2,i3,u1c)                          - fe(0)
+  f(1) =  uy22r(i1,i2,i3,u2c)                          - fe(1)
+  f(2) = uxx22r(i1,i2,i3,u1c) - uyy22r(i1,i2,i3,u1c)   - fe(2)   
+  f(3) = uxx22r(i1,i2,i3,u2c) - uyy22r(i1,i2,i3,u2c)   - fe(3) 
+  f(4) = uxy22r(i1,i2,i3,u1c) + uyy22r(i1,i2,i3,u2c)   - fe(4)  
+  f(5) = uxy22r(i1,i2,i3,u2c) + uyy22r(i1,i2,i3,u1c)   - fe(5)       
+
+  ! extrap corner ghost:
+  ! f(4) = u(i1-is1,i2-is2,i3,u1c) - (extrap3(u,i1,i2,i3,u1c,is1,is2,is3))
+  ! f(5) = u(i1-is1,i2-is2,i3,u2c) - (extrap3(u,i1,i2,i3,u2c,is1,is2,is3))    
+
+  ! These first 4 are linearly dependent!
+
+  ! f(0) =  ux22r(i1,i2,i3,u1c) +  uy22r(i1,i2,i3,u2c)   - fe(0)   
+  ! f(1) =  ux22r(i1,i2,i3,u2c) +  uy22r(i1,i2,i3,u1c)   - fe(1)   
+  ! f(2) = uxx22r(i1,i2,i3,u1c) - uyy22r(i1,i2,i3,u1c)   - fe(2)   
+  ! f(3) = uxx22r(i1,i2,i3,u2c) - uyy22r(i1,i2,i3,u2c)   - fe(3)   
+  ! f(4) = u(i1-is1,i2-is2,i3,u1c) - ( extrap3(u,i1,i2,i3,u1c,is1,is2,is3) )
+  ! f(5) = u(i1-is1,i2-is2,i3,u2c) - ( extrap3(u,i1,i2,i3,u2c,is1,is2,is3) )
+
+  ! f(0) =  ux22r(i1,i2,i3,u1c) +  uy22r(i1,i2,i3,u2c)   - fe(0)   
+  ! f(1) =  ux22r(i1,i2,i3,u2c) +  uy22r(i1,i2,i3,u1c)   - fe(1)  
+
+  ! f(0) = u(i1-is1,i2    ,i3,u1c) - (extrap3(u,i1,i2,i3,u1c,is1,  0,is3))
+  ! f(1) = u(i1-is1,i2    ,i3,u2c) - (extrap3(u,i1,i2,i3,u2c,is1,  0,is3))     
+
+  ! f(2) = uxx22r(i1,i2,i3,u1c) + uxy22r(i1,i2,i3,u2c)   - fe(2)   
+  ! f(3) = uxx22r(i1,i2,i3,u2c) + uxy22r(i1,i2,i3,u1c)   - fe(3)
+
+  ! Using these next two give Nan's !!
+  ! f(2) = uxx22r(i1,i2,i3,u1c) + uxy22r(i1,i2,i3,u2c)   - fe(2)    
+  ! f(3) = uxy22r(i1,i2,i3,u1c) + uyy22r(i1,i2,i3,u2c)   - fe(3)    
+
+  ! f(2) = u(i1    ,i2-is2,i3,u1c) - (extrap3(u,i1,i2,i3,u1c,  0,is2,is3))
+  ! f(3) = u(i1    ,i2-is2,i3,u2c) - (extrap3(u,i1,i2,i3,u2c,  0,is2,is3))  
+
+  ! f(4) = u(i1-is1,i2-is2,i3,u1c) - (extrap3(u,i1,i2,i3,u1c,is1,is2,is3))
+  ! f(5) = u(i1-is1,i2-is2,i3,u2c) - (extrap3(u,i1,i2,i3,u2c,is1,is2,is3))  
+#endMacro 
+
+! =======================================================================================
+! Macro: evaluate the FORCING for the equations for a traction traction corner 
+!    
+! ========================================================================================
+#beginMacro evalTractionTractionCornerRectangular2dForcing(DIM,FORCING)  
+
+  #If #FORCING eq "TZ" 
+
+    call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1ex)
+    ! call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1ey)
+
+    call ogDeriv(ep,0,2,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1exx)
+    call ogDeriv(ep,0,1,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1exy)
+    call ogDeriv(ep,0,0,2,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1eyy)
+
+    ! call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2ex)
+    call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2ey)
+
+    call ogDeriv(ep,0,2,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2exx)
+    call ogDeriv(ep,0,1,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2exy)
+    call ogDeriv(ep,0,0,2,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2eyy)
+
+    fe(0) = u1ex
+    fe(1) = u2ey
+    fe(2) = u1exx - u1eyy
+    fe(3) = u2exx - u2eyy
+    fe(4) = u1exy + u2eyy   ! Dy( ux + vy ) 
+    fe(5) = u2exy + u1eyy   ! Dy( vx + uy )
+
+    ! fe(4) = 0. 
+    ! fe(5) = 0.     
+
+    ! fe(0) = u1ex  + u2ey
+    ! fe(1) = u2ex  + u1ey
+    ! fe(2) = u1exx - u1eyy
+    ! fe(3) = u2exx - u2eyy
+    ! fe(2) = u1exx + u2exy   ! Dx( ux+ vy ) 
+    ! fe(3) = u1exy + u2eyy   ! Dy( ux + vy ) 
+
+    ! fe(2) = u1exx + u2exy
+    ! fe(3) = u2exx + u1exy  
+
+    ! fe(2) = 0.
+    ! fe(3) = 0.
+    ! fe(4) = 0. 
+    ! fe(5) = 0. 
+
+    ! write(*,'(" traction forcing: fe=",6(1pe12.4,1x))') (fe(n2),n2=0,5)
+  #Elif #FORCING eq "noForcing"
+
+  #Elif #FORCING eq "forcing"
+    stop 8880
+  #Else
+    stop 9990
+  #End      
+
+#endMacro   
+
+
+! =======================================================================================
+! Macro: evaluate the equations for a traction-displacement corner 
+!    
+! --- Traction-displacement corner : rectangular ---
+!  Case 1 : 
+!       |
+!       +
+! u=0   | u.x + v.y = 0 
+! v=0   +
+!       |
+!       +---+---+---
+!            u.x + v.y = 0
+!            v.x + u.y = 0 
+!  
+!   Corner: 
+!       u.xy = - v.yy = 0     
+!       v.xy = - u.xx 
+!
+! ========================================================================================
+#beginMacro evalTractionDisplacementCornerRectangular2d()
+  if( displacementTractionCorner.eq.1 )then  
+    ! bc=displacement : left or right
+    ! bc=traction     : bottom or top    
+    f(0) =  uxy22r(i1,i2,i3,u1c)                        - fe(0)
+    f(1) =  uxy22r(i1,i2,i3,u2c) + uxx22r(i1,i2,i3,u1c) - fe(1)
+  else if( displacementTractionCorner.eq.2 )then 
+    ! bc=displacement : bottom or top
+    ! bc=traction     : left or right  
+    f(0) =  uxy22r(i1,i2,i3,u1c) + uyy22r(i1,i2,i3,u2c) - fe(0)
+    f(1) =  uxy22r(i1,i2,i3,u2c)                        - fe(1)
+  else
+    stop 6666
+  end if
+#endMacro 
+
+! =======================================================================================
+! Macro: evaluate the FORCING for the equations for a traction-displacement corner 
+!    
+! ========================================================================================
+#beginMacro evalTractionDisplacementCornerRectangular2dForcing(DIM,FORCING)  
+
+  #If #FORCING eq "TZ" 
+
+    call ogDeriv(ep,0,1,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1exy)
+    call ogDeriv(ep,0,1,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2exy)
+
+    if( displacementTractionCorner.eq.1 )then
+      ! bc=displacement : left or right
+      ! bc=traction     : bottom or top
+      call ogDeriv(ep,0,2,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u1c,u1exx)
+      fe(0) = u1exy
+      fe(1) = u2exy + u1exx
+    else if( displacementTractionCorner.eq.2 )then 
+      ! bc=displacement : bottom or top
+      ! bc=traction     : left or right
+      call ogDeriv(ep,0,0,2,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,u2c,u2eyy)
+      fe(0) = u1exy + u2eyy 
+      fe(1) = u2exy 
+    else
+      stop 7777
+    end if
+
+    ! write(*,'(" traction-displacement corner: forcing =",2(1pe12.4))') fe(0),fe(1)
+
+    #Elif #FORCING eq "noForcing"
+
+  #Elif #FORCING eq "forcing"
+    stop 8880
+  #Else
+    stop 9990
+  #End      
+
+#endMacro   
+
+! =================================================================================
+!   Assign values in the corners 
+!
+!  Set the corner points "C" and possibly the extended boundary points N 
+!              |
+!              X
+!              |
+!        N--N--X--X----
+!              |
+!        C  C  N
+!              |
+!        C  C  N
+!
+! DIM : 2 or 3 
+! ORDER: 2 or 4
+! GRIDTYPE: rectangular, curvilinear
+! FORCING: none, twilightZone
+! =================================================================================
+#beginMacro assignCorners(DIM,ORDER,GRIDTYPE,FORCING)
+
+  axis=0
+  axisp1=1
+
+  i3=gridIndexRange(0,2)
+  j3=i3
+  ! numberOfGhostPoints=orderOfAccuracy/2
+
+  #If #ORDER eq "2"
+    #defineMacro extrap(u,i1,i2,i3,u1c,is1,is2,is3) extrap3(u,i1,i2,i3,u1c,is1,is2,is3)
+  #Elif #ORDER eq "4"
+    #defineMacro extrap(u,i1,i2,i3,u1c,is1,is2,is3) extrap5(u,i1,i2,i3,u1c,is1,is2,is3)
+  #Else
+    write(*,*) 'assignCorners: finish me for orderOfAccuracy=',orderOfAccuracy      
+    stop 666
+  #End
+
+  ! initialize forcing 
+  do n=0,11
+    fe(n)=0.
+  end do 
+
+  do side1=0,1
+  do side2=0,1
+
+    i1=gridIndexRange(side1,0) ! (i1,i2,i3)=corner point
+    i2=gridIndexRange(side2,1)
+    is1=1-2*side1
+    is2=1-2*side2      
+
+    if( boundaryCondition(side1,0).eq.tractionBC .and.\
+        boundaryCondition(side2,1).eq.tractionBC )then
+      ! --- TRACTION - TRACTION CORNER ---
+      if( t.le.2*dt )then
+         write(*,'("bcOpt: assign traction-traction corner numGhost=",i2," side1,side2,i1,i2,i3=",2i2,3i5)') numGhost,side1,side2,i1,i2,i3
+      end if    
+
+
+      ! Here is the ordering of the unknowns: 
+      !    Includes extended boundary and corner ghost 
+      !           +----+----+
+      !           |    |    |
+      !           N----X----+--
+      !           |    |    |
+      !           C----N----+---
+      !
+      numberOfEquations=6
+      shift1(0) = -is1; shift2(0) = 0 ;   shift3(0) = 0; comp(0)=u1c; 
+      shift1(1) = -is1; shift2(1) = 0 ;   shift3(1) = 0; comp(1)=u2c; 
+      shift1(2) =  0;   shift2(2) = -is2; shift3(2) = 0; comp(2)=u1c; 
+      shift1(3) =  0;   shift2(3) = -is2; shift3(3) = 0; comp(3)=u2c;
+      shift1(4) = -is1; shift2(4) = -is2; shift3(4) = 0; comp(4)=u1c; 
+      shift1(5) = -is1; shift2(5) = -is2; shift3(5) = 0; comp(5)=u2c;        
+
+      #If #GRIDTYPE eq "rectangular"
+        !  --- Rectangular : traction-traction ---
+
+        ! eval any forcing
+        evalTractionTractionCornerRectangular2dForcing(DIM,FORCING)         
+        
+        ! Fill in the matrix using the discrete delta approach
+        evalMatrixCoefficients(i1,i2,i3, numberOfEquations,a6,evalTractionTractionCornerRectangular2d )
+
+        ! print the matrix: 
+        ! write(*,'("traction-traction: i1,i2=",2i3,/," a6=[",6(1pe12.4,1x),"; ...")') i1,i2,((a6(n,n2),n2=0,5),n=0,5) 
+
+
+        ! evaluate equations with wrong values in the ghost        
+        evalTractionTractionCornerRectangular2d()
+
+        ! adjust rhs for wrong values on ghost 
+        do n=0,numberOfEquations-1
+          f(n) = -f(n) 
+          do n2=0,numberOfEquations-1
+            f(n) = f(n) + a6(n,n2)*u(i1+shift1(n2),i2+shift2(n2),i3,comp(n2))
+          end do
+        end do
+
+        ! solve for ghost
+        call dgeco( a6(0,0), 6, 6, ipvt(0),rcond,work(0))
+        call dgesl( a6(0,0), 6, 6, ipvt(0), f(0), job)
+
+        ! write(*,'(" traction-traction corner: rcond=",1pe10.2)') rcond
+
+
+        ! assign values 
+        do n2=0,numberOfEquations-1
+          u(i1+shift1(n2),i2+shift2(n2),i3,comp(n2)) = f(n2)
+        end do     
+
+        ! ---- check residuals ---   
+        if( checkResiduals )then
+          ! re-evaluate the equations
+          evalTractionTractionCornerRectangular2d()
+          resMax=0.
+          do n=0,numberOfEquations-1
+            resMax = max(resMax,abs(f(n)))
+          end do
+          if( resMax>resTol )then
+            write(*,'("Traction-Traction corner: rectangular: ERROR residuals are large =",4(1pe12.4,1x))') (f(n),n=0,numberOfEquations-1)
+          else
+            ! write(*,'("Traction-Traction corner: resMax=",1pe8.2)') resMax
+          end if
+          
+        end if
+
+        if( numGhost==2 )then
+          ! extrap extended boundaries  -- may not be used 
+          ghost1=2;        ghost2=0; 
+          js1=is1*ghost1;  js2=is2*ghost2;
+          j1=i1-js1;       j2=i2-js2;
+          u(j1,j2,j3,u1c) = extrap(u,j1+is1,j2+is2,j3,u1c,is1,is2,is3)
+
+          ghost1=0;        ghost2=2; 
+          js1=is1*ghost1;  js2=is2*ghost2;
+          j1=i1-js1;       j2=i2-js2;
+          u(j1,j2,j3,u1c) = extrap(u,j1+is1,j2+is2,j3,u1c,is1,is2,is3)          
+
+        end if
+      #Else
+        stop 5555
+      #End
+
+      ! --- extrapolate any extra ghost --- 
+      startGhost=2
+      do ghost2=startGhost,numGhost
+      do ghost1=startGhost,numGhost
+
+        ! shift to corner ghost point (ghost1,ghost2)
+        js1=is1*ghost1;  js2=is2*ghost2
+        j1=i1-js1;       j2=i2-js2;
+
+        u(j1,j2,j3,u1c) = extrap(u,j1+is1,j2+is2,j3,u1c,is1,is2,is3)
+        u(j1,j2,j3,u2c) = extrap(u,j1+is1,j2+is2,j3,u2c,is1,is2,is3)
+
+      end do 
+      end do 
+
+    else if( (boundaryCondition(side1,0).eq.tractionBC     .and. boundaryCondition(side2,1).eq.displacementBC ) .or. \
+             (boundaryCondition(side1,0).eq.displacementBC .and. boundaryCondition(side2,1).eq.tractionBC     )   )then
+
+      ! There are two cases depending on whether the bc=d is vertical or horizontal 
+      if( boundaryCondition(side1,0).eq.displacementBC .and. boundaryCondition(side2,1).eq.tractionBC )then
+        displacementTractionCorner=1
+      else
+        displacementTractionCorner=2
+      end if
+
+      ! --- TRACTION - DISPLACEMENT CORNER ---
+      if( t.le.2*dt )then
+         write(*,'("bcIsmOpt: assign traction-displacement corner numGhost=",i2," side1,side2,i1,i2,i3=",2i2,3i5)') numGhost,side1,side2,i1,i2,i3
+      end if 
+
+      #If #GRIDTYPE eq "rectangular"
+        ! --- Traction-displacement corner : 2D, rectangular ---
+        !
+        ! Case 1: displacementTractionCorner=1
+        !   
+        !       |
+        !       +
+        ! u=0   | u.x + v.y = 0 
+        ! v=0   +
+        !       |
+        !   +---+---+---+---
+        !   |   |    u.x + v.y = 0
+        !   C---+  v.x + u.y = 0 
+        !  
+        !   Corner: 
+        !       u.xy = - v.yy = 0     
+        !       v.xy = - u.xx 
+        numberOfEquations=2
+        shift1(0) = -is1; shift2(0) = -is2; shift3(0) = 0; comp(0)=u1c; 
+        shift1(1) = -is1; shift2(1) = -is2; shift3(1) = 0; comp(1)=u2c; 
+
+        ! eval any forcing
+        evalTractionDisplacementCornerRectangular2dForcing(DIM,FORCING)         
+        
+        ! Fill in the matrix using the discrete delta approach
+        evalMatrixCoefficients(i1,i2,i3, numberOfEquations,a2,evalTractionDisplacementCornerRectangular2d )
+
+        ! print the matrix: 
+        ! write(*,'("traction-displacement: i1,i2=",2i3,/," a2=[",2(1pe12.4,1x),"; ...")') i1,i2,((a2(n,n2),n2=0,1),n=0,1) 
+
+
+        ! evaluate equations with wrong values in the ghost        
+        evalTractionDisplacementCornerRectangular2d()
+
+        ! adjust rhs for wrong values on ghost 
+        do n=0,numberOfEquations-1
+          f(n) = -f(n) 
+          do n2=0,numberOfEquations-1
+            f(n) = f(n) + a2(n,n2)*u(i1+shift1(n2),i2+shift2(n2),i3,comp(n2))
+          end do
+        end do
+
+        ! solve for ghost
+        call dgeco( a2(0,0), numberOfEquations, numberOfEquations, ipvt(0),rcond,work(0))
+        call dgesl( a2(0,0), numberOfEquations, numberOfEquations, ipvt(0), f(0), job)
+
+        ! write(*,'(" traction-displacement corner: rcond=",1pe10.2)') rcond
+
+
+        ! assign values 
+        do n2=0,numberOfEquations-1
+          u(i1+shift1(n2),i2+shift2(n2),i3,comp(n2)) = f(n2)
+        end do     
+
+        ! ---- check residuals ---   
+        if( checkResiduals )then
+          ! re-evaluate the equations
+          evalTractionDisplacementCornerRectangular2d()
+          resMax=0.
+          do n=0,numberOfEquations-1
+            resMax = max(resMax,abs(f(n)))
+          end do
+          if( resMax>resTol )then
+            write(*,'("Traction-Displacement corner: rectangular: ERROR residuals are large =",4(1pe12.4,1x))') (f(n),n=0,numberOfEquations-1)
+          else
+            ! write(*,'("Traction-Displacement corner: resMax=",1pe8.2)') resMax
+          end if
+          
+        end if
+
+
+      #Else   
+        ! --- Traction-displacement corner : 2D curvlinear ---
+        write(*,'("bcIsmOpt: FINISH ME")') 
+        stop 4444
+      #End   
+
+      ! --- extrapolate any extra ghost --- 
+      startGhost=2
+      do ghost2=startGhost,numGhost
+      do ghost1=startGhost,numGhost
+
+        ! shift to corner ghost point (ghost1,ghost2)
+        js1=is1*ghost1;  js2=is2*ghost2
+        j1=i1-js1;       j2=i2-js2;
+
+        u(j1,j2,j3,u1c) = extrap(u,j1+is1,j2+is2,j3,u1c,is1,is2,is3)
+        u(j1,j2,j3,u2c) = extrap(u,j1+is1,j2+is2,j3,u2c,is1,is2,is3)
+
+      end do 
+      end do         
+
+    else if( boundaryCondition(side1,0).gt.0 .and.   \
+             boundaryCondition(side2,1).gt.0 )then
+
+      ! ----- EXTRAPOLATE (for now) ---
+
+      if( t.le.2*dt )then
+        write(*,'("bcOpt: assign corner bc=",i2," numGhost=",i2," side1,side2,i1,i2,i3=",2i2,3i5)') boundaryCondition(side1,side2),numGhost,side1,side2,i1,i2,i3
+      end if
+
+
+      do ghost2=1,numGhost
+      do ghost1=1,numGhost
+
+        ! shift to corner ghost point (ghost1,ghost2)
+        js1=is1*ghost1 
+        js2=is2*ghost2
+        j1=i1-js1; j2=i2-js2;
+
+        u(j1,j2,j3,u1c) = extrap(u,j1+is1,j2+is2,j3,u1c,is1,is2,is3)
+        u(j1,j2,j3,u2c) = extrap(u,j1+is1,j2+is2,j3,u2c,is1,is2,is3)
+
+      end do 
+      end do 
+
+
+    end if
+  end do
+  end do
+
+#endMacro
+
+! ---------------------------------------------------------------------
+!  Macro Assign value on boundaries 
+! ---------------------------------------------------------------------
+#beginMacro assignBoundaryValues(DIM,ORDER,GRIDTYPE)
+
+  beginLoopOverSides(numGhost,numGhost,none)
+
+    if( boundaryCondition(side,axis).eq.displacementBC )then
+
+      ! Note: addBoundaryForcing =1 for TZ as well
+      if( twilightZone==1 )then
+        displacementBCMacro(TZ,DIM,ORDER,GRIDTYPE)
+ 
+      else if( .true. .or. addBoundaryForcing(side,axis)==0 )then  ! FOR NOW SKIP addBoundaryFORCING
+        displacementBCMacro(noForcing,DIM,ORDER,GRIDTYPE)
+   
+      else 
+        displacementBCMacro(forcing,DIM,ORDER,GRIDTYPE)
+      end if
+
+
+   else if( boundaryCondition(side,axis).eq.tractionBC )then 
+   
+     ! Extrapolation now done above
+
+
+   else if( boundaryCondition(side,axis).eq.slipWall )then
+
+     ! set n.u = given on the boundary 
+     an1=0.  ! (an1,an2) = outward normal 
+     an2=0.
+     if( axis.eq.0 )then
+       an1=2*side-1
+     else
+       an2=2*side-1
+     end if
+
+     if( addBoundaryForcing(side,axis).eq.0 )then
+       ! no forcing 
+       beginLoops2d()
+        u1 = u(i1,i2,i3,u1c)
+        v1 = u(i1,i2,i3,u2c)
+        nDotU = an1*u1 + an2*v1  
+        u(i1,i2,i3,u1c)=u1 - nDotU*an1
+        u(i1,i2,i3,u2c)=v1 - nDotU*an2
+       endLoops2d()
+
+      else if( assignTwilightZone.eq.0 )then
+        ! include forcing terms 
+        ! n.u = n.g 
+       beginLoops2d()
+        u1 = u(i1,i2,i3,u1c)
+        v1 = u(i1,i2,i3,u2c)
+        nDotU = an1*(u1-bcf(side,axis,i1,i2,i3,u1c)) + an2*(v1-bcf(side,axis,i1,i2,i3,u2c))
+        u(i1,i2,i3,u1c)=u1 - nDotU*an1
+        u(i1,i2,i3,u2c)=v1 - nDotU*an2
+       endLoops2d()
+
+      else
+       ! Twilight-zone: 
+       !   n.u = n.ue
+       beginLoops2d()
+        OGF2D(i1,i2,i3,t,u0,v0)
+        u1 = u(i1,i2,i3,u1c)
+        v1 = u(i1,i2,i3,u2c)
+        nDotU = an1*(u1-u0) + an2*(v1-v0)
+        u(i1,i2,i3,u1c)=u1 - nDotU*an1
+        u(i1,i2,i3,u2c)=v1 - nDotU*an2
+       endLoops2d()
+      end if
+
+      ! extrap values to the ghost line 
+      beginGhostLoops2d()
+       u(i1-is1,i2-is2,i3,u1c)=extrap3(u,i1,i2,i3,u1c,is1,is2,is3)
+       u(i1-is1,i2-is2,i3,u2c)=extrap3(u,i1,i2,i3,u2c,is1,is2,is3)
+      endLoops2d()
+
+   else if( boundaryCondition(side,axis).eq.dirichletBoundaryCondition )then
+
+      ! Set exact values on boundary and ghost
+      if( twilightZone.eq.1 )then
+        beginGhostLoops3d()
+          #If #DIM eq "2"      
+            OGF2D(i1,i2,i3,t,u0,v0)
+            u(i1,i2,i3,u1c)=u0
+            u(i1,i2,i3,u2c)=v0
+          #Else
+            OGF3D(i1,i2,i3,t,u0,v0,w0)
+            u(i1,i2,i3,u1c)=u0
+            u(i1,i2,i3,u2c)=v0
+            u(i1,i2,i3,u3c)=w0
+          #End
+          do ghost=1,numGhost
+            j1 = i1 - ghost*is1
+            j2 = i2 - ghost*is2
+            #If #DIM eq "2"
+              OGF2D(j1,j2,i3,t,u0,v0)
+              u(j1,j2,i3,u1c)=u0
+              u(j1,j2,i3,u2c)=v0
+            #Else
+              j3 = i3 - ghost*is3
+              OGF3D(j1,j2,j3,t,u0,v0,w0)
+              u(j1,j2,j3,u1c)=u0
+              u(j1,j2,j3,u2c)=v0              
+              u(j1,j2,j3,u3c)=w0              
+            #End
+          end do
+        endLoops3d()
+      end if
+
+   else if( boundaryCondition(side,axis).eq.symmetry )then
+      write(*,*) 'finish me for symmetry BC'
+     stop 2856
+
+   else if( boundaryCondition(side,axis).gt.0 )then
+
+     stop 1193
+
+   end if
+
+  endLoopOverSides()
+#endMacro
+
+
+!$$$
+!$$$
+!$$$#beginMacro getBoundaryForcing()
+!$$$ if( side.eq.0 .and.axis.eq.0 )then
+!$$$   beginGhostLoops3d()
+!$$$    f(i1,i2,i3,u1c)=bcf00(i1,i2,i3,u1c)
+!$$$#endMacro 
+
+! ====== Here are the common subroutine arguments ====
+#defineMacro subroutineArgs() nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
+                          gridIndexRange, u, mask,rsxy, xy, ndMatProp,matIndex,matValpc,matVal, boundaryCondition, \
+                          addBoundaryForcing, interfaceType, dim, bcf00,bcf10,bcf01,bcf11,bcf02,bcf12,\
+                          bcf0,bcOffset,ipar, rpar, ierr
+
+! ========================================================================================
+! Macro: declare input arguments
+! ========================================================================================
+#beginMacro declareInputArgs()
+  integer nd, \
+          nd1a,nd1b,nd2a,nd2b,nd3a,nd3b, \
+          ierr
+
+  real u(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
+  integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
+  real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
+  real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)
+  integer gridIndexRange(0:1,0:2),boundaryCondition(0:1,0:2)
+
+  integer addBoundaryForcing(0:1,0:2)
+  integer interfaceType(0:1,0:2,0:*)
+  integer dim(0:1,0:2,0:1,0:2)
+
+  real bcf00(dim(0,0,0,0):dim(1,0,0,0), dim(0,1,0,0):dim(1,1,0,0), dim(0,2,0,0):dim(1,2,0,0),0:*)
+  real bcf10(dim(0,0,1,0):dim(1,0,1,0), dim(0,1,1,0):dim(1,1,1,0), dim(0,2,1,0):dim(1,2,1,0),0:*)
+  real bcf01(dim(0,0,0,1):dim(1,0,0,1), dim(0,1,0,1):dim(1,1,0,1), dim(0,2,0,1):dim(1,2,0,1),0:*)
+  real bcf11(dim(0,0,1,1):dim(1,0,1,1), dim(0,1,1,1):dim(1,1,1,1), dim(0,2,1,1):dim(1,2,1,1),0:*)
+  real bcf02(dim(0,0,0,2):dim(1,0,0,2), dim(0,1,0,2):dim(1,1,0,2), dim(0,2,0,2):dim(1,2,0,2),0:*)
+  real bcf12(dim(0,0,1,2):dim(1,0,1,2), dim(0,1,1,2):dim(1,1,1,2), dim(0,2,1,2):dim(1,2,1,2),0:*)
+
+  real bcf0(0:*)
+  integer*8 bcOffset(0:1,0:2)
+
+  integer ipar(0:*)
+  real rpar(0:*)
+
+  ! -- Declare arrays for variable material properties --
+  include '../declareVarMatProp.h'
+
+  integer rectangular,curvilinear
+  parameter(\
+    rectangular=0,\
+    curvilinear=1)
+
+
+#endMacro                          
+
+! **********************************************************************************
+! NAME: name of the subroutine
+! DIM : 2 or 3
+! ORDER : 2 ,4, 6 or 8
+! GRIDTYPE : rectangular, curvilinear
+! **********************************************************************************
+#beginMacro BC_ISM(NAME,DIM,ORDER,GRIDTYPE)
+ subroutine NAME( subroutineArgs() )
+! ===================================================================================
+!  Boundary conditions for solid mechanics
+!
+!  gridType : 0=rectangular, 1=curvilinear
+!
+!  c2= mu/rho, c1=(mu+lambda)/rho;
+! 
+! The forcing for the boundary conditions can be accessed in two ways. One can either 
+! use the arrays: 
+!       bcf00(i1,i2,i3,m), bcf10(i1,i2,i3,m), bcf01(i1,i2,i3,m), bcf11(i1,i2,i3,m), 
+!       bcf02(i1,i2,i3,m), bcf12(i1,i2,i3,m)
+! which provide values for the 6 different faces in 6 different arrays. One can also
+! access the same values using the single statement function
+!         bcf(side,axis,i1,i2,i3,m)
+! which is defined below. 
+! ===================================================================================
+
+  implicit none
+
+  declareInputArgs()
+
+      ! work space arrays that must be saved from call to call:
+!**      real aa2(0:1,0:1,0:1,0:*),aa4(0:3,0:3,0:1,0:*),aa8(0:7,0:7,0:1,0:*)
+!**      integer ipvt2(0:1,0:*), ipvt4(0:3,0:*), ipvt8(0:7,0:*)
+
+!     --- local variables ----
+      
+  integer side,axis,grid,gridType,orderOfAccuracy,orderOfExtrapolation,twilightZone,assignTwilightZone,\
+    u1c,u2c,u3c,useWhereMask,debug,nn,n1,n2,pc,upwindSOS,useCurlCurlBoundaryCondition
+  integer displacementTractionCorner
+  real dx(0:2),dr(0:2)
+  real t,ep,dt,c1,c2,rho,mu,lambda,alpha,beta
+  integer axisp1,axisp2,i1,i2,i3,is1,is2,is3,j1,j2,j3,js1,js2,js3,ks1,ks2,ks3,is,js,it,nit
+  integer option,initialized
+
+  integer ghost,numGhost,numberOfGhostPoints,ghost1,ghost2
+  integer side1,side2,side3, sidea,sideb,bc1,bc2, edgeDirection
+  integer n1a,n1b,n2a,n2b,n3a,n3b
+  integer nn1a,nn1b,nn2a,nn2b,nn3a,nn3b
+  integer extra1a,extra1b,extra2a,extra2b,extra3a,extra3b
+
+  logical checkResiduals
+  integer bcSide,bcAdjacent
+  logical adjustEnds
+
+  integer leftRight,dir,axisp,gid(0:1,0:2)
+
+  real urv(0:5),usv(0:5),utv(0:5)
+  integer iw1,iw2,iw3
+
+  real delta 
+  integer hw1,hw2,hw3   
+
+  real a11,a12,a21,a22,det,b0,b1,b2
+
+  real a0,a1,cc0,cc1,d0,d1,dr0,ds0
+  real aNormSq,divu,uAve
+
+  real epsRatio,an1,an2,an3,aNorm,aNormi,ua,ub,nDotU,t1,t2,t3,tn1,tn2,tn3
+  real epsx,tmp
+
+  real tau11,tau12,tau13,tau21,tau22,tau23,tau31,tau32,tau33
+  real ux,uy,uz,vx,vy,vz,wx,wy,wz
+  real ux0,uy0,uz0,vx0,vy0,vz0,wx0,wy0,wz0
+  real uxx0,uxy0,uxz0,uyy0,uyz0,uzz0
+  real vxx0,vxy0,vxz0,vyy0,vyz0,vzz0
+  real wxx0,wxy0,wxz0,wyy0,wyz0,wzz0
+  real u0,v0,w0, u1,v1,w1
+  real um,up,vm,vp,wm,wp
+
+  real tau1,tau2,tau3,clap1,clap2,ulap1,vlap1,wlap1,ulap2,vlap2,wlap2,an1Cartesian,an2Cartesian
+
+  real u1x,u1y,u1z, u2x,u2y,u2z, u3x,u3y,u3z
+  real trac1,trac2,trac3
+
+  integer numberOfEquations,job
+  real a2(0:1,0:1),a3(0:2,0:2),a4(0:3,0:3),a6(0:5,0:5),a8(0:7,0:7),q(0:11),f(0:11),f0(0:11),rcond,work(0:11)
+  integer ipvt(0:11)
+
+  real resMax,fe(0:11),g(0:11)
+  real err
+
+  real Au(1:2,1:2), Av(1:2,1:2),cu11,cu12,cu21,cu22,cv11,cv12,cv21,cv22,f1e,f2e,f1,f2
+  real res1,res2,resTol
+  real u1e, u1ex, u1ey, u1exx, u1exy, u1eyy, u1exxx, u1exxy, u1exyy, u1eyyy
+  real u2e, u2ex, u2ey, u2exx, u2exy, u2eyy, u2exxx, u2exxy, u2exyy, u2eyyy
+  real pex,pey,pexx,pexy,peyy
+
+  ! shift and components used in discrete delta 
+  integer shift1(0:11), shift2(0:11), shift3(0:11), comp(0:11)
+  integer startGhost
+
+  ! boundary conditions parameters and interfaceType values
+  #Include "../bcDefineFortranInclude.h"
+ 
+
+  !     --- start statement function ----
+  real bcf
+  integer kd,m,n
+  real uxOneSided
+  declareDifferenceNewOrder2(u,rsxy,dr,dx,RX)
+
+  declareDifferenceNewOrder4(u,rsxy,dr,dx,RX)
+
+  !     The next macro call will define the difference approximation statement functions
+  defineDifferenceNewOrder2Components1(u,rsxy,dr,dx,RX)
+
+  defineDifferenceNewOrder4Components1(u,rsxy,dr,dx,RX)
+
+  ! 4th-order 1 sided derivative  extrap=(1 5 10 10 5 1)
+  uxOneSided(i1,i2,i3,m)=-(10./3.)*u(i1,i2,i3,m)+6.*u(i1+is1,i2+is2,i3+is3,m)-2.*u(i1+2*is1,i2+2*is2,i3+2*is3,m)\
+                         +(1./3.)*u(i1+3*is1,i2+3*is2,i3+3*is3,m)
+
+  ! Here is the the generic boundary condition forcing array. It uses the bcOffset(side,axis) values as an
+  ! an offset from the bcf0 array to access the bcf10, bcf01, bcf11, ... arrays
+  bcf(side,axis,i1,i2,i3,m) = bcf0(bcOffset(side,axis) + \
+      (i1-dim(0,0,side,axis)+(dim(1,0,side,axis)-dim(0,0,side,axis)+1)* \
+      (i2-dim(0,1,side,axis)+(dim(1,1,side,axis)-dim(0,1,side,axis)+1)* \
+      (i3-dim(0,2,side,axis)+(dim(1,2,side,axis)-dim(0,2,side,axis)+1)*(m)))))
+
+  !............... end statement functions
+
+  ierr=0
+
+  nd                           = ipar(0)
+  grid                         = ipar(1)
+  u1c                          = ipar(2)
+  u2c                          = ipar(3)
+  u3c                          = ipar(4)
+  gridType                     = ipar(5)
+  orderOfAccuracy              = ipar(6)
+  orderOfExtrapolation         = ipar(7)
+  twilightZone                 = ipar(8)
+  useWhereMask                 = ipar(9)
+  debug                        = ipar(10)
+     
+  materialFormat               = ipar(15)
+  pc                           = ipar(16)
+  upwindSOS                    = ipar(17)
+  useCurlCurlBoundaryCondition = ipar(18);
+
+ 
+  dx(0)                = rpar(0)
+  dx(1)                = rpar(1)
+  dx(2)                = rpar(2)
+  dr(0)                = rpar(3)
+  dr(1)                = rpar(4)
+  dr(2)                = rpar(5)
+  t                    = rpar(6)
+  ep                   = rpar(7) ! pointer for exact solution
+  dt                   = rpar(8)
+  rho                  = rpar(9)
+  mu                   = rpar(10)
+  lambda               = rpar(11)
+  c1                   = rpar(12)
+  c2                   = rpar(13)
+
+  job=0  ! *wdh* 090101
+
+  numGhost=orderOfAccuracy/2
+  if( upwindSOS==1 )then
+    ! upwinding uses an extra ghost line
+    numGhost=numGhost+1
+  end if 
+
+  ! check residuals for the first few steps
+  checkResiduals=.false.
+  if( t <=2.*dt )then
+    checkResiduals=.true.
+  end if
+
+  if( t<=2*dt .or. debug.gt.3 )then
+    write(*,'(" ### bcOptIsm: t=",1pe12.3)') t
+
+    write(*,'(" bcOptIsm: rho,mu=",2f10.5," gridType=",i2," upwindSOS=",i2," numGhost=",i2)') rho,mu,gridType,upwindSOS,numGhost
+    write(*,'(" bcOptIsm: u1c,u2c,u3c,pc=",4i3," twilightZone=",i2," orderOfAccuracy=",i2)') u1c,u2c,u3c,pc,twilightZone,orderOfAccuracy
+    write(*,'(" boundaryCondition=",6i4)') ((boundaryCondition(side,axis),side=0,1),axis=0,nd-1)
+    write(*,'(" addBoundaryForcing=",6i4)') ((addBoundaryForcing(side,axis),side=0,1),axis=0,nd-1)
+    
+  end if
+
+  if( debug.gt.7 )then
+    write(*,'(" bcOptIsm: **START** grid=",i4," u1c,u2c,u3c=",3i2)') grid,u1c,u2c,u3c
+       ! '
+  end if
+  if( debug.gt.7 )then
+   n1a=gridIndexRange(0,0)
+   n1b=gridIndexRange(1,0)
+   n2a=gridIndexRange(0,1)
+   n2b=gridIndexRange(1,1)
+   n3a=gridIndexRange(0,2)
+   n3b=gridIndexRange(1,2)
+   write(*,'(" bcOptIsm: grid=",i3,",n1a,n1b,n2a,n2b,n3a,n3b=",6i3)') grid,n1a,n1b,n2a,n2b,n3a,n3b
+   ! write(*,*) 'bcOptIsm: u=',((((u(i1,i2,i3,m),m=0,nd-1),i1=n1a,n1b),i2=n2a,n2b),i3=n3a,n3b)
+  end if
+ 
+  if( materialFormat.ne.constantMaterialProperties )then
+    write(*,'(" ***bcOptIsm:ERROR: Finish me for variable material")')
+    stop 7736
+  end if
+
+  epsx=1.e-20  ! fix this 
+
+  resTol = 1.e-9
+
+
+
+
+  ! write(*,*) 'bcOffset:',bcOffset
+
+  ! ! assign corners and edges (3d)
+  ! if( .false. )then ! *wdh* 071027 -- turn this off for now ---
+  !   if( orderOfAccuracy.eq.2 .and. nd.eq.2 )then
+
+  !     ! *** fix this for traction BCs with forcing 
+
+  !    ! For interfaces and TZ it is ok to just set the corners using TZ. This is maybe cheating a bit.
+  !    if( gridType.eq.rectangular )then
+  !     if( twilightZone.eq.0 )then
+  !       assignCorners2d(2,rectangular,none)
+  !     else
+  !       assignCorners2d(2,rectangular,twilightZone)
+  !     end if
+  !    else
+  !     if( twilightZone.eq.0 )then
+  !       assignCorners2d(2,curvilinear,none)
+  !     else
+  !       assignCorners2d(2,curvilinear,twilightZone)
+  !     end if
+  !    end if      
+
+  !   else if( orderOfAccuracy.eq.2 .and. nd.eq.3 )then
+
+  !     !$$$       if( gridType.eq.rectangular )then
+  !     !$$$        if( twilightZone.eq.0 )then
+  !     !$$$          assignCorners3d(2,rectangular,none)
+  !     !$$$        else
+  !     !$$$          assignCorners2d(2,rectangular,twilightZone)
+  !     !$$$        end if
+  !     !$$$       else
+  !     !$$$        if( twilightZone.eq.0 )then
+  !     !$$$          assignCorners3d(2,curvilinear,none)
+  !     !$$$        else
+  !     !$$$          assignCorners3d(2,curvilinear,twilightZone)
+  !     !$$$        end if
+  !     !$$$       end if      
+
+  !   else
+  !      stop 5533
+  !   end if
+
+  ! end if
+
+
+  ! if( .false. )then
+  !   ! check the boundary forcing arrays: check that bcf(side,axis,i1,i2,i3,m) agrees with bcf00, bcf10, ...
+  !   write(*,*) dim
+  !   beginLoopOverSides(numGhost,numGhost,none)
+  !    write(*,'(" BCF: side,axis=",2i3," bcOffset(side,axis)=",i8)') side,axis,bcOffset(side,axis)
+
+  !    if( addBoundaryForcing(side,axis).ne.0 )then
+  !      beginLoops3d()
+  !        if( side.eq.0 .and. axis.eq.0 )then
+  !          do m=0,nd-1
+  !            tmp = bcf00(i1,i2,i3,m) - bcf(side,axis,i1,i2,i3,m)
+  !            write(*,'(" BCF(0,0): i=",3i3," f=",e8.2,2x,e8.2," diff=",e8.2)') i1,i2,i3,bcf00(i1,i2,i3,m),bcf(side,axis,i1,i2,i3,m),tmp
+  !            ! '
+  !          end do
+  !        else if( side.eq.1 .and. axis.eq.0 )then
+  !          do m=0,nd-1
+  !            tmp = bcf10(i1,i2,i3,m) - bcf(side,axis,i1,i2,i3,m)
+  !            write(*,'(" BCF(1,0): i=",3i3," f=",e8.2,2x,e8.2," diff=",e8.2)') i1,i2,i3,bcf10(i1,i2,i3,m),bcf(side,axis,i1,i2,i3,m),tmp
+  !            ! '
+  !          end do
+  !        else if( side.eq.0 .and. axis.eq.1 )then
+  !          do m=0,nd-1
+  !            tmp = bcf01(i1,i2,i3,m) - bcf(side,axis,i1,i2,i3,m)
+  !            write(*,'(" BCF(0,1): i=",3i3," f=",e8.2,2x,e8.2," diff=",e8.2)') i1,i2,i3,bcf01(i1,i2,i3,m),bcf(side,axis,i1,i2,i3,m),tmp
+  !            ! '
+  !          end do
+  !        else if( side.eq.1 .and. axis.eq.1 )then
+  !          do m=0,nd-1
+  !            tmp = bcf11(i1,i2,i3,m) - bcf(side,axis,i1,i2,i3,m)
+  !            write(*,'(" BCF(1,1): i=",3i3," f=",e8.2,2x,e8.2," diff=",e8.2)') i1,i2,i3,bcf11(i1,i2,i3,m),bcf(side,axis,i1,i2,i3,m),tmp
+  !            ! '
+  !          end do
+  !        else if( side.eq.0 .and. axis.eq.2 )then
+  !          do m=0,nd-1
+  !            tmp = bcf02(i1,i2,i3,m) - bcf(side,axis,i1,i2,i3,m)
+  !            write(*,'(" BCF(0,2): i=",3i3," f=",e8.2,2x,e8.2," diff=",e8.2)') i1,i2,i3,bcf02(i1,i2,i3,m),bcf(side,axis,i1,i2,i3,m),tmp
+  !            ! '
+  !          end do
+  !        else if( side.eq.1 .and. axis.eq.2 )then
+  !          do m=0,nd-1
+  !            tmp = bcf12(i1,i2,i3,m) - bcf(side,axis,i1,i2,i3,m)
+  !            write(*,'(" BCF(1,2): i=",3i3," f=",e8.2,2x,e8.2," diff=",e8.2)') i1,i2,i3,bcf12(i1,i2,i3,m),bcf(side,axis,i1,i2,i3,m),tmp
+  !            ! '
+  !          end do
+  !        end if
+  !      endLoops3d()
+  !    end if
+  !   endLoopOverSides()
+  ! end if
+
+
+
+
+  ! --- NEW WAY -----
+
+  ! ---------------------------------------------------------------------
+  ! ----------- STAGE 1, ASSIGN DIRICHLET TYPE CONDITIONS ---------------
+  ! --------------------------------------------------------------------- 
+  assignBoundaryValues(DIM,ORDER,GRIDTYPE)
+
+
+  ! ---------------------------------------------------------------
+  ! Stage 1(b) extrap values to ghost points (may be needed at corners)
+  ! ---------------------------------------------------------------
+  beginLoopOverSides(numGhost,numGhost,adjustAtCorners)
+
+    if( boundaryCondition(side,axis)==displacementBC .or. \
+        boundaryCondition(side,axis)==tractionBC )then
+
+      ! write(*,'("bcOptIsm: extrap ghost on displacementBC or tractionBC ")')
+      #If #ORDER eq "2"
+        #defineMacro extrap(u,i1,i2,i3,u1c,is1,is2,is3) extrap3(u,i1,i2,i3,u1c,is1,is2,is3)
+      #Elif #ORDER eq "4"
+        #defineMacro extrap(u,i1,i2,i3,u1c,is1,is2,is3) extrap5(u,i1,i2,i3,u1c,is1,is2,is3)
+      #Else
+        write(*,*) 'finish me for orderOfAccuracy=',orderOfAccuracy      
+        stop 666
+      #End
+        !  if( boundaryCondition(side,axis).eq.tractionBC )then
+        !     ! Set exact values on boundary and ghost
+        !     if( twilightZone.eq.1 )then
+        !       beginLoops2d()
+        !         OGF2D(i1,i2,i3,t,u0,v0)
+        !         write(*,'(" traction: boundary i1,i2=",2i3," error=",2(1pe10.2))') i1,i2,u(i1,i2,i3,u1c)-u0,u(i1,i2,i3,u2c)-v0
+        !       endLoops2d()
+        !     end if        
+        ! end if
+      #If #DIM eq "2"
+        ! Should we set corner values ?
+        ! Do not use ghost loops since we want values on the extended boundaries *check me*
+        beginGhostLoops2d()
+        ! beginLoops2d()
+          do ghost=1,numGhost
+            j1 = i1 - ghost*is1
+            j2 = i2 - ghost*is2
+            j3 = i3 - ghost*is3
+            u(j1,j2,j3,u1c)=extrap(u,j1+is1,j2+is2,j3+is3,u1c,is1,is2,is3)
+            u(j1,j2,j3,u2c)=extrap(u,j1+is1,j2+is2,j3+is3,u2c,is1,is2,is3)
+          end do
+        endLoops2d() 
+      #Else
+        beginGhostLoops3d()
+        ! beginLoops3d()
+          do ghost=1,numGhost
+            j1 = i1 - ghost*is1
+            j2 = i2 - ghost*is2
+            j3 = i3 - ghost*is3        
+            u(j1,j2,j3,u1c)=extrap(u,j1+is1,j2+is2,j3+is3,u1c,is1,is2,is3)
+            u(j1,j2,j3,u2c)=extrap(u,j1+is1,j2+is2,j3+is3,u2c,is1,is2,is3)
+            u(j1,j2,j3,u3c)=extrap(u,j1+is1,j2+is2,j3+is3,u3c,is1,is2,is3)
+          end do
+        endLoops3d() 
+      #End
+
+    end if
+      
+  endLoopOverSides()
+
+
+  ! assign values on boundary again to get extended boundaries -- *fix me*
+  assignBoundaryValues(DIM,ORDER,GRIDTYPE)
+
+  ! ---------------------------------------------------------------------
+  ! ----------- STAGE 2, ASSIGN NEUMANN TYPE CONDITIONS ---------------
+  ! --------------------------------------------------------------------- 
+
+  beginLoopOverSides(numGhost,numGhost,adjustAtCorners)
+
+    if( boundaryCondition(side,axis).eq.displacementBC )then 
+
+      ! --------- DISPLACEMENT GHOST -----
+      ! Note: addBoundaryForcing =1 for TZ as well
+      if( twilightZone==1 )then
+        displacementGhostMacro(TZ,DIM,ORDER,GRIDTYPE)
+ 
+      else if( .true. .or. addBoundaryForcing(side,axis)==0 )then  ! FOR NOW SKIP addBoundaryFORCING
+        displacementGhostMacro(noForcing,DIM,ORDER,GRIDTYPE)
+   
+      else 
+        displacementGhostMacro(forcing,DIM,ORDER,GRIDTYPE)
+      end if
+
+   else if( boundaryCondition(side,axis).eq.tractionBC )then 
+
+     ! ------ TRACTION BC ----
+     !  if( addBoundaryForcing(side,axis).eq.0 .and. assignTwilightZone==0 )then   *** FIX ME ***
+     if( addBoundaryForcing(side,axis)==0 .and. twilightZone==0 )then
+       tractionBCMacro(DIM,ORDER,GRIDTYPE,noForcing)
+     else if( addBoundaryForcing(side,axis)==1 .and. twilightZone==0 )then
+       tractionBCMacro(DIM,ORDER,GRIDTYPE,forcing)
+     else
+       tractionBCMacro(DIM,ORDER,GRIDTYPE,twilightZone)
+     end if
+
+   else if( boundaryCondition(side,axis).eq.slipWall )then 
+
+     write(*,*) 'bcOptIsm: slipWall - finish me'
+     stop 1234
+   
+     alpha=lambda/(lambda+2.*mu)
+     beta =1./(lambda+2.*mu)
+     if( axis.eq.0 )then
+       ! v.x = -u.y       
+      if( addBoundaryForcing(side,axis).eq.0 )then
+       ! no forcing 
+       beginLoopsMask2d()
+        u(i1-is1,i2-is2,i3,u2c)=u(i1+is1,i2+is2,i3,u2c)+is1*dx(0)*2.*      uy22r(i1,i2,i3,u1c)
+       endLoopsMask2d()
+
+      else if( assignTwilightZone.eq.0 )then
+        ! include forcing terms 
+       beginLoopsMask2d()
+        u(i1-is1,i2-is2,i3,u2c)=u(i1+is1,i2+is2,i3,u2c)+dx(0)*2.*(\
+                           is1*uy22r(i1,i2,i3,u1c)    + (1./mu)*bcf(side,axis,i1,i2,i3,u2c) )
+       endLoopsMask2d()
+
+      else 
+       ! Twilight-zone: 
+       ! u.x = -alpha*v.y + ue.x -alpha*ve.y 
+       beginLoopsMask2d()
+        OGDERIV2D(0,1,0,0,i1,i2,i3,t,ux0,vx0)
+        OGDERIV2D(0,0,1,0,i1,i2,i3,t,uy0,vy0)
+        u(i1-is1,i2-is2,i3,u2c)=u(i1+is1,i2+is2,i3,u2c)-\
+                    is1*dx(0)*2.*(-uy22r(i1,i2,i3,u1c) + vx0 + uy0 )
+        !     write(*,'("i1,i2=",2i3," ux0,vx0,uy0,vy0=",4e10.2)') i1,i2, ux0,vx0,uy0,vy0                
+       endLoopsMask2d()
+      end if
+
+     else if( axis.eq.1 )then
+     ! u.y = - v.x
+      if( addBoundaryForcing(side,axis).eq.0 )then
+       beginLoopsMask2d()
+        u(i1-is1,i2-is2,i3,u1c)=u(i1+is1,i2+is2,i3,u1c)+is2*dx(1)*2.*      ux22r(i1,i2,i3,u2c)
+       endLoopsMask2d()
+
+      else if( assignTwilightZone.eq.0 )then
+        ! include forcing terms
+       beginLoopsMask2d()
+        u(i1-is1,i2-is2,i3,u1c)=u(i1+is1,i2+is2,i3,u1c)+dx(1)*2.*(\
+                             is2*ux22r(i1,i2,i3,u2c)    + (1./mu)*bcf(side,axis,i1,i2,i3,u1c) )
+       endLoopsMask2d()
+
+      else
+       ! Twilight-zone: 
+       beginLoopsMask2d()
+        OGDERIV2D(0,1,0,0,i1,i2,i3,t,ux0,vx0)
+        OGDERIV2D(0,0,1,0,i1,i2,i3,t,uy0,vy0)
+        u(i1-is1,i2-is2,i3,u1c)=u(i1+is1,i2+is2,i3,u1c)-is2*dx(1)*2.*(      -ux22r(i1,i2,i3,u2c)+uy0+vx0)
+       endLoopsMask2d()
+      end if
+     end if   
+
+   end if ! end bc 
+
+  endLoopOverSides()  
+
+
+
+
+  ! ---------------------------------------------------------------------
+  ! ----------- STAGE 3, ASSIGN CORNERS AND EDGES -----------------------
+  ! ---------------------------------------------------------------------
+  #If #DIM eq "2"
+    if( twilightZone==1 )then
+      assignCorners(DIM,ORDER,GRIDTYPE,TZ)
+    else
+      assignCorners(DIM,ORDER,GRIDTYPE,noForcing)
+    end if
+  #Else
+    if( twilightZone==1 )then
+      assignCorners3d(ORDER,GRIDTYPE,TZ)
+    else
+      assignCorners3d(ORDER,GRIDTYPE,noForcing)
+    end if    
+  #End
+
+
+     
+  return
+  end
+
+#endMacro
+
+
+#beginMacro buildFile(NAME,DIM,ORDER,GRIDTYPE)
+#beginFile src/incompressible/NAME.f90
+ BC_ISM(NAME,DIM,ORDER,GRIDTYPE)
+#endFile
+#endMacro
+
+      buildFile(bcIsm2dOrder2r,2,2,rectangular)
+      buildFile(bcIsm3dOrder2r,3,2,rectangular)
+      buildFile(bcIsm2dOrder2c,2,2,curvilinear)
+      buildFile(bcIsm3dOrder2c,3,2,curvilinear)
+
+      buildFile(bcIsm2dOrder4r,2,4,rectangular)
+      ! buildFile(bcIsm3dOrder4r,3,4,rectangular)
+      buildFile(bcIsm2dOrder4c,2,4,curvilinear)
+      ! buildFile(bcIsm3dOrder4c,3,4,curvilinear)   
+
+
+  subroutine bcOptIsm( subroutineArgs() )
+! ===================================================================================
+!  Boundary conditions for solid mechanics
+!
+!  gridType : 0=rectangular, 1=curvilinear
+!
+!  c2= mu/rho, c1=(mu+lambda)/rho;
+! 
+! The forcing for the boundary conditions can be accessed in two ways. One can either 
+! use the arrays: 
+!       bcf00(i1,i2,i3,m), bcf10(i1,i2,i3,m), bcf01(i1,i2,i3,m), bcf11(i1,i2,i3,m), 
+!       bcf02(i1,i2,i3,m), bcf12(i1,i2,i3,m)
+! which provide values for the 6 different faces in 6 different arrays. One can also
+! access the same values using the single statement function
+!         bcf(side,axis,i1,i2,i3,m)
+! which is defined below. 
+! ===================================================================================
+
+  implicit none
+
+  declareInputArgs()
+
+  integer grid,gridType,orderOfAccuracy
+
+  ierr=0
+
+  nd                           = ipar(0)
+  grid                         = ipar(1)
+  ! u1c                          = ipar(2)
+  ! u2c                          = ipar(3)
+  ! u3c                          = ipar(4)
+  gridType                     = ipar(5)
+  orderOfAccuracy              = ipar(6)
+  ! orderOfExtrapolation         = ipar(7)
+  ! twilightZone                 = ipar(8)
+  ! useWhereMask                 = ipar(9)
+  ! debug                        = ipar(10)
+     
+  ! materialFormat               = ipar(15)
+  ! pc                           = ipar(16)
+  ! upwindSOS                    = ipar(17)
+  ! useCurlCurlBoundaryCondition = ipar(18);
+
+  if( orderOfAccuracy.eq.2 )then
+
+    if( nd.eq.2 .and. gridType.eq.rectangular ) then
+      call bcIsm2dOrder2r( subroutineArgs() )
+    else if( nd.eq.2 .and. gridType.eq.curvilinear ) then
+      call bcIsm2dOrder2c( subroutineArgs() )
+    else if( nd.eq.3 .and. gridType.eq.rectangular ) then
+      call bcIsm3dOrder2r( subroutineArgs() )
+    else if( nd.eq.3 .and. gridType.eq.curvilinear ) then
+      call bcIsm3dOrder2c( subroutineArgs() )
+    else
+      stop 2271
+    end if
+
+  else if( orderOfAccuracy.eq.4 ) then
+
+    if( nd.eq.2 .and. gridType.eq.rectangular ) then
+      call bcIsm2dOrder4r( subroutineArgs() )
+    else if( nd.eq.2 .and. gridType.eq.curvilinear ) then
+      call bcIsm2dOrder4c( subroutineArgs() )
+    else if( nd.eq.3 .and. gridType.eq.rectangular ) then
+      call bcIsm3dOrder4r( subroutineArgs() )
+    else if( nd.eq.3 .and. gridType.eq.curvilinear ) then
+      call bcIsm3dOrder4c( subroutineArgs() )
+    else
+      stop 4444
+    end if
+
+
+
+  else
+    write(*,'(" bcIsm:ERROR: un-implemented order of accuracy =",i6)') orderOfAccuracy
+      ! '
+    stop 11222
+  end if
+
+  return
+  end      
+

@@ -1,3 +1,12 @@
+**************************************
+******* Mon Aug 16, 2021
+
+
+REVISIT MLA
+cgmx -noplot tz -g=nonSquare16.order2 -tz=poly -degreex=2 -degreet=2 -dm=gdm -nm=mla -npv=2 -matFile=mlaMat1.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=1 -go=og
+
+
+
 ***************************
 ******* Thurs May 18, 2021
 

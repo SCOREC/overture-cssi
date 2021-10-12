@@ -55,7 +55,7 @@ getErrors( int & numErr, aString *& errorNames, RealArray & err );
 
 int
 getExactForcing( const real t, RealArray & f, RealArray & g, 
-		 RealArray & A11, RealArray & A12, RealArray & A21, RealArray & A22 );
+                 RealArray & A11, RealArray & A12, RealArray & A21, RealArray & A22 );
 
 int 
 getExactSolution( const real t, RealArray & xe, RealArray & ve, RealArray & we );
@@ -102,7 +102,7 @@ int component;
 
 real cf1, cf2, cf3;
 real cfq1, cfq2, cfq3;
-	  
+          
 // For the free rotation solutions:
 int freeRotationAxis;  // 0, 1 or 2
 int m1, m2, m3;  // defines a permutation of the exact solution 
@@ -128,7 +128,7 @@ FILE *checkFile;
 
 // real cf1=2., cf2=1.5, cf3=-1.;
 // real cfq1=1., cfq2=2., cfq3=.5;
-	  
+          
 // for the Smart exact solution
 // const int m0=0, m1=1, m2=2;  // defines a permutation of the exact solution
 //int m0=1, m1=2, m2=0;  // defines a permutation of the exact solution 
@@ -243,7 +243,7 @@ getForce( real t, RealArray & f , RealArray & g,
 
       for( int i=0; i<3; i++ )for( int j=0; j<3; j++ )
       {
-	A21(i,j)=A12(j,i);
+        A21(i,j)=A12(j,i);
       }
   
       A22(0,0)=z*3.; A22(0,1)=z*0.; A22(0,2)=z*0.;
@@ -253,16 +253,16 @@ getForce( real t, RealArray & f , RealArray & g,
     
   }
   else if( testProblem==constantX0Acceleration|| 
-	   testProblem==constantX1Acceleration || 
-	   testProblem==constantX2Acceleration )
+           testProblem==constantX1Acceleration || 
+           testProblem==constantX2Acceleration )
   {
     f=0.; 
     f(component)=1.;
     g=0.;
   }
   else if( testProblem==constantW0Acceleration ||
-	   testProblem==constantW1Acceleration ||
-	   testProblem==constantW2Acceleration )
+           testProblem==constantW1Acceleration ||
+           testProblem==constantW2Acceleration )
   {
     f=0.;
     g=0.; 
@@ -270,8 +270,8 @@ getForce( real t, RealArray & f , RealArray & g,
       
   }
   else if( testProblem==sinX0Acceleration || 
-	   testProblem==sinX1Acceleration ||
-	   testProblem==sinX2Acceleration )
+           testProblem==sinX1Acceleration ||
+           testProblem==sinX2Acceleration )
   {
     f=0.;
     f(component)=-sin(t);
@@ -342,7 +342,7 @@ getForce( real t, RealArray & f , RealArray & g,
       A11(1,1) = -dragCoeff*vCM(1);
       f(1) += A11(1,1)*vCM(1);
     }
-	
+        
 
 
   }
@@ -379,7 +379,7 @@ initialConditions()
     body.getExactSolution( 0,t,xCM0,vCM0,w0 );
 
     printF(" Initial conditions: x=(%8.2e,%8.2e,%8.2e) v=(%8.2e,%8.2e,%8.2e)\n",xCM0(0),xCM0(1),xCM0(2),
-	   vCM0(0),vCM0(1),vCM0(2));
+           vCM0(0),vCM0(1),vCM0(2));
 
 
   }
@@ -395,13 +395,13 @@ initialConditions()
     body.getExactSolution( 0,t,xCM0,vCM0,w0 );
 
     printF(" Initial conditions: x=(%8.2e,%8.2e,%8.2e) v=(%8.2e,%8.2e,%8.2e)\n",xCM0(0),xCM0(1),xCM0(2),
-	   vCM0(0),vCM0(1),vCM0(2));
+           vCM0(0),vCM0(1),vCM0(2));
 
 
   }
   else if( testProblem==sinX0Acceleration ||
-	   testProblem==sinX1Acceleration ||
-	   testProblem==sinX2Acceleration )
+           testProblem==sinX1Acceleration ||
+           testProblem==sinX2Acceleration )
   {
     if( testProblem==sinX0Acceleration )
       testName="SinX0Accel";
@@ -416,8 +416,8 @@ initialConditions()
     vCM0(component)=+1.;
   }
   else if( testProblem==constantX0Acceleration || 
-	   testProblem==constantX1Acceleration || 
-	   testProblem==constantX2Acceleration )
+           testProblem==constantX1Acceleration || 
+           testProblem==constantX2Acceleration )
   {
     if( testProblem==constantX0Acceleration )
       testName="ConstX0Accel";
@@ -430,8 +430,8 @@ initialConditions()
     // dt=cfl*.01;
   }
   else if( testProblem==constantW0Acceleration ||
-	   testProblem==constantW1Acceleration ||
-	   testProblem==constantW2Acceleration )
+           testProblem==constantW1Acceleration ||
+           testProblem==constantW2Acceleration )
   {
     if( testProblem==constantW0Acceleration )
       testName="ConstW0Accel";
@@ -472,15 +472,15 @@ initialConditions()
   }
 //       else if( answer=="cfl" )
 //       {
-// 	ps.inputString(answer,sPrintF("Enter the cfl number (current=%6.4f)",cfl));
-// 	sScanF(answer,"%e",&cfl);
-// 	printf(" cfl=%6.2f \n",cfl);
-// 	continue;
+//      ps.inputString(answer,sPrintF("Enter the cfl number (current=%6.4f)",cfl));
+//      sScanF(answer,"%e",&cfl);
+//      printf(" cfl=%6.2f \n",cfl);
+//      continue;
 //       }
   // else if( testProblem==smartExactSolution )
   else if( testProblem==freeRotation1 ||
-	   testProblem==freeRotation2 ||
-	   testProblem==freeRotation3 )
+           testProblem==freeRotation2 ||
+           testProblem==freeRotation3 )
   {
     // Free rotation solution (Exact solution from ref E.H. Smart, Advanced Dynamics Vol II)
     // 
@@ -585,15 +585,15 @@ output( TestProblemEnum testProblem, const int step )
  if( testProblem==trigonometricMotion ||
      testProblem==polynomialMotion ||
            testProblem==constantX0Acceleration || 
-	   testProblem==constantX1Acceleration || 
-	   testProblem==constantX2Acceleration ||
-	   testProblem==constantW0Acceleration ||
-	   testProblem==constantW1Acceleration ||
-	   testProblem==constantW2Acceleration ||
-	   testProblem==sinX0Acceleration || 
-	   testProblem==sinX1Acceleration ||
-	   testProblem==sinX2Acceleration ||
-	   testProblem==exponentialV      ||
+           testProblem==constantX1Acceleration || 
+           testProblem==constantX2Acceleration ||
+           testProblem==constantW0Acceleration ||
+           testProblem==constantW1Acceleration ||
+           testProblem==constantW2Acceleration ||
+           testProblem==sinX0Acceleration || 
+           testProblem==sinX1Acceleration ||
+           testProblem==sinX2Acceleration ||
+           testProblem==exponentialV      ||
            testProblem==generalMotion  ||
            testProblem==fallingSphere )
   {
@@ -603,8 +603,8 @@ output( TestProblemEnum testProblem, const int step )
     err(2) = max(fabs(w  -we));
     
     printF("%s: t=%8.2e x=(%9.2e,%9.2e,%9.2e), v=(%9.2e,%9.2e,%9.2e), w=(%9.2e,%9.2e,%9.2e), "
-	   "xErr=%8.2e, vErr=%8.2e, wErr=%8.2e\n",
-	   (const char*)testName, t,xCM(0),xCM(1),xCM(2),vCM(0),vCM(1),vCM(2),w(0),w(1),w(2),err(0),err(1),err(2));
+           "xErr=%8.2e, vErr=%8.2e, wErr=%8.2e\n",
+           (const char*)testName, t,xCM(0),xCM(1),xCM(2),vCM(0),vCM(1),vCM(2),w(0),w(1),w(2),err(0),err(1),err(2));
 
     if( false && testProblem==exponentialV )
     {
@@ -621,8 +621,8 @@ output( TestProblemEnum testProblem, const int step )
 
   }
   else if( testProblem==freeRotation1 ||
-	   testProblem==freeRotation2 ||
-	   testProblem==freeRotation3 )
+           testProblem==freeRotation2 ||
+           testProblem==freeRotation3 )
   {
     // NOTE: This is the solution for wHat(t) in the rotating frame, wHat = E^T w 
     //    wHat1 = A cos(alpha*t) - C sigma*sin(alpha*t)
@@ -645,7 +645,7 @@ output( TestProblemEnum testProblem, const int step )
     printF("FreeRotation%i: t=%8.2e steps=%i w=(%8.3e,%8.3e,%8.3e), weHat=(%8.3e,%8.3e,%8.3e), "
            "wHat=(%8.3e,%8.3e,%8.3e),  wHat-err=(%7.3e,%7.3e,%7.3e) \n",
            freeRotationAxis,t,step,w(0),w(1),w(2),we(0),we(1),we(2),wHat(0),wHat(1),wHat(2),
-	   err(0),err(1),err(2));
+           err(0),err(1),err(2));
 
     // printf("FreeRotation%i: w0=(%8.3e,%8.3e,%8.3e)\n",w0(0),w0(1),w0(2));
 
@@ -721,22 +721,22 @@ getExactSolution( const real t, RealArray & xe, RealArray & ve, RealArray & we )
     body.getExactSolution( 0,t,xe,ve,we );
   }
   else if( testProblem==constantX0Acceleration || 
-	   testProblem==constantX1Acceleration || 
-	   testProblem==constantX2Acceleration )
+           testProblem==constantX1Acceleration || 
+           testProblem==constantX2Acceleration )
   {
     xe(component)= .5*f0(component)/mass*SQR(t);
     ve(component)= (f0(component)/mass*t+vCM0(component));
 
   }
   else if( testProblem==constantW0Acceleration ||
-	   testProblem==constantW1Acceleration ||
-	   testProblem==constantW2Acceleration )
+           testProblem==constantW1Acceleration ||
+           testProblem==constantW2Acceleration )
   {
     we(component)= g0(component)/mI(component)*t;
   }
   else if(  testProblem==sinX0Acceleration || 
-	    testProblem==sinX1Acceleration ||
-	    testProblem==sinX2Acceleration )
+            testProblem==sinX1Acceleration ||
+            testProblem==sinX2Acceleration )
   {
     xe(component) = sin(t)/mass + (vCM0(component) - (cos(t0)/mass))*t + xCM0(component);
     ve(component) = cos(t)/mass+ (vCM0(component) - (cos(t0)/mass));
@@ -754,15 +754,15 @@ getExactSolution( const real t, RealArray & xe, RealArray & ve, RealArray & we )
   }
   else if( testProblem==generalMotion )
   {
-// 	  printf("t=%8.2e x=(%7.2e,%7.2e,%7.2e) error(x)=(%6.1e,%6.1e,%6.1e) error(v)=(%6.1e,%6.1e,%6.1e) \n",t,
-// 		 xCM(0),xCM(1),xCM(2), 
-// 		 fabs(xCM(0)-( -sin(Pi*t)/(Pi*Pi*mass) )),
-// 		 fabs(xCM(1)-( -.5*sin(Pi*t)/(Pi*Pi*mass) )),
-// 		 fabs(xCM(2)-( -.5*sin(.5*Pi*t)/(.5*Pi*.5*Pi*mass) )),
-// 		 fabs(vCM(0)-(    (1.-cos(   Pi*t))/(Pi*mass)   +vCM0(0))),
-// 		 fabs(vCM(1)-( .5*(1.-cos(   Pi*t))/(Pi*mass)   +vCM0(1))),
-// 		 fabs(vCM(2)-( .5*(1.-cos(.5*Pi*t))/(.5*Pi*mass)+vCM0(2)))
-// 	    );
+//        printf("t=%8.2e x=(%7.2e,%7.2e,%7.2e) error(x)=(%6.1e,%6.1e,%6.1e) error(v)=(%6.1e,%6.1e,%6.1e) \n",t,
+//               xCM(0),xCM(1),xCM(2), 
+//               fabs(xCM(0)-( -sin(Pi*t)/(Pi*Pi*mass) )),
+//               fabs(xCM(1)-( -.5*sin(Pi*t)/(Pi*Pi*mass) )),
+//               fabs(xCM(2)-( -.5*sin(.5*Pi*t)/(.5*Pi*.5*Pi*mass) )),
+//               fabs(vCM(0)-(    (1.-cos(   Pi*t))/(Pi*mass)   +vCM0(0))),
+//               fabs(vCM(1)-( .5*(1.-cos(   Pi*t))/(Pi*mass)   +vCM0(1))),
+//               fabs(vCM(2)-( .5*(1.-cos(.5*Pi*t))/(.5*Pi*mass)+vCM0(2)))
+//          );
 
     // f = cf1*sin(cfq1*t)
     // here is the true solution
@@ -780,8 +780,8 @@ getExactSolution( const real t, RealArray & xe, RealArray & ve, RealArray & we )
   }
   // else if( testProblem==smartExactSolution )
   else if( testProblem==freeRotation1 ||
-	   testProblem==freeRotation2 ||
-	   testProblem==freeRotation3 )
+           testProblem==freeRotation2 ||
+           testProblem==freeRotation3 )
   {
     // NOTE: This is the solution for wHat(t) in the rotating frame, wHat = E^T w 
     //    wHat1 = A cos(alpha*t) - C sigma*sin(alpha*t)
@@ -832,7 +832,7 @@ getExactSolution( const real t, RealArray & xe, RealArray & ve, RealArray & we )
 // ============================================================================================
 int TestRigidBody::
 getExactForcing( const real t, RealArray & f, RealArray & g, 
-		 RealArray & A11, RealArray & A12, RealArray & A21, RealArray & A22 )
+                 RealArray & A11, RealArray & A12, RealArray & A21, RealArray & A22 )
 {
   RealArray xe(3),ve(3),we(3);
   getExactSolution( t, xe, ve, we );
@@ -958,8 +958,8 @@ solve(GenericGraphicsInterface & gi)
       Bound b  = map.getRangeBound(side,axis);
       if( b.isFinite() )
       {
-	xMin=min(xMin,(real)b);
-	xMax=max(xMax,(real)b);
+        xMin=min(xMin,(real)b);
+        xMax=max(xMax,(real)b);
       }
     }
   }
@@ -1048,8 +1048,8 @@ solve(GenericGraphicsInterface & gi)
 //       t+=dt;
 //       if( (step % 100) == 0 )
 //       {
-// 	printF("step=%i\n",step);
-// 	checkArrayIDs(sPrintF("body.integrate: step=%i",step) ); 
+//      printF("step=%i\n",step);
+//      checkArrayIDs(sPrintF("body.integrate: step=%i",step) ); 
 //       }
 //     }
 //     OV_ABORT("finish for now");
@@ -1082,10 +1082,10 @@ solve(GenericGraphicsInterface & gi)
 
       if( true ) // corrector step
       {
-	if( addedMass )
-	  body.correct( t+dt,f,g, A11,A12,A21,A22, xNew,r  );
-	else
-	  body.correct( t+dt,f,g, xNew,r  );
+        if( addedMass )
+          body.correct( t+dt,f,g, A11,A12,A21,A22, xNew,r  );
+        else
+          body.correct( t+dt,f,g, xNew,r  );
       }
       
     }
@@ -1109,7 +1109,7 @@ solve(GenericGraphicsInterface & gi)
     if( plotBody )
     {
       psp.set(GI_TOP_LABEL,sPrintF(buff,"Step %i, x=(%4.2f,%4.2f,%4.2f)",step,
-				   xCM(0),xCM(1),xCM(2)));
+                                   xCM(0),xCM(1),xCM(2)));
       //             omega(0)*180./Pi,omega(1)*180./Pi,omega(1)*180./Pi));  // set title
 
       psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
@@ -1128,56 +1128,56 @@ solve(GenericGraphicsInterface & gi)
       getTimeStep( t,dt );
       if( t<tFinal-dt*.5 &&  useVariableTimeStep )
       {
-	// adjust time step so we reach nextTimeToPlot
-	int numSteps = int( (nextTimeToPlot-t)/dt + 1.5);
-	dt = (nextTimeToPlot-t)/numSteps;
-	printF("--TRB-- adjusted dt=%9.3e\n",dt);
+        // adjust time step so we reach nextTimeToPlot
+        int numSteps = int( (nextTimeToPlot-t)/dt + 1.5);
+        dt = (nextTimeToPlot-t)/numSteps;
+        printF("--TRB-- adjusted dt=%9.3e\n",dt);
       }
 
       output( testProblem, step );
-	  
+          
 
       if( saveMatlabFile && t>nextTimeToPlot-.5*dt )
       {
-	int i=numberSaved;
-	  
-	assert( i<solution.getBound(0) );
-	  
-	solution(i,0)=t;
+        int i=numberSaved;
+          
+        assert( i<solution.getBound(0) );
+          
+        solution(i,0)=t;
 
-	solution(i,1)=xCM(0);
-	solution(i,2)=xCM(1);
-	solution(i,3)=xCM(2);
+        solution(i,1)=xCM(0);
+        solution(i,2)=xCM(1);
+        solution(i,3)=xCM(2);
 
-	solution(i,4)=vCM(0);
-	solution(i,5)=vCM(1);
-	solution(i,6)=vCM(2);
+        solution(i,4)=vCM(0);
+        solution(i,5)=vCM(1);
+        solution(i,6)=vCM(2);
 
-	solution(i,7)=w(0);
-	solution(i,8)=w(1);
-	solution(i,9)=w(2);
-	  
-	RealArray e(3,3);
-	body.getAxesOfInertia( t,e );
-	  
-	solution(i,10)=e(0,0);
-	solution(i,11)=e(1,0);
-	solution(i,12)=e(2,0);
-			    			    
-	solution(i,13)=e(0,1);
-	solution(i,14)=e(1,1);
-	solution(i,15)=e(2,1);
-			    			    
-	solution(i,16)=e(0,2);
-	solution(i,17)=e(1,2);
-	solution(i,18)=e(2,2);
+        solution(i,7)=w(0);
+        solution(i,8)=w(1);
+        solution(i,9)=w(2);
+          
+        RealArray e(3,3);
+        body.getAxesOfInertia( t,e );
+          
+        solution(i,10)=e(0,0);
+        solution(i,11)=e(1,0);
+        solution(i,12)=e(2,0);
+                                                    
+        solution(i,13)=e(0,1);
+        solution(i,14)=e(1,1);
+        solution(i,15)=e(2,1);
+                                                    
+        solution(i,16)=e(0,2);
+        solution(i,17)=e(1,2);
+        solution(i,18)=e(2,2);
 
-	numberSaved++;
-	  
+        numberSaved++;
+          
       }
 
     }
-	
+        
     if( (step % 100) == 0 )
     {
       printF("check array IDs: step=%i\n",step);
@@ -1212,8 +1212,8 @@ solve(GenericGraphicsInterface & gi)
     {
       for( int j=1; j<=numberOfComponents; j++ )
       {
-	fprintf(matlabFile,"%17.10e ",solution(i,j));
-	// if( (i % numPerLine)==numPerLine-1 ) fprintf(matlabFile,"...\n");
+        fprintf(matlabFile,"%17.10e ",solution(i,j));
+        // if( (i % numPerLine)==numPerLine-1 ) fprintf(matlabFile,"...\n");
       }
       fprintf(matlabFile," ; \n");  // end this row  solution(1:nc,i)
     }
@@ -1284,27 +1284,27 @@ main(int argc, char *argv[])
       else if( len=line.matches("-cfl=") )
       {
         sScanF(line(len,line.length()-1),"%e",&cfl);
-	printF("cfl = %6.2f\n",cfl);
+        printF("cfl = %6.2f\n",cfl);
       }
       else if( len=line.matches("-tFinal=") )
       {
         sScanF(line(len,line.length()-1),"%e",&tFinal);
-	printF("tFinal = %6.2f\n",tFinal);
+        printF("tFinal = %6.2f\n",tFinal);
       }
       else if( len=line.matches("-tPlot=") )
       {
         sScanF(line(len,line.length()-1),"%e",&tPlot);
-	printF("tPlot = %6.3f\n",tPlot);
+        printF("tPlot = %6.3f\n",tPlot);
       }
       else if( len=line.matches("-dt0=") )
       {
         sScanF(line(len,line.length()-1),"%e",&dt0);
-	printF("dt0 = %8.2e\n",dt0);
+        printF("dt0 = %8.2e\n",dt0);
       }
       else if( len=line.matches("-debug=") )
       {
         sScanF(line(len,line.length()-1),"%i",&debug);
-	printF("debug = %i\n",debug);
+        printF("debug = %i\n",debug);
         RigidBodyMotion::debug=debug;
       }
       else if( line==("-test=trig") )
@@ -1334,27 +1334,27 @@ main(int argc, char *argv[])
       else if( len=line.matches("-addedMass=") )
       {
         sScanF(line(len,line.length()-1),"%i",&addedMass);
-	printF("addedMass = %i\n",addedMass);
+        printF("addedMass = %i\n",addedMass);
       }
       else if( len=line.matches("-orderOfAccuracy=") )
       {
         sScanF(line(len,line.length()-1),"%i",&orderOfAccuracy);
-	printF("orderOfAccuracy = %i\n",orderOfAccuracy);
+        printF("orderOfAccuracy = %i\n",orderOfAccuracy);
       }
       else if( len=line.matches("-conv=") )
       {
         sScanF(line(len,line.length()-1),"%i",&conv);
-	printF("conv = %i\n",conv);
+        printF("conv = %i\n",conv);
       }
       else if( len=line.matches("-plotBody=") )
       {
         sScanF(line(len,line.length()-1),"%i",&plotBody);
-	printF("plotBody = %i\n",plotBody);
+        printF("plotBody = %i\n",plotBody);
       }
       else if( len=line.matches("-numResolutions=") )
       {
         sScanF(line(len,line.length()-1),"%i",&numResolutions);
-	printF("numResolutions = %i\n",numResolutions);
+        printF("numResolutions = %i\n",numResolutions);
       }
       else if( len=line.matches("-cmd=") )
       {
@@ -1398,18 +1398,18 @@ main(int argc, char *argv[])
                           "free rotation 1",
                           "free rotation 2",
                           "free rotation 3",
-			  "constant x acceleration",
-			  "constant y acceleration",
-			  "constant z acceleration",
-			  "constant omega_x acceleration",
-			  "constant omega_y acceleration",
-			  "constant omega_z acceleration",
-			  "x sine acceleration",
-			  "y sine acceleration",
-			  "z sine acceleration",
-			  "exponential v",
-			  "falling sphere",
-			  ""};
+                          "constant x acceleration",
+                          "constant y acceleration",
+                          "constant z acceleration",
+                          "constant omega_x acceleration",
+                          "constant omega_y acceleration",
+                          "constant omega_z acceleration",
+                          "x sine acceleration",
+                          "y sine acceleration",
+                          "z sine acceleration",
+                          "exponential v",
+                          "falling sphere",
+                          ""};
 
   dialog.setOptionMenuColumns(1);
   dialog.addOptionMenu( "Type:", opCommand1, opCommand1, testProblem );
@@ -1417,7 +1417,7 @@ main(int argc, char *argv[])
   aString opCommand2[] = {"leapFrogTrapezoidal",
                           "improvedEuler",
                           "implicitRungeKutta",
-			  ""};
+                          ""};
 
   dialog.setOptionMenuColumns(1);
   dialog.addOptionMenu( "Method:", opCommand2, opCommand2, method );
@@ -1426,7 +1426,7 @@ main(int argc, char *argv[])
                     "convergence rate",
                     "leak check",
                     "exit",
-		    ""};
+                    ""};
 
   int numberOfPushButtons=3;  // number of entries in cmds
   int numRows=numberOfPushButtons; // (numberOfPushButtons+1)/2;
@@ -1435,7 +1435,7 @@ main(int argc, char *argv[])
   aString tbCommands[] = {"added mass",
                           "plot body",
                           "use variable time step",
-			  ""};
+                          ""};
   int tbState[10];
   tbState[0] = addedMass;
   tbState[1] = plotBody;
@@ -1518,83 +1518,83 @@ main(int argc, char *argv[])
     else if( dialog.getToggleValue(answer,"plot body",plotBody) ){} //
     else if( dialog.getToggleValue(answer,"use variable time step",useVariableTimeStep) ){} //
     else if( answer=="general motion"  ||
-	     answer=="trigonometric motion"  ||
-	     answer=="polynomial motion"  ||
-	     answer=="free rotation 1"  ||
-	     answer=="free rotation 2"  ||
-	     answer=="free rotation 3"  ||
-	     answer=="constant x acceleration"  ||
-	     answer=="constant y acceleration"  ||
-	     answer=="constant z acceleration"  ||
-	     answer=="constant omega_x acceleration"  ||
-	     answer=="constant omega_y acceleration"  ||
-	     answer=="constant omega_z acceleration"  ||
-	     answer=="x sine acceleration"  ||
-	     answer=="y sine acceleration"  ||
-	     answer=="z sine acceleration"  ||
-	     answer=="exponential v"  ||
-	     answer=="falling sphere"  )
+             answer=="trigonometric motion"  ||
+             answer=="polynomial motion"  ||
+             answer=="free rotation 1"  ||
+             answer=="free rotation 2"  ||
+             answer=="free rotation 3"  ||
+             answer=="constant x acceleration"  ||
+             answer=="constant y acceleration"  ||
+             answer=="constant z acceleration"  ||
+             answer=="constant omega_x acceleration"  ||
+             answer=="constant omega_y acceleration"  ||
+             answer=="constant omega_z acceleration"  ||
+             answer=="x sine acceleration"  ||
+             answer=="y sine acceleration"  ||
+             answer=="z sine acceleration"  ||
+             answer=="exponential v"  ||
+             answer=="falling sphere"  )
     {
       if( answer=="general motion" )
-	testProblem=generalMotion;
+        testProblem=generalMotion;
       else if( answer=="trigonometric motion" )
-	testProblem=trigonometricMotion;
+        testProblem=trigonometricMotion;
       else if( answer=="polynomial motion" )
-	testProblem=polynomialMotion;
+        testProblem=polynomialMotion;
       else if( answer=="free rotation 1" )
       {
-	testProblem=freeRotation1;
-	trb.freeRotationAxis=0;
+        testProblem=freeRotation1;
+        trb.freeRotationAxis=0;
       }
       else if( answer=="free rotation 2" )
       {
-	testProblem=freeRotation2;
-	trb.freeRotationAxis=1;
+        testProblem=freeRotation2;
+        trb.freeRotationAxis=1;
       }
       else if( answer=="free rotation 3" )
       {
-	testProblem=freeRotation3;
-	trb.freeRotationAxis=2;
+        testProblem=freeRotation3;
+        trb.freeRotationAxis=2;
       }
       else if( answer=="constant x acceleration" )
-	testProblem=constantX0Acceleration;
+        testProblem=constantX0Acceleration;
       else if( answer=="constant y acceleration" )
-	testProblem=constantX1Acceleration;
+        testProblem=constantX1Acceleration;
       else if( answer=="constant z acceleration" )
-	testProblem=constantX2Acceleration;
+        testProblem=constantX2Acceleration;
       else if( answer=="constant omega_x acceleration" )
-	testProblem=constantW0Acceleration;
+        testProblem=constantW0Acceleration;
       else if( answer=="constant omega_y acceleration" )
-	testProblem=constantW1Acceleration;
+        testProblem=constantW1Acceleration;
       else if( answer=="constant omega_z acceleration" )
-	testProblem=constantW2Acceleration;
+        testProblem=constantW2Acceleration;
       else if( answer=="x sine acceleration" )
-	testProblem=sinX0Acceleration;
+        testProblem=sinX0Acceleration;
       else if( answer=="y sine acceleration" )
-	testProblem=sinX1Acceleration;
+        testProblem=sinX1Acceleration;
       else if( answer=="z sine acceleration" )
-	testProblem=sinX2Acceleration;
+        testProblem=sinX2Acceleration;
       else if( answer=="exponential v" )
-	testProblem=exponentialV;
+        testProblem=exponentialV;
       else if( answer=="falling sphere" )
-	testProblem=fallingSphere;
+        testProblem=fallingSphere;
 
       printF("testProblem=%i\n",(int)testProblem);
 
     }
     else if( answer=="leapFrogTrapezoidal" ||
              answer=="improvedEuler" ||
-	     answer=="implicitRungeKutta" )
+             answer=="implicitRungeKutta" )
     {
       if( answer=="leapFrogTrapezoidal" )
-	method=RigidBodyMotion::leapFrogTrapezoidal;
+        method=RigidBodyMotion::leapFrogTrapezoidal;
       else if( answer=="improvedEuler" )
-	method=RigidBodyMotion::improvedEuler;
+        method=RigidBodyMotion::improvedEuler;
       else if( answer=="implicitRungeKutta" )
-	method=RigidBodyMotion::implicitRungeKutta;
+        method=RigidBodyMotion::implicitRungeKutta;
       else
       {
-	OV_ABORT("ERROR");
+        OV_ABORT("ERROR");
       }
     }
     else if( answer=="leak check" )
@@ -1608,29 +1608,29 @@ main(int argc, char *argv[])
       
       for(int step=1; step<=numberOfSteps; step++) 
       {
-	// ok c = RigidBodyMotion::mult( a,b );
-	// ok b = trans( a );
-	
-	// r(R) = omegavk + 5.*( -RigidBodyMotion::mult(Omegak,RigidBodyMotion::mult(Ak,omegavk)) );
+        // ok c = RigidBodyMotion::mult( a,b );
+        // ok b = trans( a );
+        
+        // r(R) = omegavk + 5.*( -RigidBodyMotion::mult(Omegak,RigidBodyMotion::mult(Ak,omegavk)) );
         
 
 
         // rk(R) = mass*(vvk-vv0) - adt*( -RigidBodyMotion::mult(A11,vvk) - RigidBodyMotion::mult(A12,omegavk) + fvnp1 );
 
         // NO LEAK: 
-	rk(R) = RigidBodyMotion::mult(Ak,evaluate(omegavk-omegav0)); 
+        rk(R) = RigidBodyMotion::mult(Ak,evaluate(omegavk-omegav0)); 
 
         // LEAK:
-	// rk(R) = RigidBodyMotion::mult(Ak,omegavk-omegav0) - adt*( -RigidBodyMotion::mult(Omegak,RigidBodyMotion::mult(Ak,omegavk)) -RigidBodyMotion::mult(A21,vvk) - RigidBodyMotion::mult(A22,omegavk) + gvnp1 );
+        // rk(R) = RigidBodyMotion::mult(Ak,omegavk-omegav0) - adt*( -RigidBodyMotion::mult(Omegak,RigidBodyMotion::mult(Ak,omegavk)) -RigidBodyMotion::mult(A21,vvk) - RigidBodyMotion::mult(A22,omegavk) + gvnp1 );
 
         // LEAK:
-	// rk(R+3) = RigidBodyMotion::mult(Ak,omegavk-omegav0) - adt*( -RigidBodyMotion::mult(Omegak,RigidBodyMotion::mult(Ak,omegavk)) -RigidBodyMotion::mult(A21,vvk) - RigidBodyMotion::mult(A22,omegavk) + gvnp1 );
-	
-	if( (step % 100) == 0 )
-	{
-	  printF("step=%i\n",step);
-	  checkArrayIDs(sPrintF("leak check : step=%i",step) ); 
-	}
+        // rk(R+3) = RigidBodyMotion::mult(Ak,omegavk-omegav0) - adt*( -RigidBodyMotion::mult(Omegak,RigidBodyMotion::mult(Ak,omegavk)) -RigidBodyMotion::mult(A21,vvk) - RigidBodyMotion::mult(A22,omegavk) + gvnp1 );
+        
+        if( (step % 100) == 0 )
+        {
+          printF("step=%i\n",step);
+          checkArrayIDs(sPrintF("leak check : step=%i",step) ); 
+        }
       }
       
 
@@ -1657,17 +1657,17 @@ main(int argc, char *argv[])
       for( int res=0; res<numResolutions; res++ )
       {
         // half the time step:        
-	trb.dt0=dtStart/pow(2.,res);
+        trb.dt0=dtStart/pow(2.,res);
         dtv(res)=trb.dt0;
 
         trb.solve(gi);
         trb.getErrors( numErr,errorName,err ); // return the number, names and errors (which depends on the test)
-	
+        
         if( maxErr.getLength(0)==0 )
-	  maxErr.redim(numResolutions,numErr);
+          maxErr.redim(numResolutions,numErr);
 
-	for( int j=0; j<numErr; j++ )
-	  maxErr(res,j)=err(j);
+        for( int j=0; j<numErr; j++ )
+          maxErr(res,j)=err(j);
 
       }
       
@@ -1675,8 +1675,8 @@ main(int argc, char *argv[])
       convergenceRate(dtv,maxErr,rate);
       for( int j=0; j<numErr; j++ )
       {
-	if( isnan(rate(j)) )
-	  rate(j)=0.;
+        if( isnan(rate(j)) )
+          rate(j)=0.;
       }
       
 
@@ -1690,55 +1690,55 @@ main(int argc, char *argv[])
       
       for( int io=0; io<2; io++ )
       {
-	FILE *file= io==0 ? stdout : outputFile;  
+        FILE *file= io==0 ? stdout : outputFile;  
 
-	// Output results as a Latex table
+        // Output results as a Latex table
 
-	fprintf(file,"\\begin{figure}[hbt]\\tableFont %% you should set \\tableFont to \\footnotesize or other size\n");
-	fprintf(file,"\\begin{center}\n");
-	fprintf(file,"\\begin{tabular}{|l|");
-	for( int j=0; j<numErr; j++ )
-	  fprintf(file,"c|c|");
-	fprintf(file,"} \\hline \n");
-	fprintf(file,"\\multicolumn{%d}{|c|}{Rigid body, %s, %s}     \\\\ \\hline\n",1+2*numErr,(const char*)solverName,
-		(const char*)testName);
-	// \dt  & %s  & r & %s  & r & %s  & r \\ \hline
-	fprintf(file,"$\\dt$    ");
-	for( int j=0; j<numErr; j++ )
-	  fprintf(file,"&  %s   &   r   ",(const char*)errorName[j]);
+        fprintf(file,"\\begin{figure}[hbt]\\tableFont %% you should set \\tableFont to \\footnotesize or other size\n");
+        fprintf(file,"\\begin{center}\n");
+        fprintf(file,"\\begin{tabular}{|l|");
+        for( int j=0; j<numErr; j++ )
+          fprintf(file,"c|c|");
+        fprintf(file,"} \\hline \n");
+        fprintf(file,"\\multicolumn{%d}{|c|}{Rigid body, %s, %s}     \\\\ \\hline\n",1+2*numErr,(const char*)solverName,
+                (const char*)testName);
+        // \dt  & %s  & r & %s  & r & %s  & r \\ \hline
+        fprintf(file,"$\\dt$    ");
+        for( int j=0; j<numErr; j++ )
+          fprintf(file,"&  %s   &   r   ",(const char*)errorName[j]);
 
-	fprintf(file,"\\\\ \\hline\n"); 
-	for( int i=0; i<numResolutions; i++ )
-	{
-	  //  dt  & err & ratio  & 4.0{e-4} & ratio    \\ \hline
-	  fprintf(file,"%8.6f ",dtv(i));
-	  for( int j=0; j<numErr; j++ )
-	  {
-	    real ratio = maxErr(max(i-1,0),j)/maxErr(i,j); // ratio==1 for i=1
-	    if( isnan(ratio) )
-	      ratio=0.;
-	  
-	    if( i==0 )
-	      fprintf(file,"& %8.2e &       ",maxErr(i,j));
-	    else
-	      fprintf(file,"& %8.2e & %4.1f  ",maxErr(i,j),ratio);
-	  }
-	  fprintf(file,"  \\\\ \\hline\n");
-	}
+        fprintf(file,"\\\\ \\hline\n"); 
+        for( int i=0; i<numResolutions; i++ )
+        {
+          //  dt  & err & ratio  & 4.0{e-4} & ratio    \\ \hline
+          fprintf(file,"%8.6f ",dtv(i));
+          for( int j=0; j<numErr; j++ )
+          {
+            real ratio = maxErr(max(i-1,0),j)/maxErr(i,j); // ratio==1 for i=1
+            if( isnan(ratio) )
+              ratio=0.;
+          
+            if( i==0 )
+              fprintf(file,"& %8.2e &       ",maxErr(i,j));
+            else
+              fprintf(file,"& %8.2e & %4.1f  ",maxErr(i,j),ratio);
+          }
+          fprintf(file,"  \\\\ \\hline\n");
+        }
 
-	//   rate  &   $1.99$  &       & $2.01$   &        \\ \hline
-	fprintf(file," rate    ");
-	for( int j=0; j<numErr; j++ )
-	  fprintf(file,"& %5.2f   &       ",rate(j));
+        //   rate  &   $1.99$  &       & $2.01$   &        \\ \hline
+        fprintf(file," rate    ");
+        for( int j=0; j<numErr; j++ )
+          fprintf(file,"& %5.2f   &       ",rate(j));
       
-	fprintf(file,"   \\\\ \\hline\n");
-	fprintf(file,"\\end{tabular}\n");
-	fprintf(file,"\\caption{Newton-Euler Equations: Scheme=%s, test=%s, Max-norm errors at $t=%4.1f$, mass=%8.2e, addedMass=%d }\n",
-		(const char*)solverName,(const char*)testName,trb.tFinal,trb.mass,trb.addedMass);
-	fprintf(file,"\\label{tab:Test%s_Scheme%s}\n",(const char*)testName,(const char*)solverName);
-	fprintf(file,"\\end{center}\n");
-	fprintf(file,"\\end{figure} \n"); 
-	
+        fprintf(file,"   \\\\ \\hline\n");
+        fprintf(file,"\\end{tabular}\n");
+        fprintf(file,"\\caption{Newton-Euler Equations: Scheme=%s, test=%s, Max-norm errors at $t=%4.1f$, mass=%8.2e, addedMass=%d }\n",
+                (const char*)solverName,(const char*)testName,trb.tFinal,trb.mass,trb.addedMass);
+        fprintf(file,"\\label{tab:Test%s_Scheme%s}\n",(const char*)testName,(const char*)solverName);
+        fprintf(file,"\\end{center}\n");
+        fprintf(file,"\\end{figure} \n"); 
+        
       } // end for io
       printF("LaTex output written to file [%s]\n",(const char*)outputFileName);
       

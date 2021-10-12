@@ -40,6 +40,9 @@ divergence.bC
   - checkDisplacementAndStress( const int current, real t )
   - getVelocityAndStress
 
+forcing.bC 
+  - int getForcing(int current, int grid, realArray & u , real t, real dt, int option /* = 0 */ )  
+
 getTimeStep.bC
   - getTimeStep( GridFunction & gf )
 
@@ -65,6 +68,7 @@ setup.C:
 
 SmParameters.C
   - setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,  DialogData *interface /* =NULL */ )
+  - setTwilightZoneFunction( ...) SETUP twilight-zone functions
 
 solve.C:
   - computeNumberOfStepsAndAdjustTheTimeStep

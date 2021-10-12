@@ -10,8 +10,12 @@
 # But where is the file written?
 # restart; read '/Users/henshaw/Dropbox/CG6backup/overtureFramework/cg/ad/codes/annulusEigenvalues.maple';
 #
+# Matlab file for cgWaveHoltz:
+#  restart; currentdir("/Users/henshaw/Dropbox/research/cgwave/doc/codes"); currentdir("/Users/henshaw/Dropbox/research/cgwave/doc/codes"); read "/Users/henshaw/Dropbox/CG6backup/overtureFramework/cg/ad/codes/annulusEigenvalues.maple";
 clear:
 interface(quiet=true,echo=0):
+
+writeMatlabFile := 1; # save eigenvalues to a Matlab file
 
 Digits:=15;
 j:=BesselJ(m,rr):
@@ -20,16 +24,30 @@ y:=BesselY(m,rr):
 jp:=diff(BesselJ(m,rr),rr):
 yp:=diff(BesselY(m,rr),rr):
 
-numBC:=2; # Dirichlet and Neumann BC's 
+if( writeMatlabFile=1 )then
+  numBC:=1; # Dirichlet and Neumann BC's 
+else
+  numBC:=2; # Dirichlet and Neumann BC's 
+fi;
 for ibc from 1 by 1 to numBC do
 
   if( ibc=1 )then
     # Dirichlet BC's on both sides
-    fileName := "annulusEigenvaluesHeatEquationDirichlet.h"; 
+    if( writeMatlabFile=1 )then
+      fileName := "annulusEigenvaluesDirichlet.m";
+    else
+      fileName := "annulusEigenvaluesHeatEquationDirichlet.h";
+    fi;
+
     f:=subs(rr=a*z,j)*subs(rr=b*z,y) - subs(rr=b*z,j)*subs(rr=a*z,y):
   else
     # Neumann BC's on both sides
-    fileName := "annulusEigenvaluesHeatEquationNeumann.h"; 
+    if( writeMatlabFile=1 )then
+      fileName := "annulusEigenvaluesNeumann.m";
+    else
+      fileName := "annulusEigenvaluesHeatEquationNeumann.h"; 
+    fi;
+
     f:=subs(rr=a*z,jp)*subs(rr=b*z,yp) - subs(rr=b*z,jp)*subs(rr=a*z,yp):
   fi:
 
@@ -38,8 +56,13 @@ for ibc from 1 by 1 to numBC do
 
 
   # --- compute roots to f(z,m)=0 
-  nr:=4: # first nr roots of f
-  nm:=3: # first nm bessel functions 
+  if( writeMatlabFile=1 )then
+    nr:=10: # first nr roots of f
+    nm:=30; # 12: # first nm bessel functions
+  else
+    nr:=4: # first nr roots of f
+    nm:=3: # first nm bessel functions 
+  fi;
 
   # plot f(z) for different m
   pl := [ subs(m=mm,f) $mm=0..nm-1]:
@@ -54,118 +77,119 @@ for ibc from 1 by 1 to numBC do
     # r = root number 
     for r from 1 by 1 to nr do
       # Find the next root, avoiding previous roots
-      w[n+1,r] := fsolve( subs(m=n,f)=0,z, avoid=toavoid, lastr..max(10,lastr+10));
-      # printf(" w[%d,%d]=%s\n",n+1,r,convert(w[n+1,r],string));
+      if( writeMatlabFile=1 )then
+        if( n=0 )then
+          w[n+1,r] := fsolve( subs(m=n,f)=0,z, avoid=toavoid, lastr..lastr+7);
+        else
+          w[n+1,r] := fsolve( subs(m=n,f)=0,z, avoid=toavoid, w[n,r]..w[n,r]+2);
+        fi;
+      else
+        w[n+1,r] := fsolve( subs(m=n,f)=0,z, avoid=toavoid, lastr..max(10,lastr+10));
+      fi;
+      printf(" w[%d,%d]=%s\n",n+1,r,convert(w[n+1,r],string));
 
       printf(" n=%d, r=%d, root w=%20.8e\n",n,r,w[n+1,r]);
 
       toavoid:= toavoid union {z=w[n+1,r]}:
       lastr := w[n+1,r]:
       # print(toavoid):
-    end do:
-  end do:
+    end do;
+  end do;
 
 
-  file:=fopen(fileName, WRITE):
-  fprintf(file,"// ---- Eigenvalues for eigenfunctions of the heat equation on an annulus ----\n"):
-  fprintf(file,"// File written by cg/ad/codes/annulusEigenvalues.maple \n"):
-  fprintf(file,"// numBesselOrderDBC  : Bessel orders are m=0,1,2,...,numBesselOrderDBC-1 \n"):
-  fprintf(file,"// numRootDBC         : number of roots\n"):
-  if( ibc=1 )then
-    fprintf(file,"// ----------- DIRCHLET BCs at r=ra and r=rb ----- \n"):
-  else
-    fprintf(file,"// ----------- NEUMANN BCs at r=ra and r=rb ----- \n"):
-  fi;
-  fprintf(file,"// Solution is u = cJ*Jn(lambda*r) + cY*Yn(lambda*r)\n");
-  fprintf(file,"//  cJ = amp*Yn(lambda*a), cY = -amp*Jn(lambda*a) \n");
-  # cJ :=  evalf(subs(rr=a,subs(m=n,y))); # Yn(lambda*a)
-  # cY := -evalf(subs(rr=a,subs(m=n,j))); 
-  # cNorm := (cJ^2 + cY^2)^(1/2); 
-  # cJ := cJ/cNorm; cY := cY/cNorm; 
-  # fprintf(file," const Real cJ=%19.14e, cY=%19.14e\n",cJ,cY);
-  fprintf(file," const Real ra=%19.14e, rb=%19.14e; \n",a,b):
-  fprintf(file," const int numBesselOrder=%d, numRoot=%d;\n",nm,nr):
-  fprintf(file," Real annulusEigs[numBesselOrder][numRoot]={\n"):
-
-  for n from 0 to nm-1 do
-
-    fprintf(file," { // Roots for f(z,n) = Jn(a*z)*Yn(a*z) - Jn(b*z)*Yn(a*z), n=%d\n",n):
-
-    for mr from 1 to nr do
-
-      z1 := w[n+1, mr]:
-
-      # printf(" Jn(%e)=%e : n=%d m=%d xp =%19.14e \n",z1,BesselJ(n,z1),n,mr,z1):
-      
-      fprintf(file,"    %19.14e",z1):
-      if mr<nr then
-        fprintf(file,",\n"):
-      else
-        fprintf(file,"}, // end n=%d\n",n):
-      fi:
-
+  if( writeMatlabFile=1 )then
+    # MATLAB FILE
+    file:=fopen(fileName, WRITE):
+    fprintf(file,"%% ---- Eigenvalues for eigenfunctions of the heat equation on an annulus ----\n"):
+    fprintf(file,"%% File written by cg/ad/codes/annulusEigenvalues.maple \n"):
+    fprintf(file,"%% numBesselOrderDBC  : Bessel orders are m=0,1,2,...,numBesselOrderDBC-1 \n"):
+    fprintf(file,"%% numRootDBC         : number of roots\n"):
+    if( ibc=1 )then
+      fprintf(file,"%% ----------- DIRCHLET BCs at r=ra and r=rb ----- \n"):
+    else
+      fprintf(file,"%% ----------- NEUMANN BCs at r=ra and r=rb ----- \n"):
+    fi;
+    fprintf(file,"%% Solution is u = cJ*Jn(lambda*r) + cY*Yn(lambda*r)\n");
+    fprintf(file,"%%  cJ = amp*Yn(lambda*a), cY = -amp*Jn(lambda*a) \n");
+    # cJ :=  evalf(subs(rr=a,subs(m=n,y))); # Yn(lambda*a)
+    # cY := -evalf(subs(rr=a,subs(m=n,j))); 
+    # cNorm := (cJ^2 + cY^2)^(1/2); 
+    # cJ := cJ/cNorm; cY := cY/cNorm; 
+    # fprintf(file," const Real cJ=%19.14e, cY=%19.14e\n",cJ,cY);
+    fprintf(file," ra=%19.14e; rb=%19.14e; \n",a,b):
+    fprintf(file," numBesselOrder=%d; numRoot=%d;\n",nm,nr):
+    fprintf(file," lambdav = [...\n"):
+  
+    for n from 0 to nm-1 do
+  
+      # fprintf(file," { // Roots for f(z,n) = Jn(a*z)*Yn(a*z) - Jn(b*z)*Yn(a*z), n=%d\n",n):
+  
+      for mr from 1 to nr do
+  
+        z1 := w[n+1, mr]:
+  
+        # printf(" Jn(%e)=%e : n=%d m=%d xp =%19.14e \n",z1,BesselJ(n,z1),n,mr,z1):
+        
+        fprintf(file," %19.14e; ...\n",z1):
+  
+      od:
     od:
-  od:
+  
+    fprintf(file,"];\n"):
+    fclose(file):
+    printf(" *** output written to file %s\n",convert(fileName,string)):
 
-  fprintf(file,"                               };\n"):
-  fclose(file):
-  printf(" *** output written to file %s\n",convert(fileName,string)):
+  else
+
+    file:=fopen(fileName, WRITE):
+    fprintf(file,"// ---- Eigenvalues for eigenfunctions of the heat equation on an annulus ----\n"):
+    fprintf(file,"// File written by cg/ad/codes/annulusEigenvalues.maple \n"):
+    fprintf(file,"// numBesselOrderDBC  : Bessel orders are m=0,1,2,...,numBesselOrderDBC-1 \n"):
+    fprintf(file,"// numRootDBC         : number of roots\n"):
+    if( ibc=1 )then
+      fprintf(file,"// ----------- DIRCHLET BCs at r=ra and r=rb ----- \n"):
+    else
+      fprintf(file,"// ----------- NEUMANN BCs at r=ra and r=rb ----- \n"):
+    fi;
+    fprintf(file,"// Solution is u = cJ*Jn(lambda*r) + cY*Yn(lambda*r)\n");
+    fprintf(file,"//  cJ = amp*Yn(lambda*a), cY = -amp*Jn(lambda*a) \n");
+    # cJ :=  evalf(subs(rr=a,subs(m=n,y))); # Yn(lambda*a)
+    # cY := -evalf(subs(rr=a,subs(m=n,j))); 
+    # cNorm := (cJ^2 + cY^2)^(1/2); 
+    # cJ := cJ/cNorm; cY := cY/cNorm; 
+    # fprintf(file," const Real cJ=%19.14e, cY=%19.14e\n",cJ,cY);
+    fprintf(file," const Real ra=%19.14e, rb=%19.14e; \n",a,b):
+    fprintf(file," const int numBesselOrder=%d, numRoot=%d;\n",nm,nr):
+    fprintf(file," Real annulusEigs[numBesselOrder][numRoot]={\n"):
+  
+    for n from 0 to nm-1 do
+  
+      fprintf(file," { // Roots for f(z,n) = Jn(a*z)*Yn(a*z) - Jn(b*z)*Yn(a*z), n=%d\n",n):
+  
+      for mr from 1 to nr do
+  
+        z1 := w[n+1, mr]:
+  
+        # printf(" Jn(%e)=%e : n=%d m=%d xp =%19.14e \n",z1,BesselJ(n,z1),n,mr,z1):
+        
+        fprintf(file,"    %19.14e",z1):
+        if mr<nr then
+          fprintf(file,",\n"):
+        else
+          fprintf(file,"}, // end n=%d\n",n):
+        fi:
+  
+      od:
+    od:
+  
+    fprintf(file,"                               };\n"):
+    fclose(file):
+    printf(" *** output written to file %s\n",convert(fileName,string)):
+
+
+
+  fi
 
 od; # for ibc 
 
 
-# fprintf(file," const int nfunc_shell=%d, nzeros_shell=%d, ndata_shell=2;\n",nm,nr):
-# fprintf(file," // u(r) = A_m J_m(w r/c) + B_m Y_m(w r/c)\n"):
-# fprintf(file," // rOuter/rInner = %d\n",a);
-# fprintf(file," // shellEigenvalues[nfunc_shell][nzeros_shell][0] : the eigenvalue w*rInner/c\n"):
-# fprintf(file," // shellEigenvalues[nfunc_shell][nzeros_shell][1] : B_m (scaled so A_m=1)\n"):
-# fprintf(file," Real shellEigenvalues[nfunc_shell][nzeros_shell][ndata_shell]={\n"):
-
-# 
-# nr:=5: # first nr roots of f
-# nm:=5: # first nm bessel functions 
-# w:=array(1..nm,1..nr):
-# Am:=1: # this is arbitrary
-# Bmcoeff:=array(1..nm,1..nr):
-# a:=2:
-# for n from 0 by 1 to nm-1 do
-#     lastr:=0:
-#     toavoid:={}:
-#     for r from 1 by 1 to nr do
-#         w[n+1,r] := fsolve(subs(m=n,f)=0,wri,avoid=toavoid,lastr..max(5,2*lastr)):
-#   toavoid:= toavoid union {wri=w[n+1,r]}:
-#   lastr := w[n+1,r]:
-#   #print(toavoid):
-#   #print(w[n+1,r]):
-#   Bmcoeff[n+1,r] := -Am*evalf(subs(m=n,rr=w[n+1,r],j)/subs(m=n,rr=w[n+1,r],y)):
-#     end do:
-# end do:
-# #print(w):
-# #print(Bmcoeff):
-# Ri:=1:
-# for n from 0 by 1 to nm-1 do
-#     pl:=[Am*BesselJ(n,w[n+1,rt]*R)+Bmcoeff[n+1,rt]*BesselY(n,w[n+1,rt]*R) $rt=1..nr]:
-#     plot(pl,R=Ri..a*Ri);
-# end do;
-# 
-# file:=fopen("annulusEigenvalues.h", WRITE):
-# fprintf(file," const int nfunc_shell=%d, nzeros_shell=%d, ndata_shell=2;\n",nm,nr):
-# fprintf(file," // u(r) = A_m J_m(w r/c) + B_m Y_m(w r/c)\n"):
-# fprintf(file," // rOuter/rInner = %d\n",a);
-# fprintf(file," // shellEigenvalues[nfunc_shell][nzeros_shell][0] : the eigenvalue w*rInner/c\n"):
-# fprintf(file," // shellEigenvalues[nfunc_shell][nzeros_shell][1] : B_m (scaled so A_m=1)\n"):
-# fprintf(file," Real shellEigenvalues[nfunc_shell][nzeros_shell][ndata_shell]={\n"):
-# 
-# for n from 0 by 1 to nm-1 do
-#     fprintf(file," { // n=%d\n",n):
-#     for r from 1 by 1 to nr do
-#   fprintf(file,"    {    %19.14e,    %19.14e  }",w[n+1,r],Bmcoeff[n+1,r]):
-#   if r<nr then
-#      fprintf(file,",\n"):
-#   else
-#      fprintf(file,"}, \n"):
-#   fi:
-#     od:
-# od:
-# fprintf(file,"};\n"):
-# fclose(file):

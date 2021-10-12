@@ -70,7 +70,7 @@ create mappings
       $ny=intmg( ($yb-$ya)/$ds+1.5 );
       $nx $ny
     boundary conditions
-      if( $bc eq "d" ){ $cmd = "1 1 1 1"; }else{ $cmd="-1 -1 -1 -1"; }
+      if( $bc eq "d" ){ $cmd = "1 2 3 4"; }else{ $cmd="-1 -1 -1 -1"; }
       $cmd
     mappingName
       outer-square

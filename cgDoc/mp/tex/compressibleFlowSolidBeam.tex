@@ -1,0 +1,42 @@
+\subsection{Compressible flow past a light nonlinear solid beam. (FSI-CNS-NEB)} \label{sec:compressibleFlowPastSolidBeam}
+
+
+A compressible Mach $1.1$ fluid flows past a light, nonlinear solid beam, see~\cite{flunsi2016}.
+
+\mni
+See {\tt cg/mp/runs/beamInAChannel/memo} for commands to run this case.
+
+\mni
+{\red Note:} This example is currently broken. **FIX ME**
+ 
+
+
+{
+\newcommand{\figSize}{5cm}
+\newcommand{\cxa}{.0}
+\newcommand{\cxb}{.0}
+\newcommand{\cya}{.0}
+\newcommand{\cyb}{.0}
+
+\begin{figure}[htb]
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  \useasboundingbox (0,.5) rectangle (16,5);  % set the bounding box (so we have less surrounding white space)
+
+    \begin{scope}[yshift=0cm]
+    \figByHeight{4.5}{0}{fig/sbicNeoThin32s10ramped_t6p0}{4cm}[0.1][0.1][.05][.15];
+    \figByHeightWithLabel{  0}{0}{fig/sbicNeoThin32s10ramped_t4p0}{4cm}[0.1][0.1][.05][.15][\scriptsizess Compressible flow past light solid beam];    
+    % \figByWidthWithLabel{   0}{0}{fig/shockTwoDiskSpeedt0p5}{\figSize}[\cxa][\cxb][\cya][\cyb][\scriptsizess $t=.5$]; 
+    % \figByWidthWithLabel{5.25}{0}{fig/shockTwoDiskSpeedt1p2}{\figSize}[\cxa][\cxb][\cya][\cyb][\scriptsizess $t=1.2$]; 
+    % \figByWidthWithLabel{10.5}{0}{fig/shockTwoDiskSpeedt1p5}{\figSize}[\cxa][\cxb][\cya][\cyb][\scriptsizess $t=1.5$]; 
+
+  
+  \end{scope}
+ 
+  % \draw[step=1cm,gray] (0,0) grid (16,10);
+\end{tikzpicture}
+\end{center}
+\caption{Compressible flow past a light Neo-Hookean solid beam.}
+\label{fig:compressibleFlowPastBeam}
+\end{figure}
+}

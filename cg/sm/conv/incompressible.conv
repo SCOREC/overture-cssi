@@ -1,0 +1,110 @@
+# 
+# ---- Convergence rates for INCOMPRESSIBLE elasticity ---
+#
+# To run the convergence tests type:
+#  
+# SOS: 
+#      conv.p incompressible.conv -known=annulus -icase=3  -tf=.3 -tp=.3 -ng=2
+# 
+# --------options: 
+#   -known=[annulus|disk]
+#    
+#   -en : error norm: max, l1, l2
+#   -ng : number of grids to use (i.e. how many times is the grid refined)
+# 
+# Set default parameters: 
+$CGBUILDPREFIX=$ENV{CGBUILDPREFIX};
+$cgsm = "$CGBUILDPREFIX/sm/bin/cgsm";  # command for cgsm
+$cmdDir="$ENV{CG}/sm/runs/surfaceWave"; 
+# 
+$known="annulus"; 
+$icase=1; $mode=1; 
+$bc1="d"; $bc2="d"; # displacement BC
+$upwindSOS=1; 
+$pv = "nc";  $en="max"; $ng=5; $cdv=1.; $ts="me"; $alwaysCompute=1; $mu=1.; $cfl=.9; 
+$tf=.5;  $tp=.1;
+$showAllComponents=0;  # set to 1 to include all components in the table.
+$useCurlCurl=1; 
+#
+GetOptions("pv=s"=>\$pv,"en=s"=>\$en,"mode=i"=>\$mode,"ng=i"=>\$ng,"bcn=s"=>\$bcn,"ts=s"=>\$ts,"cdv=f"=>\$cdv,\
+           "alwaysCompute=i"=>\$alwaysCompute,"mu=f"=>\$mu,"icase=i"=>\$icase,\
+           "showAllComponents=i"=>\$showAllComponents,"known=s"=>\$known,\
+           "cfl=f"=>\$cfl,"upwindSOS=i"=>\$upwindSOS,"useCurlCurl=i"=>\$useCurlCurl,"tf=f"=>\$tf,"tp=f"=>\$tp );
+# -- periodic strip known solutions ---
+if( $known eq "strip" ){ \
+      $cmdFile="$cmdDir/surfaceWave.cmd"; \
+      if( $icase eq "1" ){ $gridPrefix = "../surfaceWave/case1Grid";}\
+      if( $icase eq "2" ){ $gridPrefix = "../surfaceWave/stripTractionTractionGrid";}\
+      $shortName="strip"; \
+      if( $icase eq "1" ){ $bc1="t"; $bc2="d"; } \
+      if( $icase eq "2" ){ $bc1="t"; $bc2="t"; } \
+      if( $icase eq "3" ){ $bc1="t"; $bc2="t"; } \
+      $caseLabel = "Case$icase" . "BC$bc1$bc2";  \
+    }
+# -- annulus known solutions ---
+if( $known eq "annulus" ){ \
+      $cmdFile="$cmdDir/surfaceWave.cmd"; $shortName="an";  \
+      $gridPrefix="annulus"; \
+      if( $icase eq "1" ){ $bc1="d"; $bc2="d"; } \
+      if( $icase eq "2" ){ $bc1="d"; $bc2="t"; } \
+      if( $icase eq "3" ){ $bc1="t"; $bc2="t"; } \
+      $caseLabel = "Case$icase" . "BC$bc1$bc2";  \
+    }
+# -- disk known solutions ---
+if( $known eq "disk" ){ \
+      $cmdFile="$cmdDir/surfaceWave.cmd";  $shortName="disk"; \
+      $gridPrefix="sicFixede"; \
+      if( $icase eq "1" ){ $bc1="d"; $bc2="d"; } \
+      if( $icase eq "2" ){ $bc1="t"; $bc2="t"; } \
+      $caseLabel = "Case$icase" . "BC$bc1";  \
+    }    
+$check="sm.check";
+# if( $pv eq "nc" || $pv eq "c" ){ $numberOfComponents = 2; }
+# if( $pv eq "g" ){ $numberOfComponents = 8; }
+if( $pv eq "h" ){ $numberOfComponents = 11; }
+if( $ts eq "me" ){ $ts = "modifiedEquationTimeStepping"; }
+if( $ts eq "fe" ){ $ts = "forwardEuler"; }
+if( $ts eq "ie" ){ $ts = "improvedEuler"; }
+if( $ts eq "ab" ){ $ts = "adamsBashforth2"; }
+# 
+$caseName=$known . "IncompressibleElasticity" . $caseLabel;
+$name=$caseName;
+#
+#
+# --- define the table heading and caption --
+# 
+$numberOfComponents = 4; 
+$title ="grid  \& N \& \$\\|\\uv\\|\$ \& \$u_1\$ \&  \$u_2\$ \& \$p\$  ";
+@componentName = ( "uv", "u1", "u2", "p" );
+# 
+$caption= "\\caption\{SM-ILE, $name, icase=$icase, \$t=$tf\$, cfl=$cfl, bc1=$bc1, bc2=$bc2, upwindSOS=$upwindSOS, cdv=$cdv, useCurlCurl=$useCurlCurl $date}\\label\{table:$name}"; 
+$outputFile="$name" . ".ConvTable.tex"; 
+# 
+$options = "-ts=$ts -tf=$tf -tp=$tp -cfl=$cfl -known=$known -icase=$icase -bc1=$bc1 -bc2=$bc2 -cdv=$cdv -upwindSOS=$upwindSOS -useCurlCurl=$useCurlCurl -go=go"; 
+$gName1 = $gridPrefix . "2.order2";
+$gName2 = $gridPrefix . "4.order2";
+$gName3 = $gridPrefix . "8.order2";
+$gName4 = $gridPrefix . "16.order2";
+$gName5 = $gridPrefix . "32.order2";
+$gName6 = $gridPrefix . "64.order2";
+if( $known eq "strip" ){\
+  $gName1 = $gridPrefix . "2np.order2";  \
+  $gName2 = $gridPrefix . "4np.order2";  \
+  $gName3 = $gridPrefix . "8np.order2";  \
+  $gName4 = $gridPrefix . "16np.order2"; \
+  $gName5 = $gridPrefix . "32np.order2"; \
+  $gName6 = $gridPrefix . "64np.order2"; \
+  }
+              $grid=$shortName ."2"; $res=1;   $cmd="$cgsm -noplot $cmdFile -g=$gName1 $options";
+              $grid=$shortName ."4"; $res=2;   $cmd="$cgsm -noplot $cmdFile -g=$gName2 $options";
+if( $ng > 2 ){$grid=$shortName ."8"; $res=4;   $cmd="$cgsm -noplot $cmdFile -g=$gName3 $options";}
+if( $ng > 3 ){$grid=$shortName ."16"; $res=8;  $cmd="$cgsm -noplot $cmdFile -g=$gName4 $options";}
+if( $ng > 4 ){$grid=$shortName ."32"; $res=16; $cmd="$cgsm -noplot $cmdFile -g=$gName5 $options";}
+if( $ng > 5 ){$grid=$shortName ."64"; $res=32; $cmd="$cgsm -noplot $cmdFile -g=$gName6 $options";}
+$closeFile="true";
+# -------------------------------------------------------------------------------
+exit
+
+
+
+

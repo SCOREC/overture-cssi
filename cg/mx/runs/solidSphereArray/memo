@@ -1,4 +1,27 @@
 
+*********************************************
+*************** Wed Aug 18,  2021
+
+REVISIT ELLIPSOID FOR MBE PAPER
+
+
+plotStuff plotSolution.cmd -show=36MlaEllipsoids.show -name=36SolidMlaEllipsoids -solution=6 -y1=-1.3 -y2=1.3 -z1=-1.95
+
+REDO - EIGHT ELLIPSOID -- seems to run
+$cgmx -noplot mxScript -g=eightSolidEllipsoidsGride4.order2 -domainBaseName=ellipsoid -numBodies=8 -dm=gdm -nm=mla -materialFile=ellipsoidMlaMaterials.h -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=3 -tp=.01 -ic=gp -x0=-1.75 -beta=120 -flushFrequency=4 -extraCommandsEnd=plotSpheres.h -go=og
+
+
+plotStuff plotEllipsoidArray.cmd -show=36SolidEllipsoidsGride4.order2.hdf -name=36SolidEllipsoidsGrid.ps -ns=36 
+
+-- Older
+
++++++ E36 
+ogen -noplot solidEllipsoidArrayGrid -prefix=36SolidEllipsoidsGrid -nsx=3 -nsy=3 -nsz=4 -configFile=solidEllipsoidArrayConfig3d.h -order=2 -per=npp -rFactor=.65 -nrExtra=3 -orthographicPatchParameter=.7 -factor=4
+
+mpirun -np 8 $cgmx -noplot mxScript $cgmx -noplot mxScript -g=36SolidEllipsoidsGride4.order2 -domainBaseName=ellipsoid -numBodies=36 -dm=gdm -nm=mla -materialFile=ellipsoidMlaMaterials.h -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=3 -tp=.5 -ic=gp -x0=-3 -beta=120 -flushFrequency=4 -extraCommandsEnd=plotSpheres.h -show=36MlaEllipsoids.show -go=go > 36MlaEllipsoids.out
+
+
+
 
 *********************************************
 *************** Wed May 5, 2021

@@ -70,6 +70,9 @@ formMatrixForImplicitSolve(const real & dt0,
 virtual void 
 getAdvectionCoefficients( GridFunction & cgf );
 
+// setup champ boundary conditions
+int champBoundaryConditions( realCompositeGridFunction & coeffcg, Parameters & parameters, Real dt );
+
 // Evaluate variable diffusion coefficients:
 virtual void 
 getDiffusionCoefficients( GridFunction & cgf );

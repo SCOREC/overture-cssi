@@ -5142,7 +5142,7 @@ else if( updateSolution.eq.1 )then
 #beginMacro updateMultilevelAtomic(DIM,ORDER,GRIDTYPE)
 
   if( t.le.3*dt )then
-    INFO("update-MULTI-LEVEL-ATOMIC_dim=DIM _order=ORDER _gridType=GRIDTYPE");
+    INFO("update-MULTI-LEVEL-ATOMIC_dim=DIM _order=ORDER _gridType=GRIDTYPE ***123***");
   end if
   
   ! initialize forcing functions

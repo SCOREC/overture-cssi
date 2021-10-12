@@ -7,7 +7,7 @@
 $count=$count+1; $gridName="splitRing$count"; $gridNames .= "\n" . $gridName;
 $mapName="splitRingGridBase";
 # include transform.h
-include transformToNurbs.h
+include $ENV{CG}/mx/runs/solidObjects/transformToNurbs.h
 # 
 # Inner background grid 
 $gridName="splitRingSolidCore$count"; $splitRingNames .= "\n" . $gridName;
@@ -30,5 +30,5 @@ rectangle
 $mapName="splitRingGridBaseSolid";
 $gridName="splitRingSolid$count"; $splitRingNames .= "\n" . $gridName;
 # include transform.h
-include transformToNurbs.h
+include $ENV{CG}/mx/runs/solidObjects/transformToNurbs.h
 

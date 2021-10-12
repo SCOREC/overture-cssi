@@ -57,12 +57,12 @@ public:
   int addSubCurve(NurbsMapping &nurbs);
 
   void basicInverse( const realArray & x, realArray & r, realArray & rx = Overture::nullRealDistributedArray(),
-		    MappingParameters & params =Overture::nullMappingParameters() );
+                    MappingParameters & params =Overture::nullMappingParameters() );
 
   virtual void basicInverseS(const RealArray & x, 
-			    RealArray & r,
-			    RealArray & rx =Overture::nullRealArray(),
-			    MappingParameters & params =Overture::nullMappingParameters());
+                            RealArray & r,
+                            RealArray & rx =Overture::nullRealArray(),
+                            MappingParameters & params =Overture::nullMappingParameters());
 
   int binomial(const int m, const int n);  // compute m! /( (m-n)! n! )
 
@@ -77,11 +77,11 @@ public:
 
   // build a circle with centre o, radius r, in the plane defined by the orthogonal unit vectors x,y
   int circle(RealArray & o,
-	     RealArray & x, 
-	     RealArray & y, 
-	     real r,
-	     real startAngle=0.,
-	     real endAngle=1. );
+             RealArray & x, 
+             RealArray & y, 
+             real r,
+             real startAngle=0.,
+             real endAngle=1. );
 
   // Build a NURBS for a conic defined by end points, two tangents, and an additional point
   int conic( const RealArray &p0, const RealArray &t0, const RealArray &p2, const RealArray &t2, 
@@ -145,8 +145,8 @@ public:
 
   // make a nurb that passes through given points, optionally pass parameterization, optionally get parameterization
   void interpolate(const RealArray & x, 
-		   const int & option     = 0 ,
-		   RealArray & parameterization  =Overture::nullRealArray(),
+                   const int & option     = 0 ,
+                   RealArray & parameterization  =Overture::nullRealArray(),
                    int degree = 3,
                    ParameterizationTypeEnum parameterizationType=parameterizeByChordLength,
                    int numberOfGhostPoints=0 );
@@ -155,17 +155,17 @@ public:
   // and xGridIndexRange arrays
   void interpolate(const RealArray & x, 
                    int domainDimension, int rangeDimension,
-		   const IntegerArray & xDimension, const IntegerArray & xGridIndexRange, 
+                   const IntegerArray & xDimension, const IntegerArray & xGridIndexRange, 
                    ParameterizationTypeEnum parameterizationType=parameterizeByChordLength,
-		   int *degree = NULL );
+                   int *degree = NULL );
 
 
 
   #ifdef USE_PPP
   // obsolete method -- keep for now for backward compatibility
   void interpolate(const realArray & x, 
-		   const int & option     = 0 ,
-		   realArray & parameterization  =Overture::nullRealDistributedArray(),
+                   const int & option     = 0 ,
+                   realArray & parameterization  =Overture::nullRealDistributedArray(),
                    int degree = 3,
                    ParameterizationTypeEnum parameterizationType=parameterizeByChordLength,
                    int numberOfGhostPoints=0 );
@@ -173,20 +173,20 @@ public:
 
   // build a lofted surface by interpolation from a list of mappings
   int interpolateLoftedSurface(std::vector<Mapping *>&, int degree1=3, 
-			       int degree2=3,
-			       ParameterizationTypeEnum  parameterizationType=parameterizeByChordLength,
-			       int numberOfGhostPoints=0 );
+                               int degree2=3,
+                               ParameterizationTypeEnum  parameterizationType=parameterizeByChordLength,
+                               int numberOfGhostPoints=0 );
 
   // make a nurb surface that passes through given points. Accessed through the above routine
   void interpolateSurface(const RealArray & x, 
                           int degree = 3,
                           ParameterizationTypeEnum parameterizationType=parameterizeByChordLength,
                           int numberOfGhostPoints=0,
-			  int degree2 = 3);
+                          int degree2 = 3);
 
   void interpolateVolume(const RealArray & x, 
                          int degree = 3,
-			 ParameterizationTypeEnum parameterizationType=parameterizeByChordLength,
+                         ParameterizationTypeEnum parameterizationType=parameterizeByChordLength,
                          int numberOfGhostPoints=0  );
 
   bool isInitialized(){return initialized;};
@@ -245,7 +245,7 @@ public:
   int removeKnot(const int & index, 
                  const int & numberOfTimesToRemove, 
                  int & numberRemoved,
-		 const real &tol = 100.*FLT_EPSILON);
+                 const real &tol = 100.*FLT_EPSILON);
 
   // rescale u and v
   int reparameterize(const real & uMin, 
@@ -258,42 +258,42 @@ public:
 
   // scale the NURBS
   int scale(const real & scalex=1., 
-	    const real & scaley=1., 
-	    const real & scalez=1. );
+            const real & scaley=1., 
+            const real & scalez=1. );
 
 
   int setDomainInterval(const real & r1Start  =0., 
-			const real & r1End    =1.,
-			const real & r2Start  =0., 
-			const real & r2End    =1.,
-			const real & r3Start  =0., 
-			const real & r3End    =1. );
+                        const real & r1End    =1.,
+                        const real & r2Start  =0., 
+                        const real & r2End    =1.,
+                        const real & r3Start  =0., 
+                        const real & r3End    =1. );
 
   int setInterpolateKnotsOption( InterpolationKnotsOptionEnum option );
 
 
   // shift in space
   int shift(const real & shiftx=0., 
-	    const real & shifty=0., 
-	    const real & shiftz=0. );
+            const real & shifty=0., 
+            const real & shiftz=0. );
 
   // specify a curve in 2D or 3D
   int specify(const int &  m,
-	      const int & n,
-	      const int & p,
-	      const RealArray & uKnot,
-	      const RealArray & cPoint,
+              const int & n,
+              const int & p,
+              const RealArray & uKnot,
+              const RealArray & cPoint,
               const int & rangeDimension=3,
               bool normalizeTheKnots=true );
   // specify a NURBS with domain dimension = 2
   int specify(const int & n1, 
-	      const int & n2,
-	      const int & p1, 
-	      const int & p2, 
-	      const RealArray & uKnot, 
-	      const RealArray & vKnot,
-	      const RealArray & controlPoint,
-	      const int & rangeDimension =3,
+              const int & n2,
+              const int & p1, 
+              const int & p2, 
+              const RealArray & uKnot, 
+              const RealArray & vKnot,
+              const RealArray & controlPoint,
+              const int & rangeDimension =3,
               bool normalizeTheKnots=true );
 
   // split the nurb into two, return the pieces but do not alter the original nurb
@@ -312,13 +312,13 @@ public:
 
   // apply a scaling and shift to the knots
   int transformKnots(const real & uScale, 
-		     const real & uShift,
-		     const real & vScale  =1., 
-		     const real & vShift  =0. );
+                     const real & uShift,
+                     const real & vScale  =1., 
+                     const real & vShift  =0. );
   
   // apply a scaling and shift to the control points (scales and shifts the NURBS)
   int transformControlPoints(const RealArray & scale,
-			     const RealArray & shift);
+                             const RealArray & shift);
 
   // clip the nurb to the domain bounds ( ie, get rid of any extra control points and knots )
   int truncateToDomainBounds();
@@ -344,9 +344,9 @@ public:
                RealArray &q1, RealArray &s, RealArray &r1, real &wqr) const;
 
   int intersect3DLines( const RealArray & p0, const RealArray &  t0, 
-			const RealArray & p1, const RealArray & t1,
-			real & alpha0, real & alpha1,
-			RealArray & p2) const;
+                        const RealArray & p1, const RealArray & t1,
+                        real & alpha0, real & alpha1,
+                        RealArray & p2) const;
   
   real distance4D( const RealArray & x, const RealArray & y );
 
@@ -404,36 +404,36 @@ public:
 
 
   int findSpan(const int & n ,
-	       const int & p,
-	       const real & u,
-	       const RealArray & uKnot );
+               const int & p,
+               const real & u,
+               const RealArray & uKnot );
   void basisFuns(const int & i,
-		 const real & u,
-		 const int & p,
-		 const RealArray & uKnot,
-		 RealArray & basis );
+                 const real & u,
+                 const int & p,
+                 const RealArray & uKnot,
+                 RealArray & basis );
   void dersBasisFuns(const int & i,
-		     const real & u,
-		     const int & p,
-		     const int & order,
-		     const RealArray & uKnot,
-		     real *ders );
+                     const real & u,
+                     const int & p,
+                     const int & order,
+                     const RealArray & uKnot,
+                     real *ders );
   
   // vectorized versions
   void findSpan(const int & n ,
-		const int & p,
-		const Index & I,
-		const RealArray & u,
-		const RealArray & knot,
-		IntegerArray & span );
+                const int & p,
+                const Index & I,
+                const RealArray & u,
+                const RealArray & knot,
+                IntegerArray & span );
 
   void dersBasisFuns(const Index & I,
-		     const IntegerArray & ia,
-		     const RealArray & u,
-		     const int & p,
-		     const int & order,
-		     const RealArray & knot,
-		     RealArray & ders );
+                     const IntegerArray & ia,
+                     const RealArray & u,
+                     const int & p,
+                     const int & order,
+                     const RealArray & knot,
+                     RealArray & ders );
 };
 
 

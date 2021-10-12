@@ -1,0 +1,11 @@
+*** 2014/07/10-12 -- gear up to simulate the traveling wave solution
+
+
+AMP=1.e-6 
+$cgmpx travelingWave -method=ins -g=deformingChannelGrid4.order2 -scf=1000. -u0=3. -nu=.01 -tp=.01 -tf=10 -nc=1 -pOffset=0. -smVariation=g -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -psolver=yale -debug=3 -amp=1.e-6 -go=halt
+
+
+$cgmpx travelingWave -method=ins -g=deformingChannelGrid4.order2 -scf=1000. -u0=3. -nu=.01 -tp=.01 -tf=10 -nc=1 -pOffset=0. -smVariation=g -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -psolver=yale -debug=3 -go=halt
+
+$cgmpx travelingWave -method=ins -g=deformingChannelGrid4.order2 -scf=1000. -u0=3. -nu=.01 -tp=.01 -tf=10 -nc=1 -pOffset=0. -smVariation=g -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -go=halt
+

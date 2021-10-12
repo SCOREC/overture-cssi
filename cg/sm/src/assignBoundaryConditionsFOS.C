@@ -16,17 +16,17 @@
 extern "C"
 {
     void bcOptSmFOS(const int&nd,
-             	       const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
-             	       const int& gridIndexRange,real& u, const int&mask,const real&rsxy, const real&xy, 
+                              const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
+                              const int& gridIndexRange,real& u, const int&mask,const real&rsxy, const real&xy, 
                               const int & ndMatProp, const int& matIndex, const real& matValpc, const real& matVal,
                               const real&det,
-             	       const int&boundaryCondition, const int&addBoundaryForcing, const int& interfaceType, const int&dim,
+                              const int&boundaryCondition, const int&addBoundaryForcing, const int& interfaceType, const int&dim,
                               const real & bcf00, const real & bcf10, 
                               const real & bcf01, const real & bcf11, 
                               const real & bcf02, const real & bcf12, 
                               const real & bcf0, const int64_t & bcfOffset,
-             	       const int & ndpin, const int & pinbc,
-             	       const int & ndpv, const real & pinValues,
+                              const int & ndpin, const int & pinbc,
+                              const int & ndpv, const real & pinValues,
                               const int&ipar, const real&rpar, const DataBase *pdb, const int&ierr );
 }
 
@@ -195,7 +195,7 @@ extern "C"
 // =========================================================================================================
 void Cgsm::
 assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGridFunction & u, 
-                       			     realMappedGridFunction & uOld, int current )
+                                                          realMappedGridFunction & uOld, int current )
 {
 
     SmParameters::PDEVariation & pdeVariation = parameters.dbase.get<SmParameters::PDEVariation>("pdeVariation");
@@ -358,7 +358,7 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
     if( !isRectangular )
     {
         mg.update( MappedGrid::THEinverseVertexDerivative | 
-             	       MappedGrid::THEinverseCenterDerivative |
+                              MappedGrid::THEinverseCenterDerivative |
                               MappedGrid::THEcenterJacobian );  
     }
 
@@ -431,7 +431,7 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
             {
                 for( int side=Start; side<=End; side++ )
                 {
-          	if( knownSolution==Parameters::userDefinedKnownSolution && 
+                    if( knownSolution==Parameters::userDefinedKnownSolution && 
                             (mg.boundaryCondition(side,axis)==SmParameters::tractionBC ||
                               mg.boundaryCondition(side,axis)==SmParameters::displacementBC ) 
                             && interfaceType(side,axis,grid)==Parameters::noInterface )
@@ -439,7 +439,7 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
             // *wdh* April 29, 2018 -- put this here for now 
                         getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
             // -- here is where the boundary data is put:
-                    	  RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
+                        RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
                         Range Rx=numberOfDimensions, C=numberOfDimensions;
                         RealArray state(Ib1,Ib2,Ib3,C);
                         int bodyNumber=0; // fix me for multiple deforming bodies
@@ -496,862 +496,862 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
                         }
                     }
                     else if( mg.boundaryCondition(side,axis)==SmParameters::dirichletBoundaryCondition )
-          	{
-            	  int numberOfGhostLines = max(2,orderOfAccuracyInSpace/2);  // for godunov we need 2 ghost lines
-            	  int extra=numberOfGhostLines;
-            	  getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3,extra);
-  	  // for now assign dirichlet at ghost lines too.
-            	  Iv[axis] = side==0 ? Range(Iv[axis].getBase()-numberOfGhostLines,Iv[axis].getBound()) : 
-              	    Range(Iv[axis].getBase(),Iv[axis].getBound()+numberOfGhostLines);
-            	  if( mg.boundaryCondition(side,axis)==SmParameters::interfaceBoundaryCondition )
-            	  { // do not include the boundary
-              	    Iv[axis] = side==0 ? Range(Iv[axis].getBase(),Iv[axis].getBound()-1) : 
-                	      Range(Iv[axis].getBase()+1,Iv[axis].getBound());
-            	  }
-            	  const int includeGhost=1;
-            	  bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost);
-            	  if( !ok ) continue;
-            	  real *up = uLocal.Array_Descriptor.Array_View_Pointer3;
-            	  const int uDim0=uLocal.getRawDataSize(0);
-            	  const int uDim1=uLocal.getRawDataSize(1);
-            	  const int uDim2=uLocal.getRawDataSize(2);
+                    {
+                        int numberOfGhostLines = max(2,orderOfAccuracyInSpace/2);  // for godunov we need 2 ghost lines
+                        int extra=numberOfGhostLines;
+                        getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3,extra);
+            // for now assign dirichlet at ghost lines too.
+                        Iv[axis] = side==0 ? Range(Iv[axis].getBase()-numberOfGhostLines,Iv[axis].getBound()) : 
+                            Range(Iv[axis].getBase(),Iv[axis].getBound()+numberOfGhostLines);
+                        if( mg.boundaryCondition(side,axis)==SmParameters::interfaceBoundaryCondition )
+                        { // do not include the boundary
+                            Iv[axis] = side==0 ? Range(Iv[axis].getBase(),Iv[axis].getBound()-1) : 
+                                Range(Iv[axis].getBase()+1,Iv[axis].getBound());
+                        }
+                        const int includeGhost=1;
+                        bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost);
+                        if( !ok ) continue;
+                        real *up = uLocal.Array_Descriptor.Array_View_Pointer3;
+                        const int uDim0=uLocal.getRawDataSize(0);
+                        const int uDim1=uLocal.getRawDataSize(1);
+                        const int uDim2=uLocal.getRawDataSize(2);
     #undef U
     #define U(i0,i1,i2,i3) up[i0+uDim0*(i1+uDim1*(i2+uDim2*(i3)))]
-            	  real *xp = xLocal.Array_Descriptor.Array_View_Pointer3;
-            	  const int xDim0=xLocal.getRawDataSize(0);
-            	  const int xDim1=xLocal.getRawDataSize(1);
-            	  const int xDim2=xLocal.getRawDataSize(2);
+                        real *xp = xLocal.Array_Descriptor.Array_View_Pointer3;
+                        const int xDim0=xLocal.getRawDataSize(0);
+                        const int xDim1=xLocal.getRawDataSize(1);
+                        const int xDim2=xLocal.getRawDataSize(2);
     #undef X
     #define X(i0,i1,i2,i3) xp[i0+xDim0*(i1+xDim1*(i2+xDim2*(i3)))]
-            	  if( specialInitialConditionOption == "travelingWave" )
-            	  {
-  	    // --- traveling wave solution ---
-              	    bool evalSolution = true;
-  	    // macro: 
-            //	printF("INFO: The traveling wave solutions are combinations of p and s solutions:\n"
-            //               "  [u1,u2] = ap* [ k1,k2] * G( k1*(x-xa)+k2*(y-ya) - cp*t )  (p-wave)\n"
-            //               "  [u1,u2] = as* [-k2,k1] * G( k1*(x-xa)+k2*(y-ya) - cs*t )  (s-wave\n",
-            //               "    where  G(xi)=0 for xi>0 and G(xi)=-1 for xi<0 \n");
+                        if( specialInitialConditionOption == "travelingWave" )
                         {
-                            const int v1c = parameters.dbase.get<int >("v1c");
-                            const int v2c = parameters.dbase.get<int >("v2c");
-                            const int v3c = parameters.dbase.get<int >("v3c");
-                            bool assignVelocities= v1c>=0 ;
-                            const int s11c = parameters.dbase.get<int >("s11c");
-                            const int s12c = parameters.dbase.get<int >("s12c");
-                            const int s13c = parameters.dbase.get<int >("s13c");
-                            const int s21c = parameters.dbase.get<int >("s21c");
-                            const int s22c = parameters.dbase.get<int >("s22c");
-                            const int s23c = parameters.dbase.get<int >("s23c");
-                            const int s31c = parameters.dbase.get<int >("s31c");
-                            const int s32c = parameters.dbase.get<int >("s32c");
-                            const int s33c = parameters.dbase.get<int >("s33c");
-                            const int pc = parameters.dbase.get<int >("pc");
-                            bool assignStress = s11c >=0 ;
-              // hard code some numbers for now: 
-              // real k1=1., k2=0., k3=0.;
-              // real ap=1., xa=.5, ya=0.;
-                            real cp = sqrt( (lambda+2.*mu)/rho );
-                            real cs = sqrt( mu/rho );
-                            std::vector<real> & twd = parameters.dbase.get<std::vector<real> >("travelingWaveData");
-                            const int np = int(twd[0]);  // number of p wave solutions
-                            const int ns = int(twd[1]);  // number of s wave solutions
-                            if( pdeVariation == SmParameters::hemp )
+              // --- traveling wave solution ---
+                            bool evalSolution = true;
+              // macro: 
+              //	printF("INFO: The traveling wave solutions are combinations of p and s solutions:\n"
+              //               "  [u1,u2] = ap* [ k1,k2] * G( k1*(x-xa)+k2*(y-ya) - cp*t )  (p-wave)\n"
+              //               "  [u1,u2] = as* [-k2,k1] * G( k1*(x-xa)+k2*(y-ya) - cs*t )  (s-wave\n",
+              //               "    where  G(xi)=0 for xi>0 and G(xi)=-1 for xi<0 \n");
                             {
-                                printF("\n\n **************** FIX ME: travelingWave: finish me for HEMP **********\n\n");
-                // OV_ABORT("error");
-                            }
-              // printF("**** travelingWave: cp=%8.2e, t=%8.2e v0=%8.2e *********\n",cp,t,v0);
-                            int i1,i2,i3;
-                            if( mg.numberOfDimensions()==2 )
-                            {
-                                real z0=0.;
-                                FOR_3D(i1,i2,i3,I1,I2,I3)
+                                const int v1c = parameters.dbase.get<int >("v1c");
+                                const int v2c = parameters.dbase.get<int >("v2c");
+                                const int v3c = parameters.dbase.get<int >("v3c");
+                                bool assignVelocities= v1c>=0 ;
+                                const int s11c = parameters.dbase.get<int >("s11c");
+                                const int s12c = parameters.dbase.get<int >("s12c");
+                                const int s13c = parameters.dbase.get<int >("s13c");
+                                const int s21c = parameters.dbase.get<int >("s21c");
+                                const int s22c = parameters.dbase.get<int >("s22c");
+                                const int s23c = parameters.dbase.get<int >("s23c");
+                                const int s31c = parameters.dbase.get<int >("s31c");
+                                const int s32c = parameters.dbase.get<int >("s32c");
+                                const int s33c = parameters.dbase.get<int >("s33c");
+                                const int pc = parameters.dbase.get<int >("pc");
+                                bool assignStress = s11c >=0 ;
+                // hard code some numbers for now: 
+                // real k1=1., k2=0., k3=0.;
+                // real ap=1., xa=.5, ya=0.;
+                                real cp = sqrt( (lambda+2.*mu)/rho );
+                                real cs = sqrt( mu/rho );
+                                std::vector<real> & twd = parameters.dbase.get<std::vector<real> >("travelingWaveData");
+                                const int np = int(twd[0]);  // number of p wave solutions
+                                const int ns = int(twd[1]);  // number of s wave solutions
+                                if( pdeVariation == SmParameters::hemp )
                                 {
-                                    real x0 = X(i1,i2,i3,0);
-                                    real y0 = X(i1,i2,i3,1);
-                                    real u1=0., u2=0.;  // back-ground field
-                                    real v1=0., v2=0.;
-                                    real s11=0., s12=0., s22=0.;
-                                    real div=0.;
-                  // real a1=0., b1=-1., a2=0., b2=0.;
-                  // u1 = a1*x0 + b1*t;  // more general back ground field
-                  // u2 = a2*x0 + b2*t;
-                                    int m=2;
-                                    for (int n=0; n<np; n++ ) // p-wave solutions
-                                    {
-                              	real ap = twd[m++], k1=twd[m++], k2=twd[m++], k3=twd[m++], xa=twd[m++], ya=twd[m++], za=twd[m++];
-                              	real xi = k1*(x0-xa) + k2*(y0-ya) - cp*t;
-                              	if( xi <= 0. )
-                              	{
-                                	  u1 += -ap*k1*xi;
-                                	  u2 += -ap*k2*xi;
-                                            v1 += ap*cp*k1;
-                                            v2 += ap*cp*k2;
-                                            s11+= -ap*( lambda+2.*mu*k1*k1 );
-                                	  s12+= -ap*( 2.*mu*k1*k2 );
-                                	  s22+= -ap*( lambda+2.*mu*k2*k2 );
-                                            div+= -ap;
-                              	}
-                                    }
-                                    for (int n=0; n<ns; n++ ) // s-wave solutions
-                                    {
-                              	real as = twd[m++], k1=twd[m++], k2=twd[m++], k3=twd[m++], xa=twd[m++], ya=twd[m++], za=twd[m++];
-                              	real xi = k1*(x0-xa) + k2*(y0-ya) - cs*t;
-                              	if( xi <= 0. )
-                              	{  // (-k2,k1)
-                                	  u1 += +as*k2*xi;
-                                	  u2 += -as*k1*xi;
-                                            v1 += -as*cs*k2;
-                                            v2 += +as*cs*k1;
-                                            s11+= -as*(-2.*mu*k1*k2 );
-                                	  s12+= -as*( mu*(k1*k1-k2*k2) );
-                                	  s22+= -as*( 2.*mu*k1*k2 );
-                              	}
-                                    }
-                  // printF(" (i1,i2)=(%i,%i) (x0,y0)=(%8.2e,%8.2e) xi=%8.2e (u1,u2)=(%8.2e,%8.2e)\n",i1,i2,x0,y0,xi,u1,u2);
-                                    if( evalSolution )
-                                    {
-                              	if( pdeVariation == SmParameters::hemp )
-                              	{
-                                	  U(i1,i2,i3,u1c) =u1;
-                                	  U(i1,i2,i3,u2c) =u2;
-                                	  U(i1,i2,i3,uc) =x0;
-                                	  U(i1,i2,i3,vc) =y0;
-                                	  state0Local(i1,i2,i3,1) = 1.0; // density
-                                	  /*********/
-                                	  state0Local(i1,i2,i3,0) = state0Local(i1,i2,i3,1)*det(i1,i2,i3)*mg.gridSpacing(axis1)*mg.gridSpacing(axis2); // mass
-                                	  if( pdeVariation == SmParameters::hemp && 
-                                    	      i1 > I1Base && i1 < I1Bound &&
-                                    	      i2 > I2Base && i2 < I2Bound )
-                                	  {
-                                  	    real area = 0.25*(det(i1,i2,i3)+det(i1+1,i2,i3)+det(i1+1,i2+1,i3)+det(i1,i2+1,i3));
-                                  	    state0Local(i1,i2,i3,0) = area*mg.gridSpacing(axis1)*mg.gridSpacing(axis2); // mass
-                                	  }
-                              	}
-                              	else
-                              	{
-                              	U(i1,i2,i3,uc) =u1;
-                              	U(i1,i2,i3,vc) =u2;
-                              	}
-                                        if( assignVelocities )
-                              	{
-                                	  U(i1,i2,i3,v1c) = v1;
-                                	  U(i1,i2,i3,v2c) = v2;
-                              	}
-                              	if( assignStress )
-                              	{
-                                	  U(i1,i2,i3,s11c) =s11;
-                                	  U(i1,i2,i3,s12c) =s12;
-                                	  U(i1,i2,i3,s21c) =s12;
-                                	  U(i1,i2,i3,s22c) =s22;
-                                	  if( pdeVariation == SmParameters::hemp )
-                                	  {
-                                                real press = -(lambda+2.0*mu/3.0)*div;
-                                                U(i1,i2,i3,pc)   = press;
-                                                U(i1,i2,i3,s11c) += press;
-                                                U(i1,i2,i3,s22c) += press;
-                                	  }
-                              	}
-                                    }
-                                    else
-                                    {
-                              	if( pdeVariation == SmParameters::hemp )
-                              	{
-                                	  U(i1,i2,i3,u1c) = U(i1,i2,i3,u1c) - u1;
-                                	  U(i1,i2,i3,u2c) = U(i1,i2,i3,u2c) - u2;
-                                	  U(i1,i2,i3,uc) = U(i1,i2,i3,uc) - x0;
-                                	  U(i1,i2,i3,vc) = U(i1,i2,i3,vc) - y0;
-                              	}
-                              	else
-                              	{
-                                	  U(i1,i2,i3,uc) =U(i1,i2,i3,uc) - u1;
-                                	  U(i1,i2,i3,vc) =U(i1,i2,i3,vc) - u2;
-                                	  }
-                                        if( assignVelocities )
-                              	{
-                                	  U(i1,i2,i3,v1c) =U(i1,i2,i3,v1c) - v1;
-                                	  U(i1,i2,i3,v2c) =U(i1,i2,i3,v2c) - v2;
-                              	}
-                              	if( assignStress )
-                              	{
-                                	  U(i1,i2,i3,s11c) =U(i1,i2,i3,s11c) -s11;
-                                	  U(i1,i2,i3,s12c) =U(i1,i2,i3,s12c) -s12;
-                                	  U(i1,i2,i3,s21c) =U(i1,i2,i3,s21c) -s12;
-                                	  U(i1,i2,i3,s22c) =U(i1,i2,i3,s22c) -s22;
-                                	  if( pdeVariation == SmParameters::hemp )
-                                	  {
-                                                real press = -(lambda+2.0*mu/3.0)*div;
-                                                U(i1,i2,i3,s11c) -= press;
-                                  	    U(i1,i2,i3,s22c) -= press;
-                                  	    U(i1,i2,i3,pc)   = U(i1,i2,i3,pc)   - press;
-                                	  }
-                              	}
-                                    }
-                                } // end FOR_3D
-                            }
-                            else
-                            {
-                                OV_ABORT("Error: finish me");
-                            }
-                        }
-            	  }
-            	  else if( specialInitialConditionOption == "planeTravelingWave" )
-            	  {
-  	    // --- traveling sine wave solution ---
-              	    bool evalSolution = true;
-  	    // macro: 
-            //	printF("INFO: The traveling wave solutions are combinations of p and s solutions:\n"
-            //               "  [u1,u2] = ap* [ k1,k2] * G( k1*(x-xa)+k2*(y-ya) - cp*t )  (p-wave)\n"
-            //               "  [u1,u2] = as* [-k2,k1] * G( k1*(x-xa)+k2*(y-ya) - cs*t )  (s-wave\n",
-            //               "    where  G(xi)=sin(freq,xi) \n");
-                        {
-                            const int v1c = parameters.dbase.get<int >("v1c");
-                            const int v2c = parameters.dbase.get<int >("v2c");
-                            const int v3c = parameters.dbase.get<int >("v3c");
-                            bool assignVelocities= v1c>=0 ;
-                            const int s11c = parameters.dbase.get<int >("s11c");
-                            const int s12c = parameters.dbase.get<int >("s12c");
-                            const int s13c = parameters.dbase.get<int >("s13c");
-                            const int s21c = parameters.dbase.get<int >("s21c");
-                            const int s22c = parameters.dbase.get<int >("s22c");
-                            const int s23c = parameters.dbase.get<int >("s23c");
-                            const int s31c = parameters.dbase.get<int >("s31c");
-                            const int s32c = parameters.dbase.get<int >("s32c");
-                            const int s33c = parameters.dbase.get<int >("s33c");
-                            const int pc = parameters.dbase.get<int >("pc");
-                            bool assignStress = s11c >=0 ;
-              // hard code some numbers for now: 
-              // real k1=1., k2=0., k3=0.;
-              // real ap=1., xa=.5, ya=0.;
-                            real cp = sqrt( (lambda+2.*mu)/rho );
-                            real cs = sqrt( mu/rho );
-                            std::vector<real> & twd = parameters.dbase.get<std::vector<real> >("travelingWaveData");
-                            const int np = int(twd[0]);  // number of p wave solutions
-                            const int ns = int(twd[1]);  // number of s wave solutions
-                            if( pdeVariation == SmParameters::hemp )
-                            {
-                                printF("\n\n **************** FIX ME: travelingWave: finish me for HEMP **********\n\n");
-                // OV_ABORT("error");
-                            }
-              // printF("**** planeTravelingWave: cp=%8.2e, t=%8.2e  *********\n",cp,t);
-                            int i1,i2,i3;
-                            if( mg.numberOfDimensions()==2 )
-                            {
-                                real z0=0.;
-                                FOR_3D(i1,i2,i3,I1,I2,I3)
-                                {
-                                    real x0 = X(i1,i2,i3,0);
-                                    real y0 = X(i1,i2,i3,1);
-                                    real u1=0., u2=0.;  // back-ground field
-                                    real v1=0., v2=0.;
-                                    real s11=0., s12=0., s22=0.;
-                                    real div=0.;
-                  // real a1=0., b1=-1., a2=0., b2=0.;
-                  // u1 = a1*x0 + b1*t;  // more general back ground field
-                  // u2 = a2*x0 + b2*t;
-                                    int m=2;
-                                    for (int n=0; n<np; n++ ) // p-wave solutions
-                                    {
-                              	real ap = twd[m++], k1=twd[m++], k2=twd[m++], k3=twd[m++], xa=twd[m++], ya=twd[m++], za=twd[m++];
-                              	real freq=twd[m++];
-                              	real xi = k1*(x0-xa) + k2*(y0-ya) - cp*t;
-                                        real sinf = sin(freq*xi), cosf=cos(freq*xi);
-                              	u1 += -ap*k1*sinf;
-                              	u2 += -ap*k2*sinf;
-                              	v1 += ap*cp*k1*freq*cosf;
-                              	v2 += ap*cp*k2*freq*cosf;
-                              	s11+= -ap*( lambda+2.*mu*k1*k1 )*freq*cosf;
-                              	s12+= -ap*( 2.*mu*k1*k2        )*freq*cosf;
-                              	s22+= -ap*( lambda+2.*mu*k2*k2 )*freq*cosf;
-                              	div+= -ap;
-                                    }
-                                    for (int n=0; n<ns; n++ ) // s-wave solutions
-                                    {
-                              	real as = twd[m++], k1=twd[m++], k2=twd[m++], k3=twd[m++], xa=twd[m++], ya=twd[m++], za=twd[m++];
-                              	real xi = k1*(x0-xa) + k2*(y0-ya) - cs*t;
-                              	real freq=twd[m++];
-                              	real sinf = sin(freq*xi), cosf=cos(freq*xi);
-            	// (-k2,k1)
-                              	u1 += +as*k2*sinf;
-                              	u2 += -as*k1*sinf;
-                              	v1 += -as*cs*k2*freq*cosf;
-                              	v2 += +as*cs*k1*freq*cosf;
-                              	s11+= -as*(-2.*mu*k1*k2      )*freq*cosf;
-                              	s12+= -as*( mu*(k1*k1-k2*k2) )*freq*cosf;
-                              	s22+= -as*( 2.*mu*k1*k2      )*freq*cosf;
-                                    }
-                  // printF(" (i1,i2)=(%i,%i) (x0,y0)=(%8.2e,%8.2e) xi=%8.2e (u1,u2)=(%8.2e,%8.2e)\n",i1,i2,x0,y0,xi,u1,u2);
-                                    if( evalSolution )
-                                    {
-                              	if( pdeVariation == SmParameters::hemp )
-                              	{
-                                	  U(i1,i2,i3,u1c) =u1;
-                                	  U(i1,i2,i3,u2c) =u2;
-                                	  U(i1,i2,i3,uc) =x0;
-                                	  U(i1,i2,i3,vc) =y0;
-                                	  state0Local(i1,i2,i3,1) = 1.0; // density
-                                	  /*********/
-                                	  state0Local(i1,i2,i3,0) = state0Local(i1,i2,i3,1)*det(i1,i2,i3)*mg.gridSpacing(axis1)*mg.gridSpacing(axis2); // mass
-                                	  if( pdeVariation == SmParameters::hemp && 
-                                    	      i1 > I1Base && i1 < I1Bound &&
-                                    	      i2 > I2Base && i2 < I2Bound )
-                                	  {
-                                  	    real area = 0.25*(det(i1,i2,i3)+det(i1+1,i2,i3)+det(i1+1,i2+1,i3)+det(i1,i2+1,i3));
-                                  	    state0Local(i1,i2,i3,0) = area*mg.gridSpacing(axis1)*mg.gridSpacing(axis2); // mass
-                                	  }
-                              	}
-                              	else
-                              	{
-                              	U(i1,i2,i3,uc) =u1;
-                              	U(i1,i2,i3,vc) =u2;
-                              	}
-                                        if( assignVelocities )
-                              	{
-                                	  U(i1,i2,i3,v1c) = v1;
-                                	  U(i1,i2,i3,v2c) = v2;
-                              	}
-                              	if( assignStress )
-                              	{
-                                	  U(i1,i2,i3,s11c) =s11;
-                                	  U(i1,i2,i3,s12c) =s12;
-                                	  U(i1,i2,i3,s21c) =s12;
-                                	  U(i1,i2,i3,s22c) =s22;
-                                	  if( pdeVariation == SmParameters::hemp )
-                                	  {
-                                                real press = -(lambda+2.0*mu/3.0)*div;
-                                                U(i1,i2,i3,pc)   = press;
-                                                U(i1,i2,i3,s11c) += press;
-                                                U(i1,i2,i3,s22c) += press;
-                                	  }
-                              	}
-                                    }
-                                    else
-                                    {
-                              	if( pdeVariation == SmParameters::hemp )
-                              	{
-                                	  U(i1,i2,i3,u1c) = U(i1,i2,i3,u1c) - u1;
-                                	  U(i1,i2,i3,u2c) = U(i1,i2,i3,u2c) - u2;
-                                	  U(i1,i2,i3,uc) = U(i1,i2,i3,uc) - x0;
-                                	  U(i1,i2,i3,vc) = U(i1,i2,i3,vc) - y0;
-                              	}
-                              	else
-                              	{
-                                	  U(i1,i2,i3,uc) =U(i1,i2,i3,uc) - u1;
-                                	  U(i1,i2,i3,vc) =U(i1,i2,i3,vc) - u2;
-                                	  }
-                                        if( assignVelocities )
-                              	{
-                                	  U(i1,i2,i3,v1c) =U(i1,i2,i3,v1c) - v1;
-                                	  U(i1,i2,i3,v2c) =U(i1,i2,i3,v2c) - v2;
-                              	}
-                              	if( assignStress )
-                              	{
-                                	  U(i1,i2,i3,s11c) =U(i1,i2,i3,s11c) -s11;
-                                	  U(i1,i2,i3,s12c) =U(i1,i2,i3,s12c) -s12;
-                                	  U(i1,i2,i3,s21c) =U(i1,i2,i3,s21c) -s12;
-                                	  U(i1,i2,i3,s22c) =U(i1,i2,i3,s22c) -s22;
-                                	  if( pdeVariation == SmParameters::hemp )
-                                	  {
-                                                real press = -(lambda+2.0*mu/3.0)*div;
-                                                U(i1,i2,i3,s11c) -= press;
-                                  	    U(i1,i2,i3,s22c) -= press;
-                                  	    U(i1,i2,i3,pc)   = U(i1,i2,i3,pc)   - press;
-                                	  }
-                              	}
-                                    }
-                                } // end FOR_3D
-                            }
-                            else
-                            {
-                                OV_ABORT("Error: finish me");
-                            }
-                        }
-            	  }
-            	  else if( specialInitialConditionOption == "translationAndRotation" )
-            	  {
-  	    // Here is the solution for large translation and rotation 
-              	    bool evalSolution = true;
-  	    // macro: 
-                        {
-                            const int v1c = parameters.dbase.get<int >("v1c");
-                            const int v2c = parameters.dbase.get<int >("v2c");
-                            const int v3c = parameters.dbase.get<int >("v3c");
-                            bool assignVelocities= v1c>=0 ;
-                            const int s11c = parameters.dbase.get<int >("s11c");
-                            const int s12c = parameters.dbase.get<int >("s12c");
-                            const int s13c = parameters.dbase.get<int >("s13c");
-                            const int s21c = parameters.dbase.get<int >("s21c");
-                            const int s22c = parameters.dbase.get<int >("s22c");
-                            const int s23c = parameters.dbase.get<int >("s23c");
-                            const int s31c = parameters.dbase.get<int >("s31c");
-                            const int s32c = parameters.dbase.get<int >("s32c");
-                            const int s33c = parameters.dbase.get<int >("s33c");
-                            const int pc = parameters.dbase.get<int >("pc");
-                            bool assignStress = s11c >=0 ;
-                            if( pdeVariation == SmParameters::hemp )
-                            {
-                                printF("\n\n **************** FIX ME: getTranslationAndRotationSolution: finish me for HEMP **********\n\n");
-                // OV_ABORT("error");
-                            }
-              // Here is the solution for large translation and rotation
-              // hard code some numbers for now: 
-                            std::vector<real> & trd = parameters.dbase.get<std::vector<real> >("translationAndRotationSolutionData");
-                            real omega   = trd[0];   // rotation rate
-                            real xcenter = trd[1];      // center of rotation in the reference frame
-                            real ycenter = trd[2];      // center of rotation in the reference frame
-                            real zcenter = trd[3];      // center of rotation in the reference frame
-                            real vcenter[3]={trd[4],trd[5],trd[6]};   // velocity of center
-                            real rx[3]={cos(omega*t)-1.,-sin(omega*t),    0.};
-                            real ry[3]={sin(omega*t)   , cos(omega*t)-1., 0.};
-                            real rxt[3]={-omega*sin(omega*t),-omega*cos(omega*t), 0.};
-                            real ryt[3]={ omega*cos(omega*t),-omega*sin(omega*t), 0.};
-                        #define U0(x,y,z,n,t)  (vcenter[n-uc]*(t) +  rx[n-uc]*((x)-xcenter) +  ry[n-uc]*((y)-ycenter))
-                        #define U0T(x,y,z,n,t) (vcenter[n-uc]     + rxt[n-uc]*((x)-xcenter) + ryt[n-uc]*((y)-ycenter))
-                        #define U0X(x,y,z,n,t) (                     rx[n-uc]                                        )
-                        #define U0Y(x,y,z,n,t) (                                               ry[n-uc]              )
-                            if( t==0. )
-                                printF("**** translationAndRotationSolution, t=%8.2e omega=%8.2e (x0,x1,x2)=(%8.2e,%8.2e,%8.2e) "
-                                 	   " (v0,v1,v2)=(%8.2e,%8.2e,%8.2e) *********\n",t,omega,xcenter,ycenter,zcenter,
-                                 	   vcenter[0],vcenter[1],vcenter[2]);
-                            int i1,i2,i3;
-                            if( mg.numberOfDimensions()==2 )
-                            {
-                                real z0=0.;
-                                FOR_3D(i1,i2,i3,I1,I2,I3)
-                                {
-                                    real x0 = X(i1,i2,i3,0);
-                                    real y0 = X(i1,i2,i3,1);
-                                    real u1 = U0(x0,y0,z0,uc,t);
-                                    real u2 = U0(x0,y0,z0,vc,t);
-                                    if( evalSolution )
-                                    {
-                              	U(i1,i2,i3,uc) =u1;
-                              	U(i1,i2,i3,vc) =u2;
-                                    }
-                                    else
-                                    {
-                              	U(i1,i2,i3,uc) =U(i1,i2,i3,uc) - u1;
-                              	U(i1,i2,i3,vc) =U(i1,i2,i3,vc) - u2;
-                                    }
+                                    printF("\n\n **************** FIX ME: travelingWave: finish me for HEMP **********\n\n");
+                  // OV_ABORT("error");
                                 }
-                                if( assignVelocities )
+                // printF("**** travelingWave: cp=%8.2e, t=%8.2e v0=%8.2e *********\n",cp,t,v0);
+                                int i1,i2,i3;
+                                if( mg.numberOfDimensions()==2 )
                                 {
-                                    FOR_3D(i1,i2,i3,I1,I2,I3) // loop over all points
+                                    real z0=0.;
+                                    FOR_3D(i1,i2,i3,I1,I2,I3)
                                     {
-                              	real x0 = X(i1,i2,i3,0);
-                              	real y0 = X(i1,i2,i3,1);
-                              	real v1 = U0T(x0,y0,z0,uc,t);
-                              	real v2 = U0T(x0,y0,z0,vc,t);
-            	// printF(" *** assignSpecial: v1=%e v2=%e\n",v1,v2);
-                              	if( evalSolution )
-                              	{
-                                	  U(i1,i2,i3,v1c) = v1;
-                                	  U(i1,i2,i3,v2c) = v2;
-                              	}
-                              	else
-                              	{
-                                	  U(i1,i2,i3,v1c) = U(i1,i2,i3,v1c) - v1;
-                                	  U(i1,i2,i3,v2c) = U(i1,i2,i3,v2c) - v2;
-                              	}
-                                    }
-                                }
-                                if( assignStress )
-                                {
-                                    FOR_3D(i1,i2,i3,I1,I2,I3) // loop over all points
-                                    {
-                              	real x0 = X(i1,i2,i3,0);
-                              	real y0 = X(i1,i2,i3,1);
-                              	real f11 = 1. + U0X(x0,y0,z0,uc,t);
-                              	real f12 =      U0Y(x0,y0,z0,uc,t);
-                              	real f21 =      U0X(x0,y0,z0,vc,t);
-                              	real f22 = 1. + U0Y(x0,y0,z0,vc,t);
-                              	real e11 = .5*(f11*f11+f21*f21-1.);     // this is E(i,j), symmetric
-                              	real e12 = .5*(f11*f12+f21*f22   );
-                              	real e22 = .5*(f12*f12+f22*f22-1.);
-                              	real trace = e11 + e22;
-                              	real s11 = lambda*trace + 2*mu*e11;     // this is S(i,j), symmetric
-                              	real s12 =                2*mu*e12;
-                              	real s21 = s12;
-                              	real s22 = lambda*trace + 2*mu*e22;
-                              	real p11 = s11*f11 + s12*f12;           // this P(i,j)
-                              	real p12 = s11*f21 + s12*f22;
-                              	real p21 = s21*f11 + s22*f12;
-                              	real p22 = s21*f21 + s22*f22;
-                              	if( evalSolution )
-                              	{
-                                	  U(i1,i2,i3,s11c) = p11;
-                                	  U(i1,i2,i3,s12c) = p12;
-                                	  U(i1,i2,i3,s21c) = p21;
-                                	  U(i1,i2,i3,s22c) = p22;
-                              	}
-                              	else
-                              	{
-                                	  U(i1,i2,i3,s11c) = U(i1,i2,i3,s11c) - p11;
-                                	  U(i1,i2,i3,s12c) = U(i1,i2,i3,s12c) - p12;
-                                	  U(i1,i2,i3,s21c) = U(i1,i2,i3,s21c) - p21;
-                                	  U(i1,i2,i3,s22c) = U(i1,i2,i3,s22c) - p22;
-                              	}
-                                    }
-                                }
-                            }
-                            else
-                            { // ***** 3D  ****
-                                OV_ABORT("translationAndRotationSolution: finish me for 3d");
-                                FOR_3D(i1,i2,i3,I1,I2,I3)
-                                {
-                                    real x0 = X(i1,i2,i3,0);
-                                    real y0 = X(i1,i2,i3,1);
-                                    real z0 = X(i1,i2,i3,2);
-                                    U(i1,i2,i3,uc) =U0(x0,y0,z0,uc,t);
-                                    U(i1,i2,i3,vc) =U0(x0,y0,z0,vc,t);
-                                    U(i1,i2,i3,wc) =U0(x0,y0,z0,wc,t);
-                                }
-                            }
-                        #undef U0
-                        #undef U0T
-                        #undef U0X
-                        #undef U0Y
-                        }
-            	  }
-            	  else if( specialInitialConditionOption == "RayleighWave" )
-            	  {
-  	    // --- Rayleigh wave solution ---
-              	    bool evalSolution = true;
-  	    // macro: 
-                        {
-                            const int v1c = parameters.dbase.get<int >("v1c");
-                            const int v2c = parameters.dbase.get<int >("v2c");
-                            const int v3c = parameters.dbase.get<int >("v3c");
-                            bool assignVelocities= v1c>=0 ;
-                            const int s11c = parameters.dbase.get<int >("s11c");
-                            const int s12c = parameters.dbase.get<int >("s12c");
-                            const int s13c = parameters.dbase.get<int >("s13c");
-                            const int s21c = parameters.dbase.get<int >("s21c");
-                            const int s22c = parameters.dbase.get<int >("s22c");
-                            const int s23c = parameters.dbase.get<int >("s23c");
-                            const int s31c = parameters.dbase.get<int >("s31c");
-                            const int s32c = parameters.dbase.get<int >("s32c");
-                            const int s33c = parameters.dbase.get<int >("s33c");
-                            const int pc = parameters.dbase.get<int >("pc");
-                            bool assignStress = s11c >=0 ;
-                            real cp = sqrt( (lambda+2.*mu)/rho );
-                            real cs = sqrt( mu/rho );
-                            std::vector<real> & data = parameters.dbase.get<std::vector<real> >("RayleighWaveData");
-                            const int nk = int(data[0]);  // number of modes
-                            const real cr    = data[1];   // Rayleigh wave speed
-                            const real ySurf = data[2];   // y value on surface
-                            const real period= data[3];   // Rayleigh wave speed
-                            const real xShift= data[4];   // shift in x for wave 
-                            const int mStart=5;  // Fourier coeff's start at this index in the data 
-                            if( pdeVariation == SmParameters::hemp )
-                            {
-                                printF("\n\n **************** FIX ME: RayelighWave: finish me for HEMP **********\n\n");
-                                OV_ABORT("error");
-                            }
-                            real cb1 = sqrt(1.-SQR(cr/cp)); // b1/k : for computing b1 
-                            real cb2 = sqrt(1.-SQR(cr/cs)); // b2/k : for computing b2 
-                            real c1 = .5*SQR(cr/cs)-1.; // x/2-1 ,   x=cr^2/cs^2
-                            if( t==0. )
-                            {
-                                printF("**** RayleighWave: ySurf=%8.2e, cr=%8.2e, period=%8.2e, t=%8.2e *********\n",ySurf,cr,period,t);
-                                int m=mStart;
-                                for( int n=0; n<nk; n++ ) 
-                                {
-                                    real k = data[m++];  // k=wave-number
-                                    real a=data[m++];    // an : amplitude
-                                    real b=data[m++]; 
-                                    printF(" k%i = %e, a%i=%e, b%i=%e\n",n,k,n,a,n,b);
-                                }
-                            }
-                            real scale = -1./( cb1+(c1/cb2) ); // make coeff of cos() in u2 = a at y=0
-                            int i1,i2,i3;
-                            if( mg.numberOfDimensions()==2 )
-                            {
-                                real z0=0.;
-                                FOR_3D(i1,i2,i3,I1,I2,I3)
-                                {
-                                    real x0 = X(i1,i2,i3,0)-xShift;
-                                    real y0 = X(i1,i2,i3,1)-ySurf;
-                                    real u1=0., u2=0.;  
-                                    real v1=0., v2=0.;
-                                    real s11=0., s12=0., s22=0.;
-                                    int m=mStart;
-                  // --- loop over different values of k and add contributions ---
-                                    for( int n=0; n<nk; n++ ) 
-                                    {
-                              	real k = twoPi*data[m++]/period;  // 2*pi*k/period , k=wave-number
-                    // -- note definition of a and b so that they define the Fourier coefficients
-                    //    of u2 on the surface
-                                        real b=data[m++]*scale;          
-                                        real a=data[m++]*scale;          
-                                        real b1= k*cb1, b2=k*cb2;
-                                        real eb1 = exp(b1*(y0)), eb2 = exp(b2*(y0));
-                                        real ct = cos(k*(x0-cr*t));
-                              	real st = sin(k*(x0-cr*t));
-                                        u1 +=  ( eb1 + c1*eb2           )*( a*ct+b*st);
-                              	u2 +=  ( cb1*eb1 + (c1/cb2)*eb2 )*( a*st-b*ct);
-                              	if( assignVelocities )
-                              	{
-                                	  v1 += ( eb1 + c1*eb2           )*( k*cr*( a*st-b*ct) );
-                                	  v2 +=-( cb1*eb1 + (c1/cb2)*eb2 )*( k*cr*( a*ct+b*st) );
-                              	}
-                              	if( assignStress )
-                              	{   
-                                            real u1x = ( eb1 + c1*eb2       )*( k*(-a*st+b*ct) );
-                                            real u1y = ( b1*eb1 + b2*c1*eb2 )*(   ( a*ct+b*st) );
-                                            real u2x = ( cb1*eb1       + (c1/cb2)*eb2 )*( k*(a*ct+b*st) );
-                                            real u2y = ( b1*cb1*eb1 + b2*(c1/cb2)*eb2 )*(   (a*st-b*ct) );
-                                            real div=u1x+u2y;
-                                	  s11 += lambda*div+2.*mu*u1x;
-                                	  s12 += mu*( u1y+u2x );
-                                	  s22 += lambda*div+2.*mu*u2y;
-                              	}
-                                    }
-                  // printF(" (i1,i2)=(%i,%i) (x0,y0)=(%8.2e,%8.2e) xi=%8.2e (u1,u2)=(%8.2e,%8.2e)\n",i1,i2,x0,y0,xi,u1,u2);
-                                    if( evalSolution )
-                                    {
-                              	U(i1,i2,i3,uc) =u1;
-                              	U(i1,i2,i3,vc) =u2;
-                                        if( assignVelocities )
-                              	{
-                                	  U(i1,i2,i3,v1c) = v1;
-                                	  U(i1,i2,i3,v2c) = v2;
-                              	}
-                              	if( assignStress )
-                              	{
-                                	  U(i1,i2,i3,s11c) =s11;
-                                	  U(i1,i2,i3,s12c) =s12;
-                                	  U(i1,i2,i3,s21c) =s12;
-                                	  U(i1,i2,i3,s22c) =s22;
-                              	}
-                                    }
-                                    else
-                                    {
-                              	if( pdeVariation == SmParameters::hemp )
-                              	{
-                                	  U(i1,i2,i3,u1c) = U(i1,i2,i3,u1c) - u1;
-                                	  U(i1,i2,i3,u2c) = U(i1,i2,i3,u2c) - u2;
-                                	  U(i1,i2,i3,uc) = U(i1,i2,i3,uc) - x0;
-                                	  U(i1,i2,i3,vc) = U(i1,i2,i3,vc) - y0;
-                              	}
-                              	else
-                              	{
-                                	  U(i1,i2,i3,uc) =U(i1,i2,i3,uc) - u1;
-                                	  U(i1,i2,i3,vc) =U(i1,i2,i3,vc) - u2;
-                                	  }
-                                        if( assignVelocities )
-                              	{
-                                	  U(i1,i2,i3,v1c) =U(i1,i2,i3,v1c) - v1;
-                                	  U(i1,i2,i3,v2c) =U(i1,i2,i3,v2c) - v2;
-                              	}
-                              	if( assignStress )
-                              	{
-                                	  U(i1,i2,i3,s11c) =U(i1,i2,i3,s11c) -s11;
-                                	  U(i1,i2,i3,s12c) =U(i1,i2,i3,s12c) -s12;
-                                	  U(i1,i2,i3,s21c) =U(i1,i2,i3,s21c) -s12;
-                                	  U(i1,i2,i3,s22c) =U(i1,i2,i3,s22c) -s22;
-                              	}
-                                    }
-                                } // end FOR_3D
-                            }
-                            else
-                            {
-                                OV_ABORT("RayleighWave:ERROR: finish me for 3D");
-                            }
-                        }
-            	  }
-            	  else if( specialInitialConditionOption == "pistonMotion" )
-            	  {
-  	    // --- piston motion (for FSI) ---
-              	    bool evalSolution = true;
-                        {
-                            const int v1c = parameters.dbase.get<int >("v1c");
-                            const int v2c = parameters.dbase.get<int >("v2c");
-                            const int v3c = parameters.dbase.get<int >("v3c");
-                            bool assignVelocities= v1c>=0 ;
-                            const int s11c = parameters.dbase.get<int >("s11c");
-                            const int s12c = parameters.dbase.get<int >("s12c");
-                            const int s13c = parameters.dbase.get<int >("s13c");
-                            const int s21c = parameters.dbase.get<int >("s21c");
-                            const int s22c = parameters.dbase.get<int >("s22c");
-                            const int s23c = parameters.dbase.get<int >("s23c");
-                            const int s31c = parameters.dbase.get<int >("s31c");
-                            const int s32c = parameters.dbase.get<int >("s32c");
-                            const int s33c = parameters.dbase.get<int >("s33c");
-                            const int pc = parameters.dbase.get<int >("pc");
-                            bool assignStress = s11c >=0 ;
-                            const real cp = sqrt( (lambda+2.*mu)/rho );
-                            const real cs = sqrt( mu/rho );
-                            std::vector<real> & data = parameters.dbase.get<std::vector<real> >("pistonMotionData");
-                            int m=0;
-                            const real a    =data[m++];
-                            const real p    =data[m++];
-                            const real rhog =data[m++];
-                            const real pg   =data[m++];
-                            const real gamma=data[m++];
-                            real angle      =data[m++];  // angle (in degrees) for a rotated piston
-                            const real a0 = sqrt( gamma*pg/rhog);  // speed of sound in the gas
-                            if( pdeVariation == SmParameters::hemp )
-                            {
-                                printF("\n\n **************** FIX ME: getPistonMotionSolution: finish me for HEMP **********\n\n");
-                                OV_ABORT("error");
-                            }
-                            if( t==0. )
-                            {
-                                printP("**** getPistonMotion: a=%8.2e, p=%8.2e, Gas: rho=%8.2e, p=%8.2e gamma=%8.2e angle=%5.2f(degrees)*******\n",
-                                              a,p,rhog,pg,gamma,angle);
-                            }
-                            angle = angle*Pi/180.;
-                            const real cosa = cos(angle), sina=sin(angle);
-                            const real cg1 = pg/(rho*cp*cp);
-                            const real cg2 = (-a)*(gamma-1.)/(2.*a0);
-              // we assume gamma=1.4
-                            assert( fabs(gamma-1.4) < REAL_EPSILON*100. );
-                            int i1,i2,i3;
-                            if( mg.numberOfDimensions()==2 )
-                            {
-                                real z0=0.;
-                                FOR_3D(i1,i2,i3,I1,I2,I3)
-                                {
-                                    real x0 = X(i1,i2,i3,0);
-                                    real y0 = X(i1,i2,i3,1);
-                                    real u1=0., u2=0.;  
-                                    real v1=0., v2=0.;
-                                    real s11=0., s12=0., s22=0.;
-                  // Boundary motion:
-                  //    F(t) = -(a/p)*t^p 
-                  //    F'(t) = -a*t^{p-1}
-                  // Solution: 
-                  //    u1 = f(x-cp*t) + g(x+cp*t)
-                  // where  
-                  //   f(x) = - 1/(2*cp)*( int_0^x v0(s) ds ) = -(1/2)* int_0^x G(-s/cp) ds  ,   for   x<0
-                  //                                          =  (cp/2)* int_0^{-x/cp} G(u) du 
-                  //   g(x) = + 1/(2*cp)*( int_0^x v0(s) ds ) =  (1/2)* int_0^x G(-s/cp) ds  ,   for   x<0
-                  //                                          = -(cp/2)* int_0^{-x/cp} G(u) du 
-                  //   g(x) = F(x/cp) - f(-x),                   for   x>0 
-                  //
-                  //   v0(s) = cp*G(-t/cp)   : velocity at t=0 for s<0
-                  //   G(t) = (pg/(rho*cp^2)) * [ 1 + (gamma-1)/(2*a0)* F'(t) ]^7 + F'(t)/cp
-                  //        = cg1* [ 1 + cg2*t^{p-1} ]^7 + F'(t)/cp
-                  //     cg1=p0/(rho*cp^2), cg2=(-a)*(gamma-1)/(2*a0)
-                  // 
-                  // where we have assumed that gamma=1.4=7/5 so that 2*gamma/(gamma-1)= 7 
-                  // 
-                  //  Int_0^t G(s) ds = cg1*[ t + (7/p)*cg2*t^{p-1}*t + (21/(2p-1))*(cg2*t^{p-1})^2*t + ) + F(t)/cp
-                  //                  = cg1*t*[ 1 + Z*(7)/(p) + Z^2*(21)/(2p-1) + Z^3*(35)/(3p-2) + Z^4*(35)/(4p-3) + ...
-                  //                              + Z^5*(21)/(5p-4) + Z^6*(7)/(6p-5) + Z^7*(1)/(7p-6) ] 
-                  //   Z=cg2*t^{p-1}
-                  // xa = distance of point (x0,y0) from the plane  (cosa,sina).(x,y)=0 
-                                    real xa = x0*cosa + y0*sina;
-                                    real xp = xa + cp*t;
-                                    real xm = xa - cp*t;
-                                    real fm, fmPrime, gp, gpPrime;
-                                    {
-                                        real xx = -xm/cp;
-                                        real xp1 = pow(xx,p-1);
-                                        real z=cg2*xp1;
-                                        fm = cp*(.5*(cg1*(xx)*(1.+(z)*(7./p+(z)*(21./(2.*p-1.)+(z)*(35./(3.*p-2.)+(z)*(35./(4.*p-3.)			+(z)*(21./(5.*p-4.)+(z)*(7./(6.*p-5.)+z/(7.*p-6.))))))))))  - .5*(a/p)*xp1*xx;
-                                        fmPrime = .5*( -cg1*pow( 1. + z , 7.) + a*xp1/cp );
-                                    }
-                                    {
-                                        if( xp<=0. )
+                                        real x0 = X(i1,i2,i3,0);
+                                        real y0 = X(i1,i2,i3,1);
+                                        real u1=0., u2=0.;  // back-ground field
+                                        real v1=0., v2=0.;
+                                        real s11=0., s12=0., s22=0.;
+                                        real div=0.;
+                    // real a1=0., b1=-1., a2=0., b2=0.;
+                    // u1 = a1*x0 + b1*t;  // more general back ground field
+                    // u2 = a2*x0 + b2*t;
+                                        int m=2;
+                                        for (int n=0; n<np; n++ ) // p-wave solutions
                                         {
-                                            real xx = -xp/cp;
-                                            real xp1 = pow(xx,p-1);
-                                            real z=cg2*xp1;
-                                            gp = cp*(.5*(cg1*(xx)*(1.+(z)*(7./p+(z)*(21./(2.*p-1.)+(z)*(35./(3.*p-2.)+(z)*(35./(4.*p-3.)			+(z)*(21./(5.*p-4.)+(z)*(7./(6.*p-5.)+z/(7.*p-6.))))))))))  + .5*(a/p)*xp1*xx ;
-                                            gpPrime = +.5*( -cg1*pow( 1. + z , 7.) -a*xp1/cp );
+                                  	real ap = twd[m++], k1=twd[m++], k2=twd[m++], k3=twd[m++], xa=twd[m++], ya=twd[m++], za=twd[m++];
+                                  	real xi = k1*(x0-xa) + k2*(y0-ya) - cp*t;
+                                  	if( xi <= 0. )
+                                  	{
+                                    	  u1 += -ap*k1*xi;
+                                    	  u2 += -ap*k2*xi;
+                                                v1 += ap*cp*k1;
+                                                v2 += ap*cp*k2;
+                                                s11+= -ap*( lambda+2.*mu*k1*k1 );
+                                    	  s12+= -ap*( 2.*mu*k1*k2 );
+                                    	  s22+= -ap*( lambda+2.*mu*k2*k2 );
+                                                div+= -ap;
+                                  	}
+                                        }
+                                        for (int n=0; n<ns; n++ ) // s-wave solutions
+                                        {
+                                  	real as = twd[m++], k1=twd[m++], k2=twd[m++], k3=twd[m++], xa=twd[m++], ya=twd[m++], za=twd[m++];
+                                  	real xi = k1*(x0-xa) + k2*(y0-ya) - cs*t;
+                                  	if( xi <= 0. )
+                                  	{  // (-k2,k1)
+                                    	  u1 += +as*k2*xi;
+                                    	  u2 += -as*k1*xi;
+                                                v1 += -as*cs*k2;
+                                                v2 += +as*cs*k1;
+                                                s11+= -as*(-2.*mu*k1*k2 );
+                                    	  s12+= -as*( mu*(k1*k1-k2*k2) );
+                                    	  s22+= -as*( 2.*mu*k1*k2 );
+                                  	}
+                                        }
+                    // printF(" (i1,i2)=(%i,%i) (x0,y0)=(%8.2e,%8.2e) xi=%8.2e (u1,u2)=(%8.2e,%8.2e)\n",i1,i2,x0,y0,xi,u1,u2);
+                                        if( evalSolution )
+                                        {
+                                  	if( pdeVariation == SmParameters::hemp )
+                                  	{
+                                    	  U(i1,i2,i3,u1c) =u1;
+                                    	  U(i1,i2,i3,u2c) =u2;
+                                    	  U(i1,i2,i3,uc) =x0;
+                                    	  U(i1,i2,i3,vc) =y0;
+                                    	  state0Local(i1,i2,i3,1) = 1.0; // density
+                                    	  /*********/
+                                    	  state0Local(i1,i2,i3,0) = state0Local(i1,i2,i3,1)*det(i1,i2,i3)*mg.gridSpacing(axis1)*mg.gridSpacing(axis2); // mass
+                                    	  if( pdeVariation == SmParameters::hemp && 
+                                        	      i1 > I1Base && i1 < I1Bound &&
+                                        	      i2 > I2Base && i2 < I2Bound )
+                                    	  {
+                                      	    real area = 0.25*(det(i1,i2,i3)+det(i1+1,i2,i3)+det(i1+1,i2+1,i3)+det(i1,i2+1,i3));
+                                      	    state0Local(i1,i2,i3,0) = area*mg.gridSpacing(axis1)*mg.gridSpacing(axis2); // mass
+                                    	  }
+                                  	}
+                                  	else
+                                  	{
+                                  	U(i1,i2,i3,uc) =u1;
+                                  	U(i1,i2,i3,vc) =u2;
+                                  	}
+                                            if( assignVelocities )
+                                  	{
+                                    	  U(i1,i2,i3,v1c) = v1;
+                                    	  U(i1,i2,i3,v2c) = v2;
+                                  	}
+                                  	if( assignStress )
+                                  	{
+                                    	  U(i1,i2,i3,s11c) =s11;
+                                    	  U(i1,i2,i3,s12c) =s12;
+                                    	  U(i1,i2,i3,s21c) =s12;
+                                    	  U(i1,i2,i3,s22c) =s22;
+                                    	  if( pdeVariation == SmParameters::hemp )
+                                    	  {
+                                                    real press = -(lambda+2.0*mu/3.0)*div;
+                                                    U(i1,i2,i3,pc)   = press;
+                                                    U(i1,i2,i3,s11c) += press;
+                                                    U(i1,i2,i3,s22c) += press;
+                                    	  }
+                                  	}
                                         }
                                         else
                                         {
-                       //   gp(xp) = F(xp/cp) - f(-xp),
-                                            real xx=xp/cp;
-                                            real xp1 = pow(xx,p-1);
-                                            real z=cg2*xp1;
-                                            gp = -(a/p)*xp1*xx - cp*(.5*(cg1*(xx)*(1.+(z)*(7./p+(z)*(21./(2.*p-1.)+(z)*(35./(3.*p-2.)+(z)*(35./(4.*p-3.)			+(z)*(21./(5.*p-4.)+(z)*(7./(6.*p-5.)+z/(7.*p-6.)))))))))) + .5*(a/p)*xp1*xx;
-                                            gpPrime = -a*xp1/cp + .5*( -cg1*pow( 1. + z , 7.) + a*xp1/cp );
+                                  	if( pdeVariation == SmParameters::hemp )
+                                  	{
+                                    	  U(i1,i2,i3,u1c) = U(i1,i2,i3,u1c) - u1;
+                                    	  U(i1,i2,i3,u2c) = U(i1,i2,i3,u2c) - u2;
+                                    	  U(i1,i2,i3,uc) = U(i1,i2,i3,uc) - x0;
+                                    	  U(i1,i2,i3,vc) = U(i1,i2,i3,vc) - y0;
+                                  	}
+                                  	else
+                                  	{
+                                    	  U(i1,i2,i3,uc) =U(i1,i2,i3,uc) - u1;
+                                    	  U(i1,i2,i3,vc) =U(i1,i2,i3,vc) - u2;
+                                    	  }
+                                            if( assignVelocities )
+                                  	{
+                                    	  U(i1,i2,i3,v1c) =U(i1,i2,i3,v1c) - v1;
+                                    	  U(i1,i2,i3,v2c) =U(i1,i2,i3,v2c) - v2;
+                                  	}
+                                  	if( assignStress )
+                                  	{
+                                    	  U(i1,i2,i3,s11c) =U(i1,i2,i3,s11c) -s11;
+                                    	  U(i1,i2,i3,s12c) =U(i1,i2,i3,s12c) -s12;
+                                    	  U(i1,i2,i3,s21c) =U(i1,i2,i3,s21c) -s12;
+                                    	  U(i1,i2,i3,s22c) =U(i1,i2,i3,s22c) -s22;
+                                    	  if( pdeVariation == SmParameters::hemp )
+                                    	  {
+                                                    real press = -(lambda+2.0*mu/3.0)*div;
+                                                    U(i1,i2,i3,s11c) -= press;
+                                      	    U(i1,i2,i3,s22c) -= press;
+                                      	    U(i1,i2,i3,pc)   = U(i1,i2,i3,pc)   - press;
+                                    	  }
+                                  	}
                                         }
-                                    }
-                                    real ua = fm + gp;
-                                    real va = cp*( - fmPrime + gpPrime );
-                                    real uap=fmPrime + gpPrime;
-                  // Piston at an angle:
-                  //   n = [ cos(angle) , sin(angle) ] = [ c, s ]    -- normal to the face
-                  //   u1 = c*ua,  u2=s*ua
-                  //   u1.x = c*ua.x,  u1.y = c*ua.y,   u2.x = s*ua.x, u2.y = s*ua.y
-                  //   
-                  // (1)  ua.n = c*ua.x + s*ua.y = uap
-                  // (2)  ua.t =-s*ua.x + c*ua.y = 0    "tangential derivative of motion"
-                  //
-                  //  (1) and (2) -->   ua.x = c*uap, ua.y=s*uap
-                  // Thus: u1.x = c*ua.x = c*c*uap,  u1.y = c*ua.y = c*s*uap
-                                    u1 = ua*cosa;
-                                    u2 = ua*sina;
-                                    v1 = va*cosa;
-                                    v2 = va*sina;
-                                    real u1x = uap*cosa*cosa;
-                                    real u1y = uap*cosa*sina;
-                                    real u2x = uap*sina*cosa;
-                                    real u2y = uap*sina*sina;
-                                    s11 = (lambda+2.*mu)*u1x + lambda*u2y;   
-                                    s12 = mu*( u1y+u2x );
-                                    s22 = lambda*u1x + (lambda+2.*mu)*u2y;
-                  // printF("piston (i1,i2)=(%i,%i) (u1,u2)=(%8.2e,%8.2e)\n",i1,i2,u1,u2);
-                                    if( evalSolution )
-                                    {
-                              	U(i1,i2,i3,uc) =u1;
-                              	U(i1,i2,i3,vc) =u2;
-                                        if( assignVelocities )
-                              	{
-                                	  U(i1,i2,i3,v1c) = v1;
-                                	  U(i1,i2,i3,v2c) = v2;
-                              	}
-                              	if( assignStress )
-                              	{
-                                	  U(i1,i2,i3,s11c) =s11;
-                                	  U(i1,i2,i3,s12c) =s12;
-                                	  U(i1,i2,i3,s21c) =s12;
-                                	  U(i1,i2,i3,s22c) =s22;
-                              	}
-                                    }
-                                    else
-                                    {
-                              	U(i1,i2,i3,uc) =U(i1,i2,i3,uc) - u1;
-                              	U(i1,i2,i3,vc) =U(i1,i2,i3,vc) - u2;
-                                        if( assignVelocities )
-                              	{
-                                	  U(i1,i2,i3,v1c) =U(i1,i2,i3,v1c) - v1;
-                                	  U(i1,i2,i3,v2c) =U(i1,i2,i3,v2c) - v2;
-                              	}
-                              	if( assignStress )
-                              	{
-                                	  U(i1,i2,i3,s11c) =U(i1,i2,i3,s11c) -s11;
-                                	  U(i1,i2,i3,s12c) =U(i1,i2,i3,s12c) -s12;
-                                	  U(i1,i2,i3,s21c) =U(i1,i2,i3,s21c) -s12;
-                                	  U(i1,i2,i3,s22c) =U(i1,i2,i3,s22c) -s22;
-                              	}
-                                    }
-                                } // end FOR_3D
-                            }
-                            else
-                            {
-                                OV_ABORT("getPistonMotion:ERROR: finish me for 3D");
+                                    } // end FOR_3D
+                                }
+                                else
+                                {
+                                    OV_ABORT("Error: finish me");
+                                }
                             }
                         }
-            	  }
+                        else if( specialInitialConditionOption == "planeTravelingWave" )
+                        {
+              // --- traveling sine wave solution ---
+                            bool evalSolution = true;
+              // macro: 
+              //	printF("INFO: The traveling wave solutions are combinations of p and s solutions:\n"
+              //               "  [u1,u2] = ap* [ k1,k2] * G( k1*(x-xa)+k2*(y-ya) - cp*t )  (p-wave)\n"
+              //               "  [u1,u2] = as* [-k2,k1] * G( k1*(x-xa)+k2*(y-ya) - cs*t )  (s-wave\n",
+              //               "    where  G(xi)=sin(freq,xi) \n");
+                            {
+                                const int v1c = parameters.dbase.get<int >("v1c");
+                                const int v2c = parameters.dbase.get<int >("v2c");
+                                const int v3c = parameters.dbase.get<int >("v3c");
+                                bool assignVelocities= v1c>=0 ;
+                                const int s11c = parameters.dbase.get<int >("s11c");
+                                const int s12c = parameters.dbase.get<int >("s12c");
+                                const int s13c = parameters.dbase.get<int >("s13c");
+                                const int s21c = parameters.dbase.get<int >("s21c");
+                                const int s22c = parameters.dbase.get<int >("s22c");
+                                const int s23c = parameters.dbase.get<int >("s23c");
+                                const int s31c = parameters.dbase.get<int >("s31c");
+                                const int s32c = parameters.dbase.get<int >("s32c");
+                                const int s33c = parameters.dbase.get<int >("s33c");
+                                const int pc = parameters.dbase.get<int >("pc");
+                                bool assignStress = s11c >=0 ;
+                // hard code some numbers for now: 
+                // real k1=1., k2=0., k3=0.;
+                // real ap=1., xa=.5, ya=0.;
+                                real cp = sqrt( (lambda+2.*mu)/rho );
+                                real cs = sqrt( mu/rho );
+                                std::vector<real> & twd = parameters.dbase.get<std::vector<real> >("travelingWaveData");
+                                const int np = int(twd[0]);  // number of p wave solutions
+                                const int ns = int(twd[1]);  // number of s wave solutions
+                                if( pdeVariation == SmParameters::hemp )
+                                {
+                                    printF("\n\n **************** FIX ME: travelingWave: finish me for HEMP **********\n\n");
+                  // OV_ABORT("error");
+                                }
+                // printF("**** planeTravelingWave: cp=%8.2e, t=%8.2e  *********\n",cp,t);
+                                int i1,i2,i3;
+                                if( mg.numberOfDimensions()==2 )
+                                {
+                                    real z0=0.;
+                                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                                    {
+                                        real x0 = X(i1,i2,i3,0);
+                                        real y0 = X(i1,i2,i3,1);
+                                        real u1=0., u2=0.;  // back-ground field
+                                        real v1=0., v2=0.;
+                                        real s11=0., s12=0., s22=0.;
+                                        real div=0.;
+                    // real a1=0., b1=-1., a2=0., b2=0.;
+                    // u1 = a1*x0 + b1*t;  // more general back ground field
+                    // u2 = a2*x0 + b2*t;
+                                        int m=2;
+                                        for (int n=0; n<np; n++ ) // p-wave solutions
+                                        {
+                                  	real ap = twd[m++], k1=twd[m++], k2=twd[m++], k3=twd[m++], xa=twd[m++], ya=twd[m++], za=twd[m++];
+                                  	real freq=twd[m++];
+                                  	real xi = k1*(x0-xa) + k2*(y0-ya) - cp*t;
+                                            real sinf = sin(freq*xi), cosf=cos(freq*xi);
+                                  	u1 += -ap*k1*sinf;
+                                  	u2 += -ap*k2*sinf;
+                                  	v1 += ap*cp*k1*freq*cosf;
+                                  	v2 += ap*cp*k2*freq*cosf;
+                                  	s11+= -ap*( lambda+2.*mu*k1*k1 )*freq*cosf;
+                                  	s12+= -ap*( 2.*mu*k1*k2        )*freq*cosf;
+                                  	s22+= -ap*( lambda+2.*mu*k2*k2 )*freq*cosf;
+                                  	div+= -ap;
+                                        }
+                                        for (int n=0; n<ns; n++ ) // s-wave solutions
+                                        {
+                                  	real as = twd[m++], k1=twd[m++], k2=twd[m++], k3=twd[m++], xa=twd[m++], ya=twd[m++], za=twd[m++];
+                                  	real xi = k1*(x0-xa) + k2*(y0-ya) - cs*t;
+                                  	real freq=twd[m++];
+                                  	real sinf = sin(freq*xi), cosf=cos(freq*xi);
+              	// (-k2,k1)
+                                  	u1 += +as*k2*sinf;
+                                  	u2 += -as*k1*sinf;
+                                  	v1 += -as*cs*k2*freq*cosf;
+                                  	v2 += +as*cs*k1*freq*cosf;
+                                  	s11+= -as*(-2.*mu*k1*k2      )*freq*cosf;
+                                  	s12+= -as*( mu*(k1*k1-k2*k2) )*freq*cosf;
+                                  	s22+= -as*( 2.*mu*k1*k2      )*freq*cosf;
+                                        }
+                    // printF(" (i1,i2)=(%i,%i) (x0,y0)=(%8.2e,%8.2e) xi=%8.2e (u1,u2)=(%8.2e,%8.2e)\n",i1,i2,x0,y0,xi,u1,u2);
+                                        if( evalSolution )
+                                        {
+                                  	if( pdeVariation == SmParameters::hemp )
+                                  	{
+                                    	  U(i1,i2,i3,u1c) =u1;
+                                    	  U(i1,i2,i3,u2c) =u2;
+                                    	  U(i1,i2,i3,uc) =x0;
+                                    	  U(i1,i2,i3,vc) =y0;
+                                    	  state0Local(i1,i2,i3,1) = 1.0; // density
+                                    	  /*********/
+                                    	  state0Local(i1,i2,i3,0) = state0Local(i1,i2,i3,1)*det(i1,i2,i3)*mg.gridSpacing(axis1)*mg.gridSpacing(axis2); // mass
+                                    	  if( pdeVariation == SmParameters::hemp && 
+                                        	      i1 > I1Base && i1 < I1Bound &&
+                                        	      i2 > I2Base && i2 < I2Bound )
+                                    	  {
+                                      	    real area = 0.25*(det(i1,i2,i3)+det(i1+1,i2,i3)+det(i1+1,i2+1,i3)+det(i1,i2+1,i3));
+                                      	    state0Local(i1,i2,i3,0) = area*mg.gridSpacing(axis1)*mg.gridSpacing(axis2); // mass
+                                    	  }
+                                  	}
+                                  	else
+                                  	{
+                                  	U(i1,i2,i3,uc) =u1;
+                                  	U(i1,i2,i3,vc) =u2;
+                                  	}
+                                            if( assignVelocities )
+                                  	{
+                                    	  U(i1,i2,i3,v1c) = v1;
+                                    	  U(i1,i2,i3,v2c) = v2;
+                                  	}
+                                  	if( assignStress )
+                                  	{
+                                    	  U(i1,i2,i3,s11c) =s11;
+                                    	  U(i1,i2,i3,s12c) =s12;
+                                    	  U(i1,i2,i3,s21c) =s12;
+                                    	  U(i1,i2,i3,s22c) =s22;
+                                    	  if( pdeVariation == SmParameters::hemp )
+                                    	  {
+                                                    real press = -(lambda+2.0*mu/3.0)*div;
+                                                    U(i1,i2,i3,pc)   = press;
+                                                    U(i1,i2,i3,s11c) += press;
+                                                    U(i1,i2,i3,s22c) += press;
+                                    	  }
+                                  	}
+                                        }
+                                        else
+                                        {
+                                  	if( pdeVariation == SmParameters::hemp )
+                                  	{
+                                    	  U(i1,i2,i3,u1c) = U(i1,i2,i3,u1c) - u1;
+                                    	  U(i1,i2,i3,u2c) = U(i1,i2,i3,u2c) - u2;
+                                    	  U(i1,i2,i3,uc) = U(i1,i2,i3,uc) - x0;
+                                    	  U(i1,i2,i3,vc) = U(i1,i2,i3,vc) - y0;
+                                  	}
+                                  	else
+                                  	{
+                                    	  U(i1,i2,i3,uc) =U(i1,i2,i3,uc) - u1;
+                                    	  U(i1,i2,i3,vc) =U(i1,i2,i3,vc) - u2;
+                                    	  }
+                                            if( assignVelocities )
+                                  	{
+                                    	  U(i1,i2,i3,v1c) =U(i1,i2,i3,v1c) - v1;
+                                    	  U(i1,i2,i3,v2c) =U(i1,i2,i3,v2c) - v2;
+                                  	}
+                                  	if( assignStress )
+                                  	{
+                                    	  U(i1,i2,i3,s11c) =U(i1,i2,i3,s11c) -s11;
+                                    	  U(i1,i2,i3,s12c) =U(i1,i2,i3,s12c) -s12;
+                                    	  U(i1,i2,i3,s21c) =U(i1,i2,i3,s21c) -s12;
+                                    	  U(i1,i2,i3,s22c) =U(i1,i2,i3,s22c) -s22;
+                                    	  if( pdeVariation == SmParameters::hemp )
+                                    	  {
+                                                    real press = -(lambda+2.0*mu/3.0)*div;
+                                                    U(i1,i2,i3,s11c) -= press;
+                                      	    U(i1,i2,i3,s22c) -= press;
+                                      	    U(i1,i2,i3,pc)   = U(i1,i2,i3,pc)   - press;
+                                    	  }
+                                  	}
+                                        }
+                                    } // end FOR_3D
+                                }
+                                else
+                                {
+                                    OV_ABORT("Error: finish me");
+                                }
+                            }
+                        }
+                        else if( specialInitialConditionOption == "translationAndRotation" )
+                        {
+              // Here is the solution for large translation and rotation 
+                            bool evalSolution = true;
+              // macro: 
+                            {
+                                const int v1c = parameters.dbase.get<int >("v1c");
+                                const int v2c = parameters.dbase.get<int >("v2c");
+                                const int v3c = parameters.dbase.get<int >("v3c");
+                                bool assignVelocities= v1c>=0 ;
+                                const int s11c = parameters.dbase.get<int >("s11c");
+                                const int s12c = parameters.dbase.get<int >("s12c");
+                                const int s13c = parameters.dbase.get<int >("s13c");
+                                const int s21c = parameters.dbase.get<int >("s21c");
+                                const int s22c = parameters.dbase.get<int >("s22c");
+                                const int s23c = parameters.dbase.get<int >("s23c");
+                                const int s31c = parameters.dbase.get<int >("s31c");
+                                const int s32c = parameters.dbase.get<int >("s32c");
+                                const int s33c = parameters.dbase.get<int >("s33c");
+                                const int pc = parameters.dbase.get<int >("pc");
+                                bool assignStress = s11c >=0 ;
+                                if( pdeVariation == SmParameters::hemp )
+                                {
+                                    printF("\n\n **************** FIX ME: getTranslationAndRotationSolution: finish me for HEMP **********\n\n");
+                  // OV_ABORT("error");
+                                }
+                // Here is the solution for large translation and rotation
+                // hard code some numbers for now: 
+                                std::vector<real> & trd = parameters.dbase.get<std::vector<real> >("translationAndRotationSolutionData");
+                                real omega   = trd[0];   // rotation rate
+                                real xcenter = trd[1];      // center of rotation in the reference frame
+                                real ycenter = trd[2];      // center of rotation in the reference frame
+                                real zcenter = trd[3];      // center of rotation in the reference frame
+                                real vcenter[3]={trd[4],trd[5],trd[6]};   // velocity of center
+                                real rx[3]={cos(omega*t)-1.,-sin(omega*t),    0.};
+                                real ry[3]={sin(omega*t)   , cos(omega*t)-1., 0.};
+                                real rxt[3]={-omega*sin(omega*t),-omega*cos(omega*t), 0.};
+                                real ryt[3]={ omega*cos(omega*t),-omega*sin(omega*t), 0.};
+                            #define U0(x,y,z,n,t)  (vcenter[n-uc]*(t) +  rx[n-uc]*((x)-xcenter) +  ry[n-uc]*((y)-ycenter))
+                            #define U0T(x,y,z,n,t) (vcenter[n-uc]     + rxt[n-uc]*((x)-xcenter) + ryt[n-uc]*((y)-ycenter))
+                            #define U0X(x,y,z,n,t) (                     rx[n-uc]                                        )
+                            #define U0Y(x,y,z,n,t) (                                               ry[n-uc]              )
+                                if( t==0. )
+                                    printF("**** translationAndRotationSolution, t=%8.2e omega=%8.2e (x0,x1,x2)=(%8.2e,%8.2e,%8.2e) "
+                                     	   " (v0,v1,v2)=(%8.2e,%8.2e,%8.2e) *********\n",t,omega,xcenter,ycenter,zcenter,
+                                     	   vcenter[0],vcenter[1],vcenter[2]);
+                                int i1,i2,i3;
+                                if( mg.numberOfDimensions()==2 )
+                                {
+                                    real z0=0.;
+                                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                                    {
+                                        real x0 = X(i1,i2,i3,0);
+                                        real y0 = X(i1,i2,i3,1);
+                                        real u1 = U0(x0,y0,z0,uc,t);
+                                        real u2 = U0(x0,y0,z0,vc,t);
+                                        if( evalSolution )
+                                        {
+                                  	U(i1,i2,i3,uc) =u1;
+                                  	U(i1,i2,i3,vc) =u2;
+                                        }
+                                        else
+                                        {
+                                  	U(i1,i2,i3,uc) =U(i1,i2,i3,uc) - u1;
+                                  	U(i1,i2,i3,vc) =U(i1,i2,i3,vc) - u2;
+                                        }
+                                    }
+                                    if( assignVelocities )
+                                    {
+                                        FOR_3D(i1,i2,i3,I1,I2,I3) // loop over all points
+                                        {
+                                  	real x0 = X(i1,i2,i3,0);
+                                  	real y0 = X(i1,i2,i3,1);
+                                  	real v1 = U0T(x0,y0,z0,uc,t);
+                                  	real v2 = U0T(x0,y0,z0,vc,t);
+              	// printF(" *** assignSpecial: v1=%e v2=%e\n",v1,v2);
+                                  	if( evalSolution )
+                                  	{
+                                    	  U(i1,i2,i3,v1c) = v1;
+                                    	  U(i1,i2,i3,v2c) = v2;
+                                  	}
+                                  	else
+                                  	{
+                                    	  U(i1,i2,i3,v1c) = U(i1,i2,i3,v1c) - v1;
+                                    	  U(i1,i2,i3,v2c) = U(i1,i2,i3,v2c) - v2;
+                                  	}
+                                        }
+                                    }
+                                    if( assignStress )
+                                    {
+                                        FOR_3D(i1,i2,i3,I1,I2,I3) // loop over all points
+                                        {
+                                  	real x0 = X(i1,i2,i3,0);
+                                  	real y0 = X(i1,i2,i3,1);
+                                  	real f11 = 1. + U0X(x0,y0,z0,uc,t);
+                                  	real f12 =      U0Y(x0,y0,z0,uc,t);
+                                  	real f21 =      U0X(x0,y0,z0,vc,t);
+                                  	real f22 = 1. + U0Y(x0,y0,z0,vc,t);
+                                  	real e11 = .5*(f11*f11+f21*f21-1.);     // this is E(i,j), symmetric
+                                  	real e12 = .5*(f11*f12+f21*f22   );
+                                  	real e22 = .5*(f12*f12+f22*f22-1.);
+                                  	real trace = e11 + e22;
+                                  	real s11 = lambda*trace + 2*mu*e11;     // this is S(i,j), symmetric
+                                  	real s12 =                2*mu*e12;
+                                  	real s21 = s12;
+                                  	real s22 = lambda*trace + 2*mu*e22;
+                                  	real p11 = s11*f11 + s12*f12;           // this P(i,j)
+                                  	real p12 = s11*f21 + s12*f22;
+                                  	real p21 = s21*f11 + s22*f12;
+                                  	real p22 = s21*f21 + s22*f22;
+                                  	if( evalSolution )
+                                  	{
+                                    	  U(i1,i2,i3,s11c) = p11;
+                                    	  U(i1,i2,i3,s12c) = p12;
+                                    	  U(i1,i2,i3,s21c) = p21;
+                                    	  U(i1,i2,i3,s22c) = p22;
+                                  	}
+                                  	else
+                                  	{
+                                    	  U(i1,i2,i3,s11c) = U(i1,i2,i3,s11c) - p11;
+                                    	  U(i1,i2,i3,s12c) = U(i1,i2,i3,s12c) - p12;
+                                    	  U(i1,i2,i3,s21c) = U(i1,i2,i3,s21c) - p21;
+                                    	  U(i1,i2,i3,s22c) = U(i1,i2,i3,s22c) - p22;
+                                  	}
+                                        }
+                                    }
+                                }
+                                else
+                                { // ***** 3D  ****
+                                    OV_ABORT("translationAndRotationSolution: finish me for 3d");
+                                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                                    {
+                                        real x0 = X(i1,i2,i3,0);
+                                        real y0 = X(i1,i2,i3,1);
+                                        real z0 = X(i1,i2,i3,2);
+                                        U(i1,i2,i3,uc) =U0(x0,y0,z0,uc,t);
+                                        U(i1,i2,i3,vc) =U0(x0,y0,z0,vc,t);
+                                        U(i1,i2,i3,wc) =U0(x0,y0,z0,wc,t);
+                                    }
+                                }
+                            #undef U0
+                            #undef U0T
+                            #undef U0X
+                            #undef U0Y
+                            }
+                        }
+                        else if( specialInitialConditionOption == "RayleighWave" )
+                        {
+              // --- Rayleigh wave solution ---
+                            bool evalSolution = true;
+              // macro: 
+                            {
+                                const int v1c = parameters.dbase.get<int >("v1c");
+                                const int v2c = parameters.dbase.get<int >("v2c");
+                                const int v3c = parameters.dbase.get<int >("v3c");
+                                bool assignVelocities= v1c>=0 ;
+                                const int s11c = parameters.dbase.get<int >("s11c");
+                                const int s12c = parameters.dbase.get<int >("s12c");
+                                const int s13c = parameters.dbase.get<int >("s13c");
+                                const int s21c = parameters.dbase.get<int >("s21c");
+                                const int s22c = parameters.dbase.get<int >("s22c");
+                                const int s23c = parameters.dbase.get<int >("s23c");
+                                const int s31c = parameters.dbase.get<int >("s31c");
+                                const int s32c = parameters.dbase.get<int >("s32c");
+                                const int s33c = parameters.dbase.get<int >("s33c");
+                                const int pc = parameters.dbase.get<int >("pc");
+                                bool assignStress = s11c >=0 ;
+                                real cp = sqrt( (lambda+2.*mu)/rho );
+                                real cs = sqrt( mu/rho );
+                                std::vector<real> & data = parameters.dbase.get<std::vector<real> >("RayleighWaveData");
+                                const int nk = int(data[0]);  // number of modes
+                                const real cr    = data[1];   // Rayleigh wave speed
+                                const real ySurf = data[2];   // y value on surface
+                                const real period= data[3];   // Rayleigh wave speed
+                                const real xShift= data[4];   // shift in x for wave 
+                                const int mStart=5;  // Fourier coeff's start at this index in the data 
+                                if( pdeVariation == SmParameters::hemp )
+                                {
+                                    printF("\n\n **************** FIX ME: RayelighWave: finish me for HEMP **********\n\n");
+                                    OV_ABORT("error");
+                                }
+                                real cb1 = sqrt(1.-SQR(cr/cp)); // b1/k : for computing b1 
+                                real cb2 = sqrt(1.-SQR(cr/cs)); // b2/k : for computing b2 
+                                real c1 = .5*SQR(cr/cs)-1.; // x/2-1 ,   x=cr^2/cs^2
+                                if( t==0. )
+                                {
+                                    printF("**** RayleighWave: ySurf=%8.2e, cr=%8.2e, period=%8.2e, t=%8.2e *********\n",ySurf,cr,period,t);
+                                    int m=mStart;
+                                    for( int n=0; n<nk; n++ ) 
+                                    {
+                                        real k = data[m++];  // k=wave-number
+                                        real a=data[m++];    // an : amplitude
+                                        real b=data[m++]; 
+                                        printF(" k%i = %e, a%i=%e, b%i=%e\n",n,k,n,a,n,b);
+                                    }
+                                }
+                                real scale = -1./( cb1+(c1/cb2) ); // make coeff of cos() in u2 = a at y=0
+                                int i1,i2,i3;
+                                if( mg.numberOfDimensions()==2 )
+                                {
+                                    real z0=0.;
+                                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                                    {
+                                        real x0 = X(i1,i2,i3,0)-xShift;
+                                        real y0 = X(i1,i2,i3,1)-ySurf;
+                                        real u1=0., u2=0.;  
+                                        real v1=0., v2=0.;
+                                        real s11=0., s12=0., s22=0.;
+                                        int m=mStart;
+                    // --- loop over different values of k and add contributions ---
+                                        for( int n=0; n<nk; n++ ) 
+                                        {
+                                  	real k = twoPi*data[m++]/period;  // 2*pi*k/period , k=wave-number
+                      // -- note definition of a and b so that they define the Fourier coefficients
+                      //    of u2 on the surface
+                                            real b=data[m++]*scale;          
+                                            real a=data[m++]*scale;          
+                                            real b1= k*cb1, b2=k*cb2;
+                                            real eb1 = exp(b1*(y0)), eb2 = exp(b2*(y0));
+                                            real ct = cos(k*(x0-cr*t));
+                                  	real st = sin(k*(x0-cr*t));
+                                            u1 +=  ( eb1 + c1*eb2           )*( a*ct+b*st);
+                                  	u2 +=  ( cb1*eb1 + (c1/cb2)*eb2 )*( a*st-b*ct);
+                                  	if( assignVelocities )
+                                  	{
+                                    	  v1 += ( eb1 + c1*eb2           )*( k*cr*( a*st-b*ct) );
+                                    	  v2 +=-( cb1*eb1 + (c1/cb2)*eb2 )*( k*cr*( a*ct+b*st) );
+                                  	}
+                                  	if( assignStress )
+                                  	{   
+                                                real u1x = ( eb1 + c1*eb2       )*( k*(-a*st+b*ct) );
+                                                real u1y = ( b1*eb1 + b2*c1*eb2 )*(   ( a*ct+b*st) );
+                                                real u2x = ( cb1*eb1       + (c1/cb2)*eb2 )*( k*(a*ct+b*st) );
+                                                real u2y = ( b1*cb1*eb1 + b2*(c1/cb2)*eb2 )*(   (a*st-b*ct) );
+                                                real div=u1x+u2y;
+                                    	  s11 += lambda*div+2.*mu*u1x;
+                                    	  s12 += mu*( u1y+u2x );
+                                    	  s22 += lambda*div+2.*mu*u2y;
+                                  	}
+                                        }
+                    // printF(" (i1,i2)=(%i,%i) (x0,y0)=(%8.2e,%8.2e) xi=%8.2e (u1,u2)=(%8.2e,%8.2e)\n",i1,i2,x0,y0,xi,u1,u2);
+                                        if( evalSolution )
+                                        {
+                                  	U(i1,i2,i3,uc) =u1;
+                                  	U(i1,i2,i3,vc) =u2;
+                                            if( assignVelocities )
+                                  	{
+                                    	  U(i1,i2,i3,v1c) = v1;
+                                    	  U(i1,i2,i3,v2c) = v2;
+                                  	}
+                                  	if( assignStress )
+                                  	{
+                                    	  U(i1,i2,i3,s11c) =s11;
+                                    	  U(i1,i2,i3,s12c) =s12;
+                                    	  U(i1,i2,i3,s21c) =s12;
+                                    	  U(i1,i2,i3,s22c) =s22;
+                                  	}
+                                        }
+                                        else
+                                        {
+                                  	if( pdeVariation == SmParameters::hemp )
+                                  	{
+                                    	  U(i1,i2,i3,u1c) = U(i1,i2,i3,u1c) - u1;
+                                    	  U(i1,i2,i3,u2c) = U(i1,i2,i3,u2c) - u2;
+                                    	  U(i1,i2,i3,uc) = U(i1,i2,i3,uc) - x0;
+                                    	  U(i1,i2,i3,vc) = U(i1,i2,i3,vc) - y0;
+                                  	}
+                                  	else
+                                  	{
+                                    	  U(i1,i2,i3,uc) =U(i1,i2,i3,uc) - u1;
+                                    	  U(i1,i2,i3,vc) =U(i1,i2,i3,vc) - u2;
+                                    	  }
+                                            if( assignVelocities )
+                                  	{
+                                    	  U(i1,i2,i3,v1c) =U(i1,i2,i3,v1c) - v1;
+                                    	  U(i1,i2,i3,v2c) =U(i1,i2,i3,v2c) - v2;
+                                  	}
+                                  	if( assignStress )
+                                  	{
+                                    	  U(i1,i2,i3,s11c) =U(i1,i2,i3,s11c) -s11;
+                                    	  U(i1,i2,i3,s12c) =U(i1,i2,i3,s12c) -s12;
+                                    	  U(i1,i2,i3,s21c) =U(i1,i2,i3,s21c) -s12;
+                                    	  U(i1,i2,i3,s22c) =U(i1,i2,i3,s22c) -s22;
+                                  	}
+                                        }
+                                    } // end FOR_3D
+                                }
+                                else
+                                {
+                                    OV_ABORT("RayleighWave:ERROR: finish me for 3D");
+                                }
+                            }
+                        }
+                        else if( specialInitialConditionOption == "pistonMotion" )
+                        {
+              // --- piston motion (for FSI) ---
+                            bool evalSolution = true;
+                            {
+                                const int v1c = parameters.dbase.get<int >("v1c");
+                                const int v2c = parameters.dbase.get<int >("v2c");
+                                const int v3c = parameters.dbase.get<int >("v3c");
+                                bool assignVelocities= v1c>=0 ;
+                                const int s11c = parameters.dbase.get<int >("s11c");
+                                const int s12c = parameters.dbase.get<int >("s12c");
+                                const int s13c = parameters.dbase.get<int >("s13c");
+                                const int s21c = parameters.dbase.get<int >("s21c");
+                                const int s22c = parameters.dbase.get<int >("s22c");
+                                const int s23c = parameters.dbase.get<int >("s23c");
+                                const int s31c = parameters.dbase.get<int >("s31c");
+                                const int s32c = parameters.dbase.get<int >("s32c");
+                                const int s33c = parameters.dbase.get<int >("s33c");
+                                const int pc = parameters.dbase.get<int >("pc");
+                                bool assignStress = s11c >=0 ;
+                                const real cp = sqrt( (lambda+2.*mu)/rho );
+                                const real cs = sqrt( mu/rho );
+                                std::vector<real> & data = parameters.dbase.get<std::vector<real> >("pistonMotionData");
+                                int m=0;
+                                const real a    =data[m++];
+                                const real p    =data[m++];
+                                const real rhog =data[m++];
+                                const real pg   =data[m++];
+                                const real gamma=data[m++];
+                                real angle      =data[m++];  // angle (in degrees) for a rotated piston
+                                const real a0 = sqrt( gamma*pg/rhog);  // speed of sound in the gas
+                                if( pdeVariation == SmParameters::hemp )
+                                {
+                                    printF("\n\n **************** FIX ME: getPistonMotionSolution: finish me for HEMP **********\n\n");
+                                    OV_ABORT("error");
+                                }
+                                if( t==0. )
+                                {
+                                    printP("**** getPistonMotion: a=%8.2e, p=%8.2e, Gas: rho=%8.2e, p=%8.2e gamma=%8.2e angle=%5.2f(degrees)*******\n",
+                                                  a,p,rhog,pg,gamma,angle);
+                                }
+                                angle = angle*Pi/180.;
+                                const real cosa = cos(angle), sina=sin(angle);
+                                const real cg1 = pg/(rho*cp*cp);
+                                const real cg2 = (-a)*(gamma-1.)/(2.*a0);
+                // we assume gamma=1.4
+                                assert( fabs(gamma-1.4) < REAL_EPSILON*100. );
+                                int i1,i2,i3;
+                                if( mg.numberOfDimensions()==2 )
+                                {
+                                    real z0=0.;
+                                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                                    {
+                                        real x0 = X(i1,i2,i3,0);
+                                        real y0 = X(i1,i2,i3,1);
+                                        real u1=0., u2=0.;  
+                                        real v1=0., v2=0.;
+                                        real s11=0., s12=0., s22=0.;
+                    // Boundary motion:
+                    //    F(t) = -(a/p)*t^p 
+                    //    F'(t) = -a*t^{p-1}
+                    // Solution: 
+                    //    u1 = f(x-cp*t) + g(x+cp*t)
+                    // where  
+                    //   f(x) = - 1/(2*cp)*( int_0^x v0(s) ds ) = -(1/2)* int_0^x G(-s/cp) ds  ,   for   x<0
+                    //                                          =  (cp/2)* int_0^{-x/cp} G(u) du 
+                    //   g(x) = + 1/(2*cp)*( int_0^x v0(s) ds ) =  (1/2)* int_0^x G(-s/cp) ds  ,   for   x<0
+                    //                                          = -(cp/2)* int_0^{-x/cp} G(u) du 
+                    //   g(x) = F(x/cp) - f(-x),                   for   x>0 
+                    //
+                    //   v0(s) = cp*G(-t/cp)   : velocity at t=0 for s<0
+                    //   G(t) = (pg/(rho*cp^2)) * [ 1 + (gamma-1)/(2*a0)* F'(t) ]^7 + F'(t)/cp
+                    //        = cg1* [ 1 + cg2*t^{p-1} ]^7 + F'(t)/cp
+                    //     cg1=p0/(rho*cp^2), cg2=(-a)*(gamma-1)/(2*a0)
+                    // 
+                    // where we have assumed that gamma=1.4=7/5 so that 2*gamma/(gamma-1)= 7 
+                    // 
+                    //  Int_0^t G(s) ds = cg1*[ t + (7/p)*cg2*t^{p-1}*t + (21/(2p-1))*(cg2*t^{p-1})^2*t + ) + F(t)/cp
+                    //                  = cg1*t*[ 1 + Z*(7)/(p) + Z^2*(21)/(2p-1) + Z^3*(35)/(3p-2) + Z^4*(35)/(4p-3) + ...
+                    //                              + Z^5*(21)/(5p-4) + Z^6*(7)/(6p-5) + Z^7*(1)/(7p-6) ] 
+                    //   Z=cg2*t^{p-1}
+                    // xa = distance of point (x0,y0) from the plane  (cosa,sina).(x,y)=0 
+                                        real xa = x0*cosa + y0*sina;
+                                        real xp = xa + cp*t;
+                                        real xm = xa - cp*t;
+                                        real fm, fmPrime, gp, gpPrime;
+                                        {
+                                            real xx = -xm/cp;
+                                            real xp1 = pow(xx,p-1);
+                                            real z=cg2*xp1;
+                                            fm = cp*(.5*(cg1*(xx)*(1.+(z)*(7./p+(z)*(21./(2.*p-1.)+(z)*(35./(3.*p-2.)+(z)*(35./(4.*p-3.)			+(z)*(21./(5.*p-4.)+(z)*(7./(6.*p-5.)+z/(7.*p-6.))))))))))  - .5*(a/p)*xp1*xx;
+                                            fmPrime = .5*( -cg1*pow( 1. + z , 7.) + a*xp1/cp );
+                                        }
+                                        {
+                                            if( xp<=0. )
+                                            {
+                                                real xx = -xp/cp;
+                                                real xp1 = pow(xx,p-1);
+                                                real z=cg2*xp1;
+                                                gp = cp*(.5*(cg1*(xx)*(1.+(z)*(7./p+(z)*(21./(2.*p-1.)+(z)*(35./(3.*p-2.)+(z)*(35./(4.*p-3.)			+(z)*(21./(5.*p-4.)+(z)*(7./(6.*p-5.)+z/(7.*p-6.))))))))))  + .5*(a/p)*xp1*xx ;
+                                                gpPrime = +.5*( -cg1*pow( 1. + z , 7.) -a*xp1/cp );
+                                            }
+                                            else
+                                            {
+                         //   gp(xp) = F(xp/cp) - f(-xp),
+                                                real xx=xp/cp;
+                                                real xp1 = pow(xx,p-1);
+                                                real z=cg2*xp1;
+                                                gp = -(a/p)*xp1*xx - cp*(.5*(cg1*(xx)*(1.+(z)*(7./p+(z)*(21./(2.*p-1.)+(z)*(35./(3.*p-2.)+(z)*(35./(4.*p-3.)			+(z)*(21./(5.*p-4.)+(z)*(7./(6.*p-5.)+z/(7.*p-6.)))))))))) + .5*(a/p)*xp1*xx;
+                                                gpPrime = -a*xp1/cp + .5*( -cg1*pow( 1. + z , 7.) + a*xp1/cp );
+                                            }
+                                        }
+                                        real ua = fm + gp;
+                                        real va = cp*( - fmPrime + gpPrime );
+                                        real uap=fmPrime + gpPrime;
+                    // Piston at an angle:
+                    //   n = [ cos(angle) , sin(angle) ] = [ c, s ]    -- normal to the face
+                    //   u1 = c*ua,  u2=s*ua
+                    //   u1.x = c*ua.x,  u1.y = c*ua.y,   u2.x = s*ua.x, u2.y = s*ua.y
+                    //   
+                    // (1)  ua.n = c*ua.x + s*ua.y = uap
+                    // (2)  ua.t =-s*ua.x + c*ua.y = 0    "tangential derivative of motion"
+                    //
+                    //  (1) and (2) -->   ua.x = c*uap, ua.y=s*uap
+                    // Thus: u1.x = c*ua.x = c*c*uap,  u1.y = c*ua.y = c*s*uap
+                                        u1 = ua*cosa;
+                                        u2 = ua*sina;
+                                        v1 = va*cosa;
+                                        v2 = va*sina;
+                                        real u1x = uap*cosa*cosa;
+                                        real u1y = uap*cosa*sina;
+                                        real u2x = uap*sina*cosa;
+                                        real u2y = uap*sina*sina;
+                                        s11 = (lambda+2.*mu)*u1x + lambda*u2y;   
+                                        s12 = mu*( u1y+u2x );
+                                        s22 = lambda*u1x + (lambda+2.*mu)*u2y;
+                    // printF("piston (i1,i2)=(%i,%i) (u1,u2)=(%8.2e,%8.2e)\n",i1,i2,u1,u2);
+                                        if( evalSolution )
+                                        {
+                                  	U(i1,i2,i3,uc) =u1;
+                                  	U(i1,i2,i3,vc) =u2;
+                                            if( assignVelocities )
+                                  	{
+                                    	  U(i1,i2,i3,v1c) = v1;
+                                    	  U(i1,i2,i3,v2c) = v2;
+                                  	}
+                                  	if( assignStress )
+                                  	{
+                                    	  U(i1,i2,i3,s11c) =s11;
+                                    	  U(i1,i2,i3,s12c) =s12;
+                                    	  U(i1,i2,i3,s21c) =s12;
+                                    	  U(i1,i2,i3,s22c) =s22;
+                                  	}
+                                        }
+                                        else
+                                        {
+                                  	U(i1,i2,i3,uc) =U(i1,i2,i3,uc) - u1;
+                                  	U(i1,i2,i3,vc) =U(i1,i2,i3,vc) - u2;
+                                            if( assignVelocities )
+                                  	{
+                                    	  U(i1,i2,i3,v1c) =U(i1,i2,i3,v1c) - v1;
+                                    	  U(i1,i2,i3,v2c) =U(i1,i2,i3,v2c) - v2;
+                                  	}
+                                  	if( assignStress )
+                                  	{
+                                    	  U(i1,i2,i3,s11c) =U(i1,i2,i3,s11c) -s11;
+                                    	  U(i1,i2,i3,s12c) =U(i1,i2,i3,s12c) -s12;
+                                    	  U(i1,i2,i3,s21c) =U(i1,i2,i3,s21c) -s12;
+                                    	  U(i1,i2,i3,s22c) =U(i1,i2,i3,s22c) -s22;
+                                  	}
+                                        }
+                                    } // end FOR_3D
+                                }
+                                else
+                                {
+                                    OV_ABORT("getPistonMotion:ERROR: finish me for 3D");
+                                }
+                            }
+                        }
                         else if( initialConditionOption == knownSolutionInitialCondition )
-            	  {
+                        {
               // Assign dirichlet BC from know solution *wdh* 2014/01/09 
-              	    parameters.getUserDefinedKnownSolution(t,cg, grid, uLocal, I1,I2,I3 );
-            	  }
-            	  else
-            	  {
-              	    printF("assignBoundaryConditionsFOS:ERROR: unknown specialInitialConditionOption=%s\n",
+                            parameters.getUserDefinedKnownSolution(t,cg, grid, uLocal, I1,I2,I3 );
+                        }
+                        else
+                        {
+                            printF("assignBoundaryConditionsFOS:ERROR: unknown specialInitialConditionOption=%s\n",
                                           (const char*)specialInitialConditionOption);
-              	    OV_ABORT("error");
-            	  }
-          	}
+                            OV_ABORT("error");
+                        }
+                    }
                 }
             }
         }
@@ -1403,12 +1403,12 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
         if( debug & 16 )
         {
             fprintf(pDebugFile,"\n **** grid=%i p=%i assignBC: gid=[%i,%i][%i,%i][%i,%i] bc=[%i,%i][%i,%i][%i,%i]"
-              	    " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
-              	    gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
-              	    bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
-              	    bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
+                            " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
+                            gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+                            bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
+                            bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
             fprintf(pDebugFile,"\n **** uu=[%i,%i] xy=[%i,%i] rsxy=[%i,%i]\n",
-              	    uu.getBase(0),uu.getBound(0),xy.getBase(0),xy.getBound(0),rx.getBase(0),rx.getBound(0));
+                            uu.getBase(0),uu.getBound(0),xy.getBase(0),xy.getBound(0),rx.getBase(0),rx.getBound(0));
         }
     #else
         const realSerialArray & uu    = u;
@@ -1425,10 +1425,10 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
         {
             const IntegerArray & bcg = mg.boundaryCondition();
             fprintf(pDebugFile,"\n **** grid=%i p=%i assignBC: gid=[%i,%i][%i,%i][%i,%i] bc=[%i,%i][%i,%i][%i,%i]"
-              	    " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
-              	    gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
-              	    bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
-              	    bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
+                            " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
+                            gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+                            bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
+                            bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
         }
     #endif
         real *uptr   = uu.getDataPointer();
@@ -1440,8 +1440,8 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
         real *jacptr = !isRectangular ? jacLocal.getDataPointer() : uptr;
     // Do this for now -- assumes all sides are PML
         bool usePML = (bc(0,0)==SmParameters::abcPML || bc(1,0)==SmParameters::abcPML ||
-                 		 bc(0,1)==SmParameters::abcPML || bc(1,1)==SmParameters::abcPML ||
-                 		 bc(0,2)==SmParameters::abcPML || bc(1,2)==SmParameters::abcPML);
+                                      bc(0,1)==SmParameters::abcPML || bc(1,1)==SmParameters::abcPML ||
+                                      bc(0,2)==SmParameters::abcPML || bc(1,2)==SmParameters::abcPML);
     // *** need to fix gridIndex Range and bc ***********************
         if( debug & 16 )
         {
@@ -1466,41 +1466,41 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
                     if( ( pBoundaryData[side][axis]==NULL || parameters.isAdaptiveGridProblem() ) && 
                             mg.boundaryCondition(side,axis)>0 )
                     {
-              	parameters.getBoundaryData(side,axis,grid,mg);
+                        parameters.getBoundaryData(side,axis,grid,mg);
             // RealArray & bd = *pBoundaryData[side][axis]; // this is now done in the above line *wdh* 090819
             // bd=0.;
                     }
                     if( pBoundaryData[side][axis]!=NULL )
                     {
-              	if( debug & 8 )
-                	  printP("+++ Cgsm: add boundary forcing to (side,axis,grid)=(%i,%i,%i) useConservative=%i\n",side,axis,grid,
-                     		 (int)useConservative);
+                        if( debug & 8 )
+                            printP("+++ Cgsm: add boundary forcing to (side,axis,grid)=(%i,%i,%i) useConservative=%i\n",side,axis,grid,
+                                          (int)useConservative);
                         addBoundaryForcing(side,axis)=true;
                         RealArray & bd = *pBoundaryData[side][axis];
                         pbcf[side][axis] = bd.getDataPointer();
-    	// if( debug & 8 )
+            // if( debug & 8 )
             //  ::display(bd," ++++ Cgsm: Here is bd ++++","%4.2f ");
-              	for( int a=0; a<=2; a++ )
-              	{
-                	  dbc(0,a,side,axis)=bd.getBase(a);
-                	  dbc(1,a,side,axis)=bd.getBound(a);
-              	}
+                        for( int a=0; a<=2; a++ )
+                        {
+                            dbc(0,a,side,axis)=bd.getBase(a);
+                            dbc(1,a,side,axis)=bd.getBound(a);
+                        }
                     }
                     else
                     {
                         addBoundaryForcing(side,axis)=false;
-              	pbcf[side][axis] = fptr;  // should not be used in this case 
-              	for( int a=0; a<=2; a++ )
-              	{
-                	  dbc(0,a,side,axis)=0;
-                	  dbc(1,a,side,axis)=0;
-              	}
+                        pbcf[side][axis] = fptr;  // should not be used in this case 
+                        for( int a=0; a<=2; a++ )
+                        {
+                            dbc(0,a,side,axis)=0;
+                            dbc(1,a,side,axis)=0;
+                        }
                     }
           // for now we save the offset in a 4 byte int (double check that this is ok)
                     int64_t offset = pbcf[side][axis]- pbcf[0][0];
     //       if( offset > INT_MAX )
     //       {
-    // 	printF("ERROR: offset=%li INT_MAX=%li \n",offset,(long int)INT_MAX);
+    //      printF("ERROR: offset=%li INT_MAX=%li \n",offset,(long int)INT_MAX);
     //       }
     //       assert( offset < INT_MAX );
                     bcfOffset(side,axis) = offset;
@@ -1518,12 +1518,12 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
           {
        // Material properties do vary 
               std::vector<GridMaterialProperties> & materialProperties = 
-              	parameters.dbase.get<std::vector<GridMaterialProperties> >("materialProperties");
+                        parameters.dbase.get<std::vector<GridMaterialProperties> >("materialProperties");
               GridMaterialProperties & matProp = materialProperties[grid];
               materialFormat = matProp.getMaterialFormat();
               if( materialFormat==GridMaterialProperties::piecewiseConstantMaterialProperties )
               {
-              	IntegerArray & matIndex = matProp.getMaterialIndexArray();
+                        IntegerArray & matIndex = matProp.getMaterialIndexArray();
                   matIndexPtr = matIndex.getDataPointer();
               }
               RealArray & matVal = matProp.getMaterialValuesArray();
@@ -1567,25 +1567,27 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
         {
             DataBase *pdb = &parameters.dbase;
             bcOptSmFOS( numberOfDimensions, 
-                		uu.getBase(0),uu.getBound(0),
-                		uu.getBase(1),uu.getBound(1),
-                		uu.getBase(2),uu.getBound(2),
-                		gid(0,0), *uptr, *maskptr, *rxptr, *xyptr, 
+                                    uu.getBase(0),uu.getBound(0),
+                                    uu.getBase(1),uu.getBound(1),
+                                    uu.getBase(2),uu.getBound(2),
+                                    gid(0,0), *uptr, *maskptr, *rxptr, *xyptr, 
                                     ndMatProp,*matIndexPtr,*matValPtr,*matValPtr, 
                                     *jacptr, *bc.getDataPointer(),
-                		*pAddBoundaryForcing,*interfaceType.getDataPointer(),*pdbc, 
-                		*pbcf[0][0],*pbcf[1][0], *pbcf[0][1],*pbcf[1][1], *pbcf[0][2],*pbcf[1][2],
-                		*pbcf[0][0],pbcfOffset[0],
-                		pinBoundaryCondition.getLength(0),*pinBoundaryCondition.getDataPointer(),
+                                    *pAddBoundaryForcing,*interfaceType.getDataPointer(),*pdbc, 
+                                    *pbcf[0][0],*pbcf[1][0], *pbcf[0][1],*pbcf[1][1], *pbcf[0][2],*pbcf[1][2],
+                                    *pbcf[0][0],pbcfOffset[0],
+                                    pinBoundaryCondition.getLength(0),*pinBoundaryCondition.getDataPointer(),
                                     pinValues.getLength(0),*pinValues.getDataPointer(),
-                		ipar[0], rpar[0], pdb, ierr );
+                                    ipar[0], rpar[0], pdb, ierr );
         }
         if( debug & 16  ) ::display(uu,sPrintF("uu after bcOptSolidMechanics, t=%e",t),pDebugFile,"%8.1e ");
         real *uOldptr = uuOld.getDataPointer();
     } // end use opt
 
 
-   // *wdh* 090824 -- moved from above 
+  // printF("\n >>>>> assignBC-FOS: extrapolateInterpolationNeighbours=%d, useNewExtrapInterpNeighbours=%d\n",
+  //       parameters.dbase.get<int >("extrapolateInterpolationNeighbours"),parameters.dbase.get<int>("useNewExtrapInterpNeighbours") );
+
     if( parameters.dbase.get<int >("extrapolateInterpolationNeighbours") &&
             parameters.dbase.get<int>("useNewExtrapInterpNeighbours") )
     {

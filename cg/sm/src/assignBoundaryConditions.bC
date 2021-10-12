@@ -142,7 +142,6 @@ applyBoundaryConditions( int option, real dt, int current, int prev )
   {
     fPrintF(debugFile,"\n BBBBBBBBBBBBBBBBBBBBB  START applyBoundaryConditions t=%.3e BBBBBBBBBBBBBBBB\n",t);
   }
-  
 
   // Get traction data for any interfaces 
   getInterfaceBoundaryData( current );

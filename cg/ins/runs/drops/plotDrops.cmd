@@ -4,6 +4,7 @@
 # Examples:
 #   plotStuff plotDrops -show=drops4.show 
 #   plotStuff plotDrops -show=drops4p.show
+#   plotStuff plotDrops -show=drops8.show 
 # G16: 
 #   plotStuff plotDrops -show=drops16.show -var=vorticity -vMin=-150. -vMax=150.
 #   plotStuff plotDrops -show=drops16b.show -var=vorticity -vMin=-150. -vMax=150.

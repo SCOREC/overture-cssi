@@ -265,23 +265,23 @@ foreach $cmdCommand ( @cmdFiles )
 
     if( $parallel eq "" )
     {
-      if( $verbose ){ printf("running:  $program noplot $cmd >! $runTimeOutput.out\n"); }
-      $returnValue = system("csh -f -c '$program noplot $cmd >! $runTimeOutput.out'");
+      if( $verbose ){ printf("running:  $program noplot $cmd > $runTimeOutput.out\n"); }
+      $returnValue = system("csh -f -c '$program noplot $cmd > $runTimeOutput.out'");
     }
     else
     {
       # replace %NP in the $mpirunCommand with the actual number of processors $np
       $mpirunCommandNP = $mpirunCommand;
       $mpirunCommandNP =~ s/\%NP/$np/;
-      if( $verbose ){ printf("running: $mpirunCommandNP $program noplot $cmd >&! $runTimeOutput.out\n"); }
-      $returnValue = system("csh -f -c '$mpirunCommandNP $program noplot $cmd>&! $runTimeOutput.out'");
+      if( $verbose ){ printf("running: $mpirunCommandNP $program noplot $cmd >& $runTimeOutput.out\n"); }
+      $returnValue = system("csh -f -c '$mpirunCommandNP $program noplot $cmd>& $runTimeOutput.out'");
     }
 
     if( $returnValue == 0 )
     {
       if( (-e $checkFileName ) && ($replace eq "")  )
       {
-        $pipeOutput = $verbose ? "" : ">! junk"; 
+        $pipeOutput = $verbose ? "" : "> junk"; 
 
         $diff = system "$checkCheckFiles $checkFile $checkFileName -tol=$tol $pipeOutput";
 

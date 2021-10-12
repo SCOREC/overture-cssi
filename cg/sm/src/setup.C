@@ -120,27 +120,50 @@ updateForNewTimeStep(GridFunction & cgf, real & dt )
 {
   SmParameters::PDEModel & pdeModel = parameters.dbase.get<SmParameters::PDEModel>("pdeModel");
   SmParameters::PDEVariation & pdeVariation = parameters.dbase.get<SmParameters::PDEVariation>("pdeVariation");
+  const SmParameters::CompressibilityTypeEnum & compressibilityType = parameters.dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");
+  const int & orderOfAccuracyInSpace = parameters.dbase.get<int>("orderOfAccuracy");
+  const int & orderOfTimeAccuracy    = parameters.dbase.get<int>("orderOfTimeAccuracy");  
+
   int & debug = parameters.dbase.get<int >("debug");
+
+  parameters.dbase.get<real>("dt")=dt;  // set valu in parameters *wdh* Sept 6, 2021
   
   if( pdeModel==SmParameters::linearElasticity && 
       (pdeVariation==SmParameters::nonConservative || 
        pdeVariation==SmParameters::conservative) )
   {
-    // Initial conditions
-    printF("Cgsm::updateForNewTimeStep:Assign solution at t-dt: t-dt=%9.3e dt=%9.3e\n",cgf.t-dt,dt);
-
-    assert( cgf.t==parameters.dbase.get<real>("tInitial") );
-    assert( numberOfTimeLevels>0 );
-    int prev = (current -1 + numberOfTimeLevels) % numberOfTimeLevels;
-    gf[prev].t=gf[current].t-dt;
-    assignInitialConditions( prev );   // is this right to put this here ?
-
-    if( debug & 4 )
+    if( cgf.t==0. )
     {
-      getErrors( current, gf[current].t,dt,sPrintF("\n ********updateForNewTimeStep Errors current at t=%9.3e ******\n", gf[current].t));
-      getErrors( prev, gf[prev].t,dt,sPrintF("\n ********updateForNewTimeStep Errors prev at t=%9.3e ******\n", gf[prev].t));
-    }
+      // Initial conditions
+      printF("Cgsm::updateForNewTimeStep:Assign solution at t-dt: t-dt=%9.3e dt=%9.3e\n",cgf.t-dt,dt);
 
+      assert( cgf.t==parameters.dbase.get<real>("tInitial") );
+      assert( numberOfTimeLevels>0 );
+      int prev = (current -1 + numberOfTimeLevels) % numberOfTimeLevels;
+      gf[prev].t=gf[current].t-dt;
+      assignInitialConditions( prev );   // is this right to put this here ?
+
+      if( compressibilityType==SmParameters::incompressibleSolid && orderOfAccuracyInSpace==4 )
+      {
+        // We need the pressure at t-2*dt 
+        // do this for now
+        printF("Initialize solution at t=-2*dt =%9.2e (needed for pressure time extrapolation)\n",cgf.t-2*dt); 
+        const int prev2 = (current -2 + numberOfTimeLevels) % numberOfTimeLevels;
+        gf[prev2].t = gf[current].t-2.*dt;
+        assignInitialConditions( prev2 );   
+      }
+
+      if( debug & 4 )
+      {
+        getErrors( current, gf[current].t,dt,sPrintF("\n ********updateForNewTimeStep Errors current at t=%9.3e ******\n", gf[current].t));
+        getErrors( prev, gf[prev].t,dt,sPrintF("\n ********updateForNewTimeStep Errors prev at t=%9.3e ******\n", gf[prev].t));
+      }
+
+    }
+    else
+    {
+      OV_ABORT("FINISH ME -- SOS with a changed dt");
+    }
     parameters.dbase.get<real>("dtOld")=dt;  // set dtOld 
   }
   
@@ -165,18 +188,18 @@ setupGrids()
     UnstructuredMapping &umap = (UnstructuredMapping &) cg[0].mapping().getMapping();
     umap.expandGhostBoundary();
     verifyUnstructuredConnectivity(umap,true);
-    //	umap.expandGhostBoundary();
-    //	verifyUnstructuredConnectivity(umap,true);
+    //  umap.expandGhostBoundary();
+    //  verifyUnstructuredConnectivity(umap,true);
 
     cg.destroy( MappedGrid::THEcenter | MappedGrid::THEvertex | MappedGrid::THEmask |
-		MappedGrid::THEcorner | MappedGrid::THEcellVolume | MappedGrid::THEcenterNormal |
-		MappedGrid::THEfaceArea | MappedGrid::THEfaceNormal | 
-		MappedGrid::THEcellVolume  | MappedGrid::THEcenterArea );	
+                MappedGrid::THEcorner | MappedGrid::THEcellVolume | MappedGrid::THEcenterNormal |
+                MappedGrid::THEfaceArea | MappedGrid::THEfaceNormal | 
+                MappedGrid::THEcellVolume  | MappedGrid::THEcenterArea );       
 
     cg.update( MappedGrid::THEcenter | MappedGrid::THEvertex | MappedGrid::THEmask |
-	       MappedGrid::THEcorner | MappedGrid::THEcellVolume | MappedGrid::THEcenterNormal |
-	       MappedGrid::THEfaceArea | MappedGrid::THEfaceNormal | 
-	       MappedGrid::THEcellVolume  | MappedGrid::THEcenterArea );	
+               MappedGrid::THEcorner | MappedGrid::THEcellVolume | MappedGrid::THEcenterNormal |
+               MappedGrid::THEfaceArea | MappedGrid::THEfaceNormal | 
+               MappedGrid::THEcellVolume  | MappedGrid::THEcenterArea );        
 
   }
   else
@@ -186,7 +209,7 @@ setupGrids()
     // *wdh* 031202 cg.update(MappedGrid::THEcenter | MappedGrid::THEvertex );  
   }
 
-    
+
   // Set the default order of accuracy from the grid parameters
   int minDiscretizationWidth=INT_MAX;
   int minInterpolationWidth=INT_MAX;
@@ -205,12 +228,12 @@ setupGrids()
     for( int grid2=0; grid2<cg.numberOfComponentGrids(); grid2++ )
     {
       if( grid!=grid2 )
-	minInterpolationWidth=min( minInterpolationWidth,min(iw(R,grid,grid2)));
+        minInterpolationWidth=min( minInterpolationWidth,min(iw(R,grid,grid2)));
     }
   }
   if( minInterpolationWidth==INT_MAX ) minInterpolationWidth=minDiscretizationWidth;
   printF(" *** minDiscretizationWidth=%i, minInterpolationWidth=%i ****\n",minDiscretizationWidth,
-	 minInterpolationWidth);
+         minInterpolationWidth);
 
   const int maxOrderOfAccuracy=8;  // *************
     
@@ -226,7 +249,7 @@ setupGrids()
   orderOfArtificialDissipation=orderOfAccuracyInSpace;
     
   printF("***Setting orderOfAccuracyInSpace=%i, orderOfAccuracyInTime=%i, orderOfArtificialDissipation=%i\n",
-	 orderOfAccuracyInSpace,orderOfAccuracyInTime,orderOfArtificialDissipation);
+         orderOfAccuracyInSpace,orderOfAccuracyInTime,orderOfArtificialDissipation);
 
   if( orderOfAccuracyInSpace>4 )
   {
@@ -235,6 +258,8 @@ setupGrids()
   }
     
 
+
+  
   RealArray & timing = parameters.dbase.get<RealArray >("timing");
   timing(parameters.dbase.get<int>("timeForInitialize"))+=getCPU()-time0;
 
@@ -271,11 +296,12 @@ setupGridFunctions()
 
   const int numberOfDimensions = cg.numberOfDimensions();
   const int & numberOfComponents = parameters.dbase.get<int >("numberOfComponents");
-  const int & uc =  parameters.dbase.get<int >("uc");
-  const int & vc =  parameters.dbase.get<int >("vc");
-  const int & wc =  parameters.dbase.get<int >("wc");
-  const int & rc =  parameters.dbase.get<int >("rc");
-  const int & tc =  parameters.dbase.get<int >("tc");
+  const int & uc                 = parameters.dbase.get<int >("uc");
+  const int & vc                 = parameters.dbase.get<int >("vc");
+  const int & wc                 = parameters.dbase.get<int >("wc");
+  const int & rc                 = parameters.dbase.get<int >("rc");
+  const int & tc                 = parameters.dbase.get<int >("tc");
+  const int & pc                 = parameters.dbase.get<int >("pc");
 
   int & orderOfAccuracyInSpace = parameters.dbase.get<int>("orderOfAccuracy");
   int & orderOfAccuracyInTime  = parameters.dbase.get<int>("orderOfTimeAccuracy");
@@ -292,6 +318,35 @@ setupGridFunctions()
   aString buff;
   Range all;
   
+  const SmParameters::CompressibilityTypeEnum & compressibilityType = 
+            parameters.dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");
+  const int & upwindSOS = parameters.dbase.get<int>("upwindSOS"); 
+  bool useUpwindDissipation = upwindSOS;
+  if( useUpwindDissipation )
+  {
+    // --Upwind dissipation ---
+
+    // upwind dissipation requires an extra ghost line  -- check that there are enough
+    const int minGhostNeeded = orderOfAccuracyInSpace/2 +1;
+    Range Rx=cg.numberOfDimensions();
+    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+    {
+      MappedGrid & mg=cg[grid];
+      const IntegerArray & numberOfGhostPoints = mg.numberOfGhostPoints();
+      int numGhost = min(numberOfGhostPoints(Range(0,1),Rx));
+      // printF(" #### grid=%d, numGhost=%d, minGhostNeeded=%d\n",grid,numGhost,minGhostNeeded);
+      if( numGhost < minGhostNeeded )
+      {
+        printF("--CgSm-- setupGridFunctions: ERROR: the grid does not have enough ghost points for upwind dissipation.\n"
+        "   orderOfAccuracy=%i requires at least %i ghost points.\n"
+        "   You could remake the grid with more ghost points to fix this error.\n",
+        orderOfAccuracyInSpace,minGhostNeeded);
+        OV_ABORT("ERROR");
+        
+      } 
+    }
+  }  
+
   if( pdeModel==SmParameters::linearElasticity )
   {
       
@@ -301,19 +356,77 @@ setupGridFunctions()
         pdeVariation==SmParameters::conservative )
     {
       if( usingPMLBoundaryConditions() ||
-	  true )  // for combined dissipation with advance
-	numberOfTimeLevels=3;  // needed for PML 
+          true )  // for combined dissipation with advance
+        numberOfTimeLevels=3;  // needed for PML 
     }
     numberOfGridFunctionsToUse=numberOfTimeLevels;
 
     if( timeSteppingMethodSm==SmParameters::modifiedEquationTimeStepping )
     {
     }
+    else if( compressibilityType==SmParameters::incompressibleSolid )
+    {
+      // --- incompressible solid -- method of lines ---
+      // allocate space to hold velocity v and acceration vt
+
+      numberOfExtraFunctionsToUse=0;
+
+      int & currentVelocity = parameters.dbase.put<int>("currentVelocity");
+      currentVelocity = 0;
+      int & currentPressure = parameters.dbase.put<int>("currentPressure");
+      currentPressure = 0;
+
+      realCompositeGridFunction *& vgf  = parameters.dbase.put<realCompositeGridFunction*>("vgf")  = NULL;
+      realCompositeGridFunction *& vtgf = parameters.dbase.put<realCompositeGridFunction*>("vtgf") = NULL;
+      realCompositeGridFunction *& pgf  = parameters.dbase.put<realCompositeGridFunction*>("pgf")  = NULL;
+
+      int & numberOfVelocityFunctions     = parameters.dbase.put<int>("numberOfVelocityFunctions");
+      int & numberOfAccelerationFunctions = parameters.dbase.put<int>("numberOfAccelerationFunctions");
+      int & numberOfPressureFunctions     = parameters.dbase.put<int>("numberOfPressureFunctions");
+
+      if( orderOfAccuracyInTime==2 )
+      {
+        numberOfVelocityFunctions     = 2;
+        numberOfAccelerationFunctions = 2;
+        numberOfPressureFunctions     = 0;         // extra time levels of pressure needed for time extrapolation
+      }
+      else if( orderOfAccuracyInTime==4 )
+      {
+        numberOfVelocityFunctions     = 4;
+        numberOfAccelerationFunctions = 4;
+        numberOfPressureFunctions     = 1;         // extra time levels of pressure needed for time extrapolation
+
+      }
+      else
+      {
+        OV_ABORT("finish me");
+      }
+      vgf  = new realCompositeGridFunction [numberOfVelocityFunctions];
+      vtgf = new realCompositeGridFunction [numberOfAccelerationFunctions];
+      for( int n=0; n<numberOfVelocityFunctions; n++ )
+      {
+        vgf[n].updateToMatchGrid(cg,all,all,all,numberOfDimensions);
+        vgf[n]=0.;
+      }
+      for( int n=0; n<numberOfAccelerationFunctions; n++ )
+      {
+        vtgf[n].updateToMatchGrid(cg,all,all,all,numberOfDimensions);
+        vtgf[n]=0.;
+      }
+
+      if( numberOfPressureFunctions>0 )
+        pgf  = new realCompositeGridFunction [numberOfPressureFunctions];
+      for( int n=0; n<numberOfPressureFunctions; n++ )
+      {
+        pgf[n].updateToMatchGrid(cg,all,all,all);
+        pgf[n]=0.;
+      }      
+    }
     else if( timeSteppingMethodSm==SmParameters::forwardEuler ||
-	     timeSteppingMethodSm==SmParameters::improvedEuler ||
-	     timeSteppingMethodSm==SmParameters::adamsBashforth2 ||
-	     timeSteppingMethodSm==SmParameters::adamsPredictorCorrector2 ||
-	     timeSteppingMethodSm==SmParameters::adamsPredictorCorrector4 )
+             timeSteppingMethodSm==SmParameters::improvedEuler ||
+             timeSteppingMethodSm==SmParameters::adamsBashforth2 ||
+             timeSteppingMethodSm==SmParameters::adamsPredictorCorrector2 ||
+             timeSteppingMethodSm==SmParameters::adamsPredictorCorrector4 )
     {
       numberOfExtraFunctionsToUse=2;
     }
@@ -324,7 +437,6 @@ setupGridFunctions()
     }
     
    
-
     for( int n=0; n<numberOfGridFunctionsToUse; n++ )
       gf[n].transform=NULL;
 
@@ -333,18 +445,18 @@ setupGridFunctions()
       gf[n].cg.reference(cg);
       if( n>0 || gf[n].u.numberOfComponentGrids()==0 )  // gf[0] may already be assigned IC's
       {
-	gf[n].u.updateToMatchGrid(cg,all,all,all,numberOfComponents);
-	gf[n].u=0.;
+        gf[n].u.updateToMatchGrid(cg,all,all,all,numberOfComponents);
+        gf[n].u=0.;
       }
 
       aString *& componentName = parameters.dbase.get<aString* >("componentName");
       for( int c=0; c<numberOfComponents; c++ )
       {
-	gf[n].u.setName(componentName[c],c);
+        gf[n].u.setName(componentName[c],c);
       }
       
     }
-	
+        
     cgop = new CompositeGridOperators(cg);
     cgop->useConservativeApproximations(useConservative);
     cgop->setOrderOfAccuracy(orderOfAccuracyInSpace);
@@ -389,7 +501,7 @@ setupGridFunctions()
  
       printF(" setupGridFunctions: I guess that the cylinder extends from [%8.2e,%8.2e] in the axial direction\n",
              cylinderAxisStart,cylinderAxisEnd    );
-	
+        
     }
       
   }
@@ -456,6 +568,9 @@ setupGridFunctions()
   numberOfSequences=numberOfComponents;
   if( computeEnergy )
     numberOfSequences+=2; // save the energy and delta(energy)
+  
+  if( compressibilityType==SmParameters::incompressibleSolid )
+    numberOfSequences+=1; // save the divergence
 
   // --- check for negative volumes : this is usually bad news --- *wdh* 2013/09/26
   const int numberOfGhost = orderOfAccuracyInSpace/2;

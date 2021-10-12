@@ -24,7 +24,7 @@ extern "C"
 /* Don's Godunov code */
 void solidMechanicsGodunov(
                   const int&nd, const int&nd1a, const int&nd1b, const int&nd2a, const int&nd2b, const int&nd3a, const int&nd3b,
-       	 const int&mask, const real&rx, const real&xy, const real&det, const real&u, real&up, 
+                  const int&mask, const real&rx, const real&xy, const real&det, const real&u, real&up, 
                   const real&f1, const real&f2, 
                   const int & ndMatProp, const int& matIndex, const real& matValpc, const real& matVal,
                   const real &ad2, const real &ad2dt, const real &ad4, const real &ad4dt,
@@ -34,7 +34,7 @@ void solidMechanicsGodunov(
 /* Jeff's Hemp code */
 void solidMechanicsHemp(
                   const int&nd, const int&nd1a, const int&nd1b, const int&nd2a, const int&nd2b, const int&nd3a, const int&nd3b,
-       	 const int&mask, const real&f0, const real&u, real&up,  real&xy, 
+                  const int&mask, const real&f0, const real&u, real&up,  real&xy, 
                   const int & boundaryCondition, const int& dim, const real& bcf0, const int64_t & bcOffset,
                   const int&ipar, real&rpar, 
                   const int&niwk, const int&iwk, const int&nrwk, const real&rwk, const int&ierr );
@@ -52,9 +52,9 @@ void solidMechanicsHemp(
 // ============================================================================================
 void Cgsm::
 getUtFOS(GridFunction & cgf, 
-       	 const real & t, 
-       	 RealCompositeGridFunction & ut, 
-       	 real tForce )
+                  const real & t, 
+                  RealCompositeGridFunction & ut, 
+                  real tForce )
 {
 
   // --- do this for now ---
@@ -95,7 +95,7 @@ getUtFOS(GridFunction & cgf,
 void Cgsm::
 advanceFOS(  int current, real t, real dt,
                           RealCompositeGridFunction *ut /* = NULL */ , 
-           	     real tForce /* = 0. */  )
+                          real tForce /* = 0. */  )
 {
     checkArrays("advanceFOS:end");
 
@@ -235,7 +235,7 @@ advanceFOS(  int current, real t, real dt,
         {
             real timea=getCPU();
             mg.update( MappedGrid::THEinverseVertexDerivative | 
-             		 MappedGrid::THEinverseCenterDerivative | MappedGrid::THEcenterJacobian );
+                                  MappedGrid::THEinverseCenterDerivative | MappedGrid::THEcenterJacobian );
             timea=getCPU()-timea;
             timing(parameters.dbase.get<int>("timeForInitialize"))+=timea;
 
@@ -267,14 +267,14 @@ advanceFOS(  int current, real t, real dt,
             if( pdeVariation == SmParameters::godunov )
             {
         // For Godunov we also compute f(t+dt) -- we could probably avoid recomputing f ---
-      	Index D1,D2,D3;
-      	getIndex(mg.dimension(),D1,D2,D3);
-      	f2.partition(mg.getPartition());
-      	f2.redim(D1,D2,D3,C);  // could use some other array for work space ??
+                Index D1,D2,D3;
+                getIndex(mg.dimension(),D1,D2,D3);
+                f2.partition(mg.getPartition());
+                f2.redim(D1,D2,D3,C);  // could use some other array for work space ??
 
-      	real timef = getCPU();
-      	getForcing( next, grid,f2,t+dt,dt,option );
-      	timing(parameters.dbase.get<int>("timeForForcing")) += getCPU()-timef;
+                real timef = getCPU();
+                getForcing( next, grid,f2,t+dt,dt,option );
+                timing(parameters.dbase.get<int>("timeForForcing")) += getCPU()-timef;
             }
         }
 
@@ -381,12 +381,12 @@ advanceFOS(  int current, real t, real dt,
           {
        // Material properties do vary 
               std::vector<GridMaterialProperties> & materialProperties = 
-              	parameters.dbase.get<std::vector<GridMaterialProperties> >("materialProperties");
+                        parameters.dbase.get<std::vector<GridMaterialProperties> >("materialProperties");
               GridMaterialProperties & matProp = materialProperties[grid];
               materialFormat = matProp.getMaterialFormat();
               if( materialFormat==GridMaterialProperties::piecewiseConstantMaterialProperties )
               {
-              	IntegerArray & matIndex = matProp.getMaterialIndexArray();
+                        IntegerArray & matIndex = matProp.getMaterialIndexArray();
                   matIndexPtr = matIndex.getDataPointer();
               }
               RealArray & matVal = matProp.getMaterialValuesArray();
@@ -404,19 +404,19 @@ advanceFOS(  int current, real t, real dt,
             {
         // ********* Don's Godunov Code **********
 
-      	const int ndipar=30;
-      	int ipar[ndipar];
-      	ipar[0] = I1.getBase();        // n1a 
-      	ipar[1] = I1.getBound();       // n1b
-      	ipar[2] = I2.getBase();        // n2a
-      	ipar[3] = I2.getBound();       // n2b
-      	ipar[4] = I3.getBase();        // n3a
-      	ipar[5] = I3.getBound();       // n3b 
-      	ipar[6] = numberOfComponents;
-      	ipar[7] = gridType;            // 0=rectangular, 1=curvilinear 
-      	ipar[8] = grid;
-      	ipar[9] = parameters.dbase.get<int>("orderOfAccuracyForGodunovMethod");
-      	ipar[10]= debug;
+                const int ndipar=30;
+                int ipar[ndipar];
+                ipar[0] = I1.getBase();        // n1a 
+                ipar[1] = I1.getBound();       // n1b
+                ipar[2] = I2.getBase();        // n2a
+                ipar[3] = I2.getBound();       // n2b
+                ipar[4] = I3.getBase();        // n3a
+                ipar[5] = I3.getBound();       // n3b 
+                ipar[6] = numberOfComponents;
+                ipar[7] = gridType;            // 0=rectangular, 1=curvilinear 
+                ipar[8] = grid;
+                ipar[9] = parameters.dbase.get<int>("orderOfAccuracyForGodunovMethod");
+                ipar[10]= debug;
                 ipar[11]=forcingOption==twilightZoneForcing;
                 ipar[12]=parameters.dbase.get<int >("orderOfAccuracyForGodunovMethod");   // does this need to be assigned here *and* for ipar[9] ??? DWS
 
@@ -425,110 +425,110 @@ advanceFOS(  int current, real t, real dt,
                 ipar[15]=parameters.dbase.get<int >("slopeUpwindingForGodunovMethod");
                 ipar[16]=parameters.dbase.get<int >("pdeTypeForGodunovMethod");   // 0=linear, 2=SVK ? 
                 ipar[17]=(int)addForcing;  // *wdh* 090825
-      	ipar[18] = parameters.dbase.get<int>( "stressRelaxation" ); // jwb 11 Aug 2010
+                ipar[18] = parameters.dbase.get<int>( "stressRelaxation" ); // jwb 11 Aug 2010
                 ipar[19]=(int)materialFormat;
                           
-      	real dx[3]={1.,1.,1.};
-      	if( isRectangular )
-        	  mg.getDeltaX(dx);
-        	  
-      	const int ndrpar=30;
-      	real rpar[ndrpar];
-      	rpar[ 0]=t;
-      	rpar[ 1]=dt;
-      	rpar[ 2]=dx[0];
-      	rpar[ 3]=dx[1];
-      	rpar[ 4]=dx[2];
-      	rpar[ 5]=mg.gridSpacing(0);
-      	rpar[ 6]=mg.gridSpacing(1);
-      	rpar[ 7]=mg.gridSpacing(2);
-      	rpar[ 8]=parameters.dbase.get<real>("rho");
-      	rpar[ 9]=lambda;
-      	rpar[10]=mu;
+                real dx[3]={1.,1.,1.};
+                if( isRectangular )
+                    mg.getDeltaX(dx);
+                    
+                const int ndrpar=30;
+                real rpar[ndrpar];
+                rpar[ 0]=t;
+                rpar[ 1]=dt;
+                rpar[ 2]=dx[0];
+                rpar[ 3]=dx[1];
+                rpar[ 4]=dx[2];
+                rpar[ 5]=mg.gridSpacing(0);
+                rpar[ 6]=mg.gridSpacing(1);
+                rpar[ 7]=mg.gridSpacing(2);
+                rpar[ 8]=parameters.dbase.get<real>("rho");
+                rpar[ 9]=lambda;
+                rpar[10]=mu;
                 rpar[11]=(real &)parameters.dbase.get<OGFunction* >("exactSolution");  // twilight zone pointer, ep
 
-	// rpar[12] = parameters.dbase.get<real>( "relaxAlpha" ); // jwb 11 Aug 2010 ... relaxation parameters
-	// rpar[13] = parameters.dbase.get<real>( "relaxDelta" ); // (alpha+delta/dt)
+        // rpar[12] = parameters.dbase.get<real>( "relaxAlpha" ); // jwb 11 Aug 2010 ... relaxation parameters
+        // rpar[13] = parameters.dbase.get<real>( "relaxDelta" ); // (alpha+delta/dt)
         // use deltaT here since for MOL schemes dt=0 
                 const real & relaxAlpha = parameters.dbase.get<real>( "relaxAlpha" );
                 const real & relaxDelta = parameters.dbase.get<real>( "relaxDelta" );
-      	if( dt>0. )
-      	{
-        	  rpar[12] = relaxAlpha + relaxDelta/dt;  // just pass in relaxBeta *wdh* 2015/08/23 
-      	}
-      	else
-      	{
+                if( dt>0. )
+                {
+                    rpar[12] = relaxAlpha + relaxDelta/dt;  // just pass in relaxBeta *wdh* 2015/08/23 
+                }
+                else
+                {
           // If dt==0 then this must be a method-of-lines scheme, use deltaT for the stress-strain relaxation.
-        	  if( !( dt==deltaT || dt==0. ) )
-        	  {
-          	    printF("--SM-- advanceFOS Error: dt=%9.3e deltaT=%9.3e t=%9.3e\n",dt,deltaT,t);
-          	    OV_ABORT("error");
-        	  }
-      	
-        	  rpar[12] = relaxAlpha + relaxDelta/deltaT;  // just pass in relaxBeta *wdh* 2015/08/23 
-      	}
-      	
-      	rpar[14] = parameters.dbase.get<real>("tangentialStressDissipation");
-      	rpar[15] = parameters.dbase.get<real>("tangentialStressDissipation1");
-      	
-	// rpar[20]=reLambda;   // return this
-	// rpar[21]=imLambda;   // return this 
-	// rpar[22]=dtInverseDissipationEigenvalue;   // return this 
+                    if( !( dt==deltaT || dt==0. ) )
+                    {
+                        printF("--SM-- advanceFOS Error: dt=%9.3e deltaT=%9.3e t=%9.3e\n",dt,deltaT,t);
+                        OV_ABORT("error");
+                    }
+                
+                    rpar[12] = relaxAlpha + relaxDelta/deltaT;  // just pass in relaxBeta *wdh* 2015/08/23 
+                }
+                
+                rpar[14] = parameters.dbase.get<real>("tangentialStressDissipation");
+                rpar[15] = parameters.dbase.get<real>("tangentialStressDissipation1");
+                
+        // rpar[20]=reLambda;   // return this
+        // rpar[21]=imLambda;   // return this 
+        // rpar[22]=dtInverseDissipationEigenvalue;   // return this 
 
-      	const int nd1a=uLocal.getBase(0), nd1b=uLocal.getBound(0);
-      	const int nd2a=uLocal.getBase(1), nd2b=uLocal.getBound(1);
-      	int nrwk;
-      	if( mg.numberOfDimensions() == 2 )
-      	{
-        	  nrwk=(10*numberOfComponents+42)*(nd1b-nd1a+1);
-      	}
-      	else if( mg.numberOfDimensions() == 3 )
-      	{
-        	  if( ipar[16] == 0 )
-          	    nrwk = (14*numberOfComponents+38)*(nd1b-nd1a+1)*(nd2b-nd2a+1);
-        	  else
-        	  {
-          	    nrwk = (14*numberOfComponents+200)*(nd1b-nd1a+1)*(nd2b-nd2a+1);
-        	  }
-      	}
-      	real *rwk = new real [nrwk];
-      	int niwk=1;
-      	int *iwk = new int [niwk];
+                const int nd1a=uLocal.getBase(0), nd1b=uLocal.getBound(0);
+                const int nd2a=uLocal.getBase(1), nd2b=uLocal.getBound(1);
+                int nrwk;
+                if( mg.numberOfDimensions() == 2 )
+                {
+                    nrwk=(10*numberOfComponents+42)*(nd1b-nd1a+1);
+                }
+                else if( mg.numberOfDimensions() == 3 )
+                {
+                    if( ipar[16] == 0 )
+                        nrwk = (14*numberOfComponents+38)*(nd1b-nd1a+1)*(nd2b-nd2a+1);
+                    else
+                    {
+                        nrwk = (14*numberOfComponents+200)*(nd1b-nd1a+1)*(nd2b-nd2a+1);
+                    }
+                }
+                real *rwk = new real [nrwk];
+                int niwk=1;
+                int *iwk = new int [niwk];
 
-      	solidMechanicsGodunov(mg.numberOfDimensions(),
-                        			      uLocal.getBase(0),uLocal.getBound(0),
-                        			      uLocal.getBase(1),uLocal.getBound(1),
-                        			      uLocal.getBase(2),uLocal.getBound(2),
-                        			      *maskptr,*rxptr,*xyptr,*jacptr,*uptr,*unptr, *f1ptr,*f2ptr, 
+                solidMechanicsGodunov(mg.numberOfDimensions(),
+                                                            uLocal.getBase(0),uLocal.getBound(0),
+                                                            uLocal.getBase(1),uLocal.getBound(1),
+                                                            uLocal.getBase(2),uLocal.getBound(2),
+                                                            *maskptr,*rxptr,*xyptr,*jacptr,*uptr,*unptr, *f1ptr,*f2ptr, 
                                                             ndMatProp,*matIndexPtr,*matValPtr,*matValPtr,
                                                             artificialDiffusion2(0),ad2dt(0),
                                                             artificialDiffusion4(0),ad4dt(0),
-                        			      ipar[0],rpar[0], niwk,iwk[0], nrwk,rwk[0], ierr );
-      	
+                                                            ipar[0],rpar[0], niwk,iwk[0], nrwk,rwk[0], ierr );
+                
                 real reLambda=rpar[20];
-      	real imLambda=rpar[21];
-      	realPartOfTimeSteppingEigenValue     =max(realPartOfTimeSteppingEigenValue     ,reLambda);
-      	imaginaryPartOfTimeSteppingEigenValue=max(imaginaryPartOfTimeSteppingEigenValue,imLambda);
+                real imLambda=rpar[21];
+                realPartOfTimeSteppingEigenValue     =max(realPartOfTimeSteppingEigenValue     ,reLambda);
+                imaginaryPartOfTimeSteppingEigenValue=max(imaginaryPartOfTimeSteppingEigenValue,imLambda);
 
-      	dtInverseDissipationEigenvalue=max(dtInverseDissipationEigenvalue,rpar[22]);
-	// printF("advanceFOS: dtInverseDissipationEigenvalue=%e\n",dtInverseDissipationEigenvalue);	
+                dtInverseDissipationEigenvalue=max(dtInverseDissipationEigenvalue,rpar[22]);
+        // printF("advanceFOS: dtInverseDissipationEigenvalue=%e\n",dtInverseDissipationEigenvalue);    
 
-	// base class DomainSolver uses: 
-      	realPartOfEigenvalue[grid]=reLambda;
-      	imaginaryPartOfEigenvalue[grid]=imLambda;
+        // base class DomainSolver uses: 
+                realPartOfEigenvalue[grid]=reLambda;
+                imaginaryPartOfEigenvalue[grid]=imLambda;
         
 
-      	if( debug & 8 )
-      	{
-        	  display(utLocal,sPrintF("advFOS: u(next) at t=%9.3e, dt=%8.2e\n",t,dt),debugFile);
-      	}
-      	
+                if( debug & 8 )
+                {
+                    display(utLocal,sPrintF("advFOS: u(next) at t=%9.3e, dt=%8.2e\n",t,dt),debugFile);
+                }
+                
 
 
-	// printF(" advanceFOS: godunov: reLambda=%8.2e, imLambda=%8.2e\n",reLambda,imLambda);
+        // printF(" advanceFOS: godunov: reLambda=%8.2e, imLambda=%8.2e\n",reLambda,imLambda);
 
-      	delete [] rwk;
-      	delete [] iwk;
+                delete [] rwk;
+                delete [] iwk;
             }
             else if( pdeVariation==SmParameters::hemp )
             {
@@ -551,41 +551,41 @@ advanceFOS(  int current, real t, real dt,
                             if( ( pBoundaryData[side][axis]==NULL || parameters.isAdaptiveGridProblem() ) && 
                                     mg.boundaryCondition(side,axis)>0 )
                             {
-                      	parameters.getBoundaryData(side,axis,grid,mg);
+                                parameters.getBoundaryData(side,axis,grid,mg);
                 // RealArray & bd = *pBoundaryData[side][axis]; // this is now done in the above line *wdh* 090819
                 // bd=0.;
                             }
                             if( pBoundaryData[side][axis]!=NULL )
                             {
-                      	if( debug & 8 )
-                        	  printP("+++ Cgsm: add boundary forcing to (side,axis,grid)=(%i,%i,%i) useConservative=%i\n",side,axis,grid,
-                             		 (int)useConservative);
+                                if( debug & 8 )
+                                    printP("+++ Cgsm: add boundary forcing to (side,axis,grid)=(%i,%i,%i) useConservative=%i\n",side,axis,grid,
+                                                  (int)useConservative);
                                 addBoundaryForcing(side,axis)=true;
                                 RealArray & bd = *pBoundaryData[side][axis];
                                 pbcf[side][axis] = bd.getDataPointer();
-        	// if( debug & 8 )
+                // if( debug & 8 )
                 //  ::display(bd," ++++ Cgsm: Here is bd ++++","%4.2f ");
-                      	for( int a=0; a<=2; a++ )
-                      	{
-                        	  dbc(0,a,side,axis)=bd.getBase(a);
-                        	  dbc(1,a,side,axis)=bd.getBound(a);
-                      	}
+                                for( int a=0; a<=2; a++ )
+                                {
+                                    dbc(0,a,side,axis)=bd.getBase(a);
+                                    dbc(1,a,side,axis)=bd.getBound(a);
+                                }
                             }
                             else
                             {
                                 addBoundaryForcing(side,axis)=false;
-                      	pbcf[side][axis] = fptr;  // should not be used in this case 
-                      	for( int a=0; a<=2; a++ )
-                      	{
-                        	  dbc(0,a,side,axis)=0;
-                        	  dbc(1,a,side,axis)=0;
-                      	}
+                                pbcf[side][axis] = fptr;  // should not be used in this case 
+                                for( int a=0; a<=2; a++ )
+                                {
+                                    dbc(0,a,side,axis)=0;
+                                    dbc(1,a,side,axis)=0;
+                                }
                             }
               // for now we save the offset in a 4 byte int (double check that this is ok)
                             int64_t offset = pbcf[side][axis]- pbcf[0][0];
         //       if( offset > INT_MAX )
         //       {
-        // 	printF("ERROR: offset=%li INT_MAX=%li \n",offset,(long int)INT_MAX);
+        //      printF("ERROR: offset=%li INT_MAX=%li \n",offset,(long int)INT_MAX);
         //       }
         //       assert( offset < INT_MAX );
                             bcfOffset(side,axis) = offset;
@@ -595,99 +595,99 @@ advanceFOS(  int current, real t, real dt,
                     }
 
 
-      	const int ndipar=30;
-      	int ipar[ndipar];
-      	ipar[0] = I1.getBase();        // n1a 
-      	ipar[1] = I1.getBound();       // n1b
-      	ipar[2] = I2.getBase();        // n2a
-      	ipar[3] = I2.getBound();       // n2b
-      	ipar[4] = I3.getBase();        // n3a
-      	ipar[5] = I3.getBound();       // n3b 
-      	ipar[6] = numberOfComponents;
-      	ipar[7] = grid;
-      	ipar[8] = debug;
-      	ipar[9] = parameters.dbase.get<int>("hourGlassFlag"); // flag for type of hourglass control
+                const int ndipar=30;
+                int ipar[ndipar];
+                ipar[0] = I1.getBase();        // n1a 
+                ipar[1] = I1.getBound();       // n1b
+                ipar[2] = I2.getBase();        // n2a
+                ipar[3] = I2.getBound();       // n2b
+                ipar[4] = I3.getBase();        // n3a
+                ipar[5] = I3.getBound();       // n3b 
+                ipar[6] = numberOfComponents;
+                ipar[7] = grid;
+                ipar[8] = debug;
+                ipar[9] = parameters.dbase.get<int>("hourGlassFlag"); // flag for type of hourglass control
 
                 ipar[17]=(int)addForcing;  // *wdh* 090825
               
-      	real Rg=parameters.dbase.get<real>("Rg"); // gas constant
-      	real yieldStress=parameters.dbase.get<real>("yieldStress"); 
-      	const std::vector<real> & polyEOS = parameters.dbase.get<std::vector<real> >("polyEos"); // a,b,c,d in Wilkin's EOS
-      	real basePress=parameters.dbase.get<real>("basePress"); // gas constant
-      	real c0Param=parameters.dbase.get<real>("c0Visc"); // artificial viscosity parameter
-      	real clParam=parameters.dbase.get<real>("clVisc"); // artificial viscosity parameter
-      	real hgParam=parameters.dbase.get<real>("hgVisc"); // artificial viscosity parameter
-      	real & lemu = parameters.dbase.get<real>("mu");
-      	real & lelambda = parameters.dbase.get<real>("lambda");
+                real Rg=parameters.dbase.get<real>("Rg"); // gas constant
+                real yieldStress=parameters.dbase.get<real>("yieldStress"); 
+                const std::vector<real> & polyEOS = parameters.dbase.get<std::vector<real> >("polyEos"); // a,b,c,d in Wilkin's EOS
+                real basePress=parameters.dbase.get<real>("basePress"); // gas constant
+                real c0Param=parameters.dbase.get<real>("c0Visc"); // artificial viscosity parameter
+                real clParam=parameters.dbase.get<real>("clVisc"); // artificial viscosity parameter
+                real hgParam=parameters.dbase.get<real>("hgVisc"); // artificial viscosity parameter
+                real & lemu = parameters.dbase.get<real>("mu");
+                real & lelambda = parameters.dbase.get<real>("lambda");
 
-      	const int ndrpar=30;
-      	real rpar[ndrpar];
-      	rpar[ 0]=t;
-      	rpar[ 1]=dt;
+                const int ndrpar=30;
+                real rpar[ndrpar];
+                rpar[ 0]=t;
+                rpar[ 1]=dt;
                 rpar[ 2]=Rg;  // 8.314/27.; 
                 rpar[ 3]=yieldStress;
                 rpar[ 4]=polyEOS[0];
                 rpar[ 5]=polyEOS[1];
                 rpar[ 6]=polyEOS[2];
                 rpar[ 7]=polyEOS[3];
-      	rpar[ 8]=basePress;
-      	rpar[ 9]=c0Param;
-      	rpar[10]=clParam;
-      	rpar[11]=hgParam;
-      	rpar[12]=lemu;
-      	rpar[13]=lelambda;
-	//rpar[ 7]=parameters.dbase.get<real>("");
+                rpar[ 8]=basePress;
+                rpar[ 9]=c0Param;
+                rpar[10]=clParam;
+                rpar[11]=hgParam;
+                rpar[12]=lemu;
+                rpar[13]=lelambda;
+        //rpar[ 7]=parameters.dbase.get<real>("");
 
-	// rpar[20]=reLambda;   // return this
-	// rpar[21]=imLambda;   // return this 
+        // rpar[20]=reLambda;   // return this
+        // rpar[21]=imLambda;   // return this 
 
                 int ndx = I1.getLength()+2; // the extra 2 are to make sure we have enough space for all BCs
                 int ndy = I2.getLength()+2;
 
-	//int nrwk = 9*ndx*ndy+11*(ndx-1)*(ndy-1);
-      	int nrwk = 11*ndx*ndy+11*(ndx-1)*(ndy-1);
-      	real *rwk = new real [nrwk];
-      	int niwk=1;
-      	int *iwk = new int [niwk];
+        //int nrwk = 9*ndx*ndy+11*(ndx-1)*(ndy-1);
+                int nrwk = 11*ndx*ndy+11*(ndx-1)*(ndy-1);
+                real *rwk = new real [nrwk];
+                int niwk=1;
+                int *iwk = new int [niwk];
 
                 assert( initialStateptr!=NULL );
 
-      	if( dt==0. )
-      	{
-        	  printF("advanceFOS:ERROR: dt=0. for hemp -- this should not happen\n");
-        	  Overture::abort("error");
-      	}
-      	
-      	if( debug & 8 )
-      	{
-        	  display(uLocal,sPrintF("advFOS:BEFORE: solidMechanicsHemp: u at t=%9.3e, dt=%8.2e\n",t,dt),debugFile);
-      	}
+                if( dt==0. )
+                {
+                    printF("advanceFOS:ERROR: dt=0. for hemp -- this should not happen\n");
+                    Overture::abort("error");
+                }
+                
+                if( debug & 8 )
+                {
+                    display(uLocal,sPrintF("advFOS:BEFORE: solidMechanicsHemp: u at t=%9.3e, dt=%8.2e\n",t,dt),debugFile);
+                }
 
-      	solidMechanicsHemp(mg.numberOfDimensions(),
-                     			   uLocal.getBase(0),uLocal.getBound(0),
-                     			   uLocal.getBase(1),uLocal.getBound(1),
-                     			   uLocal.getBase(2),uLocal.getBound(2),
-                     			   *maskptr,*initialStateptr,*uptr,*unptr,
-                     			   *xyptr,
+                solidMechanicsHemp(mg.numberOfDimensions(),
+                                                      uLocal.getBase(0),uLocal.getBound(0),
+                                                      uLocal.getBase(1),uLocal.getBound(1),
+                                                      uLocal.getBase(2),uLocal.getBound(2),
+                                                      *maskptr,*initialStateptr,*uptr,*unptr,
+                                                      *xyptr,
                                                       mg.boundaryCondition(0,0),*pdbc,*pbcf[0][0],pbcfOffset[0],
-                     			   ipar[0],rpar[0], niwk,iwk[0], nrwk,rwk[0], ierr );
-      	
+                                                      ipar[0],rpar[0], niwk,iwk[0], nrwk,rwk[0], ierr );
+                
                 real reLambda=rpar[20];
-      	real imLambda=rpar[21];
-      	realPartOfTimeSteppingEigenValue     =max(realPartOfTimeSteppingEigenValue     ,reLambda);
-      	imaginaryPartOfTimeSteppingEigenValue=max(imaginaryPartOfTimeSteppingEigenValue,imLambda);
-	// base class DomainSolver uses: 
-      	realPartOfEigenvalue[grid]=reLambda;
-      	imaginaryPartOfEigenvalue[grid]=imLambda;
+                real imLambda=rpar[21];
+                realPartOfTimeSteppingEigenValue     =max(realPartOfTimeSteppingEigenValue     ,reLambda);
+                imaginaryPartOfTimeSteppingEigenValue=max(imaginaryPartOfTimeSteppingEigenValue,imLambda);
+        // base class DomainSolver uses: 
+                realPartOfEigenvalue[grid]=reLambda;
+                imaginaryPartOfEigenvalue[grid]=imLambda;
 
-      	if( debug & 8 )
-      	{
-        	  display(utLocal,sPrintF("advFOS:solidMechanicsHemp: un or ut at t=%9.3e, dt=%8.2e\n",t,dt),debugFile);
-      	}
+                if( debug & 8 )
+                {
+                    display(utLocal,sPrintF("advFOS:solidMechanicsHemp: un or ut at t=%9.3e, dt=%8.2e\n",t,dt),debugFile);
+                }
 
-	//if( twilightZoneForcing ) // ***** for now do not update the grid with TZ so we can compute errors ***
-      	if( false )
-      	{
+        //if( twilightZoneForcing ) // ***** for now do not update the grid with TZ so we can compute errors ***
+                if( false )
+                {
           // For now we change the grid coordinates to match the hemp positions
           // We could set these to the cell centers
                     mg.update( MappedGrid::THEcenter | MappedGrid::THEvertex );
@@ -698,25 +698,25 @@ advanceFOS(  int current, real t, real dt,
                     #endif
                     for( int dir=0; dir<mg.numberOfDimensions(); dir++ )
                         xLocal(I1,I2,I3,dir)=uLocal(I1,I2,I3,dir);
-      	}
-      	
-      	delete [] rwk;
-      	delete [] iwk;
+                }
+                
+                delete [] rwk;
+                delete [] iwk;
             }
             else
             {
-      	printF("advanceFOS:ERROR: unknown pdeVariation=%i\n",(int)pdeVariation);
-      	Overture::abort("error");
+                printF("advanceFOS:ERROR: unknown pdeVariation=%i\n",(int)pdeVariation);
+                Overture::abort("error");
             }
             
       // If we are just computing the time stepping values then we do not update the solution.
       // This option is used at the start to initialize the time step.
             if( computeTimeSteppingEigenValues )
-      	continue;
+                continue;
 
             if( !computeUt )
             {
-      	unLocal(I1,I2,I3,C)= uLocal(I1,I2,I3,C) + dt*unLocal(I1,I2,I3,C);
+                unLocal(I1,I2,I3,C)= uLocal(I1,I2,I3,C) + dt*unLocal(I1,I2,I3,C);
             }
             
         } // end if( ok)
@@ -728,8 +728,8 @@ advanceFOS(  int current, real t, real dt,
         {
             if( debugFile!=pDebugFile )
             {
-      	display(unLocal,sPrintF("advFOS: unLocal after advanceFOS, processor=%i before BC's t=%8.2e",
-                        				myid,t),pDebugFile,"%8.2e ");
+                display(unLocal,sPrintF("advFOS: unLocal after advanceFOS, processor=%i before BC's t=%8.2e",
+                                                                myid,t),pDebugFile,"%8.2e ");
             }
             
             display(un,sPrintF("advFOS: un after advanceFOS before BC's t=%8.2e",t),debugFile,"%8.2e ");
@@ -748,8 +748,8 @@ advanceFOS(  int current, real t, real dt,
 
 //       if( debug & 4 )
 //       {
-// 	Communication_Manager::Sync();
-// 	display(unLocal,sPrintF(" Before updateGhostBoundaries: t=%e",t),pDebugFile,"%8.2e ");
+//      Communication_Manager::Sync();
+//      display(unLocal,sPrintF(" Before updateGhostBoundaries: t=%e",t),pDebugFile,"%8.2e ");
 //       }
             
 //       // **** at this point we really only need to update interior-ghost points needed for
@@ -758,7 +758,7 @@ advanceFOS(  int current, real t, real dt,
 
 //       if( debug & 4 )
 //       {
-// 	display(unLocal,sPrintF(" After updateGhostBoundaries: processor=%i t=%e",myid,t),pDebugFile,"%8.2e ");
+//      display(unLocal,sPrintF(" After updateGhostBoundaries: processor=%i t=%e",myid,t),pDebugFile,"%8.2e ");
 //       }
             
 //       timing(parameters.dbase.get<int>("timeForUpdateGhostBoundaries"))+=getCPU()-timea;
@@ -769,7 +769,7 @@ advanceFOS(  int current, real t, real dt,
         {
             if( addForcing ) 
                 ::display(f,sPrintF("  *** advanceFOS: Here is the forcing for grid=%i t=%9.3e ********\n",grid,t),
-              		  pDebugFile,"%7.4f ");
+                                    pDebugFile,"%7.4f ");
         }
         if( debug & 4 )
         {

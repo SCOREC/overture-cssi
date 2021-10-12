@@ -5,23 +5,23 @@ c ******************************************************************************
 
 c These next include files will define the macros that will define the difference approximations
 c The actual macro is called below
-c Use this next macro to declare the statement functions that are defined below
-c To include derivatives of rx use OPTION=RX
+! Use this next macro to declare the statement functions that are defined below
+! To include derivatives of rx use OPTION=RX
 
 
-c Define statement functions for difference approximations of order 2 
-c To include derivatives of rx use OPTION=RX
-c To include derivatives of rx use OPTION=RX
+! Define statement functions for difference approximations of order 2 
+! To include derivatives of rx use OPTION=RX
+! To include derivatives of rx use OPTION=RX
 
 
 
-c Use this next macro to declare the statement functions that are defined below
-c To include derivatives of rx use OPTION=RX
+! Use this next macro to declare the statement functions that are defined below
+! To include derivatives of rx use OPTION=RX
 
 
-c Define statement functions for difference approximations of order 4 
-c To include derivatives of rx use OPTION=RX
-c To include derivatives of rx use OPTION=RX
+! Define statement functions for difference approximations of order 4 
+! To include derivatives of rx use OPTION=RX
+! To include derivatives of rx use OPTION=RX
 
 
 
@@ -109,7 +109,7 @@ c     --- local variables ----
       ! boundary conditions parameters
 ! define BC parameters for fortran routines
 ! boundary conditions
-c123456789012345678901234567890123456789012345678901234567890123456789
+!123456789012345678901234567890123456789012345678901234567890123456789
       integer interpolation,displacementBC,tractionBC
       integer slipWall,symmetry,interfaceBC
       integer abcEM2,abcPML,abc3,abc4,abc5,rbcNonLocal,rbcLocal,lastBC
@@ -776,10 +776,10 @@ c     The next macro call will define the difference approximation statement fun
      & i2,i3)+rzz23(i1,i2,i3))*ur2(i1,i2,i3,kd)+(sxx23(i1,i2,i3)+
      & syy23(i1,i2,i3)+szz23(i1,i2,i3))*us2(i1,i2,i3,kd)+(txx23(i1,i2,
      & i3)+tyy23(i1,i2,i3)+tzz23(i1,i2,i3))*ut2(i1,i2,i3,kd)
-c============================================================================================
-c Define derivatives for a rectangular grid
-c
-c============================================================================================
+      !============================================================================================
+      ! Define derivatives for a rectangular grid
+      !
+      !============================================================================================
       h12(kd) = 1./(2.*dx(kd))
       h22(kd) = 1./(dx(kd)**2)
       ux23r(i1,i2,i3,kd)=(u(i1+1,i2,i3,kd)-u(i1-1,i2,i3,kd))*h12(0)
@@ -1165,10 +1165,10 @@ c===============================================================================
      & i2,i3)+rzz43(i1,i2,i3))*ur4(i1,i2,i3,kd)+(sxx43(i1,i2,i3)+
      & syy43(i1,i2,i3)+szz43(i1,i2,i3))*us4(i1,i2,i3,kd)+(txx43(i1,i2,
      & i3)+tyy43(i1,i2,i3)+tzz43(i1,i2,i3))*ut4(i1,i2,i3,kd)
-c============================================================================================
-c Define derivatives for a rectangular grid
-c
-c============================================================================================
+      !============================================================================================
+      ! Define derivatives for a rectangular grid
+      !
+      !============================================================================================
       h41(kd) = 1./(12.*dx(kd))
       h42(kd) = 1./(12.*dx(kd)**2)
       ux43r(i1,i2,i3,kd)=(8.*(u(i1+1,i2,i3,kd)-u(i1-1,i2,i3,kd))-(u(i1+

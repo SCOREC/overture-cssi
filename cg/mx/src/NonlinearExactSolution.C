@@ -16,7 +16,8 @@
 extern "C"
 {
 
-void mbe1d(real & epsilon, real & dt, real & xa, real &xb, int &n, real &tfinal, real &un);
+// void mbe1d(real & epsilon, real & dt, real & xa, real &xb, int &n, real &tfinal, real &un);
+    void mbe1d(real & rpar, int & ipar, int & n, real &un);
 
 }
 
@@ -139,7 +140,7 @@ initialize( CompositeGrid & cg, int numberOfDomains,
     {
     // ---- 1 domain problem
     // parameters for asymptotic solutions
-        const real eps = 0.01;
+        const real eps = 0.1;
         const real U = 1./2;
         const real eta = 1.;
         const real x0 = 0.;
@@ -205,8 +206,14 @@ eval(real dt, real t, CompositeGrid & cg, int grid,
 
     MappedGrid & mg = cg[grid];
     const int numberOfDimensions = cg.numberOfDimensions();
+    const IntegerArray & dw = mg.discretizationWidth();
     
-    
+  // dw.display("dw");
+    Range R = numberOfDimensions;
+    const int minDiscretizationWidth=min(dw(R));
+
+    const int orderOfAccuracyInSpace = minDiscretizationWidth-1;
+
     std::vector<DispersiveMaterialParameters> & dmpVector = *dbase.get<std::vector<DispersiveMaterialParameters>* >("pDispersiveMaterialParameters");
 
   //    parameters.dbase.put<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
@@ -290,17 +297,18 @@ eval(real dt, real t, CompositeGrid & cg, int grid,
     // ---- Asymptotic Solution ----
 
     // parameters for asymptotic solutions -- **FIX ME**
-        const real eps = 0.01;
+    // const real eps = 0.1;
+        const real eps = sqrt(multilevelAtomicParams(0,0,0));
         const real U = 0.5;
         const real eta = 1.;
         const real x0 = 0.;
-    // const real epsHat = eps/2.*sqrt(eta/(U-U*U));
+        const real epsHat = eps/2.*sqrt(eta/(U-U*U));
     // const real epsHat =.1;  // **** FIX ME ***
-        const real epsHat = sqrt(multilevelAtomicParams(0,0,0));
+    // const real epsHat = sqrt(multilevelAtomicParams(0,0,0));
         real x,y,z=0.;
         if( t<1.5*dt )
         {
-            printF("NES: asymptoticSoliton: U=%g (envelope speed), eta=%g, x0=%g, epsHat=%g\n",U,eta,x0,epsHat);
+            printF("NES: asymptoticSoliton: U=%g (envelope speed), eta=%g, x0=%g, eps=%g, epsHat=%g\n",U,eta,x0,eps,epsHat);
         }
     // real epsilon=sqrt(multilevelAtomicParams(0,0,0));
     // printF("asymptoticSoliton: epsHat=%g, epsilon=%g\n ",epsHat,epsilon);
@@ -332,27 +340,81 @@ eval(real dt, real t, CompositeGrid & cg, int grid,
 
                 const real ampE = 2.*sqrt( eta*U/(1-U) );
                 const real seche = 1./cosh( epsHat*(x-x0-U*t) );
+
+                const real efield = 2.*sqrt(eta*U/(1.-U))/cosh(epsHat*(x-x0-U*t))*sin(x-t);
+        // printF("efield %g\n",efield);
+                const real et = - 2*sqrt(eta*U/(1. - U))*sin(-x + t)*epsHat*U*sinh(epsHat*(-U*t + x - x0))/pow(cosh(epsHat*(-U*t + x - x0)),2.) - 2*sqrt(eta*U/(1. - U))*cos(-x + t)/cosh(epsHat*(-U*t + x - x0));
+        // printF("et %g\n",et);
+                const real exxt = -12.*sqrt(eta*U/(1. - U))*sin(-x + t)*pow(epsHat,3)*pow(sinh(epsHat*(-U*t + x - x0)),3)*U/pow(cosh(epsHat*(-U*t + x - x0)),4) - 4.*sqrt(eta*U/(1. - U))*cos(-x + t)*pow(epsHat,2)*pow(sinh(epsHat*(-U*t + x - x0)),2)/pow(cosh(epsHat*(-U*t + x - x0)),3) + 10.*sqrt(eta*U/(1. - U))*sin(-x + t)*pow(epsHat,3)*sinh(epsHat*(-U*t + x - x0))*U/pow(cosh(epsHat*(-U*t + x - x0)),2) - 8.*sqrt(eta*U/(1. - U))*cos(-x + t)*pow(epsHat,2)*pow(sinh(epsHat*(-U*t + x - x0)),2)*U/pow(cosh(epsHat*(-U*t + x - x0)),3) + 4.*sqrt(eta*U/(1. - U))*sin(-x + t)*epsHat*sinh(epsHat*(-U*t + x - x0))/pow(cosh(epsHat*(-U*t + x - x0)),2) + 4.*sqrt(eta*U/(1. - U))*cos(-x + t)*pow(epsHat,2)*U/cosh(epsHat*(-U*t + x - x0)) + 2.*sqrt(eta*U/(1. - U))*cos(-x + t)*pow(epsHat,2)/cosh(epsHat*(-U*t + x - x0)) + 2.*sqrt(eta*U/(1. - U))*sin(-x + t)*epsHat*U*sinh(epsHat*(-U*t + x - x0))/pow(cosh(epsHat*(-U*t + x - x0)),2) + 2.*sqrt(eta*U/(1. - U))*cos(-x + t)/cosh(epsHat*(-U*t + x - x0));
+        // printF("exxt %g\n",exxt);
+                const real e1x = 2.*sqrt(eta*U/(1. - U))*sin(-x + t)*epsHat*sinh(epsHat*(-U*t + x - x0))/pow(cosh(epsHat*(-U*t + x - x0)),2) + 2.*sqrt(eta*U/(1. - U))*cos(-x + t)/cosh(epsHat*(-U*t + x - x0));
+        // printF("e1x %g\n",ex1);
+                const real exx = - 4.*sqrt(eta*U/(1. - U))*sin(-x + t)*pow(epsHat,2)*pow(sinh(epsHat*(-U*t + x - x0)),2)/pow(cosh(epsHat*(-U*t + x - x0)),3) - 4.*sqrt(eta*U/(1. - U))*cos(-x + t)*epsHat*sinh(epsHat*(-U*t + x - x0))/pow(cosh(epsHat*(-U*t + x - x0)),2) + 2.*sqrt(eta*U/(1. - U))*sin(-x + t)*pow(epsHat,2)/cosh(epsHat*(-U*t + x - x0)) + 2.*sqrt(eta*U/(1. - U))*sin(-x + t)/cosh(epsHat*(-U*t + x - x0));
+        // printF("exx %g\n",exx);
+                const real exxxx = - 48.*sqrt(eta*U/(1. - U))*sin(-x + t)*pow(eps,4)*pow(sinh(eps*(-U*t + x - x0)),4)/pow(cosh(eps*(-U*t + x - x0)),5) - 48.*sqrt(eta*U/(1. - U))*cos(-x + t)*pow(eps,3)*pow(sinh(eps*(-U*t + x - x0)),3)/pow(cosh(eps*(-U*t + x - x0)),4) + 56.*sqrt(eta*U/(1. - U))*sin(-x + t)*pow(eps,4)*pow(sinh(eps*(-U*t + x - x0)),2)/pow(cosh(eps*(-U*t + x - x0)),3) + 24.*sqrt(eta*U/(1. - U))*sin(-x + t)*pow(eps,2)*pow(sinh(eps*(-U*t + x - x0)),2)/pow(cosh(eps*(-U*t + x - x0)),3) + 40.*sqrt(eta*U/(1. - U))*cos(-x + t)*pow(eps,3)*sinh(eps*(-U*t + x - x0))/pow(cosh(eps*(-U*t + x - x0)),2) - 10.*sqrt(eta*U/(1. - U))*sin(-x + t)*pow(eps,4)/cosh(eps*(-U*t + x - x0)) + 8.*sqrt(eta*U/(1. - U))*cos(-x + t)*eps*sinh(eps*(-U*t + x - x0))/pow(cosh(eps*(-U*t + x - x0)),2) - 12.*sqrt(eta*U/(1. - U))*sin(-x + t)*pow(eps,2)/cosh(eps*(-U*t + x - x0)) - 2.*sqrt(eta*U/(1. - U))*sin(-x + t)/cosh(eps*(-U*t + x - x0));
+        // printF("exxxx %g\n",exxxx);
+
+
+                const real p = 2.*tanh(epsHat*(x-x0-U*t))/cosh(epsHat*(x-x0-U*t))*cos(x-t);
+                const real pt = - 2*epsHat*U*(1 - pow(tanh(epsHat*(-U*t + x - x0)),2))*cos(-x + t)/cosh(epsHat*(-U*t + x - x0)) + 2*tanh(epsHat*(-U*t + x - x0))*cos(-x + t)*epsHat*U*sinh(epsHat*(-U*t + x - x0))/pow(cosh(epsHat*(-U*t + x - x0)),2) - 2*tanh(epsHat*(-U*t + x - x0))*sin(-x + t)/cosh(epsHat*(-U*t + x - x0));
+                const real pxx = -4.*pow(epsHat,2)*tanh(epsHat*(-U*t + x - x0))*(1 - pow(tanh(epsHat*(-U*t + x - x0)),2))*cos(-x + t)/cosh(epsHat*(-U*t + x - x0)) - 4.*pow(epsHat,2)*(1 - pow(tanh(epsHat*(-U*t + x - x0)),2))*cos(-x + t)*sinh(epsHat*(-U*t + x - x0))/pow(cosh(epsHat*(-U*t + x - x0)),2) + 4.*epsHat*(1 - pow(tanh(epsHat*(-U*t + x - x0)),2))*sin(-x + t)/cosh(epsHat*(-U*t + x - x0)) + 4.*tanh(epsHat*(-U*t + x - x0))*cos(-x + t)*pow(epsHat,2)*pow(sinh(epsHat*(-U*t + x - x0)),2)/pow(cosh(epsHat*(-U*t + x - x0)),3) - 4.*tanh(epsHat*(-U*t + x - x0))*sin(-x + t)*epsHat*sinh(epsHat*(-U*t + x - x0))/pow(cosh(epsHat*(-U*t + x - x0)),2) - 2.*tanh(epsHat*(-U*t + x - x0))*cos(-x + t)*pow(epsHat,2)/cosh(epsHat*(-U*t + x - x0)) - 2.*tanh(epsHat*(-U*t + x - x0))*cos(-x + t)/cosh(epsHat*(-U*t + x - x0));
+                const real ptxx = 2.*tanh(epsHat*(-U*t + x - x0))*sin(-x + t)*pow(epsHat,2)/cosh(epsHat*(-U*t + x - x0)) - 12.*pow(epsHat,3)*(1 - pow(tanh(epsHat*(-U*t + x - x0)),2))*cos(-x + t)*pow(sinh(epsHat*(-U*t + x - x0)),2)*U/pow(cosh(epsHat*(-U*t + x - x0)),3) + 8.*pow(epsHat,2)*tanh(epsHat*(-U*t + x - x0))*U*(1 - pow(tanh(epsHat*(-U*t + x - x0)),2))*sin(-x + t)/cosh(epsHat*(-U*t + x - x0)) + 8.*pow(epsHat,2)*(1 - pow(tanh(epsHat*(-U*t + x - x0)),2))*sin(-x + t)*U*sinh(epsHat*(-U*t + x - x0))/pow(cosh(epsHat*(-U*t + x - x0)),2) + 12.*tanh(epsHat*(-U*t + x - x0))*cos(-x + t)*pow(epsHat,3)*pow(sinh(epsHat*(-U*t + x - x0)),3)*U/pow(cosh(epsHat*(-U*t + x - x0)),4) - 10.*tanh(epsHat*(-U*t + x - x0))*cos(-x + t)*pow(epsHat,3)*sinh(epsHat*(-U*t + x - x0))*U/pow(cosh(epsHat*(-U*t + x - x0)),2) - 8.*tanh(epsHat*(-U*t + x - x0))*sin(-x + t)*pow(epsHat,2)*pow(sinh(epsHat*(-U*t + x - x0)),2)*U/pow(cosh(epsHat*(-U*t + x - x0)),3) - 2.*tanh(epsHat*(-U*t + x - x0))*cos(-x + t)*epsHat*U*sinh(epsHat*(-U*t + x - x0))/pow(cosh(epsHat*(-U*t + x - x0)),2) - 8.*pow(epsHat,3)*pow(tanh(epsHat*(-U*t + x - x0)),2)*U*(1 - pow(tanh(epsHat*(-U*t + x - x0)),2))*cos(-x + t)/cosh(epsHat*(-U*t + x - x0)) + 2.*tanh(epsHat*(-U*t + x - x0))*sin(-x + t)/cosh(epsHat*(-U*t + x - x0)) + 2.*epsHat*U*(1 - pow(tanh(epsHat*(-U*t + x - x0)),2))*cos(-x + t)/cosh(epsHat*(-U*t + x - x0)) + 4.*pow(epsHat,2)*tanh(epsHat*(-U*t + x - x0))*(1 - pow(tanh(epsHat*(-U*t + x - x0)),2))*sin(-x + t)/cosh(epsHat*(-U*t + x - x0)) + 4.*pow(epsHat,2)*(1 - pow(tanh(epsHat*(-U*t + x - x0)),2))*sin(-x + t)*sinh(epsHat*(-U*t + x - x0))/pow(cosh(epsHat*(-U*t + x - x0)),2) + 6.*pow(epsHat,3)*(1 - pow(tanh(epsHat*(-U*t + x - x0)),2))*cos(-x + t)*U/cosh(epsHat*(-U*t + x - x0)) - 4.*tanh(epsHat*(-U*t + x - x0))*sin(-x + t)*pow(epsHat,2)*pow(sinh(epsHat*(-U*t + x - x0)),2)/pow(cosh(epsHat*(-U*t + x - x0)),3) + 4.*tanh(epsHat*(-U*t + x - x0))*sin(-x + t)*pow(epsHat,2)*U/cosh(epsHat*(-U*t + x - x0)) - 4.*tanh(epsHat*(-U*t + x - x0))*cos(-x + t)*epsHat*sinh(epsHat*(-U*t + x - x0))/pow(cosh(epsHat*(-U*t + x - x0)),2) + 4.*pow(epsHat,3)*U*pow((1 - pow(tanh(epsHat*(-U*t + x - x0)),2)),2)*cos(-x + t)/cosh(epsHat*(-U*t + x - x0)) - 12.*pow(epsHat,3)*tanh(epsHat*(-U*t + x - x0))*(1 - pow(tanh(epsHat*(-U*t + x - x0)),2))*cos(-x + t)*U*sinh(epsHat*(-U*t + x - x0))/pow(cosh(epsHat*(-U*t + x - x0)),2) + 4.*epsHat*(1 - pow(tanh(epsHat*(-U*t + x - x0)),2))*cos(-x + t)/cosh(epsHat*(-U*t + x - x0));
+
+                const real d = 1-2./pow((cosh(epsHat*(x-x0-U*t))),2);
+                const real dx = 4.*epsHat*sinh(epsHat*(-U*t + x - x0))/pow(cosh(epsHat*(-U*t + x - x0)),3);
+                const real dxx = -12.*pow(epsHat,2)*pow(sinh(epsHat*(-U*t + x - x0)),2)/pow(cosh(epsHat*(-U*t + x - x0)),4) + 4.*pow(epsHat,2)/pow(cosh(epsHat*(-U*t + x - x0)),2);
+
+
+                const real pnec = eps;
+                const real b1 = 0.;
+                const real b0 = 1.;
+                const real alphaP = eps;
+                const real peptc = -eps;
+                const real c = 1.;
+
+                const real ptt = -b0*p-b1*pt+pnec*d*efield;
+                const real ett = c*c*exx-alphaP*ptt;
+                const real dt = peptc*efield*pt;
+                const real pttxx = -b0*pxx-b1*ptxx+pnec*(dxx*efield+2.*dx*e1x+d*exx);
+
+                const real pttt = -b0*pt-b1*ptt+pnec*dt*efield+pnec*d*et;
+                const real ettt = c*c*exxt-alphaP*pttt;
+                const real dtt = peptc*et*pt+peptc*efield*ptt;
+
+                const real ptttt = -b0*ptt-b1*pttt+pnec*dtt*efield+2.*pnec*dt*et+pnec*d*ett;
+                const real exxtt = c*c*exxxx-alphaP*pttxx;
+                const real etttt = c*c*exxtt-alphaP*ptttt;
+
                 if( numberOfDimensions==2 )
                 {
                     uLocal(i1,i2,i3,ex) = 0.;
                     uLocal(i1,i2,i3,ey) = ampE*seche*sin(x-t);
+                    if (t<0.){
+                        uLocal(i1,i2,i3,ey) = ampE*seche*sin(x-0.) - dt*et + pow(dt,2)/2.*ett - pow(dt,3)/6.*ettt + pow(dt,4)/24.*etttt;
+                    }
                     uLocal(i1,i2,i3,hz) = 0.;
                 }
                 else if( numberOfDimensions==3 )
                 {
                     uLocal(i1,i2,i3,ex) = 0.;
                     uLocal(i1,i2,i3,ey) = ampE*seche*sin(x-t);
+                    if (t<0.){
+                        uLocal(i1,i2,i3,ey) = ampE*seche*sin(x-0.) - dt*et + pow(dt,2)/2.*ett - pow(dt,3)/6.*ettt + pow(dt,4)/24.*etttt;
+                    }
                     uLocal(i1,i2,i3,ez) = 0.;
                 }
 
 
 
         // --- assign polarization vectors ---
-                for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                for( int ip=0; ip<numberOfPolarizationVectors; ip++ )
                 {
-                    const int pc= iv*numberOfDimensions;
+                    const int pc= ip*numberOfDimensions;
                     pLocal(i1,i2,i3,pc  ) = 0.;
                     pLocal(i1,i2,i3,pc+1) = 2*epsHat*tanh( epsHat*(x-x0-U*t) )*seche*cos(x-t);
+                    if (t<0.){
+                        pLocal(i1,i2,i3,pc+1) = 2*epsHat*tanh( epsHat*(x-x0-U*0.) )*seche*cos(x-0.) - epsHat*dt*pt + epsHat*pow(dt,2)/2.*ptt - epsHat*pow(dt,3)/6.*pttt + epsHat*pow(dt,4)/24.*ptttt;
+                    }
 
                     if( numberOfDimensions==3 )
                     {
@@ -389,9 +451,13 @@ eval(real dt, real t, CompositeGrid & cg, int grid,
     // ::display(gid,"gid");
     // get 
     // realArray un;
-        const int size = n+3; // index goes from -1 to n+1
-        const int base = -1;
-        const int bound = n+1;
+    // const int size = n+3; // index goes from -1 to n+1
+    // const int base = -1;
+    // const int bound = n+1;
+
+        const int size = n+5; // index goes from -2 to n+2
+        const int base = -2;
+        const int bound = n+2;
 
         real *pun = new real[3*size]; // hardcoded 3 variables [E,P,D]; see mbe1d.f90 for details.
         #define un(i,j) pun[(i-base)+(size)*(j)] //
@@ -401,14 +467,28 @@ eval(real dt, real t, CompositeGrid & cg, int grid,
 
         real xa = xab[0][0];
         real xb = xab[1][0];
+
+        real epsilon=sqrt(multilevelAtomicParams(0,0,0));
+
+        real rpar[5];
+        rpar[0] = t;
+        rpar[1] = dt;
+        rpar[2] = xa;
+        rpar[3] = xb;
+        rpar[4] = epsilon;
+
+
+        int ipar[5];
+    // ipar[0] = n;
+        ipar[1] = orderOfAccuracyInSpace;
       
     // Call a Fortran subroutine
-        real epsilon=sqrt(multilevelAtomicParams(0,0,0));
-        mbe1d(epsilon,dt,xa,xb,n,t,un(base,0));
+    // mbe1d(epsilon,dt,xa,xb,n,t,un(base,0));
+        mbe1d(rpar[0],ipar[0],n,un(base,0));
     // ::display(multilevelAtomicParams,"params");
-        cout << "At time (NES): " << t << endl;
-        cout << "Time step (NES): " << dt << endl;
-        cout << "Bounds in x are (NES): " << I1.getBase() << " "<<  I1.getBound() << " " << n <<" " << gid(1,0) << " " << gid(0,0) << endl;
+    // cout << "At time (NES): " << t << endl;
+    // cout << "Time step (NES): " << dt << endl;
+    // cout << "Bounds in x are (NES): " << I1.getBase() << " "<<  I1.getBound() << " " << n <<" " << gid(1,0) << " " << gid(0,0) << endl;
     // cout << "Bounds in (x,y,z) are (NES): " << I1a.getBase() << " "<<  I1a.getBound() << " " << I2a.getBase() << " "<<  I2a.getBound() << " " << I3a.getBase() << " "<<  I3a.getBound() << endl;
 
 
@@ -465,9 +545,9 @@ eval(real dt, real t, CompositeGrid & cg, int grid,
 
 
         // --- assign polarization vectors ---
-                for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                for( int ip=0; ip<numberOfPolarizationVectors; ip++ )
                 {
-                    const int pc= iv*numberOfDimensions;
+                    const int pc= ip*numberOfDimensions;
                     pLocal(i1,i2,i3,pc  ) = 0.;
                     pLocal(i1,i2,i3,pc+1) = v(i1,1);
 

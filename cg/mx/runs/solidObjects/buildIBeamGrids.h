@@ -7,7 +7,7 @@
 $count=$count+1; $gridName="iBeam$count"; $gridNames .= "\n" . $gridName;
 $mapName="iBeamGridBase";
 # include transform.h
-include transformToNurbs.h
+include $ENV{CG}/mx/runs/solidObjects/transformToNurbs.h
 # 
 # Inner background grid 
 $gridName="iBeamSolidCore$count"; $iBeamNames .= "\n" . $gridName;
@@ -30,4 +30,4 @@ rectangle
 $mapName="iBeamGridBaseSolid";
 $gridName="iBeamSolid$count"; $iBeamNames .= "\n" . $gridName;
 # include transform.h
-include transformToNurbs.h
+include $ENV{CG}/mx/runs/solidObjects/transformToNurbs.h

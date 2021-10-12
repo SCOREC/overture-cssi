@@ -154,5 +154,6 @@ continue
 # 
 erase
 displacement
+   displacement scale factor .25
 exit
 $go

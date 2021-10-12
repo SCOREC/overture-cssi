@@ -1,4 +1,5 @@
 #include "Cgsm.h"
+#include "SmParameters.h"
 #include "CompositeGridOperators.h"
 #include "display.h"
 #include "UnstructuredMapping.h"
@@ -17,14 +18,14 @@
 extern "C"
 {
  void scatCyl(const int&nd ,
- 	     const int&n1a,const int&n1b,const int&n2a,const int&n2b,const int&n3a,const int&n3b,const int&nd1a,
- 	     const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,const int&nd4a,const int&nd4b,
- 	     const real& xy, real&u, const int&ipar, const real&rpar );
+             const int&n1a,const int&n1b,const int&n2a,const int&n2b,const int&n3a,const int&n3b,const int&nd1a,
+             const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,const int&nd4a,const int&nd4b,
+             const real& xy, real&u, const int&ipar, const real&rpar );
 
  void scatSphere(const int&nd ,
- 	     const int&n1a,const int&n1b,const int&n2a,const int&n2b,const int&n3a,const int&n3b,const int&nd1a,
- 	     const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,const int&nd4a,const int&nd4b,
- 	     const real& xy, real&u, const int&ipar, const real&rpar );
+             const int&n1a,const int&n1b,const int&n2a,const int&n2b,const int&n3a,const int&n3b,const int&nd1a,
+             const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,const int&nd4a,const int&nd4b,
+             const real& xy, real&u, const int&ipar, const real&rpar );
 
  void exmax(double&Ez,double&Bx,double&By,const int &nsources,const double&xs,const double&ys,
             const double&tau,const double&var,const double&amp, const double&a,
@@ -212,11 +213,11 @@ if ( (option==0 || option==1 ) )
    #undef CC
    #define CC ex
    U(i1,i2,i3,CC) ## assgn e.gd(1,nxd,nyd,nzd,x0,y0,z0,CC,t) \
-				 - e.y(x0,y0,z0,hz,t)/eps;
+                                 - e.y(x0,y0,z0,hz,t)/eps;
    #undef CC
    #define CC ey
    U(i1,i2,i3,CC) ## assgn e.gd(1,nxd,nyd,nzd,x0,y0,z0,CC,t) \
-				 + e.x(x0,y0,z0,hz,t)/eps;
+                                 + e.x(x0,y0,z0,hz,t)/eps;
  }
 }
 else
@@ -258,16 +259,16 @@ else
     #undef CC
     #define CC ex
    U(i1,i2,i3,CC) ## assgn e.gd(1,nxd,nyd,nzd,x0,y0,z0,CC,t) \
-				 - (e.y(x0,y0,z0,hz,t)-e.z(x0,y0,z0,hy,t))/eps;
+                                 - (e.y(x0,y0,z0,hz,t)-e.z(x0,y0,z0,hy,t))/eps;
     #undef CC
     #define CC ey
    U(i1,i2,i3,CC) ## assgn e.gd(1,nxd,nyd,nzd,x0,y0,z0,CC,t) \
-				 + (e.x(x0,y0,z0,hz,t)-e.z(x0,y0,z0,hx,t))/eps;
+                                 + (e.x(x0,y0,z0,hz,t)-e.z(x0,y0,z0,hx,t))/eps;
 
     #undef CC
     #define CC ez
    U(i1,i2,i3,CC) ## assgn e.gd(1,nxd,nyd,nzd,x0,y0,z0,CC,t) \
-				 - (e.x(x0,y0,z0,hy,t)-e.y(x0,y0,z0,hx,t))/eps;
+                                 - (e.x(x0,y0,z0,hy,t)-e.y(x0,y0,z0,hx,t))/eps;
  }
    }
  else
@@ -319,9 +320,15 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
 // option==3 : u is h field and use == ( ==1 is efield )
 // ========================================================================================
 {
+  const SmParameters::CompressibilityTypeEnum & compressibilityType = parameters.dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");
+
+  // TZ forcing is done inside the incompressible advance Fortran routines
+  if( compressibilityType==SmParameters::incompressibleSolid && forcingOption==twilightZoneForcing )
+    return 0;
+
   // Just return if there is no forcing
   bool computeForcing = (forcingOption==twilightZoneForcing || 
-			 forcingOption==gaussianSource ||
+                         forcingOption==gaussianSource ||
                          forcingOption==gaussianChargeSource ||
                          forcingOption==userDefinedForcingOption );
   
@@ -391,8 +398,8 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
 
   }
   else if( forcingOption==twilightZoneForcing || 
-	   forcingOption==gaussianSource ||
-	   forcingOption==gaussianChargeSource )
+           forcingOption==gaussianSource ||
+           forcingOption==gaussianChargeSource )
   {
     
     MappedGrid & mg = cg[grid];
@@ -450,16 +457,16 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
 
       int i1,i2,i3;
       real x0,y0,z0=0.;
-	  
+          
       if( parameters.dbase.get<int>("variableMaterialPropertiesOption")!=0  )
       {
-	// -- Variable material properties ---
-	const int rhoc = parameters.dbase.get<int>("rhoc");
-	const int muc = parameters.dbase.get<int>("muc");
-	const int lambdac = parameters.dbase.get<int>("lambdac");
-	assert( rhoc>=0 && muc>=0 && lambdac>=0 );
+        // -- Variable material properties ---
+        const int rhoc = parameters.dbase.get<int>("rhoc");
+        const int muc = parameters.dbase.get<int>("muc");
+        const int lambdac = parameters.dbase.get<int>("lambdac");
+        assert( rhoc>=0 && muc>=0 && lambdac>=0 );
 
-	Range D(uc,uc+numberOfDimensions-1);  // displacement components
+        Range D(uc,uc+numberOfDimensions-1);  // displacement components
         realSerialArray   f(I1,I2,I3,D);
         realSerialArray utt(I1,I2,I3,D),  ux(I1,I2,I3,D),  uy(I1,I2,I3,D);
         realSerialArray uxx(I1,I2,I3,D), uxy(I1,I2,I3,D), uyy(I1,I2,I3,D);
@@ -467,8 +474,8 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
         realSerialArray rho(I1,I2,I3);
         realSerialArray  mu(I1,I2,I3),  mux(I1,I2,I3),  muy(I1,I2,I3);
         realSerialArray lam(I1,I2,I3), lamx(I1,I2,I3), lamy(I1,I2,I3);
-	
-	
+        
+        
         // Evaluate the material parameters: 
         e.gd(rho ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,rhoc   ,t);
         e.gd(mu  ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,muc    ,t);
@@ -489,189 +496,189 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
         e.gd(uxy,xLocal,numberOfDimensions,isRectangular,0,1,1,0,I1,I2,I3,D,t);
         e.gd(uyy,xLocal,numberOfDimensions,isRectangular,0,0,2,0,I1,I2,I3,D,t);
 
-	if( numberOfDimensions==2 )
-	{
-	  f(I1,I2,I3,uc) = utt(I1,I2,I3,uc) 
-	    -( (lam+2.*mu)*uxx(I1,I2,I3,uc) + (lamx+2.*mux)*ux(I1,I2,I3,uc)
-	       + (lam+mu)*uxy(I1,I2,I3,vc) + lamx*uy(I1,I2,I3,vc)+ muy*ux(I1,I2,I3,vc)
-	       + mu*uyy(I1,I2,I3,uc) + muy*uy(I1,I2,I3,uc) )/rho;
+        if( numberOfDimensions==2 )
+        {
+          f(I1,I2,I3,uc) = utt(I1,I2,I3,uc) 
+            -( (lam+2.*mu)*uxx(I1,I2,I3,uc) + (lamx+2.*mux)*ux(I1,I2,I3,uc)
+               + (lam+mu)*uxy(I1,I2,I3,vc) + lamx*uy(I1,I2,I3,vc)+ muy*ux(I1,I2,I3,vc)
+               + mu*uyy(I1,I2,I3,uc) + muy*uy(I1,I2,I3,uc) )/rho;
 
-	  f(I1,I2,I3,vc) = utt(I1,I2,I3,vc) 
-	    -( (lam+2.*mu)*uyy(I1,I2,I3,vc) + (lamy+2.*muy)*uy(I1,I2,I3,vc)
-	       + (lam+mu)*uxy(I1,I2,I3,uc) + lamy*ux(I1,I2,I3,uc)+ mux*uy(I1,I2,I3,uc)
-	       + mu*uxx(I1,I2,I3,vc) + mux*ux(I1,I2,I3,vc) )/rho;
-	}
-	else
-	{ // ---  3D ---
-	  realSerialArray  muz(I1,I2,I3),  lamz(I1,I2,I3);
-	  e.gd(muz ,xLocal,numberOfDimensions,isRectangular,0,0,0,1,I1,I2,I3,muc    ,t);
-	  e.gd(lamz,xLocal,numberOfDimensions,isRectangular,0,0,0,1,I1,I2,I3,lambdac,t);
+          f(I1,I2,I3,vc) = utt(I1,I2,I3,vc) 
+            -( (lam+2.*mu)*uyy(I1,I2,I3,vc) + (lamy+2.*muy)*uy(I1,I2,I3,vc)
+               + (lam+mu)*uxy(I1,I2,I3,uc) + lamy*ux(I1,I2,I3,uc)+ mux*uy(I1,I2,I3,uc)
+               + mu*uxx(I1,I2,I3,vc) + mux*ux(I1,I2,I3,vc) )/rho;
+        }
+        else
+        { // ---  3D ---
+          realSerialArray  muz(I1,I2,I3),  lamz(I1,I2,I3);
+          e.gd(muz ,xLocal,numberOfDimensions,isRectangular,0,0,0,1,I1,I2,I3,muc    ,t);
+          e.gd(lamz,xLocal,numberOfDimensions,isRectangular,0,0,0,1,I1,I2,I3,lambdac,t);
 
-	  realSerialArray uz(I1,I2,I3,D);
-	  realSerialArray uxz(I1,I2,I3,D), uyz(I1,I2,I3,D), uzz(I1,I2,I3,D);
-	  e.gd(uz ,xLocal,numberOfDimensions,isRectangular,0,0,0,1,I1,I2,I3,D,t);
-	  e.gd(uxz,xLocal,numberOfDimensions,isRectangular,0,1,0,1,I1,I2,I3,D,t);
-	  e.gd(uyz,xLocal,numberOfDimensions,isRectangular,0,0,1,1,I1,I2,I3,D,t);
-	  e.gd(uzz,xLocal,numberOfDimensions,isRectangular,0,0,0,2,I1,I2,I3,D,t);
+          realSerialArray uz(I1,I2,I3,D);
+          realSerialArray uxz(I1,I2,I3,D), uyz(I1,I2,I3,D), uzz(I1,I2,I3,D);
+          e.gd(uz ,xLocal,numberOfDimensions,isRectangular,0,0,0,1,I1,I2,I3,D,t);
+          e.gd(uxz,xLocal,numberOfDimensions,isRectangular,0,1,0,1,I1,I2,I3,D,t);
+          e.gd(uyz,xLocal,numberOfDimensions,isRectangular,0,0,1,1,I1,I2,I3,D,t);
+          e.gd(uzz,xLocal,numberOfDimensions,isRectangular,0,0,0,2,I1,I2,I3,D,t);
 
 
-	  f(I1,I2,I3,uc) = utt(I1,I2,I3,uc) 
-	    -( (lam+2.*mu)*uxx(I1,I2,I3,uc) + (lamx+2.*mux)*ux(I1,I2,I3,uc)
-	       + (lam+mu)*uxy(I1,I2,I3,vc) + lamx*uy(I1,I2,I3,vc)+ muy*ux(I1,I2,I3,vc)
-	       + (lam+mu)*uxz(I1,I2,I3,wc) + lamx*uz(I1,I2,I3,wc)+ muz*ux(I1,I2,I3,wc)
-	       + mu*uyy(I1,I2,I3,uc) + muy*uy(I1,I2,I3,uc) 
-	       + mu*uzz(I1,I2,I3,uc) + muz*uz(I1,I2,I3,uc) 
+          f(I1,I2,I3,uc) = utt(I1,I2,I3,uc) 
+            -( (lam+2.*mu)*uxx(I1,I2,I3,uc) + (lamx+2.*mux)*ux(I1,I2,I3,uc)
+               + (lam+mu)*uxy(I1,I2,I3,vc) + lamx*uy(I1,I2,I3,vc)+ muy*ux(I1,I2,I3,vc)
+               + (lam+mu)*uxz(I1,I2,I3,wc) + lamx*uz(I1,I2,I3,wc)+ muz*ux(I1,I2,I3,wc)
+               + mu*uyy(I1,I2,I3,uc) + muy*uy(I1,I2,I3,uc) 
+               + mu*uzz(I1,I2,I3,uc) + muz*uz(I1,I2,I3,uc) 
                   )/rho;
 
-	  f(I1,I2,I3,vc) = utt(I1,I2,I3,vc) 
-	    -( (lam+2.*mu)*uyy(I1,I2,I3,vc) + (lamy+2.*muy)*uy(I1,I2,I3,vc)
-	       + (lam+mu)*uxy(I1,I2,I3,uc) + lamy*ux(I1,I2,I3,uc)+ mux*uy(I1,I2,I3,uc)
-	       + (lam+mu)*uyz(I1,I2,I3,wc) + lamy*uz(I1,I2,I3,wc)+ muz*uy(I1,I2,I3,wc)
-	       + mu*uxx(I1,I2,I3,vc) + mux*ux(I1,I2,I3,vc) 
-	       + mu*uzz(I1,I2,I3,vc) + muz*uz(I1,I2,I3,vc) 
+          f(I1,I2,I3,vc) = utt(I1,I2,I3,vc) 
+            -( (lam+2.*mu)*uyy(I1,I2,I3,vc) + (lamy+2.*muy)*uy(I1,I2,I3,vc)
+               + (lam+mu)*uxy(I1,I2,I3,uc) + lamy*ux(I1,I2,I3,uc)+ mux*uy(I1,I2,I3,uc)
+               + (lam+mu)*uyz(I1,I2,I3,wc) + lamy*uz(I1,I2,I3,wc)+ muz*uy(I1,I2,I3,wc)
+               + mu*uxx(I1,I2,I3,vc) + mux*ux(I1,I2,I3,vc) 
+               + mu*uzz(I1,I2,I3,vc) + muz*uz(I1,I2,I3,vc) 
                   )/rho;
 
-	  f(I1,I2,I3,wc) = utt(I1,I2,I3,wc) 
-	    -( (lam+2.*mu)*uzz(I1,I2,I3,wc) + (lamz+2.*muz)*uz(I1,I2,I3,wc)
-	       + (lam+mu)*uxz(I1,I2,I3,uc) + lamz*ux(I1,I2,I3,uc)+ mux*uz(I1,I2,I3,uc)
-	       + (lam+mu)*uyz(I1,I2,I3,vc) + lamz*uy(I1,I2,I3,vc)+ muy*uz(I1,I2,I3,vc)
-	       + mu*uxx(I1,I2,I3,wc) + mux*ux(I1,I2,I3,wc) 
-	       + mu*uyy(I1,I2,I3,wc) + muy*uy(I1,I2,I3,wc) 
+          f(I1,I2,I3,wc) = utt(I1,I2,I3,wc) 
+            -( (lam+2.*mu)*uzz(I1,I2,I3,wc) + (lamz+2.*muz)*uz(I1,I2,I3,wc)
+               + (lam+mu)*uxz(I1,I2,I3,uc) + lamz*ux(I1,I2,I3,uc)+ mux*uz(I1,I2,I3,uc)
+               + (lam+mu)*uyz(I1,I2,I3,vc) + lamz*uy(I1,I2,I3,vc)+ muy*uz(I1,I2,I3,vc)
+               + mu*uxx(I1,I2,I3,wc) + mux*ux(I1,I2,I3,wc) 
+               + mu*uyy(I1,I2,I3,wc) + muy*uy(I1,I2,I3,wc) 
                   )/rho;
 
-	}
+        }
 
-	// ::display(xLocal,sPrintF(" TZ forcing xLocal t=%8.2e",t),"%9.2e ");
-// 	::display(utt(I1,I2,I3,uc),sPrintF(" TZ forcing utt t=%8.2e",t),"%9.2e ");
-	
+        // ::display(xLocal,sPrintF(" TZ forcing xLocal t=%8.2e",t),"%9.2e ");
+//      ::display(utt(I1,I2,I3,uc),sPrintF(" TZ forcing utt t=%8.2e",t),"%9.2e ");
+        
 //         realSerialArray utta(I1,I2,I3);
-// 	const int isRectangular=false;
+//      const int isRectangular=false;
 //         e.gd(utta,xLocal,numberOfDimensions,isRectangular,1,0,0,0,I1,I2,I3,uc,t);
-// 	::display(utta,sPrintF(" TZ forcing ut: t=%8.2e",t),"%9.2e ");
+//      ::display(utta,sPrintF(" TZ forcing ut: t=%8.2e",t),"%9.2e ");
 //         e.gd(utta,xLocal,numberOfDimensions,isRectangular,2,0,0,0,I1,I2,I3,uc,t);
-// 	::display(utta,sPrintF(" TZ forcing utt: t=%8.2e",t),"%9.2e ");
+//      ::display(utta,sPrintF(" TZ forcing utt: t=%8.2e",t),"%9.2e ");
 
-	
+        
 //         x0=0.; y0=0.; z0=0.;
-	
+        
 //         printF(" utt = %9.2e\n",e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,uc,t));
 //         printF(" vtt = %9.2e\n",e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,vc,t));
 
-	if( option==0 || option==2 )
-	{
+        if( option==0 || option==2 )
+        {
           uLocal(I1,I2,I3,D) += f(I1,I2,I3,D);
-	}
-	else
-	{
+        }
+        else
+        {
           uLocal(I1,I2,I3,D) = f(I1,I2,I3,D);
-	}
+        }
 
       }
       else if( option==0 || option==2 )
       {
 
-	// ********************** this is slow -- fix *****************
+        // ********************** this is slow -- fix *****************
 
 
-	if( mg.numberOfDimensions()==2 )
-	{
-	  FOR_3D(i1,i2,i3,I1,I2,I3)
-	  {
+        if( mg.numberOfDimensions()==2 )
+        {
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
             x0=X(i1,i2,i3,0);
             y0=X(i1,i2,i3,1);
-	    
-	    U(i1,i2,i3,uc)+=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,uc,t)
-			     - c2*(e.xx(x0,y0,z0,uc,t)+e.yy(x0,y0,z0,uc,t))
-			     - c1*(e.xx(x0,y0,z0,uc,t)+e.xy(x0,y0,z0,vc,t))
+            
+            U(i1,i2,i3,uc)+=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,uc,t)
+                             - c2*(e.xx(x0,y0,z0,uc,t)+e.yy(x0,y0,z0,uc,t))
+                             - c1*(e.xx(x0,y0,z0,uc,t)+e.xy(x0,y0,z0,vc,t))
                             );
-	    U(i1,i2,i3,vc)+=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,vc,t)
-			     - c2*(e.xx(x0,y0,z0,vc,t)+e.yy(x0,y0,z0,vc,t))
-			     - c1*(e.xy(x0,y0,z0,uc,t)+e.yy(x0,y0,z0,vc,t))
+            U(i1,i2,i3,vc)+=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,vc,t)
+                             - c2*(e.xx(x0,y0,z0,vc,t)+e.yy(x0,y0,z0,vc,t))
+                             - c1*(e.xy(x0,y0,z0,uc,t)+e.yy(x0,y0,z0,vc,t))
                             );
-	  }
-	}
-	else
-	{
-	  FOR_3D(i1,i2,i3,I1,I2,I3)
-	  {
+          }
+        }
+        else
+        {
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
             x0=X(i1,i2,i3,0); y0=X(i1,i2,i3,1); z0=X(i1,i2,i3,2);
-	    U(i1,i2,i3,uc)+=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,uc,t)
-			     - c2*(e.xx(x0,y0,z0,uc,t)+e.yy(x0,y0,z0,uc,t)+e.zz(x0,y0,z0,uc,t))
-			     - c1*(e.xx(x0,y0,z0,uc,t)+e.xy(x0,y0,z0,vc,t)+e.xz(x0,y0,z0,wc,t))
+            U(i1,i2,i3,uc)+=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,uc,t)
+                             - c2*(e.xx(x0,y0,z0,uc,t)+e.yy(x0,y0,z0,uc,t)+e.zz(x0,y0,z0,uc,t))
+                             - c1*(e.xx(x0,y0,z0,uc,t)+e.xy(x0,y0,z0,vc,t)+e.xz(x0,y0,z0,wc,t))
                             );
-	    U(i1,i2,i3,vc)+=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,vc,t)
-			     - c2*(e.xx(x0,y0,z0,vc,t)+e.yy(x0,y0,z0,vc,t)+e.zz(x0,y0,z0,vc,t))
-			     - c1*(e.xy(x0,y0,z0,uc,t)+e.yy(x0,y0,z0,vc,t)+e.yz(x0,y0,z0,wc,t))
+            U(i1,i2,i3,vc)+=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,vc,t)
+                             - c2*(e.xx(x0,y0,z0,vc,t)+e.yy(x0,y0,z0,vc,t)+e.zz(x0,y0,z0,vc,t))
+                             - c1*(e.xy(x0,y0,z0,uc,t)+e.yy(x0,y0,z0,vc,t)+e.yz(x0,y0,z0,wc,t))
                             );
-	    U(i1,i2,i3,wc)+=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,wc,t)
-			     - c2*(e.xx(x0,y0,z0,wc,t)+e.yy(x0,y0,z0,wc,t)+e.zz(x0,y0,z0,wc,t))
-			     - c1*(e.xz(x0,y0,z0,uc,t)+e.yz(x0,y0,z0,vc,t)+e.zz(x0,y0,z0,wc,t))
+            U(i1,i2,i3,wc)+=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,wc,t)
+                             - c2*(e.xx(x0,y0,z0,wc,t)+e.yy(x0,y0,z0,wc,t)+e.zz(x0,y0,z0,wc,t))
+                             - c1*(e.xz(x0,y0,z0,uc,t)+e.yz(x0,y0,z0,vc,t)+e.zz(x0,y0,z0,wc,t))
                             );
-	  }
-	}
+          }
+        }
       }
       else
       {  // option == 1 : 
-	if( mg.numberOfDimensions()==2 )
-	{
-	  FOR_3D(i1,i2,i3,I1,I2,I3)
-	  {
+        if( mg.numberOfDimensions()==2 )
+        {
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
             x0=X(i1,i2,i3,0);  y0=X(i1,i2,i3,1);
-	    U(i1,i2,i3,uc)=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,uc,t)
-			     - c2*(e.xx(x0,y0,z0,uc,t)+e.yy(x0,y0,z0,uc,t))
-			     - c1*(e.xx(x0,y0,z0,uc,t)+e.xy(x0,y0,z0,vc,t))
+            U(i1,i2,i3,uc)=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,uc,t)
+                             - c2*(e.xx(x0,y0,z0,uc,t)+e.yy(x0,y0,z0,uc,t))
+                             - c1*(e.xx(x0,y0,z0,uc,t)+e.xy(x0,y0,z0,vc,t))
                             );
-	    U(i1,i2,i3,vc)=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,vc,t)
-			     - c2*(e.xx(x0,y0,z0,vc,t)+e.yy(x0,y0,z0,vc,t))
-			     - c1*(e.xy(x0,y0,z0,uc,t)+e.yy(x0,y0,z0,vc,t))
+            U(i1,i2,i3,vc)=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,vc,t)
+                             - c2*(e.xx(x0,y0,z0,vc,t)+e.yy(x0,y0,z0,vc,t))
+                             - c1*(e.xy(x0,y0,z0,uc,t)+e.yy(x0,y0,z0,vc,t))
                             );
-	  }
-	}
-	else
-	{
-	  FOR_3D(i1,i2,i3,I1,I2,I3)
-	  {
+          }
+        }
+        else
+        {
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
             x0=X(i1,i2,i3,0); y0=X(i1,i2,i3,1); z0=X(i1,i2,i3,2);
-	    U(i1,i2,i3,uc)=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,uc,t)
-			     - c2*(e.xx(x0,y0,z0,uc,t)+e.yy(x0,y0,z0,uc,t)+e.zz(x0,y0,z0,uc,t))
-			     - c1*(e.xx(x0,y0,z0,uc,t)+e.xy(x0,y0,z0,vc,t)+e.xz(x0,y0,z0,wc,t))
+            U(i1,i2,i3,uc)=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,uc,t)
+                             - c2*(e.xx(x0,y0,z0,uc,t)+e.yy(x0,y0,z0,uc,t)+e.zz(x0,y0,z0,uc,t))
+                             - c1*(e.xx(x0,y0,z0,uc,t)+e.xy(x0,y0,z0,vc,t)+e.xz(x0,y0,z0,wc,t))
                             );
-	    U(i1,i2,i3,vc)=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,vc,t)
-			     - c2*(e.xx(x0,y0,z0,vc,t)+e.yy(x0,y0,z0,vc,t)+e.zz(x0,y0,z0,vc,t))
-			     - c1*(e.xy(x0,y0,z0,uc,t)+e.yy(x0,y0,z0,vc,t)+e.yz(x0,y0,z0,wc,t))
+            U(i1,i2,i3,vc)=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,vc,t)
+                             - c2*(e.xx(x0,y0,z0,vc,t)+e.yy(x0,y0,z0,vc,t)+e.zz(x0,y0,z0,vc,t))
+                             - c1*(e.xy(x0,y0,z0,uc,t)+e.yy(x0,y0,z0,vc,t)+e.yz(x0,y0,z0,wc,t))
                             );
-	    U(i1,i2,i3,wc)=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,wc,t)
-			     - c2*(e.xx(x0,y0,z0,wc,t)+e.yy(x0,y0,z0,wc,t)+e.zz(x0,y0,z0,wc,t))
-			     - c1*(e.xz(x0,y0,z0,uc,t)+e.yz(x0,y0,z0,vc,t)+e.zz(x0,y0,z0,wc,t))
+            U(i1,i2,i3,wc)=(e.gd(ntd,nxd,nyd,nzd,x0,y0,z0,wc,t)
+                             - c2*(e.xx(x0,y0,z0,wc,t)+e.yy(x0,y0,z0,wc,t)+e.zz(x0,y0,z0,wc,t))
+                             - c1*(e.xz(x0,y0,z0,uc,t)+e.yz(x0,y0,z0,vc,t)+e.zz(x0,y0,z0,wc,t))
                             );
-	  }
-	}
+          }
+        }
 
       }
       if( orderOfAccuracyInSpace>=4 )
       {// add forcing for methods that are 4th order or higher
-// 	if( mg.numberOfDimensions()==2 )
-// 	{
-// 	  forcingLoops2D((i1,i2,i3,CC)+= (e.gd(4,0,0,0,x0,y0,z0,CC,t) \
-// 					  - (csq*csq)*(e.gd(0,4,0,0,x0,y0,z0,CC,t)\
-// 						       +e.gd(0,0,4,0,x0,y0,z0,CC,t)\
-// 						       +2.*e.gd(0,2,2,0,x0,y0,z0,CC,t) ) )*dtsqby12;);
-// 	}
-// 	else
-// 	{
-// 	  forcingLoops3D((i1,i2,i3,CC)+=    (e.gd(4,0,0,0,x0,y0,z0,CC,t) \
-// 					     - (csq*csq)*(e.gd(0,4,0,0,x0,y0,z0,CC,t)\
-// 							  +e.gd(0,0,4,0,x0,y0,z0,CC,t)\
-// 							  +e.gd(0,0,0,4,x0,y0,z0,CC,t)\
-// 							  +2.*(e.gd(0,2,2,0,x0,y0,z0,CC,t)\
-// 							       +e.gd(0,2,0,2,x0,y0,z0,CC,t)\
-// 							       +e.gd(0,0,2,2,x0,y0,z0,CC,t)) ) )*dtsqby12;);
-// 	}
+//      if( mg.numberOfDimensions()==2 )
+//      {
+//        forcingLoops2D((i1,i2,i3,CC)+= (e.gd(4,0,0,0,x0,y0,z0,CC,t) \
+//                                        - (csq*csq)*(e.gd(0,4,0,0,x0,y0,z0,CC,t)\
+//                                                     +e.gd(0,0,4,0,x0,y0,z0,CC,t)\
+//                                                     +2.*e.gd(0,2,2,0,x0,y0,z0,CC,t) ) )*dtsqby12;);
+//      }
+//      else
+//      {
+//        forcingLoops3D((i1,i2,i3,CC)+=    (e.gd(4,0,0,0,x0,y0,z0,CC,t) \
+//                                           - (csq*csq)*(e.gd(0,4,0,0,x0,y0,z0,CC,t)\
+//                                                        +e.gd(0,0,4,0,x0,y0,z0,CC,t)\
+//                                                        +e.gd(0,0,0,4,x0,y0,z0,CC,t)\
+//                                                        +2.*(e.gd(0,2,2,0,x0,y0,z0,CC,t)\
+//                                                             +e.gd(0,2,0,2,x0,y0,z0,CC,t)\
+//                                                             +e.gd(0,0,2,2,x0,y0,z0,CC,t)) ) )*dtsqby12;);
+//      }
       }
-	
+        
       if( orderOfAccuracyInSpace>=6 )
       { // add forcing for methods that are 6th order or higher
-	real dt4by360=dt*dt*dt*dt/360.;
+        real dt4by360=dt*dt*dt*dt/360.;
 
       }
       
@@ -694,156 +701,156 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
       const bool isRectangular = mg.isRectangular();
 
       if( debug & 4 )
-	printf(" addForcing:gaussianSource: beta=%8.2e omega=%8.2e x0=(%8.2e,%8.2e,%8.2e) \n",
-	       beta,omega,x0,y0,z0);
+        printf(" addForcing:gaussianSource: beta=%8.2e omega=%8.2e x0=(%8.2e,%8.2e,%8.2e) \n",
+               beta,omega,x0,y0,z0);
 
 //       if( !isRectangular )
 //       {
       
-// 	realArray f3E(Ie1,Ie2,Ie3),f3H(Ih1,Ih2,Ih3);
+//      realArray f3E(Ie1,Ie2,Ie3),f3H(Ih1,Ih2,Ih3);
 
-// 	if( mg.numberOfDimensions()==2 )
-// 	{
-// 	  f3H=exp( -beta*( SQR(xh(Ih1,Ih2,Ih3)-x0)+SQR(yh(Ih1,Ih2,Ih3)-y0) ) );
-// 	  f3E=exp( -beta*( SQR(xe(Ie1,Ie2,Ie3)-x0)+SQR(ye(Ie1,Ie2,Ie3)-y0) ) );
+//      if( mg.numberOfDimensions()==2 )
+//      {
+//        f3H=exp( -beta*( SQR(xh(Ih1,Ih2,Ih3)-x0)+SQR(yh(Ih1,Ih2,Ih3)-y0) ) );
+//        f3E=exp( -beta*( SQR(xe(Ie1,Ie2,Ie3)-x0)+SQR(ye(Ie1,Ie2,Ie3)-y0) ) );
 
-// 	  if( option==0 )
-// 	  {
-// 	    if  ( false && method==dsiMatVec  )// kkc projection is now done by EXTRACT_GFP_END
-// 	    {
-// 	      const realArray &cFNorm = mg.faceNormal();
-// 	      const realArray &cFArea = mg.faceArea();
-// 	      u(Ie1,Ie2,Ie3,0) += 
-// 		cFArea(Ie1,Ie2,Ie3)*((-2.*beta*stE)*(ye(Ie1,Ie2,Ie3)-y0)*f3E*cFNorm(Ie1,Ie2,Ie3,0)+ 
-// 				     ( 2.*beta*stE)*(xe(Ie1,Ie2,Ie3)-x0)*f3E*cFNorm(Ie1,Ie2,Ie3,1));
-// 	    }
-// 	    else
-// 	    {
-// 	      u(Ih1,Ih2,Ih3,hz)+=( 2.*Pi*omega*ctH)*f3H;
-// 	      u(Ie1,Ie2,Ie3,ex)+=(-2.*beta*stE)*(ye(Ie1,Ie2,Ie3)-y0)*f3E;
-// 	      u(Ie1,Ie2,Ie3,ey)+=( 2.*beta*stE)*(xe(Ie1,Ie2,Ie3)-x0)*f3E;
-// 	    }
-// 	  }
-// 	  else
-// 	  {
-// 	    u(Ih1,Ih2,Ih3,hz)=( 2.*Pi*omega*ctH)*f3H;
-// 	    u(Ie1,Ie2,Ie3,ex)=(-2.*beta*stE)*(ye(Ie1,Ie2,Ie3)-y0)*f3E;
-// 	    u(Ie1,Ie2,Ie3,ey)=( 2.*beta*stE)*(xe(Ie1,Ie2,Ie3)-x0)*f3E;
-// 	  }
+//        if( option==0 )
+//        {
+//          if  ( false && method==dsiMatVec  )// kkc projection is now done by EXTRACT_GFP_END
+//          {
+//            const realArray &cFNorm = mg.faceNormal();
+//            const realArray &cFArea = mg.faceArea();
+//            u(Ie1,Ie2,Ie3,0) += 
+//              cFArea(Ie1,Ie2,Ie3)*((-2.*beta*stE)*(ye(Ie1,Ie2,Ie3)-y0)*f3E*cFNorm(Ie1,Ie2,Ie3,0)+ 
+//                                   ( 2.*beta*stE)*(xe(Ie1,Ie2,Ie3)-x0)*f3E*cFNorm(Ie1,Ie2,Ie3,1));
+//          }
+//          else
+//          {
+//            u(Ih1,Ih2,Ih3,hz)+=( 2.*Pi*omega*ctH)*f3H;
+//            u(Ie1,Ie2,Ie3,ex)+=(-2.*beta*stE)*(ye(Ie1,Ie2,Ie3)-y0)*f3E;
+//            u(Ie1,Ie2,Ie3,ey)+=( 2.*beta*stE)*(xe(Ie1,Ie2,Ie3)-x0)*f3E;
+//          }
+//        }
+//        else
+//        {
+//          u(Ih1,Ih2,Ih3,hz)=( 2.*Pi*omega*ctH)*f3H;
+//          u(Ie1,Ie2,Ie3,ex)=(-2.*beta*stE)*(ye(Ie1,Ie2,Ie3)-y0)*f3E;
+//          u(Ie1,Ie2,Ie3,ey)=( 2.*beta*stE)*(xe(Ie1,Ie2,Ie3)-x0)*f3E;
+//        }
 
-// 	}
-// 	else // *** 3D ***
-// 	{
-// 	  // scale by beta*beta to make O(1)
-// 	  f3E=(beta*beta*ctE)*exp( -beta*( SQR(xe(I1,I2,I3)-x0)+SQR(ye(I1,I2,I3)-y0)+SQR(ze(I1,I2,I3)-z0) ) );
-// 	  if( option==0 )
-// 	  {
-// 	    u(I1,I2,I3,ex)+=( (xe(I1,I2,I3,2)-z0)-(xe(I1,I2,I3,1)-y0) )*f3E;
-// 	    u(I1,I2,I3,ey)+=( (xe(I1,I2,I3,0)-x0)-(xe(I1,I2,I3,2)-z0) )*f3E;
-// 	    u(I1,I2,I3,ez)+=( (xe(I1,I2,I3,1)-y0)-(xe(I1,I2,I3,0)-x0) )*f3E;
-// 	  }
-// 	  else
-// 	  {
-// 	    u(I1,I2,I3,ex)=( (xe(I1,I2,I3,2)-z0)-(xe(I1,I2,I3,1)-y0) )*f3E;
-// 	    u(I1,I2,I3,ey)=( (xe(I1,I2,I3,0)-x0)-(xe(I1,I2,I3,2)-z0) )*f3E;
-// 	    u(I1,I2,I3,ez)=( (xe(I1,I2,I3,1)-y0)-(xe(I1,I2,I3,0)-x0) )*f3E;
-// 	  }
-// 	}
-	  
+//      }
+//      else // *** 3D ***
+//      {
+//        // scale by beta*beta to make O(1)
+//        f3E=(beta*beta*ctE)*exp( -beta*( SQR(xe(I1,I2,I3)-x0)+SQR(ye(I1,I2,I3)-y0)+SQR(ze(I1,I2,I3)-z0) ) );
+//        if( option==0 )
+//        {
+//          u(I1,I2,I3,ex)+=( (xe(I1,I2,I3,2)-z0)-(xe(I1,I2,I3,1)-y0) )*f3E;
+//          u(I1,I2,I3,ey)+=( (xe(I1,I2,I3,0)-x0)-(xe(I1,I2,I3,2)-z0) )*f3E;
+//          u(I1,I2,I3,ez)+=( (xe(I1,I2,I3,1)-y0)-(xe(I1,I2,I3,0)-x0) )*f3E;
+//        }
+//        else
+//        {
+//          u(I1,I2,I3,ex)=( (xe(I1,I2,I3,2)-z0)-(xe(I1,I2,I3,1)-y0) )*f3E;
+//          u(I1,I2,I3,ey)=( (xe(I1,I2,I3,0)-x0)-(xe(I1,I2,I3,2)-z0) )*f3E;
+//          u(I1,I2,I3,ez)=( (xe(I1,I2,I3,1)-y0)-(xe(I1,I2,I3,0)-x0) )*f3E;
+//        }
+//      }
+          
 //       }
 //       else
 //       {
-// 	real dx[3],xab[2][3];
-// 	mg.getRectangularGridParameters( dx, xab );
+//      real dx[3],xab[2][3];
+//      mg.getRectangularGridParameters( dx, xab );
 
-// 	const int i0a=mg.gridIndexRange(0,0);
-// 	const int i1a=mg.gridIndexRange(0,1);
-// 	const int i2a=mg.gridIndexRange(0,2);
+//      const int i0a=mg.gridIndexRange(0,0);
+//      const int i1a=mg.gridIndexRange(0,1);
+//      const int i2a=mg.gridIndexRange(0,2);
 
-// 	const real xa=xab[0][0], dx0=dx[0];
-// 	const real ya=xab[0][1], dy0=dx[1];
-// 	const real za=xab[0][2], dz0=dx[2];
-	
+//      const real xa=xab[0][0], dx0=dx[0];
+//      const real ya=xab[0][1], dy0=dx[1];
+//      const real za=xab[0][2], dz0=dx[2];
+        
 // #define X0(i0,i1,i2) (xa+dx0*(i0-i0a))
 // #define X1(i0,i1,i2) (ya+dy0*(i1-i1a))
 // #define X2(i0,i1,i2) (za+dz0*(i2-i2a))
 
-// 	int i1,i2,i3;
-// 	real xd,yd,zd,f3;
-// 	Index J1,J2,J3;
-// 	if( mg.numberOfDimensions()==2 )
-// 	{
-// 	  if( option==0 )
-// 	  {
-// 	    //XXX not fully implemented for staggered schemes yet!
-// 	    J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
-// 	    J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
-// 	    J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
-// 	    FOR_3D(i1,i2,i3,J1,J2,J3)
-// 	    {
-// 	      xd=X0(i1,i2,i3)-x0;
-// 	      yd=X1(i1,i2,i3)-y0;
-	    
-// 	      f3=exp( -beta*( xd*xd+yd*yd ) );
-// 	      U(i1,i2,i3,hz)+=( 2.*Pi*omega*ctH)*f3;
-// 	      U(i1,i2,i3,ex)+=(-2.*beta*stE)*yd*f3;
-// 	      U(i1,i2,i3,ey)+=( 2.*beta*stE)*xd*f3;
-// 	    }
-// 	  }
-// 	  else
-// 	  {
-// 	    J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
-// 	    J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
-// 	    J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
-// 	    FOR_3D(i1,i2,i3,J1,J2,J3)
-// 	    {
-// 	      xd=X0(i1,i2,i3)-x0;
-// 	      yd=X1(i1,i2,i3)-y0;
-	    
-// 	      f3=exp( -beta*( xd*xd+yd*yd ) );
-// 	      U(i1,i2,i3,hz)=( 2.*Pi*omega*ctH)*f3;
-// 	      U(i1,i2,i3,ex)=(-2.*beta*stE)*yd*f3;
-// 	      U(i1,i2,i3,ey)=( 2.*beta*stE)*xd*f3;
-// 	    }
-	  
-// 	  }
-// 	}
-// 	else // 3D
-// 	{
-// 	  // scale by beta*beta to make O(1)
-// 	  J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
-// 	  J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
-// 	  J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
-// 	  real betaSqct=beta*beta*ctE;
-// 	  if( option==0 )
-// 	  {
-// 	    FOR_3D(i1,i2,i3,J1,J2,J3)
-// 	    {
-// 	      xd=X0(i1,i2,i3)-x0;
-// 	      yd=X1(i1,i2,i3)-y0;
-// 	      zd=X2(i1,i2,i3)-z0;
-	    
-// 	      f3=betaSqct*exp( -beta*( xd*xd+yd*yd+zd*zd ) );
-// 	      U(i1,i2,i3,ex)+=( zd-yd )*f3;
-// 	      U(i1,i2,i3,ey)+=( xd-zd )*f3;
-// 	      U(i1,i2,i3,ez)+=( yd-xd )*f3;
-// 	    }
-// 	  }
-// 	  else
-// 	  {
-// 	    FOR_3D(i1,i2,i3,J1,J2,J3)
-// 	    {
-// 	      xd=X0(i1,i2,i3)-x0;
-// 	      yd=X1(i1,i2,i3)-y0;
-// 	      zd=X2(i1,i2,i3)-z0;
-	    
-// 	      f3=betaSqct*exp( -beta*( xd*xd+yd*yd+zd*zd ) );
-// 	      U(i1,i2,i3,ex)=( zd-yd )*f3;
-// 	      U(i1,i2,i3,ey)=( xd-zd )*f3;
-// 	      U(i1,i2,i3,ez)=( yd-xd )*f3;
-// 	    }
-// 	  }
-// 	}
+//      int i1,i2,i3;
+//      real xd,yd,zd,f3;
+//      Index J1,J2,J3;
+//      if( mg.numberOfDimensions()==2 )
+//      {
+//        if( option==0 )
+//        {
+//          //XXX not fully implemented for staggered schemes yet!
+//          J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+//          J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+//          J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+//          FOR_3D(i1,i2,i3,J1,J2,J3)
+//          {
+//            xd=X0(i1,i2,i3)-x0;
+//            yd=X1(i1,i2,i3)-y0;
+            
+//            f3=exp( -beta*( xd*xd+yd*yd ) );
+//            U(i1,i2,i3,hz)+=( 2.*Pi*omega*ctH)*f3;
+//            U(i1,i2,i3,ex)+=(-2.*beta*stE)*yd*f3;
+//            U(i1,i2,i3,ey)+=( 2.*beta*stE)*xd*f3;
+//          }
+//        }
+//        else
+//        {
+//          J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+//          J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+//          J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+//          FOR_3D(i1,i2,i3,J1,J2,J3)
+//          {
+//            xd=X0(i1,i2,i3)-x0;
+//            yd=X1(i1,i2,i3)-y0;
+            
+//            f3=exp( -beta*( xd*xd+yd*yd ) );
+//            U(i1,i2,i3,hz)=( 2.*Pi*omega*ctH)*f3;
+//            U(i1,i2,i3,ex)=(-2.*beta*stE)*yd*f3;
+//            U(i1,i2,i3,ey)=( 2.*beta*stE)*xd*f3;
+//          }
+          
+//        }
+//      }
+//      else // 3D
+//      {
+//        // scale by beta*beta to make O(1)
+//        J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+//        J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+//        J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+//        real betaSqct=beta*beta*ctE;
+//        if( option==0 )
+//        {
+//          FOR_3D(i1,i2,i3,J1,J2,J3)
+//          {
+//            xd=X0(i1,i2,i3)-x0;
+//            yd=X1(i1,i2,i3)-y0;
+//            zd=X2(i1,i2,i3)-z0;
+            
+//            f3=betaSqct*exp( -beta*( xd*xd+yd*yd+zd*zd ) );
+//            U(i1,i2,i3,ex)+=( zd-yd )*f3;
+//            U(i1,i2,i3,ey)+=( xd-zd )*f3;
+//            U(i1,i2,i3,ez)+=( yd-xd )*f3;
+//          }
+//        }
+//        else
+//        {
+//          FOR_3D(i1,i2,i3,J1,J2,J3)
+//          {
+//            xd=X0(i1,i2,i3)-x0;
+//            yd=X1(i1,i2,i3)-y0;
+//            zd=X2(i1,i2,i3)-z0;
+            
+//            f3=betaSqct*exp( -beta*( xd*xd+yd*yd+zd*zd ) );
+//            U(i1,i2,i3,ex)=( zd-yd )*f3;
+//            U(i1,i2,i3,ey)=( xd-zd )*f3;
+//            U(i1,i2,i3,ez)=( yd-xd )*f3;
+//          }
+//        }
+//      }
 
 //       }
       
@@ -880,7 +887,7 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
       if( option==1 )
       {
         realSerialArray & fnc = (realSerialArray&)fLocal; // cast away const
-	fnc=0.;  // the forcing function always adds a contribution to f
+        fnc=0.;  // the forcing function always adds a contribution to f
       }
       
       int ngcs=0;
@@ -966,10 +973,10 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
  
 //       forcingOptSolidMechanics( mg.numberOfDimensions(),
 //                          uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
-// 			 uLocal.getBase(2),uLocal.getBound(2),
+//                       uLocal.getBase(2),uLocal.getBound(2),
 //                          fLocal.getBase(0),fLocal.getBound(0),fLocal.getBase(1),fLocal.getBound(1),
-// 			 fLocal.getBase(2),fLocal.getBound(2),
-// 			 *uptr,*fptr,*maskptr,*rxptr, *xptr,
+//                       fLocal.getBase(2),fLocal.getBound(2),
+//                       *uptr,*fptr,*maskptr,*rxptr, *xptr,
 //                          ipar[0], rpar[0], ierr );
       
 

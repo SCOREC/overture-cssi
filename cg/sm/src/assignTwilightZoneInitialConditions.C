@@ -27,18 +27,47 @@ assignTwilightZoneInitialConditions(int gfIndex)
     FILE *& logFile    =parameters.dbase.get<FILE* >("logFile");
     FILE *& pDebugFile =parameters.dbase.get<FILE* >("pDebugFile");
 
-    const int numberOfDimensions=cg.numberOfDimensions();
+    const int numberOfDimensions   = cg.numberOfDimensions();
     const int & numberOfComponents = parameters.dbase.get<int >("numberOfComponents");
-    const int & uc =  parameters.dbase.get<int >("uc");
-    const int & vc =  parameters.dbase.get<int >("vc");
-    const int & wc =  parameters.dbase.get<int >("wc");
-    const int & rc =  parameters.dbase.get<int >("rc");
-    const int & tc =  parameters.dbase.get<int >("tc");
+    const int & u1c                =  parameters.dbase.get<int >("u1c");
+    const int & uc                 =  parameters.dbase.get<int >("uc");
+    const int & vc                 =  parameters.dbase.get<int >("vc");
+    const int & wc                 =  parameters.dbase.get<int >("wc");
+    const int & rc                 =  parameters.dbase.get<int >("rc");
+    const int & tc                 =  parameters.dbase.get<int >("tc");
+    const int & pc                 =  parameters.dbase.get<int >("pc");
 
     const int & orderOfAccuracyInSpace = parameters.dbase.get<int>("orderOfAccuracy");
     const int & orderOfAccuracyInTime  = parameters.dbase.get<int>("orderOfTimeAccuracy");
-    SmParameters::TimeSteppingMethodSm & timeSteppingMethodSm = 
-                                                                      parameters.dbase.get<SmParameters::TimeSteppingMethodSm>("timeSteppingMethodSm");
+    SmParameters::TimeSteppingMethodSm & timeSteppingMethodSm = parameters.dbase.get<SmParameters::TimeSteppingMethodSm>("timeSteppingMethodSm");
+    SmParameters::CompressibilityTypeEnum & compressibilityType = parameters.dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");   
+
+    const real & dt= deltaT;
+
+    bool computeVelocity=false;
+    realCompositeGridFunction *vgf  = NULL;
+    realCompositeGridFunction *vtgf = NULL;
+    realCompositeGridFunction *pgf  = NULL;
+    int numberOfVelocityFunctions =0;
+    int numberOfPressureFunctions =0;
+    if( t<0. && compressibilityType==SmParameters::incompressibleSolid && timeSteppingMethodSm!=SmParameters::modifiedEquationTimeStepping )
+    {
+    // compute the velocity for MOL schemes
+        computeVelocity=true; 
+        vgf                       = parameters.dbase.get<realCompositeGridFunction*>("vgf");  // holds v 
+        vtgf                      = parameters.dbase.get<realCompositeGridFunction*>("vtgf"); // holds vt
+        numberOfVelocityFunctions = parameters.dbase.get<int>("numberOfVelocityFunctions");
+
+        pgf                       = parameters.dbase.get<realCompositeGridFunction*>("pgf");  // holds p for time extrap
+        numberOfPressureFunctions = parameters.dbase.get<int>("numberOfPressureFunctions");
+
+        const int & numberOfAccelerationFunctions = parameters.dbase.get<int>("numberOfAccelerationFunctions");
+        assert( numberOfVelocityFunctions==numberOfAccelerationFunctions );
+
+        printF("\n ##########  assignTZ InitialConditions for VELOCITY AND ACCELERATION: t=%9.3e, dt=%9.3e, numberOfVelocityFunctions=%d,"
+                      " numberOfPressureFunctions=%d ##########\n",
+                      t,dt,numberOfVelocityFunctions,numberOfPressureFunctions);
+    }
 
     const int numberOfComponentGrids = cg.numberOfComponentGrids();
 
@@ -49,9 +78,11 @@ assignTwilightZoneInitialConditions(int gfIndex)
     RealArray & lambdaGrid = parameters.dbase.get<RealArray>("lambdaGrid");
     int & debug = parameters.dbase.get<int >("debug");
 
+    OGFunction & tz = *parameters.dbase.get<OGFunction* >("exactSolution");
+
     Range C=numberOfComponents;
     Index I1,I2,I3;
-    int i1,i2,i3;
+  // int i1,i2,i3;
     
     for( int grid=0; grid<numberOfComponentGrids; grid++ )
     {
@@ -59,80 +90,137 @@ assignTwilightZoneInitialConditions(int gfIndex)
         const bool isRectangular = mg.isRectangular();
 
         mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter ); // do this for now
-        const realArray & x = mg.center();
+        realArray & x = mg.center();
 
         realMappedGridFunction & u =gf[gfIndex].u[grid];
 
-#ifdef USE_PPP
-        realSerialArray uLocal;  getLocalArrayWithGhostBoundaries(u,uLocal);
-        realSerialArray xLocal;  getLocalArrayWithGhostBoundaries(x,xLocal);
-#else
-        realSerialArray & uLocal  =  u;
-        const realSerialArray & xLocal  =  x;
-#endif
-
-        real *up = uLocal.Array_Descriptor.Array_View_Pointer3;
-        const int uDim0=uLocal.getRawDataSize(0);
-        const int uDim1=uLocal.getRawDataSize(1);
-        const int uDim2=uLocal.getRawDataSize(2);
-#undef U
-#define U(i0,i1,i2,i3) up[i0+uDim0*(i1+uDim1*(i2+uDim2*(i3)))]
-
-
-        real *xp = xLocal.Array_Descriptor.Array_View_Pointer3;
-        const int xDim0=xLocal.getRawDataSize(0);
-        const int xDim1=xLocal.getRawDataSize(1);
-        const int xDim2=xLocal.getRawDataSize(2);
-#undef X
-#define X(i0,i1,i2,i3) xp[i0+xDim0*(i1+xDim1*(i2+xDim2*(i3)))]
+        OV_GET_SERIAL_ARRAY(real,u,uLocal);
+        OV_GET_SERIAL_ARRAY(real,x,xLocal);
 
         getIndex(mg.dimension(),I1,I2,I3);
 
         int includeGhost=1;
         bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost);
-        if( !ok ) continue;
+        if( !ok ) continue;    
+
+    // *new* way -- Sept 5, 2021
+        RealArray ue(I1,I2,I3,C);
+
+        int isRectangularTZ=0;
+        tz.gd( ue ,xLocal,numberOfDimensions,isRectangularTZ,0,0,0,0,I1,I2,I3,C,t);
+
+        uLocal(I1,I2,I3,C) = ue(I1,I2,I3,C);
 
 
-        lambda = lambdaGrid(grid);
-        mu = muGrid(grid);
-        c1=(mu+lambda)/rho, c2= mu/rho;
+        if( computeVelocity )
+        {
+            assert( vgf!=NULL );
+            Range U(u1c,u1c+numberOfDimensions-1), V=numberOfDimensions;
+            const int currentVelocity = parameters.dbase.get<int>("currentVelocity");
+            assert( currentVelocity>=0 && currentVelocity<numberOfVelocityFunctions );
 
-        uLocal=0.;
+      // fill in t0=0 and some past time levels
+            for( int level=0; level<numberOfVelocityFunctions; level++ )
+            {
+                real tc = 0. - level*dt;
+                const int prevVelocity = (currentVelocity - level + numberOfVelocityFunctions) % numberOfVelocityFunctions;
+
+                OV_GET_SERIAL_ARRAY(real,vgf[prevVelocity][grid],vLocal);
+                tz.gd( ue ,xLocal,numberOfDimensions,isRectangularTZ,1,0,0,0,I1,I2,I3,U,tc); // uet 
+                vLocal(I1,I2,I3,V) = ue(I1,I2,I3,U); 
+
+                OV_GET_SERIAL_ARRAY(real,vtgf[prevVelocity][grid],vtLocal);
+                tz.gd( ue ,xLocal,numberOfDimensions,isRectangularTZ,2,0,0,0,I1,I2,I3,U,tc); // uett 
+                vtLocal(I1,I2,I3,V) = ue(I1,I2,I3,U);    
+            }
+
+      // --- save pressure for time extrapolation ---
+            const int currentPressure = parameters.dbase.get<int>("currentPressure");
+            assert( currentPressure>=0 && currentPressure<max(1,numberOfPressureFunctions) );
+            for( int level=0; level<numberOfPressureFunctions; level++ )
+            {
+                real tc = 0. - (level+3)*dt;  // -- save pressure starting at t-3*dt 
+
+                const int prevPressure = (currentPressure - level + numberOfPressureFunctions) % numberOfPressureFunctions;
+                assert( pgf !=NULL );
+                OV_GET_SERIAL_ARRAY(real,pgf[prevPressure][grid],pLocal);
+                ue=0.; // for testing 
+                tz.gd( ue ,xLocal,numberOfDimensions,isRectangularTZ,0,0,0,0,I1,I2,I3,pc,tc); // pe
+                pLocal(I1,I2,I3) = ue(I1,I2,I3,pc);  // is this right? 
+                printF("\n $$$ Initial conditions: eval p at t=%9.3e for time extrapolation. (pmax,pmin)=(%g,%g)\n",tc,min(pLocal),max(pLocal));        
+
+            }
+        }
+
+    } // end for grid 
+
+
+// #ifdef USE_PPP
+//     realSerialArray uLocal;  getLocalArrayWithGhostBoundaries(u,uLocal);
+//     realSerialArray xLocal;  getLocalArrayWithGhostBoundaries(x,xLocal);
+// #else
+//     realSerialArray & uLocal  =  u;
+//     const realSerialArray & xLocal  =  x;
+// #endif
+
+//     real *up = uLocal.Array_Descriptor.Array_View_Pointer3;
+//     const int uDim0=uLocal.getRawDataSize(0);
+//     const int uDim1=uLocal.getRawDataSize(1);
+//     const int uDim2=uLocal.getRawDataSize(2);
+// #undef U
+// #define U(i0,i1,i2,i3) up[i0+uDim0*(i1+uDim1*(i2+uDim2*(i3)))]
+
+
+//     real *xp = xLocal.Array_Descriptor.Array_View_Pointer3;
+//     const int xDim0=xLocal.getRawDataSize(0);
+//     const int xDim1=xLocal.getRawDataSize(1);
+//     const int xDim2=xLocal.getRawDataSize(2);
+// #undef X
+// #define X(i0,i1,i2,i3) xp[i0+xDim0*(i1+xDim1*(i2+xDim2*(i3)))]
+
+
+
+
+//     lambda = lambdaGrid(grid);
+//     mu = muGrid(grid);
+//     c1=(mu+lambda)/rho, c2= mu/rho;
+
+//     uLocal=0.;
         
 
-        OGFunction *& tz = parameters.dbase.get<OGFunction* >("exactSolution");
-        assert( tz!=NULL );
-        OGFunction & e = *tz;
-          	    
-        if( mg.numberOfDimensions()==2 )
-        {
-            FOR_3D(i1,i2,i3,I1,I2,I3)
-            {
-      	real x0 = X(i1,i2,i3,0);
-      	real y0 = X(i1,i2,i3,1);
+//     OGFunction *& tz = parameters.dbase.get<OGFunction* >("exactSolution");
+//     assert( tz!=NULL );
+//     OGFunction & e = *tz;
+                        
+//     if( mg.numberOfDimensions()==2 )
+//     {
+//       FOR_3D(i1,i2,i3,I1,I2,I3)
+//       {
+//         real x0 = X(i1,i2,i3,0);
+//         real y0 = X(i1,i2,i3,1);
 
-                for( int c=0; c<numberOfComponents; c++ )
-      	{
-        	  U(i1,i2,i3,c) =e(x0,y0,0.,c,t);
-      	}
-      	
-            }
-        }
-        else
-        { // ***** 3D TZ IC's ****
-            FOR_3D(i1,i2,i3,I1,I2,I3)
-            {
-      	real x0 = X(i1,i2,i3,0);
-      	real y0 = X(i1,i2,i3,1);
-      	real z0 = X(i1,i2,i3,2);
-                for( int c=0; c<numberOfComponents; c++ )
-      	{
-        	  U(i1,i2,i3,c) =e(x0,y0,z0,c,t);
-      	}
-            }
-        }
+//         for( int c=0; c<numberOfComponents; c++ )
+//         {
+//           U(i1,i2,i3,c) =e(x0,y0,0.,c,t);
+//         }
+                
+//       }
+//     }
+//     else
+//     { // ***** 3D TZ IC's ****
+//       FOR_3D(i1,i2,i3,I1,I2,I3)
+//       {
+//         real x0 = X(i1,i2,i3,0);
+//         real y0 = X(i1,i2,i3,1);
+//         real z0 = X(i1,i2,i3,2);
+//         for( int c=0; c<numberOfComponents; c++ )
+//         {
+//           U(i1,i2,i3,c) =e(x0,y0,z0,c,t);
+//         }
+//       }
+//     }
 
-    } // end for grid
+//   } // end for grid
 
 
     return 0;

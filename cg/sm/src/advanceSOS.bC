@@ -13,13 +13,13 @@
 extern "C"
 {
   void advSM(const int&nd,
-	     const int&n1a,const int&n1b,const int&n2a,const int&n2b,const int&n3a,const int&n3b,
-	     const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
-	     const int&nd4a,const int&nd4b,
-	     const int&mask,const real&rx, const real&xy, 
-	     const real&um, const real&u, real&un, const real&f,
+             const int&n1a,const int&n1b,const int&n2a,const int&n2b,const int&n3a,const int&n3b,
+             const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
+             const int&nd4a,const int&nd4b,
+             const int&mask,const real&rx, const real&xy, 
+             const real&um, const real&u, real&un, const real&f,
              const int & ndMatProp, const int& matIndex, const real& matValpc, const real& matVal,
-	     const int&bc, const real &dis, const real &varDis, const int&ipar, const real&rpar, int&ierr );
+             const int&bc, const real &dis, const real &varDis, const int&ipar, const real&rpar, int&ierr );
 
 }
 
@@ -46,9 +46,9 @@ extern "C"
 // ============================================================================================
 void Cgsm::
 getUtSOS(GridFunction & cgf, 
-	 const real & t, 
-	 RealCompositeGridFunction & ut, 
-	 real tForce )
+         const real & t, 
+         RealCompositeGridFunction & ut, 
+         real tForce )
 {
   real & dt= deltaT;
 
@@ -78,25 +78,26 @@ getUtSOS(GridFunction & cgf,
 void Cgsm::
 advanceSOS(  int current, real t, real dt,
              RealCompositeGridFunction *ut /* = NULL */, 
-	     real tForce /* = 0. */ )
+             real tForce /* = 0. */ )
 {
-  checkArrays("advanceSOS:end");
+  checkArrays("advanceSOS:start");
 
 
   FILE *& debugFile  =parameters.dbase.get<FILE* >("debugFile");
   FILE *& logFile    =parameters.dbase.get<FILE* >("logFile");
   FILE *& pDebugFile =parameters.dbase.get<FILE* >("pDebugFile");
   
-  const int numberOfDimensions = cg.numberOfDimensions();
-  const int numberOfComponentGrids = cg.numberOfComponentGrids();
-  const int & numberOfComponents = parameters.dbase.get<int >("numberOfComponents");
-  const int & uc =  parameters.dbase.get<int >("uc");
-  const int & vc =  parameters.dbase.get<int >("vc");
-  const int & wc =  parameters.dbase.get<int >("wc");
-  const int & rc =  parameters.dbase.get<int >("rc");
-  const int & tc =  parameters.dbase.get<int >("tc");
+  const int numberOfDimensions       = cg.numberOfDimensions();
+  const int numberOfComponentGrids   = cg.numberOfComponentGrids();
+  const int & numberOfComponents     = parameters.dbase.get<int >("numberOfComponents");
+  const int & uc                     =  parameters.dbase.get<int >("uc");
+  const int & vc                     =  parameters.dbase.get<int >("vc");
+  const int & wc                     =  parameters.dbase.get<int >("wc");
+  const int & rc                     =  parameters.dbase.get<int >("rc");
+  const int & tc                     =  parameters.dbase.get<int >("tc");
   const int & orderOfAccuracyInSpace = parameters.dbase.get<int>("orderOfAccuracy");
   const int & orderOfAccuracyInTime  = parameters.dbase.get<int>("orderOfTimeAccuracy");
+  const int & upwindSOS              = parameters.dbase.get<int>("upwindSOS"); 
 
   SmParameters::TimeSteppingMethodSm & timeSteppingMethodSm = 
                                    parameters.dbase.get<SmParameters::TimeSteppingMethodSm>("timeSteppingMethodSm");
@@ -153,20 +154,22 @@ advanceSOS(  int current, real t, real dt,
     
     // High-order filters may need values assigned at interpolation neighbours and a second ghost line: 
     if( filter.filterType==GridFunctionFilter::explicitFilter &&
-	filter.orderOfFilter> orderOfAccuracyInSpace &&
-	!parameters.dbase.get<int >("extrapolateInterpolationNeighbours") )
+        filter.orderOfFilter> orderOfAccuracyInSpace &&
+        !parameters.dbase.get<int >("extrapolateInterpolationNeighbours") )
     {
       printF("advanceSOS:ERROR:extrapolateInterpolationNeighbours should be true for this filter\n");
       OV_ABORT("error");
     }
     if( extrapInterpolationNeighbours && filter.filterType==GridFunctionFilter::explicitFilter &&
-	filter.orderOfFilter> orderOfAccuracyInSpace )
+        filter.orderOfFilter> orderOfAccuracyInSpace )
     {
       // -- Extrapolate interpolation neighbours for the high-order filter and artificial dissipation ---
       //   Do this here since in parallel we can extrap interp. neighbours with no communication BUT
       //   the values may be wrong if afterward we perform an updateGhostBoundaries !
       // -- We could fix this but this would require a re-write to extrap. interp neighbours. 
-      printF("advSOS: Extrapolate interpolation neighbours before the filter, t=%9.3e\n",t);
+      if( debug & 4 )
+        printF("advSOS: Extrapolate interpolation neighbours before the filter, t=%9.3e\n",t);
+
       extrapolateInterpolationNeighbours( gf[current], C );
 
     }
@@ -175,7 +178,7 @@ advanceSOS(  int current, real t, real dt,
     if( (numberOfStepsTaken % filterFrequency) ==0  )
     {
       if( debug & 4 )
-	printF("advanceSOS: apply filter at step=%i, t=%9.3e\n",numberOfStepsTaken,t);
+        printF("advanceSOS: apply filter at step=%i, t=%9.3e\n",numberOfStepsTaken,t);
       
       // apply high order filter to u[current]
       gridFunctionFilter->applyFilter( gf[current].u, C, gf[next].u /* work space */ );
@@ -184,11 +187,14 @@ advanceSOS(  int current, real t, real dt,
     timing(parameters.dbase.get<int>("timeForFilter"))+=getCPU()-time0;
     
   }
-  if( extrapInterpolationNeighbours && 
-      artificialDissipation>0. && orderOfArtificialDissipation > orderOfAccuracyInSpace )
+  if( !upwindSOS &&
+      ( extrapInterpolationNeighbours && 
+      artificialDissipation>0. && orderOfArtificialDissipation > orderOfAccuracyInSpace ) )
   {
     // -- Extrapolate interpolation neighbours for the artificial dissipation ---
-    printF("advSOS: Extrapolate interpolation neighbours for artificial dissipation, t=%9.3e\n",t);
+     if( debug & 4 )
+      printF("advSOS: Extrapolate interpolation neighbours for artificial dissipation, t=%9.3e\n",t);
+
     extrapolateInterpolationNeighbours( gf[current], C );
   }
   
@@ -222,8 +228,8 @@ advanceSOS(  int current, real t, real dt,
       
       if( debug & 8 )
       {
-	display(um,sPrintF("um start of advance, t=%8.2e",t),debugFile,"%8.2e ");
-	display(u,sPrintF("u start of advance, t=%8.2e",t),debugFile,"%8.2e ");
+        display(um,sPrintF("um start of advance, t=%8.2e",t),debugFile,"%8.2e ");
+        display(u,sPrintF("u start of advance, t=%8.2e",t),debugFile,"%8.2e ");
       }
     }
 
@@ -246,13 +252,13 @@ advanceSOS(  int current, real t, real dt,
       real timea=getCPU();
       if( false && useConservative )
       {
-	// The conservative operators need the jacobian  --> no longer <--
-	mg.update( MappedGrid::THEinverseVertexDerivative | 
+        // The conservative operators need the jacobian  --> no longer <--
+        mg.update( MappedGrid::THEinverseVertexDerivative | 
                    MappedGrid::THEinverseCenterDerivative | MappedGrid::THEcenterJacobian );
       }
       else
       {
-	mg.update( MappedGrid::THEinverseVertexDerivative | 
+        mg.update( MappedGrid::THEinverseVertexDerivative | 
                    MappedGrid::THEinverseCenterDerivative );
       }
      timea=getCPU()-timea;
@@ -277,12 +283,12 @@ advanceSOS(  int current, real t, real dt,
       int option=1;  
       if( addForcing )
       {
-	//kkc getForcing is called from advance but is also called from assignIC and getErrors.
-	//    we have to add the timing in external to getForcing to avoid double counting the time
-	//    in assignIC and getErrors
-	real timef = getCPU();
-	getForcing( next, grid,f,t,dt,option );
-	timing(parameters.dbase.get<int>("timeForForcing")) += getCPU()-timef;
+        //kkc getForcing is called from advance but is also called from assignIC and getErrors.
+        //    we have to add the timing in external to getForcing to avoid double counting the time
+        //    in assignIC and getErrors
+        real timef = getCPU();
+        getForcing( next, grid,f,t,dt,option );
+        timing(parameters.dbase.get<int>("timeForForcing")) += getCPU()-timef;
 
       }
     }
@@ -392,19 +398,19 @@ advanceSOS(  int current, real t, real dt,
 
     int option=0; // (isRectangular || useCurvilinearOpt) ? 0 : 1;   // 0=Maxwell+AD, 1=AD
     int ipar[]={option,
-		gridType,
-		orderOfAccuracyInSpace,
-		orderOfAccuracyInTime,
-		(int)addForcing,
-		orderOfArtificialDissipation,   // 5
-		uc,
+                gridType,
+                orderOfAccuracyInSpace,
+                orderOfAccuracyInTime,
+                (int)addForcing,
+                orderOfArtificialDissipation,   // 5
+                uc,
                 vc,
                 wc,
-		useWhereMask,
-		(int)timeSteppingMethodSm,
-		(int)useVariableDissipation,
-		(int)useConservative,           // 12 
-		combineDissipationWithAdvance,
+                useWhereMask,
+                (int)timeSteppingMethodSm,
+                (int)useVariableDissipation,
+                (int)useConservative,           // 12 
+                combineDissipationWithAdvance,
                 debug,
                 computeUt,
                 materialFormat,        // 16 
@@ -415,7 +421,7 @@ advanceSOS(  int current, real t, real dt,
     real dx[3]={1.,1.,1.};
     if( isRectangular )
       mg.getDeltaX(dx);
-	  
+          
     real rpar[30];
     rpar[ 0]=dt;
     rpar[ 1]=dx[0];
@@ -451,29 +457,29 @@ advanceSOS(  int current, real t, real dt,
     {
       if( adc>0. && !combineDissipationWithAdvance )
       {
-	// create a temp array to hold the artificial dissipation
-	dis = new realSerialArray(uLocal.dimension(0),uLocal.dimension(1),uLocal.dimension(2),uLocal.dimension(3));
-	pdis = dis->getDataPointer();
-	assert( pdis!=NULL );
+        // create a temp array to hold the artificial dissipation
+        dis = new realSerialArray(uLocal.dimension(0),uLocal.dimension(1),uLocal.dimension(2),uLocal.dimension(3));
+        pdis = dis->getDataPointer();
+        assert( pdis!=NULL );
 
-	sizeOfLocalArraysForAdvance=max(sizeOfLocalArraysForAdvance,(double)(dis->elementCount()*sizeof(real)));
+        sizeOfLocalArraysForAdvance=max(sizeOfLocalArraysForAdvance,(double)(dis->elementCount()*sizeof(real)));
       }
 
 
       // real timeAdv=getCPU();
       if( combineDissipationWithAdvance )
       {
-	assert( umptr!=unptr );
+        assert( umptr!=unptr );
       }
       advSM(mg.numberOfDimensions(),
-	    I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
-	    uLocal.getBase(0),uLocal.getBound(0),
-	    uLocal.getBase(1),uLocal.getBound(1),
-	    uLocal.getBase(2),uLocal.getBound(2),
-	    uLocal.getBase(3),uLocal.getBound(3),
-	    *maskptr,*rxptr,*xyptr,  
-	    *umptr,*uptr,*unptr, *fptr, ndMatProp,*matIndexPtr,*matValPtr,*matValPtr, 
-	    mg.boundaryCondition(0,0), *pdis, *pVarDis, ipar[0], rpar[0], ierr );
+            I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
+            uLocal.getBase(0),uLocal.getBound(0),
+            uLocal.getBase(1),uLocal.getBound(1),
+            uLocal.getBase(2),uLocal.getBound(2),
+            uLocal.getBase(3),uLocal.getBound(3),
+            *maskptr,*rxptr,*xyptr,  
+            *umptr,*uptr,*unptr, *fptr, ndMatProp,*matIndexPtr,*matValPtr,*matValPtr, 
+            mg.boundaryCondition(0,0), *pdis, *pVarDis, ipar[0], rpar[0], ierr );
       
     }
     timeAdv=getCPU()-timeAdv;
@@ -482,7 +488,7 @@ advanceSOS(  int current, real t, real dt,
     if( debug & 8 )
     {
       display(unLocal,sPrintF("unLocal after advSolidMechanics, processor=%i before BC's t=%8.2e",
-			      Communication_Manager::My_Process_Number,t),pDebugFile,"%8.2e ");
+                              Communication_Manager::My_Process_Number,t),pDebugFile,"%8.2e ");
 
       display(un,sPrintF("un after advSolidMechanics, before BC's t=%8.2e",t),debugFile,"%8.2e ");
     }
@@ -527,8 +533,8 @@ advanceSOS(  int current, real t, real dt,
 
       if( debug & 16 )
       {
-	Communication_Manager::Sync();
-	display(unLocal,sPrintF(" Before updateGhostBoundaries: t=%e",t),pDebugFile,"%8.2e ");
+        Communication_Manager::Sync();
+        display(unLocal,sPrintF(" Before updateGhostBoundaries: t=%e",t),pDebugFile,"%8.2e ");
       }
       
       // **** at this point we really only need to update interior-ghost points needed for
@@ -537,8 +543,8 @@ advanceSOS(  int current, real t, real dt,
 
       if( debug & 16 )
       {
-	display(unLocal,sPrintF(" After updateGhostBoundaries: processor=%i t=%e",
-				Communication_Manager::My_Process_Number,t),pDebugFile,"%8.2e ");
+        display(unLocal,sPrintF(" After updateGhostBoundaries: processor=%i t=%e",
+                                Communication_Manager::My_Process_Number,t),pDebugFile,"%8.2e ");
       }
       
       timing(parameters.dbase.get<int>("timeForUpdateGhostBoundaries"))+=getCPU()-timea;
@@ -555,7 +561,7 @@ advanceSOS(  int current, real t, real dt,
     {
       if( addForcing ) 
         ::display(f,sPrintF("  *** advanceStructured: Here is the forcing f grid=%i t=%9.3e ********\n",grid,t),
-		  pDebugFile,"%7.4f ");
+                  pDebugFile,"%7.4f ");
     }
   } // end grid
   

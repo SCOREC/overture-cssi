@@ -32,7 +32,16 @@ advanceMethodOfLines( int current, real t, real dt,
 
     if( debug() & 2 || ( t<= dt)  )
         printF("--SM-- advanceMethodOfLines: t=%e current=%i, numberOfFunctions=%i, numberOfTimeLevels=%i\n",t,
-         	   current,numberOfFunctions,numberOfTimeLevels);
+                      current,numberOfFunctions,numberOfTimeLevels);
+
+    const SmParameters::CompressibilityTypeEnum & compressibilityType = parameters.dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");
+    if( compressibilityType==SmParameters::incompressibleSolid )
+    {
+    // ----- incompressible solid ------
+        advanceIncompressibleMethodOfLines( current,t,dt );
+
+        return; 
+    }
 
     FILE *& debugFile  =parameters.dbase.get<FILE* >("debugFile");
     FILE *& logFile    =parameters.dbase.get<FILE* >("logFile");
@@ -70,9 +79,9 @@ advanceMethodOfLines( int current, real t, real dt,
     {
         AdvanceOptions & advanceOptions = *pAdvanceOptions;
         takeTimeStep =(advanceOptions.takeTimeStepOption==AdvanceOptions::takeStepAndApplyBoundaryConditions ||
-               		   advanceOptions.takeTimeStepOption==AdvanceOptions::takeStepButDoNotApplyBoundaryConditions);
+                                      advanceOptions.takeTimeStepOption==AdvanceOptions::takeStepButDoNotApplyBoundaryConditions);
         applyBC = ( advanceOptions.takeTimeStepOption==AdvanceOptions::takeStepAndApplyBoundaryConditions ||
-            		advanceOptions.takeTimeStepOption==AdvanceOptions::applyBoundaryConditionsOnly );
+                                advanceOptions.takeTimeStepOption==AdvanceOptions::applyBoundaryConditionsOnly );
     }
 
   // ------ AMR -----
@@ -183,22 +192,22 @@ advanceMethodOfLines( int current, real t, real dt,
       // ---- predictor:  ----
             if( takeTimeStep )
             {
-      	getUt( gf[current], t, fn[0], t );
+                getUt( gf[current], t, fn[0], t );
 
-      	if( debug & 8 )
-      	{
-        	  fn[0].display(sPrintF("MOL: predictor: u.t or u.tt at t=%9.3e, dt=%8.2e\n",t,dt),debugFile);
-      	}
+                if( debug & 8 )
+                {
+                    fn[0].display(sPrintF("MOL: predictor: u.t or u.tt at t=%9.3e, dt=%8.2e\n",t,dt),debugFile);
+                }
     
-      	if( isSecondOrderSystem )
-      	{ // fn[0] holds u.tt in this case 
-        	  gf[next].u = 2.*gf[current].u -gf[prev].u + (dt*dt)*fn[0];
-      	}
-      	else
-      	{  // fn[0] holds u.t in this case 
-        	  gf[next].u = gf[current].u + (dt)*fn[0];
-      	}
-      	gf[next].t=t+dt;
+                if( isSecondOrderSystem )
+                { // fn[0] holds u.tt in this case 
+                    gf[next].u = 2.*gf[current].u -gf[prev].u + (dt*dt)*fn[0];
+                }
+                else
+                {  // fn[0] holds u.t in this case 
+                    gf[next].u = gf[current].u + (dt)*fn[0];
+                }
+                gf[next].t=t+dt;
             }
             
       // ............. Boundary Conditions ..............
@@ -206,8 +215,8 @@ advanceMethodOfLines( int current, real t, real dt,
             {
                 gf[next].u.interpolate();  // *wdh* March 29,2019 -- this was missing!
 
-      	int option=0; // not used.
-      	applyBoundaryConditions( option, dt, next,current ); // apply BC to "next" (current=previous time step)
+                int option=0; // not used.
+                applyBoundaryConditions( option, dt, next,current ); // apply BC to "next" (current=previous time step)
             }
         }
         
@@ -217,31 +226,31 @@ advanceMethodOfLines( int current, real t, real dt,
         {
             if( timeSteppingMethodSm==SmParameters::improvedEuler && !isSecondOrderSystem )
             {
-      	const real tNext=gf[next].t;
+                const real tNext=gf[next].t;
 
-      	if( true && pAdvanceOptions!=NULL )
-      	{
-        	  printP("--SM-- advanceMOL: apply corrector at t=%9.3e correction=%i\n",tNext,correction);
-      	}
-      	
-      	if( takeTimeStep )
-      	{
-        	  getUt( gf[next], tNext, fn[1],tNext );
+                if( true && pAdvanceOptions!=NULL )
+                {
+                    printP("--SM-- advanceMOL: apply corrector at t=%9.3e correction=%i\n",tNext,correction);
+                }
+                
+                if( takeTimeStep )
+                {
+                    getUt( gf[next], tNext, fn[1],tNext );
 
-        	  if( debug & 8 )
-        	  {
-          	    fn[1].display(sPrintF("MOL: corrector: u.t or u.tt at tNext=%9.3e\n",tNext),debugFile);
-        	  }
+                    if( debug & 8 )
+                    {
+                        fn[1].display(sPrintF("MOL: corrector: u.t or u.tt at tNext=%9.3e\n",tNext),debugFile);
+                    }
 
-        	  gf[next].u = gf[current].u + (.5*dt)*(fn[0]+fn[1]);
-      	}
-      	if( applyBC )
-      	{
+                    gf[next].u = gf[current].u + (.5*dt)*(fn[0]+fn[1]);
+                }
+                if( applyBC )
+                {
                     gf[next].u.interpolate();  // *wdh* March 29,2019 -- this was missing!
 
-        	  int option=0; // not used.
-        	  applyBoundaryConditions( option, dt, next,current );
-      	}
+                    int option=0; // not used.
+                    applyBoundaryConditions( option, dt, next,current );
+                }
             
             }
         }

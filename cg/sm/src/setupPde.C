@@ -22,8 +22,9 @@ setupPde(aString & reactionName, bool restartChosen, IntegerArray & originalBoun
 {
   real cpu0 = getCPU();
 
-  SmParameters::PDEModel & pdeModel = parameters.dbase.get<SmParameters::PDEModel>("pdeModel");
-  SmParameters::PDEVariation & pdeVariation = parameters.dbase.get<SmParameters::PDEVariation>("pdeVariation");
+  SmParameters::PDEModel & pdeModel                           = parameters.dbase.get<SmParameters::PDEModel>("pdeModel");
+  SmParameters::PDEVariation & pdeVariation                   = parameters.dbase.get<SmParameters::PDEVariation>("pdeVariation");
+  SmParameters::CompressibilityTypeEnum & compressibilityType = parameters.dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");
 
   const int buffSize=100;
   char buff[buffSize];
@@ -53,7 +54,7 @@ setupPde(aString & reactionName, bool restartChosen, IntegerArray & originalBoun
 
 
    aString tbLabel[] = {"variable material properties",
- 		       ""};
+                       ""};
    int tbState[5];
    tbState[0] = (int)parameters.dbase.get<int>("variableMaterialPropertiesOption");
 
@@ -62,12 +63,12 @@ setupPde(aString & reactionName, bool restartChosen, IntegerArray & originalBoun
 
   // push buttons
   aString pbCommands[] = {"choose a grid",
-			  "read a restart file",
-			  "passive scalar advection",
-			  "add extra variables",
-			  "new equation domain...", 
-			  "surface equations...",
-			  ""};
+                          "read a restart file",
+                          "passive scalar advection",
+                          "add extra variables",
+                          "new equation domain...", 
+                          "surface equations...",
+                          ""};
 
   const int numRows=3;
   setupDialog.setPushButtons( pbCommands, pbCommands, numRows ); 
@@ -81,6 +82,11 @@ setupPde(aString & reactionName, bool restartChosen, IntegerArray & originalBoun
   aString *pdeVariationCommands = SmParameters::PDEVariationName;
   setupDialog.addOptionMenu("pde variation", pdeVariationCommands, pdeVariationCommands, (int)pdeVariation);
 
+  aString compressibilityTypeCommands[] =  {"compressible solid", 
+                                            "incompressible solid",
+                                            ""  };
+  setupDialog.addOptionMenu("reference frame", compressibilityTypeCommands, compressibilityTypeCommands, 0);  
+
   aString referenceFrameCommands[] =  {"fixed reference frame", 
                                        "rigid body reference frame",
                                        "specified reference frame",
@@ -89,15 +95,15 @@ setupPde(aString & reactionName, bool restartChosen, IntegerArray & originalBoun
 
 
 //   aString reactionCommands[] =  { "no reactions",
-// 				  "one step",
-// 				  "branching",
-// 				  "ignition and growth",
-// 				  "ignition and growth desensitization",
-// 				  "one equation mixture fraction",
-// 				  "two equation mixture fraction and extent of reaction",
-// 				  "one step pressure law",
-// 				  "specify CHEMKIN reaction",
-// 				  ""     };
+//                                "one step",
+//                                "branching",
+//                                "ignition and growth",
+//                                "ignition and growth desensitization",
+//                                "one equation mixture fraction",
+//                                "two equation mixture fraction and extent of reaction",
+//                                "one step pressure law",
+//                                "specify CHEMKIN reaction",
+//                                ""     };
       
 //   setupDialog.addOptionMenu("reaction", reactionCommands, reactionCommands, (int)parameters.dbase.get<Parameters::ReactionTypeEnum >("reactionType"));
 
@@ -192,9 +198,9 @@ setupPde(aString & reactionName, bool restartChosen, IntegerArray & originalBoun
     else if( answer=="read a restart file" )
     {
       gi.inputFileName(answer,sPrintF(buff,"Enter the restart file name (default value=%s)",
-				    (const char *)parameters.dbase.get<aString >("restartFileName")));
+                                    (const char *)parameters.dbase.get<aString >("restartFileName")));
       if( answer!="" )
-	parameters.dbase.get<aString >("restartFileName")=answer;
+        parameters.dbase.get<aString >("restartFileName")=answer;
 
       
       GridFunction gf;
@@ -203,7 +209,7 @@ setupPde(aString & reactionName, bool restartChosen, IntegerArray & originalBoun
       if( restartChosen )
       {
         parameters.dbase.get<real >("tInitial")=gf.t;
-	u.reference(gf.u);
+        u.reference(gf.u);
         gf.cg.rcData->interpolant=cg.rcData->interpolant;
         cg.reference(gf.cg);
         assert( cg.rcData->interpolant != NULL );
@@ -242,30 +248,43 @@ setupPde(aString & reactionName, bool restartChosen, IntegerArray & originalBoun
                        answer==pdeVariationCommands[3] ? SmParameters::hemp : SmParameters::nonConservative );
       if( pdeVariation==SmParameters::conservative )
       {
-	useConservative=true;  // we could eliminate this variable 
+        useConservative=true;  // we could eliminate this variable 
       }
       // The hemp code computes the full deformed state, others compute displacements from the ref. state
       bool & methodComputesDisplacements = parameters.dbase.get<bool>("methodComputesDisplacements");
       if( pdeVariation==SmParameters::hemp )
-	methodComputesDisplacements=false;
+        methodComputesDisplacements=false;
       else
-	methodComputesDisplacements=true;
+        methodComputesDisplacements=true;
 
       if( pdeVariation==SmParameters::hemp )
       { // default time stepper for Hemp is improvedEuler
-	parameters.dbase.get<SmParameters::TimeSteppingMethodSm>("timeSteppingMethodSm")=SmParameters::improvedEuler;
-	
+        parameters.dbase.get<SmParameters::TimeSteppingMethodSm>("timeSteppingMethodSm")=SmParameters::improvedEuler;
+        
       }
       
     }
+    else if( answer=="compressible solid" || answer=="incompressible solid" )
+    {
+       if( answer=="compressible solid" )
+         compressibilityType = SmParameters::compressibleSolid;
+       else if( answer=="incompressible solid")
+         compressibilityType = SmParameters::incompressibleSolid;
+       else
+       {
+         OV_ABORT("ERROR -- this cse should not happen!");
+       }
+       printF("Setting compressibilityType=%d (0=compressible, 1=incompressible)\n",(int)compressibilityType);
+    }
+
     else if( answer=="fixed reference frame" ||
              answer=="rigid body reference frame" ||
              answer=="specified reference frame" )
     {
       printF("The frame of reference is needed so that we know how to transform the PDE when the grids move.\n"
-	     "Often the PDEs are defined in a fixed reference frame (even if some boundaries are moving).\n" 
-	     "If we are solving for a PDE inside a moving rigid body, then the PDE (e.g. the heat equation)\n"
-	     "may be defined in the frame of reference of the rigid body.\n");
+             "Often the PDEs are defined in a fixed reference frame (even if some boundaries are moving).\n" 
+             "If we are solving for a PDE inside a moving rigid body, then the PDE (e.g. the heat equation)\n"
+             "may be defined in the frame of reference of the rigid body.\n");
 
       Parameters::ReferenceFrameEnum & referenceFrame = 
                     parameters.dbase.get<Parameters::ReferenceFrameEnum>("referenceFrame");
@@ -275,13 +294,13 @@ setupPde(aString & reactionName, bool restartChosen, IntegerArray & originalBoun
                        Parameters::specifiedReferenceFrame);
     }
     else if( setupDialog.getToggleValue(answer,"variable material properties",
-				   parameters.dbase.get<int>("variableMaterialPropertiesOption")) )
+                                   parameters.dbase.get<int>("variableMaterialPropertiesOption")) )
     {
       if( parameters.dbase.get<int>("variableMaterialPropertiesOption")!=0 )
       {
         printF("Cgsm:INFO: turn ON variable material properties.\n");
-	// By default the material properties vary from grid point to grid point (e.g. for TZ)
-	parameters.dbase.get<int>("variableMaterialPropertiesOption")=GridMaterialProperties::variableMaterialProperties;
+        // By default the material properties vary from grid point to grid point (e.g. for TZ)
+        parameters.dbase.get<int>("variableMaterialPropertiesOption")=GridMaterialProperties::variableMaterialProperties;
       }
       else
       {
@@ -310,36 +329,36 @@ setupPde(aString & reactionName, bool restartChosen, IntegerArray & originalBoun
       iEnd--;
       if( iStart<=iEnd )
       {
-	aString name = answer(iStart,iEnd);
+        aString name = answer(iStart,iEnd);
         if( answer.matches("define real parameter") )
-	{
-	  real value;
-	  sScanF(answer(iEnd+1,answer.length()),"%e",&value);
-	  printF(" Adding the real parameter [%s] with value [%e]\n",(const char*)name,value);
-	  parameters.dbase.get<ListOfShowFileParameters >("pdeParameters").push_back(ShowFileParameter(name,value));
-	}
-	else if( answer.matches("define integer parameter") )
-	{
-	  int value;
-	  sScanF(answer(iEnd+1,answer.length()),"%i",&value);
-	  printF(" Adding the integer parameter [%s] with value [%i]\n",(const char*)name,value);
-	  parameters.dbase.get<ListOfShowFileParameters >("pdeParameters").push_back(ShowFileParameter(name,value));
-	}
-	else
-	{
+        {
+          real value;
+          sScanF(answer(iEnd+1,answer.length()),"%e",&value);
+          printF(" Adding the real parameter [%s] with value [%e]\n",(const char*)name,value);
+          parameters.dbase.get<ListOfShowFileParameters >("pdeParameters").push_back(ShowFileParameter(name,value));
+        }
+        else if( answer.matches("define integer parameter") )
+        {
+          int value;
+          sScanF(answer(iEnd+1,answer.length()),"%i",&value);
+          printF(" Adding the integer parameter [%s] with value [%i]\n",(const char*)name,value);
+          parameters.dbase.get<ListOfShowFileParameters >("pdeParameters").push_back(ShowFileParameter(name,value));
+        }
+        else
+        {
           iStart=iEnd+1;
-	  iEnd=length-1;
-	  while( iStart<iEnd && answer[iStart]==' ' ) iStart++;
-	  while( iEnd>iStart && answer[iEnd]==' ' ) iEnd--;
+          iEnd=length-1;
+          while( iStart<iEnd && answer[iStart]==' ' ) iStart++;
+          while( iEnd>iStart && answer[iEnd]==' ' ) iEnd--;
           aString value=answer(iStart,iEnd);
-	  
-	  printF(" Adding the string parameter [%s] with value [%s]\n",(const char*)name,(const char*)value);
-	  parameters.dbase.get<ListOfShowFileParameters >("pdeParameters").push_back(ShowFileParameter(name,value));
-	}
+          
+          printF(" Adding the string parameter [%s] with value [%s]\n",(const char*)name,(const char*)value);
+          parameters.dbase.get<ListOfShowFileParameters >("pdeParameters").push_back(ShowFileParameter(name,value));
+        }
       }
       else
       {
-	printf("ERROR parsing the define parameter statement: answer=[%s]\n",(const char*) answer);
+        printf("ERROR parsing the define parameter statement: answer=[%s]\n",(const char*) answer);
       }
       
       setupDialog.setTextLabel(answer(0,len-1),"<name> <value>");
@@ -369,10 +388,10 @@ setPlotTitle(const real &t, const real &dt)
   psp.set(GI_TOP_LABEL,sPrintF(buff,"linear elasticity: t=%6.2e ",t));
 //   if( parameters.dbase.get<int>("numberOfDimensions")==2 )
 //     psp.set(GI_TOP_LABEL_SUB_1,sPrintF(buff,"a=%4.1g, b=%4.1g, kappa=%6.1g, dt=%4.1g",
-// 				       a[0],b[0],kappa[0],dt));
+//                                     a[0],b[0],kappa[0],dt));
 //   else
 //     psp.set(GI_TOP_LABEL_SUB_1,sPrintF(buff,"a=%4.1g, b=%4.1g, c=%4.1g, kappa=%6.1g, dt=%4.1g",
-// 				       a[0],b[0],c[0],kappa[0],dt));
+//                                     a[0],b[0],c[0],kappa[0],dt));
   
   return 0;
 }

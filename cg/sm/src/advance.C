@@ -74,16 +74,17 @@ advance(  int current, real t, real dt, AdvanceOptions *pAdvanceOptions /* =NULL
     FILE *& logFile    =parameters.dbase.get<FILE* >("logFile");
     FILE *& pDebugFile =parameters.dbase.get<FILE* >("pDebugFile");
     
-    const int numberOfDimensions = cg.numberOfDimensions();
-    const int numberOfComponentGrids = cg.numberOfComponentGrids();
-    const int & numberOfComponents = parameters.dbase.get<int >("numberOfComponents");
-    const int & uc =  parameters.dbase.get<int >("uc");
-    const int & vc =  parameters.dbase.get<int >("vc");
-    const int & wc =  parameters.dbase.get<int >("wc");
-    const int & rc =  parameters.dbase.get<int >("rc");
-    const int & tc =  parameters.dbase.get<int >("tc");
+    const int numberOfDimensions      = cg.numberOfDimensions();
+    const int numberOfComponentGrids   = cg.numberOfComponentGrids();
+    const int & numberOfComponents     = parameters.dbase.get<int >("numberOfComponents");
+    const int & uc                     = parameters.dbase.get<int >("uc");
+    const int & vc                     = parameters.dbase.get<int >("vc");
+    const int & wc                     = parameters.dbase.get<int >("wc");
+    const int & rc                     = parameters.dbase.get<int >("rc");
+    const int & tc                     = parameters.dbase.get<int >("tc");
     const int & orderOfAccuracyInSpace = parameters.dbase.get<int>("orderOfAccuracy");
     const int & orderOfAccuracyInTime  = parameters.dbase.get<int>("orderOfTimeAccuracy");
+    const SmParameters::CompressibilityTypeEnum & compressibilityType = parameters.dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");
 
     SmParameters::TimeSteppingMethodSm & timeSteppingMethodSm = 
                                                                       parameters.dbase.get<SmParameters::TimeSteppingMethodSm>("timeSteppingMethodSm");
@@ -107,6 +108,16 @@ advance(  int current, real t, real dt, AdvanceOptions *pAdvanceOptions /* =NULL
 
     const real cMax=max(lambdaGrid+muGrid)/rho;
 
+
+  // ----- incompressible solid ------
+    if( compressibilityType==SmParameters::incompressibleSolid )
+    {
+        advanceIncompressible( current,t,dt );
+    // advanceIncompressibleOld( current,t,dt );
+        return; 
+    }
+
+
   // --- For FSI problems we may take a step and/or apply the BC's ----
     const Parameters::InterfaceCommunicationModeEnum & interfaceCommunicationMode= 
         parameters.dbase.get<Parameters::InterfaceCommunicationModeEnum>("interfaceCommunicationMode");
@@ -117,9 +128,9 @@ advance(  int current, real t, real dt, AdvanceOptions *pAdvanceOptions /* =NULL
     {
         AdvanceOptions & advanceOptions = *pAdvanceOptions;
         takeTimeStep =(advanceOptions.takeTimeStepOption==AdvanceOptions::takeStepAndApplyBoundaryConditions ||
-               		   advanceOptions.takeTimeStepOption==AdvanceOptions::takeStepButDoNotApplyBoundaryConditions);
+                                      advanceOptions.takeTimeStepOption==AdvanceOptions::takeStepButDoNotApplyBoundaryConditions);
         applyBC = ( advanceOptions.takeTimeStepOption==AdvanceOptions::takeStepAndApplyBoundaryConditions ||
-            		advanceOptions.takeTimeStepOption==AdvanceOptions::applyBoundaryConditionsOnly );
+                                advanceOptions.takeTimeStepOption==AdvanceOptions::applyBoundaryConditionsOnly );
     }
 
     if( debug & 4 )
@@ -374,28 +385,28 @@ computeDissipation( int current, real t, real dt )
         {
             for( int c=C.getBase(); c<=C.getBound(); c++ )
             {
-      	if( orderOfArtificialDissipation==4 )
-      	{
-        	  if( numberOfDimensions==2 )
-        	  {
-          	    d(I1,I2,I3,c)=(adc*dt)*FD4_2D(d,I1,I2,I3,c);
-//	    d(I1,I2,I3,c)=(cd(I1,I2,I3,c)*dt)*FD4_2D(d,I1,I2,I3,c);
+                if( orderOfArtificialDissipation==4 )
+                {
+                    if( numberOfDimensions==2 )
+                    {
+                        d(I1,I2,I3,c)=(adc*dt)*FD4_2D(d,I1,I2,I3,c);
+//          d(I1,I2,I3,c)=(cd(I1,I2,I3,c)*dt)*FD4_2D(d,I1,I2,I3,c);
 
-        	  }
-        	  else
-          	    d(I1,I2,I3,c)=(adc*dt)*FD4_3D(d,I1,I2,I3,c);
-      	}
-      	else if( orderOfArtificialDissipation==8 )
-      	{
-        	  if( numberOfDimensions==2 )
-          	    d(I1,I2,I3,c)=FD4_2D(d,I1,I2,I3,c);
-        	  else
-          	    d(I1,I2,I3,c)=FD4_3D(d,I1,I2,I3,c);
-      	}
-      	else
-      	{
-        	  Overture::abort();
-      	}
+                    }
+                    else
+                        d(I1,I2,I3,c)=(adc*dt)*FD4_3D(d,I1,I2,I3,c);
+                }
+                else if( orderOfArtificialDissipation==8 )
+                {
+                    if( numberOfDimensions==2 )
+                        d(I1,I2,I3,c)=FD4_2D(d,I1,I2,I3,c);
+                    else
+                        d(I1,I2,I3,c)=FD4_3D(d,I1,I2,I3,c);
+                }
+                else
+                {
+                    Overture::abort();
+                }
             }
             
         }
@@ -451,14 +462,14 @@ computeDissipation( int current, real t, real dt )
             const intArray & mask = mg.mask();
             where( mask(I1,I2,I3)>0 )
             {
-      	for( int c=C.getBase(); c<=C.getBound(); c++ )
-      	{
+                for( int c=C.getBase(); c<=C.getBound(); c++ )
+                {
           // NOTE: minus sign since FD4 is minus the 4th difference
-        	  if( numberOfDimensions==2 )
-          	    d(I1,I2,I3,c)=(-adc*dt)*FD4_2D(d,I1,I2,I3,c);
-        	  else
-          	    d(I1,I2,I3,c)=(-adc*dt)*FD4_3D(d,I1,I2,I3,c);
-      	}
+                    if( numberOfDimensions==2 )
+                        d(I1,I2,I3,c)=(-adc*dt)*FD4_2D(d,I1,I2,I3,c);
+                    else
+                        d(I1,I2,I3,c)=(-adc*dt)*FD4_3D(d,I1,I2,I3,c);
+                }
             }
             
         }
@@ -520,7 +531,7 @@ addDissipation( int current, real t, real dt, realMappedGridFunction *field, con
 
         d(I1,I2,I3)=(-8./3.)*u(I1,I2,I3,n)+
             (1./3.)*(u(I1+1,I2,I3,n)+u(I1-1,I2,I3,n)+u(I1,I2+1,I3,n)+u(I1,I2-1,I3,n)+
-             	       u(I1-1,I2-1,I3,n)+u(I1+1,I2-1,I3,n)+u(I1-1,I2+1,I3,n)+u(I1+1,I2+1,I3,n));
+                              u(I1-1,I2-1,I3,n)+u(I1+1,I2-1,I3,n)+u(I1-1,I2+1,I3,n)+u(I1+1,I2+1,I3,n));
 
     
         if( orderOfArtificialDissipation==2 )
@@ -533,28 +544,28 @@ addDissipation( int current, real t, real dt, realMappedGridFunction *field, con
 
       //       d(I1,I2,I3)=-4.*d(I1,I2,I3)+d(I1+1,I2,I3)+d(I1-1,I2,I3)+d(I1,I2+1,I3)+d(I1,I2-1,I3);
             d(I1,I2,I3)=(-8./3.)*d(I1,I2,I3)+
-      	(1./3.)*(d(I1+1,I2,I3)+d(I1-1,I2,I3)+d(I1,I2+1,I3)+d(I1,I2-1,I3)+
-             		 d(I1-1,I2-1,I3)+d(I1+1,I2-1,I3)+d(I1-1,I2+1,I3)+d(I1+1,I2+1,I3));
+                (1./3.)*(d(I1+1,I2,I3)+d(I1-1,I2,I3)+d(I1,I2+1,I3)+d(I1,I2-1,I3)+
+                                  d(I1-1,I2-1,I3)+d(I1+1,I2-1,I3)+d(I1-1,I2+1,I3)+d(I1+1,I2+1,I3));
             if( orderOfArtificialDissipation==4 )
             {
-	// fourth-order dissipation
-      	un(I1,I2,I3,n)+=(-artificialDissipation*dt)*d(I1,I2,I3);
+        // fourth-order dissipation
+                un(I1,I2,I3,n)+=(-artificialDissipation*dt)*d(I1,I2,I3);
             }
             else if( orderOfArtificialDissipation==6 )
             {
-      	diss.periodicUpdate();
+                diss.periodicUpdate();
 
-	// d(I1,I2,I3)=-4.*d(I1,I2,I3)+d(I1+1,I2,I3)+d(I1-1,I2,I3)+d(I1,I2+1,I3)+d(I1,I2-1,I3);
-      	d(I1,I2,I3)=(-8./3.)*d(I1,I2,I3)+
-        	  (1./3.)*(d(I1+1,I2,I3)+d(I1-1,I2,I3)+d(I1,I2+1,I3)+d(I1,I2-1,I3)+
-               		   d(I1-1,I2-1,I3)+d(I1+1,I2-1,I3)+d(I1-1,I2+1,I3)+d(I1+1,I2+1,I3));
+        // d(I1,I2,I3)=-4.*d(I1,I2,I3)+d(I1+1,I2,I3)+d(I1-1,I2,I3)+d(I1,I2+1,I3)+d(I1,I2-1,I3);
+                d(I1,I2,I3)=(-8./3.)*d(I1,I2,I3)+
+                    (1./3.)*(d(I1+1,I2,I3)+d(I1-1,I2,I3)+d(I1,I2+1,I3)+d(I1,I2-1,I3)+
+                                      d(I1-1,I2-1,I3)+d(I1+1,I2-1,I3)+d(I1-1,I2+1,I3)+d(I1+1,I2+1,I3));
 
-	// sixth-order dissipation
-      	un(I1,I2,I3,n)+=(artificialDissipation*dt)*d(I1,I2,I3);
+        // sixth-order dissipation
+                un(I1,I2,I3,n)+=(artificialDissipation*dt)*d(I1,I2,I3);
             }
             else
             {
-      	Overture::abort();
+                Overture::abort();
             }
 
       //      cout<<"component "<<n<<" min/max diss "<<min(d)<<"  "<<max(d)<<endl;

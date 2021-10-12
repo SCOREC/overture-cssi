@@ -128,7 +128,7 @@ setupGridFunctions()
       numberOfSolutionLevels =orderOfBDF+1+1;  
     }
     else if( parameters.isMovingGridProblem() || 
-	     implicitMethod==Parameters::approximateFactorization )
+             implicitMethod==Parameters::approximateFactorization )
     {
       // use one extra for moving grids *wdh* 040827 and one extra of factored scheme kkc 100104
       numberOfGridFunctionsToUse=3;  
@@ -153,29 +153,29 @@ setupGridFunctions()
     {
       if( orderOfTimeAccuracy==2 )
       {
-	
-	numberOfExtraFunctionsToUse=3;  // we need f(t), f(t-dt), fI(t)
+        
+        numberOfExtraFunctionsToUse=3;  // we need f(t), f(t-dt), fI(t)
         numberOfTimeDerivativeLevels=2; // we need f(t), f(t-dt)
-	fn[0].updateToMatchGridFunction(solution.u); assign(fn[0],0.);  // work space
-	fn[1].updateToMatchGridFunction(solution.u); assign(fn[1],0.);  // work space
-	fn[2].updateToMatchGridFunction(solution.u); assign(fn[2],0.);  // work space
+        fn[0].updateToMatchGridFunction(solution.u); assign(fn[0],0.);  // work space
+        fn[1].updateToMatchGridFunction(solution.u); assign(fn[1],0.);  // work space
+        fn[2].updateToMatchGridFunction(solution.u); assign(fn[2],0.);  // work space
       }
       else if( orderOfTimeAccuracy==4 )
       {
         // we need f(n), f(n-1), f(n-2), f(n-3) and fI 
-	numberOfExtraFunctionsToUse=5;  // we need f(n), f(n-1), f(n-2), f(n-3) and fI 
+        numberOfExtraFunctionsToUse=5;  // we need f(n), f(n-1), f(n-2), f(n-3) and fI 
         numberOfTimeDerivativeLevels=4; // we need f(n), f(n-1), f(n-2), f(n-3)
         assert( numberOfExtraFunctionsToUse<=maximumNumberOfExtraFunctionsToUse );
-	
-	for( int m=0; m<numberOfExtraFunctionsToUse; m++ )
-	{
-  	  fn[m].updateToMatchGridFunction(solution.u); assign(fn[m],0.);  // work space
-	}
-	
+        
+        for( int m=0; m<numberOfExtraFunctionsToUse; m++ )
+        {
+          fn[m].updateToMatchGridFunction(solution.u); assign(fn[m],0.);  // work space
+        }
+        
       }
       else
       {
-	OV_ABORT("finish me");
+        OV_ABORT("finish me");
       }
       
     }    
@@ -294,10 +294,10 @@ setupGridFunctions()
     {
       for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
       {
-	if( parameters.gridIsMoving(grid) )
-	{
-	  assign(gf[i].createGridVelocity(grid),0.);
-	}
+        if( parameters.gridIsMoving(grid) )
+        {
+          assign(gf[i].createGridVelocity(grid),0.);
+        }
       }
     }
   }
@@ -425,10 +425,10 @@ initializeSolution()
 
       if( FALSE )
       {
-	GenericGraphicsInterface & ps = *parameters.dbase.get<GenericGraphicsInterface* >("ps");
-	printF("*********** Grid after movingGrids.assignInitialConditions\n");
-	ps.erase();
-	PlotIt::plot(ps,gf[current].cg);
+        GenericGraphicsInterface & ps = *parameters.dbase.get<GenericGraphicsInterface* >("ps");
+        printF("*********** Grid after movingGrids.assignInitialConditions\n");
+        ps.erase();
+        PlotIt::plot(ps,gf[current].cg);
       }
       
       // int numberOfPast=1;
@@ -446,9 +446,9 @@ initializeSolution()
       // *wdh*  CHECK ME 
       if( parameters.isAdaptiveGridProblem() )
       {
-	// both moving and AMR 
-	parameters.dbase.get<Ogen* >("gridGenerator")->updateRefinement(gf[current].cg);
-	// updateForAdaptiveGrids(gf[current].cg);
+        // both moving and AMR 
+        parameters.dbase.get<Ogen* >("gridGenerator")->updateRefinement(gf[current].cg);
+        // updateForAdaptiveGrids(gf[current].cg);
       }
 
       // We should re-assign the initial conditions since the grid may have changed *wdh* July 8, 2017

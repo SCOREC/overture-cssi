@@ -1,0 +1,33 @@
+\subsection{Shock hitting a flexible beam}\label{sec:shockBeam}
+
+To run these examples see {\tt cg/cns/runs/beamInAChannel/Makefile}.
+
+% The initial conditions consists of a circle or sphere of high pressure and density.
+
+{
+\begin{figure}[htb]
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  \useasboundingbox (0,.5) rectangle (16.,16.5);  % set the bounding box (so we have less surrounding white space)
+%
+  \begin{scope}[yshift=11cm]
+    \figByHeightb{  0}{0}{fig/shockBeamColourSchlierenT0p7}{5.5cm}[.1][.2][.23][.24]; 
+    \figByHeightb{  8}{0}{fig/shockBeamColourSchlierenT1p3}{5.5cm}[.1][.2][.23][.24];
+  \end{scope} 
+  \begin{scope}[yshift=5.5cm]
+    \figByHeightb{  0}{0}{fig/shockBeamSchlierenT0p7}{5.5cm}[.1][.2][.23][.24]; 
+    \figByHeightb{  8}{0}{fig/shockBeamSchlierenT1p3}{5.5cm}[.1][.2][.23][.24];
+  \end{scope}  
+  \begin{scope}[yshift=0cm]
+    \figByHeightb{  0}{0}{fig/shockBeamPressureT0p7}{5.5cm}[.1][.2][.23][.24]; 
+    \figByHeightb{  8}{0}{fig/shockBeamPressureT1p3}{5.5cm}[.1][.2][.23][.24];
+  \end{scope}     
+%
+% grid:
+   % \draw[step=1cm,gray] (0,0) grid (15,6.);
+\end{tikzpicture}
+\end{center}
+  \caption{Shock hitting a deforming beam. Top: colour schlieren. Middle: schlieren. Bottom: pressure.}
+  \label{fig:shockBeam}
+\end{figure}
+}

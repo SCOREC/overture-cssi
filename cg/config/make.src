@@ -7,7 +7,7 @@
 #  FSCRO : list of Fortran files that are to be compiled optimized by default
 #  FSRC   : list of Fortran files that are to be compiled without auto-dbl
 #  FSCRSO : list of Fortran files that are to be compiled optimized and without auto-dbl
-#  F90SCRO : list of Fortran 90 files that are to be compiled optimized 
+#  FNSCRO : list of Fortran 90 files that are to be compiled optimized 
 
 QSRC := $(SRC_FILES)
 

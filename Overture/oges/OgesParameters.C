@@ -217,18 +217,18 @@ printSolverDescription( const aString & label, FILE *file /* = stdout */ ) const
     {
       if( coarseGridSolver[i]==' ' )
       {
-	a=coarseGridSolver(0,i-1); b=coarseGridSolver(i+1,length-1);
-	break;
+        a=coarseGridSolver(0,i-1); b=coarseGridSolver(i+1,length-1);
+        break;
       }
       else if( i==(length-1) )
       { // no split point found at a blank, split at char 60:
-	int ii=60;
-	a=coarseGridSolver(0,ii-1)+"-"; b=coarseGridSolver(ii,length-1);
+        int ii=60;
+        a=coarseGridSolver(0,ii-1)+"-"; b=coarseGridSolver(ii,length-1);
       }
     }
     fPrintF(file,
-	    "   %s\n"
-	    "   %s\n",(const char*)a,(const char*)b);
+            "   %s\n"
+            "   %s\n",(const char*)a,(const char*)b);
   }
   else
     fPrintF(file,"   %s \n",(const char*)coarseGridSolver);
@@ -239,7 +239,7 @@ printSolverDescription( const aString & label, FILE *file /* = stdout */ ) const
   get(OgesParameters::THEabsoluteTolerance,atol);
   get(OgesParameters::THEmaximumNumberOfIterations,maximumNumberOfIterations);
   fPrintF(file,"   relative tol.=%8.2e, absolute tol.=%8.2e, max number of iterations=%i (0=choose default)\n",
-	  rtol,atol,maximumNumberOfIterations);
+          rtol,atol,maximumNumberOfIterations);
 
   return 0;
   
@@ -430,16 +430,16 @@ getSolverMethodName(SolverMethodEnum solverMethodType /* = defaultSolverMethod *
       name="preonly iteration";
       if( Communication_Manager::Number_Of_Processors>1 )
       {
-	if( parallelExternalSolver==superlu  )
-	  name="superlu";
-	else if( parallelExternalSolver==superlu_mp  )
-	  name="superlu_mp";
-	else if( parallelExternalSolver==superlu_dist  )
-	  name="superlu_dist";
-	else if( parallelExternalSolver==mumps  )
-	  name="mumps";
-	else if( parallelExternalSolver==hypre  )
-	  name="hypre";
+        if( parallelExternalSolver==superlu  )
+          name="superlu";
+        else if( parallelExternalSolver==superlu_mp  )
+          name="superlu_mp";
+        else if( parallelExternalSolver==superlu_dist  )
+          name="superlu_dist";
+        else if( parallelExternalSolver==mumps  )
+          name="mumps";
+        else if( parallelExternalSolver==hypre  )
+          name="hypre";
       }
       
       break;
@@ -1670,7 +1670,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cGrid )
         // *wdh* added 2017/02/23
         printF("OgesParameters::WARNING: Yale solver not available in parallel.\n"
                "                Using 'best' iterative solver instead:\n");
-	
+        
         set(THEbestIterativeSolver);
         printF("Choosing: %s\n",(const char*)getSolverName());
       #endif
@@ -1704,7 +1704,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cGrid )
     {
       // printF("multigrid parameters: to finish...\n");
       if( ogmgParameters==NULL )
- 	ogmgParameters = new OgmgParameters;
+        ogmgParameters = new OgmgParameters;
       ogmgParameters->update(gi,cGrid);
     }
     else if( answer=="algebraic multigrid" )
@@ -2039,13 +2039,13 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cGrid )
       int iluType00;
       if ( !isDHPreconditionerAvailable ) 
       {
-	gi.outputString("WARNING: DH Preconditioner is not available!");
-	gi.outputString("         Compile with USE_DH_PRECONDITIONER");
+        gi.outputString("WARNING: DH Preconditioner is not available!");
+        gi.outputString("         Compile with USE_DH_PRECONDITIONER");
       }
       gi.inputString(line,sPrintF(buff,
-	   "Enter ILU type for DH sparsifying preconditioner (1=ILUK, 2=ILUT, 3=ILUTK, currently=%i):",
-	       incompleteLUTypeInDH ));
-	    
+           "Enter ILU type for DH sparsifying preconditioner (1=ILUK, 2=ILUT, 3=ILUTK, currently=%i):",
+               incompleteLUTypeInDH ));
+            
       if( line!="" ) sScanF(line,"%i", &iluType00 );
 
       set( THEincompleteLUTypeInDH,  iluType00);
@@ -2055,13 +2055,13 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cGrid )
       real iluDt00;
       if ( !isDHPreconditionerAvailable ) 
       {
-	gi.outputString("WARNING: DH Preconditioner is not available!");
-	gi.outputString("         Compile with USE_DH_PRECONDITIONER");
+        gi.outputString("WARNING: DH Preconditioner is not available!");
+        gi.outputString("         Compile with USE_DH_PRECONDITIONER");
       }
       gi.inputString(line,sPrintF(buff,
-	   "Enter drop tolerance for ILUT(dt) (current=%e):",
-	       incompleteLUDropTolerance ));
-	    
+           "Enter drop tolerance for ILUT(dt) (current=%e):",
+               incompleteLUDropTolerance ));
+            
       if( line!="" ) sScanF(line,"%e", &iluDt00 );
       set( THEincompleteLUDropTolerance, iluDt00);
     }
@@ -2070,13 +2070,13 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cGrid )
       real iluSparse00;
       if ( !isDHPreconditionerAvailable ) 
       {
-	gi.outputString("WARNING: DH Preconditioner is not available!");
-	gi.outputString("         Compile with USE_DH_PRECONDITIONER");
+        gi.outputString("WARNING: DH Preconditioner is not available!");
+        gi.outputString("         Compile with USE_DH_PRECONDITIONER");
       }
       gi.inputString(line,sPrintF(buff,
-	   "Enter sparsification coeff. for the matrix (sparseA, current=%e):",
-	       incompleteLUSparseACoefficient ));
-	    
+           "Enter sparsification coeff. for the matrix (sparseA, current=%e):",
+               incompleteLUSparseACoefficient ));
+            
       if( line!="" ) sScanF(line,"%e", &iluSparse00 );
       set( THEincompleteLUSparseACoefficient, iluSparse00 );
     }
@@ -2085,13 +2085,13 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cGrid )
       real iluSparse00;
       if ( !isDHPreconditionerAvailable ) 
       {
-	gi.outputString("WARNING: DH Preconditioner is not available!");
-	gi.outputString("         Compile with USE_DH_PRECONDITIONER");
+        gi.outputString("WARNING: DH Preconditioner is not available!");
+        gi.outputString("         Compile with USE_DH_PRECONDITIONER");
       }
       gi.inputString(line,sPrintF(buff,
-	   "Enter sparsification coeff. for the factorization (sparseF, current=%e):",
-	       incompleteLUSparseFCoefficient ));
-	    
+           "Enter sparsification coeff. for the factorization (sparseF, current=%e):",
+               incompleteLUSparseFCoefficient ));
+            
       if( line!="" ) sScanF(line,"%e", &iluSparse00 );
       set( THEincompleteLUSparseFCoefficient, iluSparse00 );
     }
@@ -2100,13 +2100,13 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cGrid )
       int iluType00;
       if ( !isDHPreconditionerAvailable ) 
       {
-	gi.outputString("WARNING: DH Preconditioner is not available!");
-	gi.outputString("         Compile with USE_DH_PRECONDITIONER");
+        gi.outputString("WARNING: DH Preconditioner is not available!");
+        gi.outputString("         Compile with USE_DH_PRECONDITIONER");
       }
       gi.inputString(line,sPrintF(buff,
-	   "Enter ILU type for DH [1=ILUK, 2=ILUT, 3=ILUTK]  (current=%i):",
-	       incompleteLUTypeInDH ));
-	    
+           "Enter ILU type for DH [1=ILUK, 2=ILUT, 3=ILUTK]  (current=%i):",
+               incompleteLUTypeInDH ));
+            
       if( line!="" ) sScanF(line,"%i", &iluType00 );
       set( THEincompleteLUTypeInDH, iluType00 );
     }
@@ -2173,7 +2173,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cGrid )
       gi.inputString(line,sPrintF(buff,"Enter the maximum allowed increase in residual (default=%e) ",
                      maximumAllowableIncreaseInResidual));
       if( line!="" )
-	sScanF(line,"%e",&maximumAllowableIncreaseInResidual);
+        sScanF(line,"%e",&maximumAllowableIncreaseInResidual);
     }
     // else if( answer=="<gmres restart length" )
     // else if( answer=="maximum number of iterations" )
@@ -2183,13 +2183,13 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cGrid )
       gi.inputString(line,sPrintF(buff,"Enter the number of incomplete LU levels (default=%i) ",
             numberOfIncompleteLULevels));
       if( line!="" )
-	sScanF(line,"%i",&numberOfIncompleteLULevels);
+        sScanF(line,"%i",&numberOfIncompleteLULevels);
     }
     else if( answer=="incomplete LU expected fill" )
     {
       gi.inputString(line,sPrintF(buff,"incomplete LU expected fill (default=%e) ",incompleteLUExpectedFill));
       if( line!="" )
-	sScanF(line,"%e",&incompleteLUExpectedFill);
+        sScanF(line,"%e",&incompleteLUExpectedFill);
     }
 
     // -------- other options -------
@@ -2197,7 +2197,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cGrid )
     {
       gi.inputString(line,sPrintF(buff,"Enter the null vector scaling (default=%e) ",nullVectorScaling));
       if( line!="" )
-	sScanF(line,"%e",&nullVectorScaling);
+        sScanF(line,"%e",&nullVectorScaling);
     }
     else if( answer=="turn on the compatibility constraint" )
     {
@@ -2258,21 +2258,21 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cGrid )
       iEnd--;
       if( iStart<=iEnd )
       {
-	aString name = answer(iStart,iEnd);
+        aString name = answer(iStart,iEnd);
 
-	iStart=iEnd+1;
-	iEnd=length-1;
-	while( iStart<iEnd && answer[iStart]==' ' ) iStart++;
-	while( iEnd>iStart && answer[iEnd]==' ' ) iEnd--;
-	aString value=answer(iStart,iEnd);
-	  
-	printF(" Adding the PETSc option [%s] [%s]\n",(const char*)name,(const char*)value);
-	petscOptions.push_back(ShowFileParameter(name,value));
+        iStart=iEnd+1;
+        iEnd=length-1;
+        while( iStart<iEnd && answer[iStart]==' ' ) iStart++;
+        while( iEnd>iStart && answer[iEnd]==' ' ) iEnd--;
+        aString value=answer(iStart,iEnd);
+          
+        printF(" Adding the PETSc option [%s] [%s]\n",(const char*)name,(const char*)value);
+        petscOptions.push_back(ShowFileParameter(name,value));
       }
       else
       {
-	printF("ERROR parsing the petsc option: answer=[%s]\n",(const char*) answer);
-	printF("Answer show be for the form `define petscOption -ksp_type bcgs'\n");
+        printF("ERROR parsing the petsc option: answer=[%s]\n",(const char*) answer);
+        printF("Answer show be for the form `define petscOption -ksp_type bcgs'\n");
       }
 
     }

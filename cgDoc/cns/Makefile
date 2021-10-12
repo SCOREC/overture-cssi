@@ -25,6 +25,11 @@ userOld: CgcnsUserGuide.tex $(CgcnsFiles)
 ref: CgcnsRef.tex
 	pdflatex CgcnsRef
 	bibtex CgcnsRef
+	makeindex CgcnsRef.idx
+
+refOlder: CgcnsRef.tex
+	pdflatex CgcnsRef
+	bibtex CgcnsRef
 	bibtex bu1
 	bibtex bu2
 	pdflatex CgcnsRef

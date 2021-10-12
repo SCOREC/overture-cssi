@@ -66,7 +66,7 @@
 
 \newcommand{\obDir}{\homeHenshaw/res/OverBlown}
 \newcommand{\ogenDir}{\homeHenshaw/Overture/ogen}
-\newcommand{\cnsDocDir}{\homeHenshaw/cgDoc/cns}
+\newcommand{\cnsDocDir}{../cns}
 
 % *** See http://www.eng.cam.ac.uk/help/tpl/textprocessing/squeeze.html
 % By default, LaTeX doesn't like to fill more than 0.7 of a text page with tables and graphics, nor does it like too many figures per page. This behaviour can be changed by placing lines like the following before \begin{document}
@@ -122,10 +122,15 @@
   on Composite Overlapping Grids \\
 }
 \vspace{2\baselineskip}
-William D. Henshaw  \\
-Centre for Applied Scientific Computing  \\
-Lawrence Livermore National Laboratory      \\
-Livermore, CA, 94551.  \\
+William D. Henshaw,\\
+Department of Mathematical Sciences, \\
+Rensselaer Polytechnic Institute, \\
+Troy, NY, USA, 12180. \\
+% \vspace{2\baselineskip}
+% William D. Henshaw  \\
+% Centre for Applied Scientific Computing  \\
+% Lawrence Livermore National Laboratory      \\
+% Livermore, CA, 94551.  \\
 % henshaw@llnl.gov \\
 % http://www.llnl.gov/casc/people/henshaw \\
 % http://www.llnl.gov/casc/Overture\\
@@ -938,7 +943,7 @@ base grid has $\Delta x = 5.e-3$ before refinements were added.} \label{fig:deto
 
 % -------------------------------------------------------------------------------------------------
 \vfill\eject
-\bibliography{\homeHenshaw/papers/henshaw}
+\bibliography{../common/journalISI,../common/henshaw,../common/henshawPapers}
 \bibliographystyle{siam}
 
 

@@ -6,6 +6,25 @@
 ===================================================
 
 
+**************************
+***** July 5/6, 2021
+
+REMAKE drops movie for keynote presentation
+
+ogen -noplot dropsGrid -interp=i -order=2 -factor=2 -saveWeights=0
+ogen -noplot dropsGrid -interp=i -order=2 -factor=4 -saveWeights=0
+ogen -noplot dropsGrid -interp=i -order=2 -factor=8 -saveWeights=0
+
+
+
+ -- this should be similar to original movie:
+cgins noplot drops -g=dropsGridi8.order2 -nu=.005 -tp=.1 -tf=10.0 -inflowVelocity=.75 -forceLimit=40.0 -show=drops8.show -go=go > drops8.out
+
+cgins -noplot drops -g=dropsGridi4.order2 -nu=.02 -tp=.01 -tf=10 -ts=im -inflowVelocity=.65 -forceLimit=100 -show=drops4.show -go=og 
+
+
+cgins -noplot drops -g=dropsGridi2.order2 -nu=.01 -tp=.1 -tf=10 -ts=im -inflowVelocity=.65 -forceLimit=100 -show=drops2.show -go=og 
+
 
 **************************
 ***** Sept 3, 2019

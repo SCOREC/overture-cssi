@@ -1,3 +1,18 @@
+******************************************
+****** Tues July 6, 2021
+
+REVISIT FOR TUTORIAL
+
+CAN WE RUN AMP ???
+
+
+ogen -noplot dropStickGrid -factor=2 -xa=-2.5 -xb=2.5 -ya=-1.5 -yb=2.0 -name="dropStickGrid2a.hdf" 
+
+cgins -noplot dropStick -g=dropStickGrid2a -tf=50 -tp=.05 -bodyDensity=2. -nc=10 -relaxRigidBody=1 -inertia=.00216667 -alpha=.3 -vIn=.23 -show=dropStick2a.show -nu=.001 -go=og
+
+nohup $ins/bin/cgins -noplot dropStick -g=dropStick2a -tf=50. -tp=.25 -bodyDensity=2. -nc=10 -relaxRigidBody=1 -inertia=.00216667 -alpha=.3 -vIn=.23 -show="dropStick2a.show" -nu=.001 -go=go >! dropStick2a.out & 
+
+
 ********** Oct 23 2015 -- revisit drop-stick with TP-SI algorithm
 
 OK: 

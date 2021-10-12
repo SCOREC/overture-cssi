@@ -29,13 +29,26 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
 // =================================================================================================================
 // =================================================================================================================
 {
-  // printF("getErrors: t=%9.3e, checkErrors=%i, initialConditionOption=%i\n",t,checkErrors,initialConditionOption);
     
+    const SmParameters::CompressibilityTypeEnum & compressibilityType = parameters.dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");  
+
     const int & numberOfComponents = parameters.dbase.get<int >("numberOfComponents");
     Range C=numberOfComponents;
 
+    printF("getErrors: t=%9.3e, checkErrors=%i, numberOfComponents=%d, initialConditionOption=%i\n",t,checkErrors,numberOfComponents,initialConditionOption);
+
     if( !checkErrors )
     {
+
+        if( compressibilityType==SmParameters::incompressibleSolid )
+        {
+      // -- compute max(abs(div(u))) ---
+      // this is done again in plot but we need this for the output of div for sequences *wdh* Sept 20, 2021
+      // **WARNING : THIS COMPUTES SOLUTIONS NORMS BUT NOT FOR p !!
+            getMaxDivAndCurl( current,t );
+        }
+
+
     // *wdh* 101017 -- always compute the solution norm (for saving to the check file)
         realCompositeGridFunction & cgu = gf[current].u;
         if( solutionNorm.dimension(0)!=C )
@@ -44,8 +57,14 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
         {
             const int maskOption=0;  // check points where mask != 0
             solutionNorm(c)=maxNorm(cgu,c,maskOption,parameters.dbase.get<int >("checkErrorsAtGhostPoints") );
+      // printF("getErrors: solutionNorm(%d)=%e\n",c,solutionNorm(c));
         }
         
+
+    // for( int c=C.getBase(); c<=C.getBound(); c++ )
+    // {
+    //   printF("getErrors II: solutionNorm(%d)=%e\n",c,solutionNorm(c));
+    // }    
         return;
     }
     
@@ -90,6 +109,7 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
 
     const int & orderOfAccuracyInSpace = parameters.dbase.get<int>("orderOfAccuracy");
     const int & orderOfAccuracyInTime  = parameters.dbase.get<int>("orderOfTimeAccuracy");
+    const int & upwindSOS              = parameters.dbase.get<int>("upwindSOS"); 
 
     real & rho=parameters.dbase.get<real>("rho");
     real & mu = parameters.dbase.get<real>("mu");
@@ -131,10 +151,10 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
         {
             referenceShowFileReader = new ShowFileReader(nameOfReferenceShowFile);
         }
-          	    
+                        
         CompositeGrid cgRef;
         realCompositeGridFunction uRef;
-          	    
+                        
         real & tPlot = parameters.dbase.get<real>("tPrint");
         int solutionNumber = 1 + int( t/tPlot + .5); // fix this ******************************
         printF(" **** compareToReferenceShowFile: t=%f solutionNumber=%i\n",t,solutionNumber);
@@ -219,7 +239,7 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
 #define MASK(i0,i1,i2) maskp[(i0)+(i1)*md1+(i2)*md2]
 
         int numberOfGhost=orderOfAccuracyInSpace/2;
-        if( pdeVariation == SmParameters::godunov ) 
+        if( pdeVariation == SmParameters::godunov || upwindSOS ) 
             numberOfGhost++;  // compute errors on an additional ghost line for Gounov (for plotting)
         getIndex(mg.gridIndexRange(),I1,I2,I3,numberOfGhost);
 
@@ -256,16 +276,16 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
         {
 //       if( numberOfDimensions==2 )
 //       {
-// 	err(I1,I2,I3,uc)  = u(I1,I2,I3,uc)-exTrue(xe,ye,t);
-// 	err(I1,I2,I3,vc)  = u(I1,I2,I3,vc)-eyTrue(xe,ye,t);
+//      err(I1,I2,I3,uc)  = u(I1,I2,I3,uc)-exTrue(xe,ye,t);
+//      err(I1,I2,I3,vc)  = u(I1,I2,I3,vc)-eyTrue(xe,ye,t);
 //       }
 //       else // 3D
 //       {
-// 	err(I1,I2,I3,uc)=u(I1,I2,I3,uc)-exTrue3d(xe,ye,ze,t);
-// 	err(I1,I2,I3,vc)=u(I1,I2,I3,vc)-eyTrue3d(xe,ye,ze,t);
-// 	err(I1,I2,I3,wc)=u(I1,I2,I3,wc)-ezTrue3d(xe,ye,ze,t);
+//      err(I1,I2,I3,uc)=u(I1,I2,I3,uc)-exTrue3d(xe,ye,ze,t);
+//      err(I1,I2,I3,vc)=u(I1,I2,I3,vc)-eyTrue3d(xe,ye,ze,t);
+//      err(I1,I2,I3,wc)=u(I1,I2,I3,wc)-ezTrue3d(xe,ye,ze,t);
 //       }
-          	    
+                        
         }
         else if( initialConditionOption==twilightZoneInitialCondition )
         {
@@ -275,47 +295,47 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
             OGFunction *& tz = parameters.dbase.get<OGFunction* >("exactSolution");
             assert( tz!=NULL );
             OGFunction & e = *tz;
-          	    
+                        
             if( ok )
             {
-      	if( mg.numberOfDimensions()==2 )
-      	{
-        	  FOR_3D(i1,i2,i3,I1,I2,I3)
-        	  {
-          	    real x0 = X(i1,i2,i3,0);
-          	    real y0 = X(i1,i2,i3,1);
+                if( mg.numberOfDimensions()==2 )
+                {
+                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    {
+                        real x0 = X(i1,i2,i3,0);
+                        real y0 = X(i1,i2,i3,1);
                         for( int n=0; n<numberOfComponents; n++ )
                         {
-            	      ERR(i1,i2,i3,n)=U(i1,i2,i3,n)-e(x0,y0,0.,n,t);
-          	    }
-        	  }
-      	}
-      	else // 3D
-      	{
-        	  FOR_3D(i1,i2,i3,I1,I2,I3)
-        	  {
-          	    real x0 = X(i1,i2,i3,0);
-          	    real y0 = X(i1,i2,i3,1);
-          	    real z0 = X(i1,i2,i3,2);
+                            ERR(i1,i2,i3,n)=U(i1,i2,i3,n)-e(x0,y0,0.,n,t);
+                        }
+                    }
+                }
+                else // 3D
+                {
+                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    {
+                        real x0 = X(i1,i2,i3,0);
+                        real y0 = X(i1,i2,i3,1);
+                        real z0 = X(i1,i2,i3,2);
                         for( int n=0; n<numberOfComponents; n++ )
                         {
-            	      ERR(i1,i2,i3,n)=U(i1,i2,i3,n)-e(x0,y0,z0,n,t);
-          	    }
-        	  }
-      	}
+                            ERR(i1,i2,i3,n)=U(i1,i2,i3,n)-e(x0,y0,z0,n,t);
+                        }
+                    }
+                }
             }
             
             if( debug & 4 ) 
             {
-      	if( ok )
-      	{
-        	  where( maskLocal(I1,I2,I3)==0 )
-          	    for( int n=0; n<numberOfComponents; n++ )
-            	      errLocal(I1,I2,I3,n)=0.;
-      	}
-      	
+                if( ok )
+                {
+                    where( maskLocal(I1,I2,I3)==0 )
+                        for( int n=0; n<numberOfComponents; n++ )
+                            errLocal(I1,I2,I3,n)=0.;
+                }
+                
                 Index J1,J2,J3;
-      	getIndex(mg.gridIndexRange(),J1,J2,J3,numberOfGhost);
+                getIndex(mg.gridIndexRange(),J1,J2,J3,numberOfGhost);
                 display(err(J1,J2,J3,C),sPrintF("err on grid=%i at t=%e",grid,t),debugFile,"%9.2e "); 
             }
 
@@ -349,109 +369,109 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
 //       real a1=1., a2=-2., a3=1.;  // For 3d, divergence free if a1+a2+a3=0
 //       if( numberOfDimensions==2 )
 //       {
-// 	omega=c*sqrt(fx*fx+fy*fy);
-// 	x0=-.5, y0=-.5;   // for the square [-.5,.5]x[-.5,.5] 
+//      omega=c*sqrt(fx*fx+fy*fy);
+//      x0=-.5, y0=-.5;   // for the square [-.5,.5]x[-.5,.5] 
 //       }
 //       else
 //       {
-// 	omega=c*sqrt(fx*fx+fy*fy+fz*fz);
-// 	x0=0., y0=0., z0=0.;   // for the box [0,1]^3
+//      omega=c*sqrt(fx*fx+fy*fy+fz*fz);
+//      x0=0., y0=0., z0=0.;   // for the box [0,1]^3
 //       }
-          	    
+                        
 //       int i1,i2,i3;
 //       real xd,yd,zd;
 //       if( isRectangular )
 //       {
-// 	if( numberOfDimensions==2 )
-// 	{
-// 	  Index J1 = Range(max(Ih1.getBase(),uhl.getBase(0)),min(Ih1.getBound(),uhl.getBound(0)));
-// 	  Index J2 = Range(max(Ih2.getBase(),uhl.getBase(1)),min(Ih2.getBound(),uhl.getBound(1)));
-// 	  Index J3 = Range(max(Ih3.getBase(),uhl.getBase(2)),min(Ih3.getBound(),uhl.getBound(2)));
-// 	  FOR_3D(i1,i2,i3,J1,J2,J3)
-// 	  {
-// 	    xd=X0(i1,i2,i3)-x0;
-// 	    yd=X1(i1,i2,i3)-y0;
+//      if( numberOfDimensions==2 )
+//      {
+//        Index J1 = Range(max(Ih1.getBase(),uhl.getBase(0)),min(Ih1.getBound(),uhl.getBound(0)));
+//        Index J2 = Range(max(Ih2.getBase(),uhl.getBase(1)),min(Ih2.getBound(),uhl.getBound(1)));
+//        Index J3 = Range(max(Ih3.getBase(),uhl.getBase(2)),min(Ih3.getBound(),uhl.getBound(2)));
+//        FOR_3D(i1,i2,i3,J1,J2,J3)
+//        {
+//          xd=X0(i1,i2,i3)-x0;
+//          yd=X1(i1,i2,i3)-y0;
 
-// 	    ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3) - cos(fx*xd)*cos(fy*yd)*cos(omega*tH);
-// 	  }
+//          ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3) - cos(fx*xd)*cos(fy*yd)*cos(omega*tH);
+//        }
 
-// 	  J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
-// 	  J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
-// 	  J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+//        J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+//        J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+//        J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
 
-// 	  FOR_3(i1,i2,i3,J1,J2,J3)
-// 	  {
-// 	    xd=X0(i1,i2,i3)-x0;
-// 	    yd=X1(i1,i2,i3)-y0;
-// 	    ERREX(i1,i2,i3)=UEX(i1,i2,i3) - (-fy/omega)*cos(fx*xd)*sin(fy*yd)*sin(omega*tE);  // Ex.t = Hz.y
-// 	    ERREY(i1,i2,i3)=UEY(i1,i2,i3) - ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*tE);  // Ey.t = - Hz.x
-// 	  }
+//        FOR_3(i1,i2,i3,J1,J2,J3)
+//        {
+//          xd=X0(i1,i2,i3)-x0;
+//          yd=X1(i1,i2,i3)-y0;
+//          ERREX(i1,i2,i3)=UEX(i1,i2,i3) - (-fy/omega)*cos(fx*xd)*sin(fy*yd)*sin(omega*tE);  // Ex.t = Hz.y
+//          ERREY(i1,i2,i3)=UEY(i1,i2,i3) - ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*tE);  // Ey.t = - Hz.x
+//        }
 
-// 	} 
-// 	else // 3D
-// 	{
+//      } 
+//      else // 3D
+//      {
 
-// 	  Index J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
-// 	  Index J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
-// 	  Index J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+//        Index J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+//        Index J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+//        Index J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
 
-// 	  FOR_3D(i1,i2,i3,I1,I2,I3)
-// 	  {
-// 	    xd=X0(i1,i2,i3)-x0;
-// 	    yd=X1(i1,i2,i3)-y0;
-// 	    zd=X2(i1,i2,i3)-z0;
+//        FOR_3D(i1,i2,i3,I1,I2,I3)
+//        {
+//          xd=X0(i1,i2,i3)-x0;
+//          yd=X1(i1,i2,i3)-y0;
+//          zd=X2(i1,i2,i3)-z0;
 
-// 	    ERREX(i1,i2,i3)=UEX(i1,i2,i3) -  (a1/fx)*cos(fx*xd)*sin(fy*yd)*sin(fz*zd)*cos(omega*tE);  // 
-// 	    ERREY(i1,i2,i3)=UEY(i1,i2,i3) -  (a2/fy)*sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*cos(omega*tE);  // 
-// 	    ERREZ(i1,i2,i3)=UEZ(i1,i2,i3) -  (a3/fz)*sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*cos(omega*tE);  // 
-// 	  }
-// 	}
+//          ERREX(i1,i2,i3)=UEX(i1,i2,i3) -  (a1/fx)*cos(fx*xd)*sin(fy*yd)*sin(fz*zd)*cos(omega*tE);  // 
+//          ERREY(i1,i2,i3)=UEY(i1,i2,i3) -  (a2/fy)*sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*cos(omega*tE);  // 
+//          ERREZ(i1,i2,i3)=UEZ(i1,i2,i3) -  (a3/fz)*sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*cos(omega*tE);  // 
+//        }
+//      }
 //       }
 //       else // curvilinear 
 //       {
-// 	// curvilinear
-// 	if( numberOfDimensions==2 )
-// 	{
-// 	  Index J1 = Range(max(Ih1.getBase(),uhl.getBase(0)),min(Ih1.getBound(),uhl.getBound(0)));
-// 	  Index J2 = Range(max(Ih2.getBase(),uhl.getBase(1)),min(Ih2.getBound(),uhl.getBound(1)));
-// 	  Index J3 = Range(max(Ih3.getBase(),uhl.getBase(2)),min(Ih3.getBound(),uhl.getBound(2)));
+//      // curvilinear
+//      if( numberOfDimensions==2 )
+//      {
+//        Index J1 = Range(max(Ih1.getBase(),uhl.getBase(0)),min(Ih1.getBound(),uhl.getBound(0)));
+//        Index J2 = Range(max(Ih2.getBase(),uhl.getBase(1)),min(Ih2.getBound(),uhl.getBound(1)));
+//        Index J3 = Range(max(Ih3.getBase(),uhl.getBase(2)),min(Ih3.getBound(),uhl.getBound(2)));
 
-// 	  FOR_3D(i1,i2,i3,J1,J2,J3)
-// 	  {
-// 	    xd=XHP(i1,i2,i3,0)-x0;
-// 	    yd=XHP(i1,i2,i3,1)-y0;
-// 	    ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3) - cos(fx*xd)*cos(fy*yd)*cos(omega*tH);
-// 	  }
+//        FOR_3D(i1,i2,i3,J1,J2,J3)
+//        {
+//          xd=XHP(i1,i2,i3,0)-x0;
+//          yd=XHP(i1,i2,i3,1)-y0;
+//          ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3) - cos(fx*xd)*cos(fy*yd)*cos(omega*tH);
+//        }
 
-// 	  J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
-// 	  J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
-// 	  J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+//        J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+//        J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+//        J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
 
-// 	  FOR_3(i1,i2,i3,J1,J2,J3)
-// 	  {
-// 	    xd=XEP(i1,i2,i3,0)-x0;
-// 	    yd=XEP(i1,i2,i3,1)-y0;
-// 	    ERREX(i1,i2,i3)=UEX(i1,i2,i3) - (-fy/omega)*cos(fx*xd)*sin(fy*yd)*sin(omega*tE);  // Ex.t = Hz.y
-// 	    ERREY(i1,i2,i3)=UEY(i1,i2,i3) - ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*tE);  // Ey.t = - Hz.x
-// 	  }
-// 	} 
-// 	else // 3D
-// 	{
-// 	  Index J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
-// 	  Index J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
-// 	  Index J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+//        FOR_3(i1,i2,i3,J1,J2,J3)
+//        {
+//          xd=XEP(i1,i2,i3,0)-x0;
+//          yd=XEP(i1,i2,i3,1)-y0;
+//          ERREX(i1,i2,i3)=UEX(i1,i2,i3) - (-fy/omega)*cos(fx*xd)*sin(fy*yd)*sin(omega*tE);  // Ex.t = Hz.y
+//          ERREY(i1,i2,i3)=UEY(i1,i2,i3) - ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*tE);  // Ey.t = - Hz.x
+//        }
+//      } 
+//      else // 3D
+//      {
+//        Index J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+//        Index J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+//        Index J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
 
-// 	  FOR_3D(i1,i2,i3,J1,J2,J3)
-// 	  {
-// 	    xd=XEP(i1,i2,i3,0)-x0;
-// 	    yd=XEP(i1,i2,i3,1)-y0;
-// 	    zd=XEP(i1,i2,i3,2)-z0;
+//        FOR_3D(i1,i2,i3,J1,J2,J3)
+//        {
+//          xd=XEP(i1,i2,i3,0)-x0;
+//          yd=XEP(i1,i2,i3,1)-y0;
+//          zd=XEP(i1,i2,i3,2)-z0;
 
-// 	    ERREX(i1,i2,i3)=UEX(i1,i2,i3) -  (a1/fx)*cos(fx*xd)*sin(fy*yd)*sin(fz*zd)*cos(omega*tE);  // 
-// 	    ERREY(i1,i2,i3)=UEY(i1,i2,i3) -  (a2/fy)*sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*cos(omega*tE);  // 
-// 	    ERREZ(i1,i2,i3)=UEZ(i1,i2,i3) -  (a3/fz)*sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*cos(omega*tE);  // 
-// 	  }
-// 	}
+//          ERREX(i1,i2,i3)=UEX(i1,i2,i3) -  (a1/fx)*cos(fx*xd)*sin(fy*yd)*sin(fz*zd)*cos(omega*tE);  // 
+//          ERREY(i1,i2,i3)=UEY(i1,i2,i3) -  (a2/fy)*sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*cos(omega*tE);  // 
+//          ERREZ(i1,i2,i3)=UEZ(i1,i2,i3) -  (a3/fz)*sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*cos(omega*tE);  // 
+//        }
+//      }
 
 //       }
 
@@ -464,16 +484,16 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
         }
         else if( initialConditionOption==planeMaterialInterfaceInitialCondition )
         {
-// 	// adjust array dimensions for local arrays
-// 	Index J1 = Range(max(I1.getBase(),uel.getBase(0)),min(I1.getBound(),uel.getBound(0)));
-// 	Index J2 = Range(max(I2.getBase(),uel.getBase(1)),min(I2.getBound(),uel.getBound(1)));
-// 	Index J3 = Range(max(I3.getBase(),uel.getBase(2)),min(I3.getBound(),uel.getBound(2)));
+//      // adjust array dimensions for local arrays
+//      Index J1 = Range(max(I1.getBase(),uel.getBase(0)),min(I1.getBound(),uel.getBound(0)));
+//      Index J2 = Range(max(I2.getBase(),uel.getBase(1)),min(I2.getBound(),uel.getBound(1)));
+//      Index J3 = Range(max(I3.getBase(),uel.getBase(2)),min(I3.getBound(),uel.getBound(2)));
 
-// 	setPlaneMaterialInterfaceMacro(error,J1,J2,J3);
+//      setPlaneMaterialInterfaceMacro(error,J1,J2,J3);
         }
         else if( initialConditionOption==gaussianIntegralInitialCondition )
         {
-          	    
+                        
 //       // adjust array dimensions for local arrays
 //       Index J1 = Range(max(I1.getBase(),uel.getBase(0)),min(I1.getBound(),uel.getBound(0)));
 //       Index J2 = Range(max(I2.getBase(),uel.getBase(1)),min(I2.getBound(),uel.getBound(1)));
@@ -481,7 +501,7 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
 
 //       getGaussianIntegralSolution(error,UEX,UEY,UHZ,tE);
 
-          	    
+                        
         }
         else if( knownSolutionOption==annulusEigenfunctionKnownSolution )
         {
@@ -503,37 +523,39 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
             if( false )
                 printP(" *** compute errors from known solution t=%8.2e ****\n",t);
             
-            errLocal(I1,I2,I3,C)=fabs( uLocal(I1,I2,I3,C) - uKnownLocal(I1,I2,I3,C));
+      // errLocal(I1,I2,I3,C)=fabs( uLocal(I1,I2,I3,C) - uKnownLocal(I1,I2,I3,C));
+      // *wdh* Aug 4, 2021 -- do not take absolute value 
+            errLocal(I1,I2,I3,C)=uLocal(I1,I2,I3,C) - uKnownLocal(I1,I2,I3,C);
 
         }
         else if( compareToReferenceShowFile )
         {
             assert( uReference!=NULL );
-          	    
+                        
             realMappedGridFunction & ur = (*uReference)[grid];
             #ifdef USE_PPP
                 realSerialArray urLocal;  getLocalArrayWithGhostBoundaries(ur,urLocal);
             #else
                 const realSerialArray & urLocal  =  ur;
-            #endif	    
+            #endif        
 
             errLocal(I1,I2,I3,C)=fabs( uLocal(I1,I2,I3,C) - urLocal(I1,I2,I3,C));
         }
         else if( forcingOption==planeWaveBoundaryForcing ||
-           	     initialConditionOption==planeWaveScatteredFieldInitialCondition )
+                          initialConditionOption==planeWaveScatteredFieldInitialCondition )
         {
         
         }
         else
         {
-      //	    Overture::abort("Cgsm::unknown forcing option");
+      //            Overture::abort("Cgsm::unknown forcing option");
             energyOnly = true;
         }
 
 // *   -- old way -- 090418
 // *     RealArray errMax(C);
 // *     errMax=0.;  // max error on this grid
-// * 	
+// *    
 // *     // **** Here is where we compute the errors that are printed to the screen and saved in the log file *****
 // * 
 // *     int numGhostToCheck=0;
@@ -548,26 +570,26 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
 // *     {
 // *       FOR_3D(i1,i2,i3,J1,J2,J3)
 // *       {
-// * 	if( MASK(i1,i2,i3)!=0 )
-// * 	{
-// * 	  for( int c=C.getBase(); c<=C.getBound(); c++ )
-// * 	  {
-// * 	    errMax(c)=max(errMax(c),fabs(ERR(i1,i2,i3,c)));           // this is the max err on this grid
-// * 	    solutionNorm(c)=max(solutionNorm(c),fabs(U(i1,i2,i3,c)));
-// * 	  }
-// * 	}
+// *    if( MASK(i1,i2,i3)!=0 )
+// *    {
+// *      for( int c=C.getBase(); c<=C.getBound(); c++ )
+// *      {
+// *        errMax(c)=max(errMax(c),fabs(ERR(i1,i2,i3,c)));           // this is the max err on this grid
+// *        solutionNorm(c)=max(solutionNorm(c),fabs(U(i1,i2,i3,c)));
+// *      }
+// *    }
 // *       }
 // *     }
-// * 	
+// *    
 // *     for( int c=C.getBase(); c<=C.getBound(); c++ )
 // *     {
 // *       errMax(c)=ParallelUtility::getMaxValue(errMax(c));
 // *       solutionNorm(c)=ParallelUtility::getMaxValue(solutionNorm(c));
-// * 	      
+// *          
 // *       maximumError(c)=max(maximumError(c),errMax(c));  // max error over all grids
 // * 
 // *       // printF("getErrors: maximumError(%i)=%9.3e\n",c,maximumError(c));
-// * 	  
+// *      
 // *     }
 // * 
 // *     bool computeErrorsAtGhost=true;
@@ -576,7 +598,7 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
 // * #endif
 // *     if( computeErrorsAtGhost && !usePML )
 // *     {
-// * 	      
+// *          
 // *       // *** Compute error including ghost points and output a warning if the errors get too large ***
 // * 
 // *       RealArray ghostError(C,Range(1,numberOfGhost));
@@ -585,41 +607,41 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
 // *       Index Ig1,Ig2,Ig3;
 // *       for( int axis=0; axis<mg.numberOfDimensions(); axis++)
 // *       {
-// * 	for( int side=0; side<=1; side++ )
-// * 	{
-// * 	  getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3);
-// * 	  for( ghost=1; ghost<=numberOfGhost; ghost++ )
-// * 	  {
-// * 	    getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3,ghost);
-// * 			
-// * 	    where( mask(I1,I2,I3)!=0 && mask(Ig1,Ig2,Ig3)!=0 )
-// * 	    {
-// * 	      for( c=C.getBase(); c<=C.getBound(); c++ )
-// * 		ghostError(c,ghost)=max(ghostError(c,ghost),max(fabs(err(Ig1,Ig2,Ig3,c))));
-// * 			    
-// * 	      for( c=C.getBase(); c<=C.getBound(); c++ )
-// * 	      {
-// * 		if( max(fabs(err(Ig1,Ig2,Ig3,c)))>1.e+1 )
-// * 		{
-// * 		  printF(" *** grid=%i side,axis=%i,%i ghost=%i c=%i ****\n",grid,side,axis,ghost,c);
-// * 		  err(Ig1,Ig2,Ig3,c).display("ERROR on the ghost line");
-// * 		}
-// * 	      }
-// * 			    
-// * 	    }
-// * 	  }
-// * 	}
+// *    for( int side=0; side<=1; side++ )
+// *    {
+// *      getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3);
+// *      for( ghost=1; ghost<=numberOfGhost; ghost++ )
+// *      {
+// *        getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3,ghost);
+// *                    
+// *        where( mask(I1,I2,I3)!=0 && mask(Ig1,Ig2,Ig3)!=0 )
+// *        {
+// *          for( c=C.getBase(); c<=C.getBound(); c++ )
+// *            ghostError(c,ghost)=max(ghostError(c,ghost),max(fabs(err(Ig1,Ig2,Ig3,c))));
+// *                        
+// *          for( c=C.getBase(); c<=C.getBound(); c++ )
+// *          {
+// *            if( max(fabs(err(Ig1,Ig2,Ig3,c)))>1.e+1 )
+// *            {
+// *              printF(" *** grid=%i side,axis=%i,%i ghost=%i c=%i ****\n",grid,side,axis,ghost,c);
+// *              err(Ig1,Ig2,Ig3,c).display("ERROR on the ghost line");
+// *            }
+// *          }
+// *                        
+// *        }
+// *      }
+// *    }
 // *       }
 // * 
 // *       if( debug & 2 )
 // *       {
-// * 	for( ghost=1; ghost<=numberOfGhost; ghost++ )
-// * 	{
-// * 	  printF(" t=%9.3e: grid=%i: Errors at ghost line %i: ",t,grid,ghost);
-// * 	  for( c=C.getBase(); c<=C.getBound(); c++ )
-// * 	    printF("%8.2e, ",ghostError(c,ghost));
-// * 	  printF("\n");
-// * 	}
+// *    for( ghost=1; ghost<=numberOfGhost; ghost++ )
+// *    {
+// *      printF(" t=%9.3e: grid=%i: Errors at ghost line %i: ",t,grid,ghost);
+// *      for( c=C.getBase(); c<=C.getBound(); c++ )
+// *        printF("%8.2e, ",ghostError(c,ghost));
+// *      printF("\n");
+// *    }
 // *       }
 // *       
 // *     } // end if compute error at ghost
@@ -649,13 +671,13 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
             const int maskOption=0;  // check points where mask != 0
             if( pNorm<10000 )
             {
-      	maximumError(c)=lpNorm(pNorm,cgerr,c,maskOption,parameters.dbase.get<int >("checkErrorsAtGhostPoints") );
-      	solutionNorm(c)=lpNorm(pNorm,cgu  ,c,maskOption,parameters.dbase.get<int >("checkErrorsAtGhostPoints") );
+                maximumError(c)=lpNorm(pNorm,cgerr,c,maskOption,parameters.dbase.get<int >("checkErrorsAtGhostPoints") );
+                solutionNorm(c)=lpNorm(pNorm,cgu  ,c,maskOption,parameters.dbase.get<int >("checkErrorsAtGhostPoints") );
             }
             else
             { // assume this is the max-norm
-      	maximumError(c)=maxNorm(cgerr,c,maskOption,parameters.dbase.get<int >("checkErrorsAtGhostPoints") );
-      	solutionNorm(c)=maxNorm(cgu  ,c,maskOption,parameters.dbase.get<int >("checkErrorsAtGhostPoints") );
+                maximumError(c)=maxNorm(cgerr,c,maskOption,parameters.dbase.get<int >("checkErrorsAtGhostPoints") );
+                solutionNorm(c)=maxNorm(cgu  ,c,maskOption,parameters.dbase.get<int >("checkErrorsAtGhostPoints") );
             }
         }
 
@@ -671,23 +693,23 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
             FILE *output = fileio==0 ? logFile : fileio==1 ? stdout : pDebugFile;
 
             if( norm==0 )
-      	fPrintF(output,(const char*)label);
+                fPrintF(output,(const char*)label);
 
             fPrintF(output,"-->t=%10.4e dt=%7.1e %s errors:[",t,dt,(const char*)normName);
 
             for( int c=C.getBase(); c<=C.getBound(); c++ )
-      	fPrintF(output,"%10.4e,",maximumError(c));
+                fPrintF(output,"%10.4e,",maximumError(c));
 
             fPrintF(output,"], %s(u):[",(const char*)normName);
 
             for( int c=C.getBase(); c<=C.getBound(); c++ )
-      	fPrintF(output,"%8.2e,",solutionNorm(c));
+                fPrintF(output,"%8.2e,",solutionNorm(c));
 
             fPrintF(output,"]\n");
-        	  
+                    
             if( fileio==2 && norm==numberOfNormsToPrint-1 )
             {
-      	fPrintF(output,"\n");
+                fPrintF(output,"\n");
             }
             
         }

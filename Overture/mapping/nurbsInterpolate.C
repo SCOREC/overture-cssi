@@ -62,10 +62,10 @@ extern "C"
 // =================================================================================================
 void NurbsMapping::
 interpolate(const RealArray & x, 
-	    int domainDimension, int rangeDimension,
-	    const IntegerArray & xDimension, const IntegerArray & xGridIndexRange, 
-	    ParameterizationTypeEnum parameterizationType /* =parameterizeByChordLength */,
-	    int *xDegree /* =NULL */ )
+            int domainDimension, int rangeDimension,
+            const IntegerArray & xDimension, const IntegerArray & xGridIndexRange, 
+            ParameterizationTypeEnum parameterizationType /* =parameterizeByChordLength */,
+            int *xDegree /* =NULL */ )
 {
 
   // -- This version can handle any domainDimension and any rangeDimension
@@ -154,44 +154,44 @@ interpolate(const RealArray & x,
     int num = (n2+1)*(n3+1); // number of non-degenerate rows
     for ( k=0; k<=n3; k++ )
       {
-	for( j=0; j<=n2; j++ )
-	  {
-	    total = 0.;
-	    for( i=1; i<=n1; i++ )
-	      {
-		chord=SQRT( sum(SQR( x(i+xBase0, j+xBase1, k+xBase2, R) - x(i-1+xBase0, j+xBase1, k+xBase2, R))) );
-		if( chord==0. )
-		  { // we need a non-zero chord length
-		    if( i>1 )
-		      chord=cds[i-1]-cds[i-2];  // use previous
-		    else
-		      {
-			if( i<n1 )
-			  {
-			    chord=SQRT( sum(SQR( x(i+1+xBase0, j+xBase1, k+xBase2, R)-x(i+xBase0, j+xBase1, k+xBase2, R))) );  // use next
-			    if( chord==0. )
-			      chord=1.;
-			  }
-			else
-			  chord=1.;
-		      }
-		  } // end if chord == 0
-		cds[i] = chord;
-		total += cds[i];
-	      } // end for i=...
+        for( j=0; j<=n2; j++ )
+          {
+            total = 0.;
+            for( i=1; i<=n1; i++ )
+              {
+                chord=SQRT( sum(SQR( x(i+xBase0, j+xBase1, k+xBase2, R) - x(i-1+xBase0, j+xBase1, k+xBase2, R))) );
+                if( chord==0. )
+                  { // we need a non-zero chord length
+                    if( i>1 )
+                      chord=cds[i-1]-cds[i-2];  // use previous
+                    else
+                      {
+                        if( i<n1 )
+                          {
+                            chord=SQRT( sum(SQR( x(i+1+xBase0, j+xBase1, k+xBase2, R)-x(i+xBase0, j+xBase1, k+xBase2, R))) );  // use next
+                            if( chord==0. )
+                              chord=1.;
+                          }
+                        else
+                          chord=1.;
+                      }
+                  } // end if chord == 0
+                cds[i] = chord;
+                total += cds[i];
+              } // end for i=...
 
-	    if (total == 0.) 
-	      num -= 1; // this was a degenerate row
-	    else
-	      {
-		d = 0.;
-		for (i=1; i<n1; i++)
-		  {
-		    d += cds[i];
-		    uBar(i) += d/total;
-		  }
-	      }
-	  }
+            if (total == 0.) 
+              num -= 1; // this was a degenerate row
+            else
+              {
+                d = 0.;
+                for (i=1; i<n1; i++)
+                  {
+                    d += cds[i];
+                    uBar(i) += d/total;
+                  }
+              }
+          }
       }
     
     // end for j...
@@ -211,41 +211,41 @@ interpolate(const RealArray & x,
     {
       for( i=0; i<=n1; i++ )
       {
-	total = 0.;
-	for( j=1; j<=n2; j++ )
-	{
-	  chord=SQRT( sum(SQR( x(i+xBase0, j-1+xBase1, k+xBase2, R) - x(i+xBase0, j+xBase1, k+xBase2, R))) );
-	  if( chord==0. )
-	  { // we need a non-zero chord length
-	    if( j>1 )
-	      chord=cds[j-1]-cds[j-2];  // use previous
-	    else
-	    {
-	      if( j<n2 )
-	      {
-		chord=SQRT( sum(SQR( x(i+xBase0, j+1+xBase1, k+xBase2, R)-x(i+xBase0, j+xBase1, k+xBase2, R))) );  // use next
-		if( chord==0. )
-		  chord=1.;
-	      }
-	      else
-		chord=1.;
-	    }
-	  } // end if chord == 0
-	  cds[j] = chord;
-	  total += cds[j];
-	} // end for i=...
+        total = 0.;
+        for( j=1; j<=n2; j++ )
+        {
+          chord=SQRT( sum(SQR( x(i+xBase0, j-1+xBase1, k+xBase2, R) - x(i+xBase0, j+xBase1, k+xBase2, R))) );
+          if( chord==0. )
+          { // we need a non-zero chord length
+            if( j>1 )
+              chord=cds[j-1]-cds[j-2];  // use previous
+            else
+            {
+              if( j<n2 )
+              {
+                chord=SQRT( sum(SQR( x(i+xBase0, j+1+xBase1, k+xBase2, R)-x(i+xBase0, j+xBase1, k+xBase2, R))) );  // use next
+                if( chord==0. )
+                  chord=1.;
+              }
+              else
+                chord=1.;
+            }
+          } // end if chord == 0
+          cds[j] = chord;
+          total += cds[j];
+        } // end for i=...
     
-	if (total == 0.) 
-	  num -= 1; // this was a degenerate row
-	else
-	{
-	  d = 0.;
-	  for (j=1; j<n2; j++)
-	  {
-	    d += cds[j];
-	    vBar(j) += d/total;
-	  }
-	}
+        if (total == 0.) 
+          num -= 1; // this was a degenerate row
+        else
+        {
+          d = 0.;
+          for (j=1; j<n2; j++)
+          {
+            d += cds[j];
+            vBar(j) += d/total;
+          }
+        }
       }
     } // end for k...
     if (num == 0)
@@ -263,41 +263,41 @@ interpolate(const RealArray & x,
     {
       for( j=0; j<=n2; j++ )
       {
-	total = 0.;
-	for( k=1; k<=n3; k++ )
-	{
-	  chord=SQRT( sum(SQR( x(i+xBase0, j+xBase1, k-1+xBase2, R) - x(i+xBase0, j+xBase1, k+xBase2, R))) );
-	  if( chord==0. )
-	  { // we need a non-zero chord length
-	    if( k>1 )
-	      chord=cds[k-1]-cds[k-2];  // use previous
-	    else
-	    {
-	      if( k<n3 )
-	      {
-		chord=SQRT( sum(SQR( x(i+xBase0, j+xBase1, k+1+xBase2, R)-x(i+xBase0, j+xBase1, k+xBase2, R))) );  // use next
-		if( chord==0. )
-		  chord=1.;
-	      }
-	      else
-		chord=1.;
-	    }
-	  } // end if chord == 0
-	  cds[k] = chord;
-	  total += cds[k];
-	} // end for k=...
+        total = 0.;
+        for( k=1; k<=n3; k++ )
+        {
+          chord=SQRT( sum(SQR( x(i+xBase0, j+xBase1, k-1+xBase2, R) - x(i+xBase0, j+xBase1, k+xBase2, R))) );
+          if( chord==0. )
+          { // we need a non-zero chord length
+            if( k>1 )
+              chord=cds[k-1]-cds[k-2];  // use previous
+            else
+            {
+              if( k<n3 )
+              {
+                chord=SQRT( sum(SQR( x(i+xBase0, j+xBase1, k+1+xBase2, R)-x(i+xBase0, j+xBase1, k+xBase2, R))) );  // use next
+                if( chord==0. )
+                  chord=1.;
+              }
+              else
+                chord=1.;
+            }
+          } // end if chord == 0
+          cds[k] = chord;
+          total += cds[k];
+        } // end for k=...
     
-	if (total == 0.) 
-	  num -= 1; // this was a degenerate row
-	else
-	{
-	  d = 0.;
-	  for (k=1; k<n3; k++)
-	  {
-	    d += cds[k];
-	    wBar(k) += d/total;
-	  }
-	}
+        if (total == 0.) 
+          num -= 1; // this was a degenerate row
+        else
+        {
+          d = 0.;
+          for (k=1; k<n3; k++)
+          {
+            d += cds[k];
+            wBar(k) += d/total;
+          }
+        }
       } // end for j...
     } // end for i...
     if (num == 0)
@@ -396,7 +396,7 @@ interpolate(const RealArray & x,
     ArraySimple<real> matrix(ldab,n1p1);
     for (i=0; i<ldab; i++)
       for (j=0; j<=n1; j++)
-	matrix(i,j)=0.;
+        matrix(i,j)=0.;
     
     for( i=0; i<=n1; i++ )
     {
@@ -405,15 +405,15 @@ interpolate(const RealArray & x,
       for( j=0; j<=p1; j++ )
       {
         int ii=i, jj=j+span-p1;
-	// matrix(ii,jj)=row(j);
+        // matrix(ii,jj)=row(j);
         // printF(" (ii,jj)=(%i,%i) row(%i)=%8.2e\n",ii,jj,j,row(j));
-	int ik=kl+ku+ii-jj;
-	if( row(j)!=0. ) // the first and last rows should have some zeros outside the band structure
-	{
-	  assert( ik>=0 && ik<ldab );
-	  matrix(ik,jj)=row(j);
-	}
-	
+        int ik=kl+ku+ii-jj;
+        if( row(j)!=0. ) // the first and last rows should have some zeros outside the band structure
+        {
+          assert( ik>=0 && ik<ldab );
+          matrix(ik,jj)=row(j);
+        }
+        
       }
       
     }
@@ -422,8 +422,8 @@ interpolate(const RealArray & x,
     {
       RealArray uMatrix(ldab,n1p1);
       for (i=0; i<ldab; i++)
-	for (j=0; j<=n1; j++)
-	  uMatrix(i,j)=matrix(i,j);
+        for (j=0; j<=n1; j++)
+          uMatrix(i,j)=matrix(i,j);
       ::display(uMatrix,"Nurbs: interpolate: banded u-matrix","%6.3f ");
     }
     
@@ -439,23 +439,23 @@ interpolate(const RealArray & x,
     for ( k=0; k<=n3; k++ )
       for( j=0; j<=n2; j++)
       {
-	for( r=0; r<rangeDimension; r++ )
-	{
-	  for (i=0; i<=n1; i++)
-	    rPoint(i,j,k,r)=x(i + xBase0, j + xBase1, k+xBase2, r);
+        for( r=0; r<rangeDimension; r++ )
+        {
+          for (i=0; i<=n1; i++)
+            rPoint(i,j,k,r)=x(i + xBase0, j + xBase1, k+xBase2, r);
 
-	  if( false )
-	  {
-	    int nrhs=1;
-	    GBTRS( 'N', n1p1, kl, ku, nrhs, matrix(0,0), ldab, ipvt(0), rPoint(0,j,k,r), n1p1,info );
-	    /// GESL(matrix(0,0), n1p1, n1p1, ipvt(0), rPoint(0,j,k,r), job);
-	    if( info != 0 )
-	    {
-	      printF("NurbsMapping::interpolate:ERROR  u-matrix: banded solve: return: info=%i\n",info);
-	    }
-	  }
-	  
-	}
+          if( false )
+          {
+            int nrhs=1;
+            GBTRS( 'N', n1p1, kl, ku, nrhs, matrix(0,0), ldab, ipvt(0), rPoint(0,j,k,r), n1p1,info );
+            /// GESL(matrix(0,0), n1p1, n1p1, ipvt(0), rPoint(0,j,k,r), job);
+            if( info != 0 )
+            {
+              printF("NurbsMapping::interpolate:ERROR  u-matrix: banded solve: return: info=%i\n",info);
+            }
+          }
+          
+        }
       }
     
     // solve all systems in one call: 
@@ -481,22 +481,22 @@ interpolate(const RealArray & x,
     RealArray row(p1+1);
     for (i=0; i<=n1; i++)
       for (j=0; j<=n1; j++)
-	matrix(i,j)=0.;
+        matrix(i,j)=0.;
     int span;
     for( i=0; i<=n1; i++ )
     {
       span = findSpan(n1,p1,uBar(i),uKnot); 
       basisFuns(span,uBar(i),p1,uKnot,row);
       for( j=0; j<=p1; j++ )
-	matrix(i,j+span-p1)=row(j);
+        matrix(i,j+span-p1)=row(j);
     }
 
     if( true )
     {
       RealArray uMatrix(n1p1,n1p1);
       for (i=0; i<=n1; i++)
-	for (j=0; j<=n1; j++)
-	  uMatrix(i,j)=matrix(i,j);
+        for (j=0; j<=n1; j++)
+          uMatrix(i,j)=matrix(i,j);
       ::display(uMatrix,"Nurbs: interpolate: u-matrix","%5.2f ");
     }
   
@@ -517,12 +517,12 @@ interpolate(const RealArray & x,
     for ( k=0; k<=n3; k++ )
       for( j=0; j<=n2; j++)
       {
-	for( r=0; r<rangeDimension; r++ )
-	{
-	  for (i=0; i<=n1; i++)
-	    rPoint(i,j,k,r)=x(i + xBase0, j + xBase1, k+xBase2, r);
-	  GESL(matrix(0,0), n1p1, n1p1, ipvt(0), rPoint(0,j,k,r), job);
-	}
+        for( r=0; r<rangeDimension; r++ )
+        {
+          for (i=0; i<=n1; i++)
+            rPoint(i,j,k,r)=x(i + xBase0, j + xBase1, k+xBase2, r);
+          GESL(matrix(0,0), n1p1, n1p1, ipvt(0), rPoint(0,j,k,r), job);
+        }
       }
 
   } // end non-banded solve
@@ -531,11 +531,11 @@ interpolate(const RealArray & x,
   {
     for( r=0; r<rangeDimension; r++ )
       for ( k=0; k<=n3; k++ )
-	for (j=0; j<=n2; j++)
-	  for( i=0; i<=n1; i++)
-	  {
-	    cPoint(i,j,k,r)=rPoint(i,j,k,r);
-	  }
+        for (j=0; j<=n2; j++)
+          for( i=0; i<=n1; i++)
+          {
+            cPoint(i,j,k,r)=rPoint(i,j,k,r);
+          }
 
     // ::display(cPoint,"interpolate: cPoint after vMatrix","%5.2f ");
   }
@@ -557,20 +557,20 @@ interpolate(const RealArray & x,
       vmatrix=0.;
       for( j=0; j<=n2; j++ )
       {
-	span = findSpan(n2,p2,vBar(j),vKnot); 
-	basisFuns(span,vBar(j),p2,vKnot,row);
-	for( int q=0; q<=p2; q++ )
-	{
-	  // vmatrix(j,q+span-p2)=row(q);
-	  int ii=j, jj=q+span-p2;
-	  // matrix(ii,jj)=row(q);
-	  int ik=kl+ku+ii-jj;
-	  if( row(q)!=0. ) // the first and last rows should have some zeros outside the band structure
-	  {
-	    assert( ik>=0 && ik<ldab );
-	    vmatrix(ik,jj)=row(q);
-	  }
-	}
+        span = findSpan(n2,p2,vBar(j),vKnot); 
+        basisFuns(span,vBar(j),p2,vKnot,row);
+        for( int q=0; q<=p2; q++ )
+        {
+          // vmatrix(j,q+span-p2)=row(q);
+          int ii=j, jj=q+span-p2;
+          // matrix(ii,jj)=row(q);
+          int ik=kl+ku+ii-jj;
+          if( row(q)!=0. ) // the first and last rows should have some zeros outside the band structure
+          {
+            assert( ik>=0 && ik<ldab );
+            vmatrix(ik,jj)=row(q);
+          }
+        }
       
       }
 
@@ -579,7 +579,7 @@ interpolate(const RealArray & x,
       GBTRF( n2p1, n2p1, kl, ku, vmatrix(0,0), ldab, ipvt(0), info );
       if( info != 0 )
       {
-	printF("NurbsMapping::interpolate:ERROR  v-matrix: banded factor: return: info=%i\n",info);
+        printF("NurbsMapping::interpolate:ERROR  v-matrix: banded factor: return: info=%i\n",info);
       }
 
       // Secondly, do n1+1 curve interpolations through the points
@@ -588,51 +588,51 @@ interpolate(const RealArray & x,
       if( false )
       { // solve all systems in one call  -- doesn't make much difference in CPU
         ArraySimple<real> qPoint(n2+1, n1+1, n3+1, rangeDimension);
-	for( r=0; r<rangeDimension; r++ )
-	  for ( k=0; k<=n3; k++ )
-	    for( i=0; i<=n1; i++)
-	      for (j=0; j<=n2; j++)
-		qPoint(j,i,k,r) = rPoint(i,j,k,r);
+        for( r=0; r<rangeDimension; r++ )
+          for ( k=0; k<=n3; k++ )
+            for( i=0; i<=n1; i++)
+              for (j=0; j<=n2; j++)
+                qPoint(j,i,k,r) = rPoint(i,j,k,r);
 
-	int nrhs=n1p1*n3p1*rangeDimension;
-	GBTRS( 'N', n2p1, kl, ku, nrhs, vmatrix(0,0), ldab, ipvt(0), qPoint(0,0,0,0), n2p1,info );
-	if( info != 0 )
-	{
-	  printF("NurbsMapping::interpolate:ERROR  v-matrix: banded solve: return: info=%i\n",info);
-	}
+        int nrhs=n1p1*n3p1*rangeDimension;
+        GBTRS( 'N', n2p1, kl, ku, nrhs, vmatrix(0,0), ldab, ipvt(0), qPoint(0,0,0,0), n2p1,info );
+        if( info != 0 )
+        {
+          printF("NurbsMapping::interpolate:ERROR  v-matrix: banded solve: return: info=%i\n",info);
+        }
 
-	// copy the result into the control point array
-	for( r=0; r<rangeDimension; r++ )
-	  for ( k=0; k<=n3; k++ )
-	    for( i=0; i<=n1; i++)
-	      for (j=0; j<=n2; j++)
-		rPoint(i,j,k,r) = qPoint(j,i,k,r);
+        // copy the result into the control point array
+        for( r=0; r<rangeDimension; r++ )
+          for ( k=0; k<=n3; k++ )
+            for( i=0; i<=n1; i++)
+              for (j=0; j<=n2; j++)
+                rPoint(i,j,k,r) = qPoint(j,i,k,r);
 
       }
       else
       {
-	for ( k=0; k<=n3; k++ )
-	  for( i=0; i<=n1; i++)
-	  {
-	    for( r=0; r<rangeDimension; r++ )
-	    {
-	      for (j=0; j<=n2; j++)
-		pPoint(j) = rPoint(i,j,k,r);
+        for ( k=0; k<=n3; k++ )
+          for( i=0; i<=n1; i++)
+          {
+            for( r=0; r<rangeDimension; r++ )
+            {
+              for (j=0; j<=n2; j++)
+                pPoint(j) = rPoint(i,j,k,r);
 
-	      // GESL( vmatrix(0,0),n2p1,n2p1,ipvt(0),pPoint(0),job);
+              // GESL( vmatrix(0,0),n2p1,n2p1,ipvt(0),pPoint(0),job);
 
-	      int nrhs=1;
-	      GBTRS( 'N', n2p1, kl, ku, nrhs, vmatrix(0,0), ldab, ipvt(0), pPoint(0), n2p1,info );
-	      if( info != 0 )
-	      {
-		printF("NurbsMapping::interpolate:ERROR  v-matrix: banded solve: return: info=%i\n",info);
-	      }
+              int nrhs=1;
+              GBTRS( 'N', n2p1, kl, ku, nrhs, vmatrix(0,0), ldab, ipvt(0), pPoint(0), n2p1,info );
+              if( info != 0 )
+              {
+                printF("NurbsMapping::interpolate:ERROR  v-matrix: banded solve: return: info=%i\n",info);
+              }
 
-	      // copy the result into the control point array
-	      for (j=0; j<=n2; j++)
-		rPoint(i,j,k,r) = pPoint(j);
-	    }
-	  }
+              // copy the result into the control point array
+              for (j=0; j<=n2; j++)
+                rPoint(i,j,k,r) = pPoint(j);
+            }
+          }
       }
       
     }
@@ -644,10 +644,10 @@ interpolate(const RealArray & x,
       vmatrix=0.;
       for( j=0; j<=n2; j++ )
       {
-	span = findSpan(n2,p2,vBar(j),vKnot); 
-	basisFuns(span,vBar(j),p2,vKnot,row);
-	for( int q=0; q<=p2; q++ )
-	  vmatrix(j,q+span-p2)=row(q);
+        span = findSpan(n2,p2,vBar(j),vKnot); 
+        basisFuns(span,vBar(j),p2,vKnot,row);
+        for( int q=0; q<=p2; q++ )
+          vmatrix(j,q+span-p2)=row(q);
       }
 
       //  matrix.display("Nurbs: interpolate: matrix");
@@ -658,8 +658,8 @@ interpolate(const RealArray & x,
       // matrix.display("Nurbs: interpolate: matrix after factor");
       if( rcond==0. )
       {
-	printF("NurbsMapping::interpolate:ERROR: After factoring the v-matrix: rcond = %e \n",rcond);
-	OV_ABORT("error");
+        printF("NurbsMapping::interpolate:ERROR: After factoring the v-matrix: rcond = %e \n",rcond);
+        OV_ABORT("error");
       }
 
       // Secondly, do n1+1 curve interpolations through the points
@@ -667,18 +667,18 @@ interpolate(const RealArray & x,
 
       job=0;
       for ( k=0; k<=n3; k++ )
-	for( i=0; i<=n1; i++)
-	{
-	  for( r=0; r<rangeDimension; r++ )
-	  {
-	    for (j=0; j<=n2; j++)
-	      pPoint(j) = rPoint(i,j,k,r);
-	    GESL( vmatrix(0,0),n2p1,n2p1,ipvt(0),pPoint(0),job);
-	    // copy the result into the control point array
-	    for (j=0; j<=n2; j++)
-	      rPoint(i,j,k,r) = pPoint(j);
-	  }
-	}
+        for( i=0; i<=n1; i++)
+        {
+          for( r=0; r<rangeDimension; r++ )
+          {
+            for (j=0; j<=n2; j++)
+              pPoint(j) = rPoint(i,j,k,r);
+            GESL( vmatrix(0,0),n2p1,n2p1,ipvt(0),pPoint(0),job);
+            // copy the result into the control point array
+            for (j=0; j<=n2; j++)
+              rPoint(i,j,k,r) = pPoint(j);
+          }
+        }
 
     } // end full matrix solve 
   
@@ -687,12 +687,12 @@ interpolate(const RealArray & x,
     if( domainDimension==2 )
     {
       for( r=0; r<rangeDimension; r++ )
-	for ( k=0; k<=n3; k++ )
-	  for (j=0; j<=n2; j++)
-	    for( i=0; i<=n1; i++)
-	    {
-	      cPoint(i,j,k,r)=rPoint(i,j,k,r);
-	    }
+        for ( k=0; k<=n3; k++ )
+          for (j=0; j<=n2; j++)
+            for( i=0; i<=n1; i++)
+            {
+              cPoint(i,j,k,r)=rPoint(i,j,k,r);
+            }
 
       // ::display(cPoint,"interpolate: cPoint after vMatrix","%5.2f ");
     }
@@ -704,106 +704,106 @@ interpolate(const RealArray & x,
       // ------------------------
       if( useBandedSolve )
       {
-	// ------------ W-MATRIX BANDED SOLVE ------------
+        // ------------ W-MATRIX BANDED SOLVE ------------
 
-	int kl=p3-1, ku=p3-1;
-	int ldab = 2*kl+ku+1;
-	ArraySimple<real> wmatrix(ldab,n3p1);
-	row.redim(p3+1);
-	wmatrix=0.;
-	for( k=0; k<=n3; k++ )
-	{
-	  span = findSpan(n3,p3,wBar(k),wKnot); 
-	  basisFuns(span,wBar(k),p3,wKnot,row);
-	  for( int q=0; q<=p3; q++ )
-	  {
-	  
-	    // wmatrix(k,q+span-p3)=row(q);
-	    int ii=k, jj=q+span-p3;
-	    // matrix(ii,jj)=row(q);
-	    if( row(q)!=0. ) // the first and last rows should have some zeros outside the band structure
-	    {
-	      int ik=kl+ku+ii-jj;
-	      assert( ik>=0 && ik<ldab );
-	      wmatrix(ik,jj)=row(q);
-	    }
-	  }
-	}
+        int kl=p3-1, ku=p3-1;
+        int ldab = 2*kl+ku+1;
+        ArraySimple<real> wmatrix(ldab,n3p1);
+        row.redim(p3+1);
+        wmatrix=0.;
+        for( k=0; k<=n3; k++ )
+        {
+          span = findSpan(n3,p3,wBar(k),wKnot); 
+          basisFuns(span,wBar(k),p3,wKnot,row);
+          for( int q=0; q<=p3; q++ )
+          {
+          
+            // wmatrix(k,q+span-p3)=row(q);
+            int ii=k, jj=q+span-p3;
+            // matrix(ii,jj)=row(q);
+            if( row(q)!=0. ) // the first and last rows should have some zeros outside the band structure
+            {
+              int ik=kl+ku+ii-jj;
+              assert( ik>=0 && ik<ldab );
+              wmatrix(ik,jj)=row(q);
+            }
+          }
+        }
 
-	//  matrix.display("Nurbs: interpolate: matrix");
+        //  matrix.display("Nurbs: interpolate: matrix");
   
-	GBTRF( n3p1, n3p1, kl, ku, wmatrix(0,0), ldab, ipvt(0), info );
-	if( info != 0 )
-	{
-	  printF("NurbsMapping::interpolate:ERROR  w-matrix: banded factor: return: info=%i\n",info);
-	}
+        GBTRF( n3p1, n3p1, kl, ku, wmatrix(0,0), ldab, ipvt(0), info );
+        if( info != 0 )
+        {
+          printF("NurbsMapping::interpolate:ERROR  w-matrix: banded factor: return: info=%i\n",info);
+        }
 
-	pPoint.resize(n3+1);
-	for( i=0; i<=n1; i++)
-	  for ( j=0; j<=n2; j++ )
-	  {
-	    for( r=0; r<rangeDimension; r++ )
-	    {
-	      for (k=0; k<=n3; k++)
-		pPoint(k) = rPoint(i,j,k,r);
+        pPoint.resize(n3+1);
+        for( i=0; i<=n1; i++)
+          for ( j=0; j<=n2; j++ )
+          {
+            for( r=0; r<rangeDimension; r++ )
+            {
+              for (k=0; k<=n3; k++)
+                pPoint(k) = rPoint(i,j,k,r);
 
-	      // GESL( wmatrix(0,0),n3p1,n3p1,ipvt(0),pPoint(0),job);
-	      int nrhs=1;
-	      GBTRS( 'N', n3p1, kl, ku, nrhs, wmatrix(0,0), ldab, ipvt(0), pPoint(0), n3p1,info );
-	      if( info != 0 )
-	      {
-		printF("NurbsMapping::interpolate:ERROR  w-matrix: banded solve: return: info=%i\n",info);
-	      }
+              // GESL( wmatrix(0,0),n3p1,n3p1,ipvt(0),pPoint(0),job);
+              int nrhs=1;
+              GBTRS( 'N', n3p1, kl, ku, nrhs, wmatrix(0,0), ldab, ipvt(0), pPoint(0), n3p1,info );
+              if( info != 0 )
+              {
+                printF("NurbsMapping::interpolate:ERROR  w-matrix: banded solve: return: info=%i\n",info);
+              }
 
-	      // copy the result into the control point array
-	      for (k=0; k<=n3; k++)
-		cPoint(i,j,k,r) = pPoint(k);
-	    }
-	  }
+              // copy the result into the control point array
+              for (k=0; k<=n3; k++)
+                cPoint(i,j,k,r) = pPoint(k);
+            }
+          }
 
       }
       else
       {
-	// ------------ W-MATRIX FULL MATRIX SOLVE ------------
+        // ------------ W-MATRIX FULL MATRIX SOLVE ------------
 
-	ArraySimple<real> wmatrix(n3+1,n3+1);
-	row.redim(p3+1);
-	wmatrix=0.;
-	for( k=0; k<=n3; k++ )
-	{
-	  span = findSpan(n3,p3,wBar(k),wKnot); 
-	  basisFuns(span,wBar(k),p3,wKnot,row);
-	  for( int q=0; q<=p3; q++ )
-	    wmatrix(k,q+span-p3)=row(q);
-	}
+        ArraySimple<real> wmatrix(n3+1,n3+1);
+        row.redim(p3+1);
+        wmatrix=0.;
+        for( k=0; k<=n3; k++ )
+        {
+          span = findSpan(n3,p3,wBar(k),wKnot); 
+          basisFuns(span,wBar(k),p3,wKnot,row);
+          for( int q=0; q<=p3; q++ )
+            wmatrix(k,q+span-p3)=row(q);
+        }
 
-	//  matrix.display("Nurbs: interpolate: matrix");
+        //  matrix.display("Nurbs: interpolate: matrix");
   
-	// AP: Note that dgeco / sgeco factors a full matrix and doesn't make use of the band structure.
-	GECO( wmatrix(0,0),n3p1,n3p1,ipvt(0),rcond,work(0) );  
-	// matrix.display("Nurbs: interpolate: matrix after factor");
-	//    wKnot.display("WKNOT");
-	if( rcond==0. )
-	{
-	  printF("NurbsMapping::interpolate:ERROR: After factoring the w-matrix: rcond = %e \n",rcond);
-	  OV_ABORT("error");
-	}
+        // AP: Note that dgeco / sgeco factors a full matrix and doesn't make use of the band structure.
+        GECO( wmatrix(0,0),n3p1,n3p1,ipvt(0),rcond,work(0) );  
+        // matrix.display("Nurbs: interpolate: matrix after factor");
+        //    wKnot.display("WKNOT");
+        if( rcond==0. )
+        {
+          printF("NurbsMapping::interpolate:ERROR: After factoring the w-matrix: rcond = %e \n",rcond);
+          OV_ABORT("error");
+        }
 
-	pPoint.resize(n3+1);
-	job=0;
-	for( i=0; i<=n1; i++)
-	  for ( j=0; j<=n2; j++ )
-	  {
-	    for( r=0; r<rangeDimension; r++ )
-	    {
-	      for (k=0; k<=n3; k++)
-		pPoint(k) = rPoint(i,j,k,r);
-	      GESL( wmatrix(0,0),n3p1,n3p1,ipvt(0),pPoint(0),job);
-	      // copy the result into the control point array
-	      for (k=0; k<=n3; k++)
-		cPoint(i,j,k,r) = pPoint(k);
-	    }
-	  }
+        pPoint.resize(n3+1);
+        job=0;
+        for( i=0; i<=n1; i++)
+          for ( j=0; j<=n2; j++ )
+          {
+            for( r=0; r<rangeDimension; r++ )
+            {
+              for (k=0; k<=n3; k++)
+                pPoint(k) = rPoint(i,j,k,r);
+              GESL( wmatrix(0,0),n3p1,n3p1,ipvt(0),pPoint(0),job);
+              // copy the result into the control point array
+              for (k=0; k<=n3; k++)
+                cPoint(i,j,k,r) = pPoint(k);
+            }
+          }
 
 
       } // end full w-matrix solve 
@@ -870,7 +870,7 @@ interpolateSurface(const RealArray & x,
                    int degree /* = 3 */,
                    ParameterizationTypeEnum  parameterizationType /* =parameterizeByChordLength */,
                    int numberOfGhostPoints /* =0 */,
-		   int degree2 /*=3*/) 
+                   int degree2 /*=3*/) 
 // =============================================================================================
 // /Description:
 //    Interpolate points that define a surface.
@@ -934,37 +934,37 @@ interpolateSurface(const RealArray & x,
       total = 0.;
       for( i=1; i<=n1; i++ )
       {
-	chord=SQRT( sum(SQR( x(i+xBase0, j+xBase1, R) - x(i-1+xBase0, j+xBase1, R))) );
-	if( chord==0. )
-	{ // we need a non-zero chord length
-	  if( i>1 )
-	    chord=cds[i-1]-cds[i-2];  // use previous
-	  else
-	  {
-	    if( i<n1 )
-	    {
-	      chord=SQRT( sum(SQR( x(i+1+xBase0, j+xBase1, R)-x(i+xBase0, j+xBase1, R))) );  // use next
-	      if( chord==0. )
-		chord=1.;
-	    }
-	    else
-	      chord=1.;
-	  }
-	} // end if chord == 0
-	cds[i] = chord;
-	total += cds[i];
+        chord=SQRT( sum(SQR( x(i+xBase0, j+xBase1, R) - x(i-1+xBase0, j+xBase1, R))) );
+        if( chord==0. )
+        { // we need a non-zero chord length
+          if( i>1 )
+            chord=cds[i-1]-cds[i-2];  // use previous
+          else
+          {
+            if( i<n1 )
+            {
+              chord=SQRT( sum(SQR( x(i+1+xBase0, j+xBase1, R)-x(i+xBase0, j+xBase1, R))) );  // use next
+              if( chord==0. )
+                chord=1.;
+            }
+            else
+              chord=1.;
+          }
+        } // end if chord == 0
+        cds[i] = chord;
+        total += cds[i];
       } // end for i=...
     
       if (total == 0.) 
-	num -= 1; // this was a degenerate row
+        num -= 1; // this was a degenerate row
       else
       {
-	d = 0.;
-	for (i=1; i<n1; i++)
-	{
-	  d += cds[i];
-	  uBar(i) += d/total;
-	}
+        d = 0.;
+        for (i=1; i<n1; i++)
+        {
+          d += cds[i];
+          uBar(i) += d/total;
+        }
       }
     
     } // end for j...
@@ -985,37 +985,37 @@ interpolateSurface(const RealArray & x,
       total = 0.;
       for( j=1; j<=n2; j++ )
       {
-	chord=SQRT( sum(SQR( x(i+xBase0, j-1+xBase1, R) - x(i+xBase0, j+xBase1, R))) );
-	if( chord==0. )
-	{ // we need a non-zero chord length
-	  if( j>1 )
-	    chord=cds[j-1]-cds[j-2];  // use previous
-	  else
-	  {
-	    if( j<n2 )
-	    {
-	      chord=SQRT( sum(SQR( x(i+xBase0, j+1+xBase1, R)-x(i+xBase0, j+xBase1, R))) );  // use next
-	      if( chord==0. )
-		chord=1.;
-	    }
-	    else
-	      chord=1.;
-	  }
-	} // end if chord == 0
-	cds[j] = chord;
-	total += cds[j];
+        chord=SQRT( sum(SQR( x(i+xBase0, j-1+xBase1, R) - x(i+xBase0, j+xBase1, R))) );
+        if( chord==0. )
+        { // we need a non-zero chord length
+          if( j>1 )
+            chord=cds[j-1]-cds[j-2];  // use previous
+          else
+          {
+            if( j<n2 )
+            {
+              chord=SQRT( sum(SQR( x(i+xBase0, j+1+xBase1, R)-x(i+xBase0, j+xBase1, R))) );  // use next
+              if( chord==0. )
+                chord=1.;
+            }
+            else
+              chord=1.;
+          }
+        } // end if chord == 0
+        cds[j] = chord;
+        total += cds[j];
       } // end for i=...
     
       if (total == 0.) 
-	num -= 1; // this was a degenerate row
+        num -= 1; // this was a degenerate row
       else
       {
-	d = 0.;
-	for (j=1; j<n2; j++)
-	{
-	  d += cds[j];
-	  vBar(j) += d/total;
-	}
+        d = 0.;
+        for (j=1; j<n2; j++)
+        {
+          d += cds[j];
+          vBar(j) += d/total;
+        }
       }
     
     } // end for j...
@@ -1112,7 +1112,7 @@ interpolateSurface(const RealArray & x,
     for( r=0; r<rangeDimension; r++ )
     {
       for (i=0; i<=n1; i++)
-	rPoint(i,j,r)=x(i + xBase0, j + xBase1, r);
+        rPoint(i,j,r)=x(i + xBase0, j + xBase1, r);
       GESL(matrix(0,0), n1p1, n1p1, ipvt(0), rPoint(0,j,r), job);
     }
   }
@@ -1156,11 +1156,11 @@ interpolateSurface(const RealArray & x,
     for( r=0; r<rangeDimension; r++ )
     {
       for (j=0; j<=n2; j++)
-	pPoint(j) = rPoint(i,j,r);
+        pPoint(j) = rPoint(i,j,r);
       GESL( vmatrix(0,0),n2p1,n2p1,ipvt(0),pPoint(0),job);
 // copy the result into the control point array
       for (j=0; j<=n2; j++)
-	cPoint(i,j,r) = pPoint(j);
+        cPoint(i,j,r) = pPoint(j);
     }
   }
   
@@ -1228,10 +1228,10 @@ interpolateVolume(const RealArray & x,
       if( nMin!=nMax )
       {
         printF("NurbsMapping::interpolateVolume:ERROR: gridDimensions don't match on different processors!\n");
-	printf(" myid=%i map.getGridDimensions=[%i,%i,%i]\n",
-	       myid,getGridDimensions(0),getGridDimensions(1),getGridDimensions(2));
-	fflush(0);
-	Overture::abort("error");
+        printf(" myid=%i map.getGridDimensions=[%i,%i,%i]\n",
+               myid,getGridDimensions(0),getGridDimensions(1),getGridDimensions(2));
+        fflush(0);
+        Overture::abort("error");
       }
     }
   }
@@ -1284,51 +1284,51 @@ interpolateVolume(const RealArray & x,
     int num = (n2+1)*(n3+1); // number of non-degenerate rows
     for ( k=0; k<=n3; k++ )
       {
-	for( j=0; j<=n2; j++ )
-	  {
-	    total = 0.;
-	    for( i=1; i<=n1; i++ )
-	      {
-		chord=SQRT( sum(SQR( x(i+xBase0, j+xBase1, k+xBase2, R) - x(i-1+xBase0, j+xBase1, k+xBase2, R))) );
-		if( chord==0. )
-		  { // we need a non-zero chord length
-		    if( i>1 )
-		      chord=cds[i-1]-cds[i-2];  // use previous
-		    else
-		      {
-			if( i<n1 )
-			  {
-			    chord=SQRT( sum(SQR( x(i+1+xBase0, j+xBase1, k+xBase2, R)-x(i+xBase0, j+xBase1, k+xBase2, R))) );  // use next
-			    if( chord==0. )
-			      chord=1.;
-			  }
-			else
-			  chord=1.;
-		      }
-		  } // end if chord == 0
-		cds[i] = chord;
-		total += cds[i];
-	      } // end for i=...
+        for( j=0; j<=n2; j++ )
+          {
+            total = 0.;
+            for( i=1; i<=n1; i++ )
+              {
+                chord=SQRT( sum(SQR( x(i+xBase0, j+xBase1, k+xBase2, R) - x(i-1+xBase0, j+xBase1, k+xBase2, R))) );
+                if( chord==0. )
+                  { // we need a non-zero chord length
+                    if( i>1 )
+                      chord=cds[i-1]-cds[i-2];  // use previous
+                    else
+                      {
+                        if( i<n1 )
+                          {
+                            chord=SQRT( sum(SQR( x(i+1+xBase0, j+xBase1, k+xBase2, R)-x(i+xBase0, j+xBase1, k+xBase2, R))) );  // use next
+                            if( chord==0. )
+                              chord=1.;
+                          }
+                        else
+                          chord=1.;
+                      }
+                  } // end if chord == 0
+                cds[i] = chord;
+                total += cds[i];
+              } // end for i=...
 
-	    if (total == 0.) 
-	      num -= 1; // this was a degenerate row
-	    else
-	      {
-		d = 0.;
-		for (i=1; i<n1; i++)
-		  {
-		    d += cds[i];
-		    uBar(i) += d/total;
-		  }
-	      }
-	  }
+            if (total == 0.) 
+              num -= 1; // this was a degenerate row
+            else
+              {
+                d = 0.;
+                for (i=1; i<n1; i++)
+                  {
+                    d += cds[i];
+                    uBar(i) += d/total;
+                  }
+              }
+          }
       }
     
     // end for j...
     if (num == 0)
       {
-	cout << "NurbsMapping::interpolateVolume: ERROR -- all rows are degenerate! \n";
-	throw "error";
+        cout << "NurbsMapping::interpolateVolume: ERROR -- all rows are degenerate! \n";
+        throw "error";
       }
 // normalize
     for (i=0; i<n1; i++)
@@ -1339,44 +1339,44 @@ interpolateVolume(const RealArray & x,
     num = (n1+1)*(n3+1); // number of non-degenerate columns
     for ( k=0; k<=n3; k++ )
       {
-	for( i=0; i<=n1; i++ )
-	  {
-	    total = 0.;
-	    for( j=1; j<=n2; j++ )
-	      {
-		chord=SQRT( sum(SQR( x(i+xBase0, j-1+xBase1, k+xBase2, R) - x(i+xBase0, j+xBase1, k+xBase2, R))) );
-		if( chord==0. )
-		  { // we need a non-zero chord length
-		    if( j>1 )
-		      chord=cds[j-1]-cds[j-2];  // use previous
-		    else
-		      {
-			if( j<n2 )
-			  {
-			    chord=SQRT( sum(SQR( x(i+xBase0, j+1+xBase1, k+xBase2, R)-x(i+xBase0, j+xBase1, k+xBase2, R))) );  // use next
-			    if( chord==0. )
-			      chord=1.;
-			  }
-			else
-			  chord=1.;
-		      }
-		  } // end if chord == 0
-		cds[j] = chord;
-		total += cds[j];
-	      } // end for i=...
+        for( i=0; i<=n1; i++ )
+          {
+            total = 0.;
+            for( j=1; j<=n2; j++ )
+              {
+                chord=SQRT( sum(SQR( x(i+xBase0, j-1+xBase1, k+xBase2, R) - x(i+xBase0, j+xBase1, k+xBase2, R))) );
+                if( chord==0. )
+                  { // we need a non-zero chord length
+                    if( j>1 )
+                      chord=cds[j-1]-cds[j-2];  // use previous
+                    else
+                      {
+                        if( j<n2 )
+                          {
+                            chord=SQRT( sum(SQR( x(i+xBase0, j+1+xBase1, k+xBase2, R)-x(i+xBase0, j+xBase1, k+xBase2, R))) );  // use next
+                            if( chord==0. )
+                              chord=1.;
+                          }
+                        else
+                          chord=1.;
+                      }
+                  } // end if chord == 0
+                cds[j] = chord;
+                total += cds[j];
+              } // end for i=...
     
-	    if (total == 0.) 
-	      num -= 1; // this was a degenerate row
-	    else
-	      {
-		d = 0.;
-		for (j=1; j<n2; j++)
-		  {
-		    d += cds[j];
-		    vBar(j) += d/total;
-		  }
-	      }
-	  }
+            if (total == 0.) 
+              num -= 1; // this was a degenerate row
+            else
+              {
+                d = 0.;
+                for (j=1; j<n2; j++)
+                  {
+                    d += cds[j];
+                    vBar(j) += d/total;
+                  }
+              }
+          }
       } // end for k...
     if (num == 0)
     {
@@ -1391,44 +1391,44 @@ interpolateVolume(const RealArray & x,
     num = (n1+1)*(n2+1); // number of non-degenerate columns
     for ( int i=0; i<=n1; i++ )
       {
-	for( j=0; j<=n2; j++ )
-	  {
-	    total = 0.;
-	    for( k=1; k<=n3; k++ )
-	      {
-		chord=SQRT( sum(SQR( x(i+xBase0, j+xBase1, k-1+xBase2, R) - x(i+xBase0, j+xBase1, k+xBase2, R))) );
-		if( chord==0. )
-		  { // we need a non-zero chord length
-		    if( k>1 )
-		      chord=cds[k-1]-cds[k-2];  // use previous
-		    else
-		      {
-			if( k<n3 )
-			  {
-			    chord=SQRT( sum(SQR( x(i+xBase0, j+xBase1, k+1+xBase2, R)-x(i+xBase0, j+xBase1, k+xBase2, R))) );  // use next
-			    if( chord==0. )
-			      chord=1.;
-			  }
-			else
-			  chord=1.;
-		      }
-		  } // end if chord == 0
-		cds[k] = chord;
-		total += cds[k];
-	      } // end for k=...
+        for( j=0; j<=n2; j++ )
+          {
+            total = 0.;
+            for( k=1; k<=n3; k++ )
+              {
+                chord=SQRT( sum(SQR( x(i+xBase0, j+xBase1, k-1+xBase2, R) - x(i+xBase0, j+xBase1, k+xBase2, R))) );
+                if( chord==0. )
+                  { // we need a non-zero chord length
+                    if( k>1 )
+                      chord=cds[k-1]-cds[k-2];  // use previous
+                    else
+                      {
+                        if( k<n3 )
+                          {
+                            chord=SQRT( sum(SQR( x(i+xBase0, j+xBase1, k+1+xBase2, R)-x(i+xBase0, j+xBase1, k+xBase2, R))) );  // use next
+                            if( chord==0. )
+                              chord=1.;
+                          }
+                        else
+                          chord=1.;
+                      }
+                  } // end if chord == 0
+                cds[k] = chord;
+                total += cds[k];
+              } // end for k=...
     
-	    if (total == 0.) 
-	      num -= 1; // this was a degenerate row
-	    else
-	      {
-		d = 0.;
-		for (k=1; k<n3; k++)
-		  {
-		    d += cds[k];
-		    wBar(k) += d/total;
-		  }
-	      }
-	  } // end for j...
+            if (total == 0.) 
+              num -= 1; // this was a degenerate row
+            else
+              {
+                d = 0.;
+                for (k=1; k<n3; k++)
+                  {
+                    d += cds[k];
+                    wBar(k) += d/total;
+                  }
+              }
+          } // end for j...
       } // end for i...
     if (num == 0)
     {
@@ -1538,12 +1538,12 @@ interpolateVolume(const RealArray & x,
   for ( k=0; k<=n3; k++ )
     for( j=0; j<=n2; j++)
       {
-	for( r=0; r<rangeDimension; r++ )
-	  {
-	    for (i=0; i<=n1; i++)
-	      rPoint(i,j,k,r)=x(i + xBase0, j + xBase1, k+xBase2, r);
-	    GESL(matrix(0,0), n1p1, n1p1, ipvt(0), rPoint(0,j,k,r), job);
-	  }
+        for( r=0; r<rangeDimension; r++ )
+          {
+            for (i=0; i<=n1; i++)
+              rPoint(i,j,k,r)=x(i + xBase0, j + xBase1, k+xBase2, r);
+            GESL(matrix(0,0), n1p1, n1p1, ipvt(0), rPoint(0,j,k,r), job);
+          }
       }
 
 // Setup the v-matrix
@@ -1579,15 +1579,15 @@ interpolateVolume(const RealArray & x,
   for ( k=0; k<=n3; k++ )
     for( i=0; i<=n1; i++)
       {
-	for( r=0; r<rangeDimension; r++ )
-	  {
-	    for (j=0; j<=n2; j++)
-	      pPoint(j) = rPoint(i,j,k,r);
-	    GESL( vmatrix(0,0),n2p1,n2p1,ipvt(0),pPoint(0),job);
-	    // copy the result into the control point array
-	    for (j=0; j<=n2; j++)
-	      rPoint(i,j,k,r) = pPoint(j);
-	  }
+        for( r=0; r<rangeDimension; r++ )
+          {
+            for (j=0; j<=n2; j++)
+              pPoint(j) = rPoint(i,j,k,r);
+            GESL( vmatrix(0,0),n2p1,n2p1,ipvt(0),pPoint(0),job);
+            // copy the result into the control point array
+            for (j=0; j<=n2; j++)
+              rPoint(i,j,k,r) = pPoint(j);
+          }
       }
 
 // store the control polygon in cPoint
@@ -1627,15 +1627,15 @@ interpolateVolume(const RealArray & x,
   for( i=0; i<=n1; i++)
     for ( j=0; j<=n2; j++ )
       {
-	for( r=0; r<rangeDimension; r++ )
-	  {
-	    for (k=0; k<=n3; k++)
-	      pPoint(k) = rPoint(i,j,k,r);
-	    GESL( wmatrix(0,0),n3p1,n3p1,ipvt(0),pPoint(0),job);
-	    // copy the result into the control point array
-	    for (k=0; k<=n3; k++)
-	      cPoint(i,j,k,r) = pPoint(k);
-	  }
+        for( r=0; r<rangeDimension; r++ )
+          {
+            for (k=0; k<=n3; k++)
+              pPoint(k) = rPoint(i,j,k,r);
+            GESL( wmatrix(0,0),n3p1,n3p1,ipvt(0),pPoint(0),job);
+            // copy the result into the control point array
+            for (k=0; k<=n3; k++)
+              cPoint(i,j,k,r) = pPoint(k);
+          }
       }
 
   if( numberOfGhostPoints>0 )
@@ -1657,8 +1657,8 @@ interpolateVolume(const RealArray & x,
 //   *********** obsolete method -- keep for now for backward compatibility *********
 void NurbsMapping::
 interpolate(const realArray & x_, 
-	    const int & option    /* = 0 */,
-	    realArray & parameterization_ /* =Overture::nullRealDistributedArray() */,
+            const int & option    /* = 0 */,
+            realArray & parameterization_ /* =Overture::nullRealDistributedArray() */,
             int degree /* = 3 */,
             ParameterizationTypeEnum parameterizationType /* =parameterizeByChordLength */,
             int numberOfGhostPoints /* =0 */ )
@@ -1677,8 +1677,8 @@ interpolate(const realArray & x_,
      
 void NurbsMapping::
 interpolate(const RealArray & x, 
-	    const int & option    /* = 0 */,
-	    RealArray & parameterization /* =Overture::nullRealArray() */,
+            const int & option    /* = 0 */,
+            RealArray & parameterization /* =Overture::nullRealArray() */,
             int degree /* = 3 */,
             ParameterizationTypeEnum parameterizationType /* =parameterizeByChordLength */,
             int numberOfGhostPoints /* =0 */ )
@@ -1762,17 +1762,17 @@ interpolate(const RealArray & x,
       { // we need a non-zero chord length
         if( i>1 )
           chord=uBar(i-1)-uBar(i-2);  // use previous
-	else
-	{
+        else
+        {
           if( i<n1 )
-	  {
+          {
             chord=SQRT( sum(SQR( x(i+1+xBase0,R)-x(i+xBase0,R))) );  // use next
             if( chord==0. )
               chord=1.;
-	  }
+          }
           else
-	    chord=1.;
-	}
+            chord=1.;
+        }
       }
       uBar(i)=uBar(i-1)+chord;
     }
@@ -1872,9 +1872,9 @@ interpolate(const RealArray & x,
 
 // tmp
 //      printf("first point x:(%e, %e, %e), cPoint:(%e, %e, %e)\n", x(xBase0,0), x(xBase0,1), x(xBase0,2),
-//  	   cPoint(0,0), cPoint(0,1), cPoint(0,2));
+//         cPoint(0,0), cPoint(0,1), cPoint(0,2));
 //      printf("last point  x:(%e, %e, %e), cPoint:(%e, %e, %e)\n", x(xBase0+n1,0), x(xBase0+n1,1), x(xBase0+n1,2),
-//  	   cPoint(n1,0), cPoint(n1,1), cPoint(n1,2));
+//         cPoint(n1,0), cPoint(n1,1), cPoint(n1,2));
     
 //    x.display("Here is x");
 //    cPoint.display("Here is cPoint");
@@ -1914,9 +1914,9 @@ interpolate(const RealArray & x,
 
 void NurbsMapping::
 interpolate(Mapping & map, int degree /* =3 */, 
-	    ParameterizationTypeEnum parameterizationType /* =parameterizeByChordLength */,
-	    int numberOfGhostPoints /* =0 */,
-	    int *numPointsToInterpolate /* =NULL */  )
+            ParameterizationTypeEnum parameterizationType /* =parameterizeByChordLength */,
+            int numberOfGhostPoints /* =0 */,
+            int *numPointsToInterpolate /* =NULL */  )
 // =============================================================================
 /// \details 
 ///    Construct a NURBS by interpolating another mapping.
@@ -1946,8 +1946,8 @@ interpolate(Mapping & map, int degree /* =3 */,
     {
       if( numPointsToInterpolate[axis]!=map.getGridDimensions(axis) )
       {
-	useDifferentNumberOfGridPoints=true;
-	break;
+        useDifferentNumberOfGridPoints=true;
+        break;
       }
     }
   }
@@ -1989,18 +1989,18 @@ interpolate(Mapping & map, int degree /* =3 */,
         n=map.getGridDimensions(axis);
       else
       {
-	if( numPointsToInterpolate[axis]<1 )
-	{
+        if( numPointsToInterpolate[axis]<1 )
+        {
           n=map.getGridDimensions(axis);
-	  printF("NurbsMapping::interpolate:ERROR: numPointsToInterpolate[%i]=%i is <1 !\n"
+          printF("NurbsMapping::interpolate:ERROR: numPointsToInterpolate[%i]=%i is <1 !\n"
                  " I will use %i grid points instead\n",numPointsToInterpolate[axis],n);
-	}
-	else
-	{
-	  n=numPointsToInterpolate[axis];
-	}
+        }
+        else
+        {
+          n=numPointsToInterpolate[axis];
+        }
       }
-	
+        
       dr[axis]=1./max(1.,n-1.);
       Igv[axis]=Range(-numberOfGhostPoints,n+numberOfGhostPoints-1);
     }
@@ -2013,19 +2013,19 @@ interpolate(Mapping & map, int degree /* =3 */,
     for( i3=Ig3.getBase(); i3<=Ig3.getBound(); i3++ )
     {
       for( i2=Ig2.getBase(); i2<=Ig2.getBound(); i2++ )
-	r(Ig1,i2,i3,0).seqAdd(dr[axis1]*Ig1.getBase(),dr[axis1]);
+        r(Ig1,i2,i3,0).seqAdd(dr[axis1]*Ig1.getBase(),dr[axis1]);
 
       if( map.getDomainDimension()>1 )
       {
-	for( i1=Ig1.getBase(); i1<=Ig1.getBound(); i1++ )
-	  r(i1,Ig2,i3,1).seqAdd(dr[axis2]*Ig2.getBase(),dr[axis2]);
+        for( i1=Ig1.getBase(); i1<=Ig1.getBound(); i1++ )
+          r(i1,Ig2,i3,1).seqAdd(dr[axis2]*Ig2.getBase(),dr[axis2]);
       }
     }
     if( map.getDomainDimension()>2 )
     {
       for( i2=Ig2.getBase(); i2<=Ig2.getBound(); i2++ )
-	for( i1=Ig1.getBase(); i1<=Ig1.getBound(); i1++ )
-	  r(i1,i2,Ig3,2).seqAdd(dr[axis3]*Ig3.getBase(),dr[axis3]);
+        for( i1=Ig1.getBase(); i1<=Ig1.getBound(); i1++ )
+          r(i1,i2,Ig3,2).seqAdd(dr[axis3]*Ig3.getBase(),dr[axis3]);
     }
 
     

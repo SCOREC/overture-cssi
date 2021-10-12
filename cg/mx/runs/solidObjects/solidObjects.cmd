@@ -46,7 +46,8 @@ $tFinal=5; $tPlot=.1; $diss=1.; $filter=0; $dissOrder=-1; $cfl=.9; $varDiss=0; $
 $kx=1; $ky=0; $kz=0; $plotIntensity=0; $intensityOption=1; $checkErrors=0; $method="NFDTD"; $dm="none"; $ic="pw"; 
 $ax=0.; $ay=0.; $az=0.; # plane wave coeffs. all zero -> use default
 $numBlocks=0; # 0 = default case of scattering from a "innerDomain" 
-$x0=.5; $y0=0; $z0=0; $beta=50; # for Gaussian plane wave IC
+$x0=.5; $y0=0; $z0=0; $beta=50; $k0=0; # for Gaussian plane wave IC
+$Emin=1; $Emax=-1; # if $Emin < $Emax , use these for plot bounds
 $option="default"; # "rpi"
 $eps0=1.; $mu0=1.; # outer domain 
 $eps1=1.; $mu1=1.; # block 1 
@@ -89,8 +90,8 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
    "npv=i{1,}"=>\@npv,"option=s"=>\$option,\
   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
-  "selectiveDissipation=i"=>\$selectiveDissipation,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,\
-  "dmFile=s{1,}"=>\@dmFile );
+  "selectiveDissipation=i"=>\$selectiveDissipation,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"k0=f"=>\$k0,"beta=f"=>\$beta,\
+  "dmFile=s{1,}"=>\@dmFile,"Emin=f"=>\$Emin,"Emax=f"=>\$Emax );
 # -------------------------------------------------------------------------------------------------
 if( $dm eq "none" ){ $dm="no dispersion"; }
 if( $dm eq"drude" || $dm eq "Drude" ){ $dm="Drude"; }
@@ -118,8 +119,11 @@ $dm
 # 
 # planeWaveInitialCondition
 if( $leftBC eq "rbc" ){ $cmd = "planeWaveInitialCondition"; }else{ $cmd="zeroInitialCondition"; }
-if( $ic eq "gp" ){ $cmd="Gaussian plane wave: $beta $x0 $y0 0 (beta,x0,y0,z0)\n gaussianPlaneWave"; }
-if( $ic eq "gpw" ){ $cmd="gaussianPlaneWave\n Gaussian plane wave: $beta $x0 0 0 (beta,x0,y0,z0)"; }
+if( $ic eq "gp" ){ $cmd="Gaussian plane wave: $beta $x0 $y0 0 $k0 (beta,x0,y0,z0,k0)\n gaussianPlaneWave"; }
+if( $ic eq "gpw" ){ $cmd="gaussianPlaneWave\n Gaussian plane wave: $beta $x0 0 0 $k0 (beta,x0,y0,z0,k0)"; }
+# printf("k0=$k0\n");
+# if( $ic eq "gp" ){ $cmd="Gaussian plane wave: $beta $x0 $y0 0 (beta,x0,y0,z0)\n gaussianPlaneWave"; }
+# if( $ic eq "gpw" ){ $cmd="gaussianPlaneWave\n Gaussian plane wave: $beta $x0 0 0 (beta,x0,y0,z0)"; }
 $cmd 
 if( $checkErrors ){ $known="planeWaveKnownSolution"; }else{ $known="#"; }
 $known
@@ -188,10 +192,10 @@ $cmd="";
 for( $i=1; $i<=$numBodies; $i++ ){ \
   $cmd .= "GDM domain name: $domainName[$i]\n";  \
   $cmd .= "number of polarization vectors: $npv[$i]\n";  \
-  $cmd .= "material file: $dmFile[0]\n"; \
+  $cmd .= "material file: $dmFile[$i-1]\n"; \
   }
   $cmd .= "#";
-  # printf("cmd=\n$cmd\n");
+  printf("cmd=\n$cmd\n");
 $cmd
 #- # New: Jan,9 2019 
 #- # ------------ Set GDM parameters for domain 1 -----------
@@ -341,6 +345,8 @@ continue
 plot:Ey
 contour
   plot contour lines (toggle)
+  if( $Emin < $Emax ){ $cmd="min max $Emin $Emax\n vertical scale factor 0"; }else{ $cmd="#"; }
+  $cmd
   # vertical scale factor 0.2
   # min max -1.1 1.1
 exit

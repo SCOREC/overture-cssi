@@ -1,5 +1,15 @@
 NOTE: See ../tcilc2 for more runs 
 
+
+*************************************
+****** Sun July 11, 2021
+
+TUTORIAL
+
+cgins -noplot tcilc -g=twoCylindersGridFixede4.order4 -nu=.0001 -inflow=ramp -dtMax=.01 -tp=.5 -tf=10 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -restart=twoCyl4IMEX44nu0001.show -go=og -cfl=.9 
+
+cgins tcilc -g=twoCylindersGride2.order4 -nu=.001 -inflow=ramp -dtMax=.01 -tp=.1 -tf=10 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -go=halt -cfl=4
+
 ***************************
 ***** Thurs Oct 3, 2019
 

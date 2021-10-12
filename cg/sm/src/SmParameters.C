@@ -39,16 +39,18 @@ SmParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
 
   if (!dbase.has_key("pdeModel")) dbase.put<PDEModel>("pdeModel");
   dbase.get<PDEModel>("pdeModel")=linearElasticity;
-  PDEModelName[linearElasticity]="elasticity";
+  PDEModelName[linearElasticity]  ="elasticity";
   PDEModelName[nonlinearMechanics]="non-linear mechanics";
-  PDEModelName[numberOfPDEModels]="";
+  PDEModelName[numberOfPDEModels] ="";
+
+  dbase.put<CompressibilityTypeEnum>("compressibilityType")=compressibleSolid;
 
   if (!dbase.has_key("pdeVariation")) dbase.put<PDEVariation>("pdeVariation");
   dbase.get<PDEVariation>("pdeVariation")=nonConservative;
-  PDEVariationName[nonConservative]="non-conservative";
-  PDEVariationName[conservative]   ="conservative";
-  PDEVariationName[godunov]        ="godunov";
-  PDEVariationName[hemp]           ="hemp";
+  PDEVariationName[nonConservative]      ="non-conservative";
+  PDEVariationName[conservative]         ="conservative";
+  PDEVariationName[godunov]              ="godunov";
+  PDEVariationName[hemp]                 ="hemp";
   PDEVariationName[numberOfPDEVariations]="";
 
   if (!dbase.has_key("timeSteppingMethodSm")) dbase.put<TimeSteppingMethodSm>("timeSteppingMethodSm");
@@ -85,7 +87,7 @@ SmParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
   if (!dbase.has_key("s32c")) dbase.put<int>("s32c",-1);
   if (!dbase.has_key("s33c")) dbase.put<int>("s33c",-1);
 
-  if (!dbase.has_key("pc")) dbase.put<int>("pc",-1);  // for hemp 
+  if (!dbase.has_key("pc")) dbase.put<int>("pc",-1);  // for hemp and ILE
   if (!dbase.has_key("qc")) dbase.put<int>("qc",-1);  // for hemp 
   if (!dbase.has_key("hempInitialConditionOption")) dbase.put<aString>("hempInitialConditionOption","default"); 
 
@@ -107,6 +109,20 @@ SmParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
 
   if (!dbase.has_key("muGrid")) dbase.put<RealArray>("muGrid");
   if (!dbase.has_key("lambdaGrid")) dbase.put<RealArray>("lambdaGrid");
+
+  if( !dbase.has_key("upwindSOS") ) dbase.put<int>("upwindSOS")=0;  // use upwind dissipation for second-order systems
+  if( !dbase.has_key("pressurePoissonIsSingular") ) dbase.put<int>("pressurePoissonIsSingular")=0;  
+  if( !dbase.has_key("useCurlCurlBoundaryCondition") ) dbase.put<int>("useCurlCurlBoundaryCondition")=1;
+
+  // Project the linear in time and space mode
+  if( !dbase.has_key("projectLinearMode") )          dbase.put<int>("projectLinearMode")=0;
+  if( !dbase.has_key("projectLinearModeFrequency") ) dbase.put<int>("projectLinearModeFrequency")=100;
+
+  if( !dbase.has_key("cdv") ) dbase.put<real>("cdv"); // coeff of divergence damping
+  dbase.get<real>("cdv")=.5;  // default value
+
+  if (!dbase.has_key("numberOfCorrections")) dbase.put<int>("numberOfCorrections")=1;      // number of corrections for predictor-corrector schemes
+  if (!dbase.has_key("skipLastPressureSolve")) dbase.put<int>("skipLastPressureSolve")=0;  // For ILE predictor-corrector schemes
 
   if( !dbase.has_key("tzInterfaceVelocity") )
   { // Here is the (artificial) interface velocity for testing moving interfaces and TZ
@@ -269,6 +285,8 @@ initializeTimings()
   addTiming("timeForForcing",                      "  add forcing");
   addTiming("timeForFilter",                       "  filter");
   addTiming("timeForProject",                      "  project    ");
+  addTiming("timeForPressureSolve",                "  pressure solve");
+  addTiming("timeForUpwindDissipation",            "  upwind dissipation");
   addTiming("timeForDissipation",                  "  add dissipation");
   addTiming("timeForBoundaryConditions",           "  boundary conditions");
 
@@ -333,21 +351,23 @@ setParameters(const int & numberOfDimensions0 /* =2 */,const aString & reactionN
 //      a Chemkin binary file. 
 // ==================================================================================================
 {
-  int & numberOfDimensions = dbase.get<int >("numberOfDimensions");
-  int & numberOfComponents     = dbase.get<int>("numberOfComponents");
+  int & numberOfDimensions    = dbase.get<int >("numberOfDimensions");
+  int & numberOfComponents    = dbase.get<int>("numberOfComponents");
   PDEVariation & pdeVariation = dbase.get<PDEVariation>("pdeVariation");
+  CompressibilityTypeEnum & compressibilityType = dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");
   
   int & uc =  dbase.get<int >("uc");
   int & vc =  dbase.get<int >("vc");
   int & wc =  dbase.get<int >("wc");
   int & rc =  dbase.get<int >("rc");
   int & tc =  dbase.get<int >("tc");
+  int & pc =  dbase.get<int >("pc");
 
   int & u1c =  dbase.get<int >("u1c");
   int & u2c =  dbase.get<int >("u2c");
   int & u3c =  dbase.get<int >("u3c");
 
-  uc=vc=wc=rc=tc=u1c=u2c=u3c=-1;
+  uc=vc=wc=rc=tc=u1c=u2c=u3c=pc=-1;
   
   numberOfDimensions=numberOfDimensions0;
   
@@ -359,10 +379,15 @@ setParameters(const int & numberOfDimensions0 /* =2 */,const aString & reactionN
       pdeVariation==SmParameters::conservative )
   {
     numberOfComponents=numberOfDimensions;
+    if( compressibilityType==incompressibleSolid )
+      numberOfComponents +=1;
 
     uc=0;
     vc=1;
     wc=numberOfDimensions>2 ? 2 : -1;
+    if( compressibilityType==incompressibleSolid )
+      pc = numberOfDimensions; 
+
 
     // *wdh* 110705 : we should switch from (u,v,w) to (u1c,u2c,u3c) for the displacement
     u1c = 0;
@@ -377,6 +402,7 @@ setParameters(const int & numberOfDimensions0 /* =2 */,const aString & reactionN
     if( wc>=0 ) componentName[wc]="w";
     if( rc>=0 ) componentName[rc]="r";
     if( tc>=0 ) componentName[tc]="T";
+    if( pc>=0 ) componentName[pc]="p";
   
 
     addShowVariable( "u",uc );
@@ -385,6 +411,8 @@ setParameters(const int & numberOfDimensions0 /* =2 */,const aString & reactionN
     {
       addShowVariable( "w",wc );
     }
+    if( compressibilityType==incompressibleSolid )
+      addShowVariable( "p",pc );
 
     addShowVariable("div", numberOfComponents+1,false);  // false=turned off by default
     addShowVariable("vor", numberOfComponents+1,false);  // false=turned off by default
@@ -449,6 +477,7 @@ setParameters(const int & numberOfDimensions0 /* =2 */,const aString & reactionN
 
     // The Godunov stencil is 5 points wide: 
     dbase.get<int >("extrapolateInterpolationNeighbours")=true;
+    // printF("\n #### SmParameters: setting extrapolateInterpolationNeighbours=true\n"); 
     
   }
   else if( pdeVariation==SmParameters::hemp )
@@ -505,7 +534,7 @@ setParameters(const int & numberOfDimensions0 /* =2 */,const aString & reactionN
       componentName[c]="u2c"; u2c=c; addShowVariable( "u2",c ); c++;
       if( numberOfDimensions==3 )
       {
-	componentName[c]="u3c"; u3c=c; addShowVariable( "u3",c );  c++;
+        componentName[c]="u3c"; u3c=c; addShowVariable( "u3",c );  c++;
       }
     }
     
@@ -645,6 +674,7 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
   const int & wc =  dbase.get<int >("wc");
   const int & rc =  dbase.get<int >("rc");
   const int & tc =  dbase.get<int >("tc");
+  const int & pc =  dbase.get<int >("pc");
 
   const int & u1c = dbase.get<int >("u1c");
   const int & u2c = dbase.get<int >("u2c");
@@ -676,6 +706,7 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
   const int & tzDegreeTime=  dbase.get<int >("tzDegreeTime");
   
   SmParameters::PDEVariation & pdeVariation = dbase.get<SmParameters::PDEVariation>("pdeVariation");
+  SmParameters::CompressibilityTypeEnum & compressibilityType = dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");
 
   OGFunction *& tz = dbase.get<OGFunction* >("exactSolution");
   Parameters::TwilightZoneChoice & twilightZoneChoice = 
@@ -698,10 +729,10 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
     if( debug & 4 )
     {
       printF("\n $$$$$$$ setTwilightZoneFunction: tzDegreeSpace=%i, degreeTime=%i ndp=%i $$$$\n",
-	     tzDegreeSpace,degreeTime,ndp);
+             tzDegreeSpace,degreeTime,ndp);
       printF(" $$$$$$$ setTwilightZoneFunction: numberOfDimensions=%i, numberOfTZComponents=%i"
-	     " numberOfMaterialProperties=%i\n",numberOfDimensions,
-	     numberOfTZComponents,numberOfMaterialProperties);
+             " numberOfMaterialProperties=%i\n",numberOfDimensions,
+             numberOfTZComponents,numberOfMaterialProperties);
     }
     
     RealArray spatialCoefficientsForTZ(ndp,ndp,ndp,numberOfTZComponents);  
@@ -711,7 +742,7 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
 
 
     if( pdeVariation==SmParameters::nonConservative ||
-	pdeVariation==SmParameters::conservative )
+        pdeVariation==SmParameters::conservative )
     {  
       // ---- second-order system ----
 
@@ -721,439 +752,462 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
 
       if( numberOfDimensions==2 )
       {
-	if( tzDegreeSpace==0 )
-	{
-	  spatialCoefficientsForTZ(0,0,0,uc)=1.;       // u1=1
-	  spatialCoefficientsForTZ(0,0,0,vc)=2.;      // u2=2
-	}
-	else if( tzDegreeSpace==1 )
-	{
-	  spatialCoefficientsForTZ(0,0,0,uc)=1.;      // u=1+x+y
-	  spatialCoefficientsForTZ(1,0,0,uc)=1.;
-	  spatialCoefficientsForTZ(0,1,0,uc)=1.;
+        if( tzDegreeSpace==0 )
+        {
+          spatialCoefficientsForTZ(0,0,0,uc)=1.;      // u1=1
+          spatialCoefficientsForTZ(0,0,0,vc)=2.;      // u2=2
+        }
+        else if( tzDegreeSpace==1 )
+        {
+          spatialCoefficientsForTZ(0,0,0,uc)=1.;      // u=1+x+y
+          spatialCoefficientsForTZ(1,0,0,uc)=1.;
+          spatialCoefficientsForTZ(0,1,0,uc)=1.;
 
-	  spatialCoefficientsForTZ(0,0,0,vc)= 2.;      // v=2+x-y
-	  spatialCoefficientsForTZ(1,0,0,vc)= 1.;
-	  spatialCoefficientsForTZ(0,1,0,vc)=-1.;
-	}
-	else if( tzDegreeSpace==2 )
-	{
-	  spatialCoefficientsForTZ(2,0,0,uc)=1.;      // u=x^2 + 2xy + y^2 
-	  spatialCoefficientsForTZ(1,1,0,uc)=2.;
-	  spatialCoefficientsForTZ(0,2,0,uc)=1.;
+          spatialCoefficientsForTZ(0,0,0,vc)= 2.;      // v=2+x-y
+          spatialCoefficientsForTZ(1,0,0,vc)= 1.;
+          spatialCoefficientsForTZ(0,1,0,vc)=-1.;
+        }
+        else if( tzDegreeSpace==2 )
+        {
+          spatialCoefficientsForTZ(2,0,0,uc)=1.;      // u=x^2 + 2xy + y^2 
+          spatialCoefficientsForTZ(1,1,0,uc)=2.;
+          spatialCoefficientsForTZ(0,2,0,uc)=1.;
 
-	  spatialCoefficientsForTZ(2,0,0,vc)= 1.;      // v=x^2 -2xy - y^2 
-	  spatialCoefficientsForTZ(1,1,0,vc)=-2.;
-	  spatialCoefficientsForTZ(0,2,0,vc)=-1.;
-	}
-	else if( tzDegreeSpace==3 )
-	{
-	  spatialCoefficientsForTZ(2,0,0,uc)=1.;      // u=x^2 + 2xy + y^2 + .5*y^3 + .25*x^2*y + .2*x^3  - .3*x*y^2
-	  spatialCoefficientsForTZ(1,1,0,uc)=2.;
-	  spatialCoefficientsForTZ(0,2,0,uc)=1.;
-	  spatialCoefficientsForTZ(0,3,0,uc)=.5;
-	  spatialCoefficientsForTZ(2,1,0,uc)=.25;
-	  spatialCoefficientsForTZ(3,0,0,0,uc)=.2;
-	  spatialCoefficientsForTZ(1,2,0,0,uc)=-.3;
+          spatialCoefficientsForTZ(2,0,0,vc)= 1.;      // v=x^2 -2xy - y^2 
+          spatialCoefficientsForTZ(1,1,0,vc)=-2.;
+          spatialCoefficientsForTZ(0,2,0,vc)=-1.;
+        }
+        else if( tzDegreeSpace==3 )
+        {
+          spatialCoefficientsForTZ(2,0,0,uc)=1.;      // u=x^2 + 2xy + y^2 + .5*y^3 + .25*x^2*y + .2*x^3  - .3*x*y^2
+          spatialCoefficientsForTZ(1,1,0,uc)=2.;
+          spatialCoefficientsForTZ(0,2,0,uc)=1.;
+          spatialCoefficientsForTZ(0,3,0,uc)=.5;
+          spatialCoefficientsForTZ(2,1,0,uc)=.25;
+          spatialCoefficientsForTZ(3,0,0,0,uc)=.2;
+          spatialCoefficientsForTZ(1,2,0,0,uc)=-.3;
 
-	  spatialCoefficientsForTZ(2,0,0,vc)= 1.;      // v=x^2 -2xy - y^2 -.5*x^3 -.25*x*y^2  -.6*x^2*y + .1*y^3
-	  spatialCoefficientsForTZ(1,1,0,vc)=-2.;
-	  spatialCoefficientsForTZ(0,2,0,vc)=-1.;
-	  spatialCoefficientsForTZ(3,0,0,vc)=-.5;
-	  spatialCoefficientsForTZ(1,2,0,vc)=-.25;
-	  spatialCoefficientsForTZ(2,1,0,vc)=-.6;
-	  spatialCoefficientsForTZ(0,3,0,vc)= .1;
-	}
-	else if( tzDegreeSpace==4 || tzDegreeSpace==5 )
-	{
-	  if( tzDegreeSpace!=4 ) printF(" ****WARNING***** using a TZ function with degree=4 in space *****\n");
-	  
-	  spatialCoefficientsForTZ(2,0,0,uc)=1.;      // u=x^2 + 2xy + y^2 + .2*x^4 + .5*y^4 + xy^3
-	  spatialCoefficientsForTZ(1,1,0,uc)=2.;
-	  spatialCoefficientsForTZ(0,2,0,uc)=1.;
+          spatialCoefficientsForTZ(2,0,0,vc)= 1.;      // v=x^2 -2xy - y^2 -.5*x^3 -.25*x*y^2  -.6*x^2*y + .1*y^3
+          spatialCoefficientsForTZ(1,1,0,vc)=-2.;
+          spatialCoefficientsForTZ(0,2,0,vc)=-1.;
+          spatialCoefficientsForTZ(3,0,0,vc)=-.5;
+          spatialCoefficientsForTZ(1,2,0,vc)=-.25;
+          spatialCoefficientsForTZ(2,1,0,vc)=-.6;
+          spatialCoefficientsForTZ(0,3,0,vc)= .1;
+        }
+        else if( tzDegreeSpace==4 || tzDegreeSpace==5 )
+        {
+          if( tzDegreeSpace!=4 ) printF(" ****WARNING***** using a TZ function with degree=4 in space *****\n");
+          
+          spatialCoefficientsForTZ(2,0,0,uc)=1.;      // u=x^2 + 2xy + y^2 + .2*x^4 + .5*y^4 + xy^3
+          spatialCoefficientsForTZ(1,1,0,uc)=2.;
+          spatialCoefficientsForTZ(0,2,0,uc)=1.;
 
-	  spatialCoefficientsForTZ(4,0,0,uc)=.2;   
-	  spatialCoefficientsForTZ(0,4,0,uc)=.5;   
-	  spatialCoefficientsForTZ(1,3,0,uc)=1.;   
-
-
-	  spatialCoefficientsForTZ(2,0,0,vc)= 1.;      // v=x^2 -2xy - y^2 +.125*x^4 -.25*y^4 -.8*x^3 y
-	  spatialCoefficientsForTZ(1,1,0,vc)=-2.;
-	  spatialCoefficientsForTZ(0,2,0,vc)=-1.;
-
-	  spatialCoefficientsForTZ(4,0,0,vc)=.125;
-	  spatialCoefficientsForTZ(0,4,0,vc)=-.25;
-	  spatialCoefficientsForTZ(3,1,0,vc)=-.8;
-	}
-	else if( tzDegreeSpace>=6 )
-	{
-	  if( tzDegreeSpace!=6 ) printF(" ****WARNING***** using a TZ function with degree=4 in space *****\n");
-	  
-	  spatialCoefficientsForTZ(2,0,0,uc)=1.;      // u=x^2 + 2xy + y^2 + .2*x^4 + .5*y^4 + xy^3
-	  spatialCoefficientsForTZ(1,1,0,uc)=2.;
-	  spatialCoefficientsForTZ(0,2,0,uc)=1.;
-
-	  spatialCoefficientsForTZ(4,0,0,uc)=.2;   
-	  spatialCoefficientsForTZ(0,4,0,uc)=.5;   
-	  spatialCoefficientsForTZ(1,3,0,uc)=1.;   
-
-	  spatialCoefficientsForTZ(3,2,0,uc)=.1;      // .1*x^3*y^2
-
-	  spatialCoefficientsForTZ(4,2,0,uc)=.3;      // .3 x^4 y^2 ** III
-	  spatialCoefficientsForTZ(3,3,0,uc)=.4;      // .4 x^3 y^3 ** IV 
-
-	  spatialCoefficientsForTZ(6,0,0,uc)=.1;      //  + .1*x^6 +.25*y^6 -.6*x*y^5
-	  spatialCoefficientsForTZ(0,6,0,uc)=.25;
-	  spatialCoefficientsForTZ(1,5,0,uc)=-.6;
+          spatialCoefficientsForTZ(4,0,0,uc)=.2;   
+          spatialCoefficientsForTZ(0,4,0,uc)=.5;   
+          spatialCoefficientsForTZ(1,3,0,uc)=1.;   
 
 
-	  spatialCoefficientsForTZ(2,0,0,vc)= 1.;      // v=x^2 -2xy - y^2 +.125*x^4 -.25*y^4 -.8*x^3 y
-	  spatialCoefficientsForTZ(1,1,0,vc)=-2.;
-	  spatialCoefficientsForTZ(0,2,0,vc)=-1.;
+          spatialCoefficientsForTZ(2,0,0,vc)= 1.;      // v=x^2 -2xy - y^2 +.125*x^4 -.25*y^4 -.8*x^3 y
+          spatialCoefficientsForTZ(1,1,0,vc)=-2.;
+          spatialCoefficientsForTZ(0,2,0,vc)=-1.;
 
-	  spatialCoefficientsForTZ(2,3,0,vc)=-.1;      // -.1*x^2*y^3
+          spatialCoefficientsForTZ(4,0,0,vc)=.125;
+          spatialCoefficientsForTZ(0,4,0,vc)=-.25;
+          spatialCoefficientsForTZ(3,1,0,vc)=-.8;
+        }
+        else if( tzDegreeSpace>=6 )
+        {
+          if( tzDegreeSpace!=6 ) printF(" ****WARNING***** using a TZ function with degree=4 in space *****\n");
+          
+          spatialCoefficientsForTZ(2,0,0,uc)=1.;      // u=x^2 + 2xy + y^2 + .2*x^4 + .5*y^4 + xy^3
+          spatialCoefficientsForTZ(1,1,0,uc)=2.;
+          spatialCoefficientsForTZ(0,2,0,uc)=1.;
 
-	  spatialCoefficientsForTZ(3,3,0,vc)=-.4;     //-.4 x^3 y^3 ** III 
-	  spatialCoefficientsForTZ(2,4,0,vc)=-.3;      //-.3 x^2 y^4 ** IV
+          spatialCoefficientsForTZ(4,0,0,uc)=.2;   
+          spatialCoefficientsForTZ(0,4,0,uc)=.5;   
+          spatialCoefficientsForTZ(1,3,0,uc)=1.;   
 
-	  spatialCoefficientsForTZ(4,0,0,vc)=.125;
-	  spatialCoefficientsForTZ(0,4,0,vc)=-.25;
-	  spatialCoefficientsForTZ(3,1,0,vc)=-.8;
+          spatialCoefficientsForTZ(3,2,0,uc)=.1;      // .1*x^3*y^2
 
-	  spatialCoefficientsForTZ(6,0,0,vc)=.3;    //   .3*x^6 +.1*y^6  + .6*x^5*y 
-	  spatialCoefficientsForTZ(0,6,0,vc)=.1;
-	  spatialCoefficientsForTZ(5,1,0,vc)=-.6;
-	}
-	else
-	{
-	  printF("Cgsm:: not implemented for degree in space =%i \n",tzDegreeSpace);
-	  Overture::abort("error");
-	}
+          spatialCoefficientsForTZ(4,2,0,uc)=.3;      // .3 x^4 y^2 ** III
+          spatialCoefficientsForTZ(3,3,0,uc)=.4;      // .4 x^3 y^3 ** IV 
+
+          spatialCoefficientsForTZ(6,0,0,uc)=.1;      //  + .1*x^6 +.25*y^6 -.6*x*y^5
+          spatialCoefficientsForTZ(0,6,0,uc)=.25;
+          spatialCoefficientsForTZ(1,5,0,uc)=-.6;
+
+
+          spatialCoefficientsForTZ(2,0,0,vc)= 1.;      // v=x^2 -2xy - y^2 +.125*x^4 -.25*y^4 -.8*x^3 y
+          spatialCoefficientsForTZ(1,1,0,vc)=-2.;
+          spatialCoefficientsForTZ(0,2,0,vc)=-1.;
+
+          spatialCoefficientsForTZ(2,3,0,vc)=-.1;      // -.1*x^2*y^3
+
+          spatialCoefficientsForTZ(3,3,0,vc)=-.4;     //-.4 x^3 y^3 ** III 
+          spatialCoefficientsForTZ(2,4,0,vc)=-.3;      //-.3 x^2 y^4 ** IV
+
+          spatialCoefficientsForTZ(4,0,0,vc)=.125;
+          spatialCoefficientsForTZ(0,4,0,vc)=-.25;
+          spatialCoefficientsForTZ(3,1,0,vc)=-.8;
+
+          spatialCoefficientsForTZ(6,0,0,vc)=.3;    //   .3*x^6 +.1*y^6  + .6*x^5*y 
+          spatialCoefficientsForTZ(0,6,0,vc)=.1;
+          spatialCoefficientsForTZ(5,1,0,vc)=-.6;
+        }
+        else
+        {
+          printF("Cgsm:: not implemented for degree in space =%i \n",tzDegreeSpace);
+          Overture::abort("error");
+        }
       }
       // *****************************************************************
       // ******************* Three Dimensions ****************************
       // *****************************************************************
       else if( numberOfDimensions==3 )
       {
-	int degreeSpaceX = tzDegreeSpace;  // do this for now 
-	int degreeSpaceY = numberOfDimensions>1 ? tzDegreeSpace : 0;  
-	int degreeSpaceZ = numberOfDimensions>2 ? tzDegreeSpace : 0;
+        int degreeSpaceX = tzDegreeSpace;  // do this for now 
+        int degreeSpaceY = numberOfDimensions>1 ? tzDegreeSpace : 0;  
+        int degreeSpaceZ = numberOfDimensions>2 ? tzDegreeSpace : 0;
       
-	if( (degreeSpaceX==0 || degreeSpaceY==0 || degreeSpaceZ==0) 
-	    && (degreeSpaceX!=0 || degreeSpaceY!=0 || degreeSpaceZ!=0)  )
-	{
-	  // For testing we can set the TZ function in 3D to equal that of the 2D function
+        if( (degreeSpaceX==0 || degreeSpaceY==0 || degreeSpaceZ==0) 
+            && (degreeSpaceX!=0 || degreeSpaceY!=0 || degreeSpaceZ!=0)  )
+        {
+          // For testing we can set the TZ function in 3D to equal that of the 2D function
 
-	  int e1,e2;
-	  if( degreeSpaceX==0 )
-	  { // here we rotate about the y-axis so (x->z, y->y)
-	    e1=wc; e2=vc;
-	  }
-	  else if( degreeSpaceY==0 )
-	  { // here we rotate about the x-axis  (y->z x->x
-	    e1=uc; e2=wc;
-	  }
-	  else
-	  {
-	    e1=uc; e2=vc;
-	  }
-	  int degreeSpace2=max(degreeSpaceX,degreeSpaceY,degreeSpaceZ);
+          int e1,e2;
+          if( degreeSpaceX==0 )
+          { // here we rotate about the y-axis so (x->z, y->y)
+            e1=wc; e2=vc;
+          }
+          else if( degreeSpaceY==0 )
+          { // here we rotate about the x-axis  (y->z x->x
+            e1=uc; e2=wc;
+          }
+          else
+          {
+            e1=uc; e2=vc;
+          }
+          int degreeSpace2=max(degreeSpaceX,degreeSpaceY,degreeSpaceZ);
 
-	  if( degreeSpace2==1 )
-	  {
-	    spatialCoefficientsForTZ(0,0,0,e1)=1.;      // u=1+x+y
-	    spatialCoefficientsForTZ(1,0,0,e1)=1.;
-	    spatialCoefficientsForTZ(0,1,0,e1)=1.;
+          if( degreeSpace2==1 )
+          {
+            spatialCoefficientsForTZ(0,0,0,e1)=1.;      // u=1+x+y
+            spatialCoefficientsForTZ(1,0,0,e1)=1.;
+            spatialCoefficientsForTZ(0,1,0,e1)=1.;
 
-	    spatialCoefficientsForTZ(0,0,0,e2)= 2.;      // v=2+x-y
-	    spatialCoefficientsForTZ(1,0,0,e2)= 1.;
-	    spatialCoefficientsForTZ(0,1,0,e2)=-1.;
-	  }
-	  else if( degreeSpace2==2 )
-	  {
-	    spatialCoefficientsForTZ(2,0,0,e1)=1.;      // u=x^2 + 2xy + y^2 
-	    spatialCoefficientsForTZ(1,1,0,e1)=2.;
-	    spatialCoefficientsForTZ(0,2,0,e1)=1.;
+            spatialCoefficientsForTZ(0,0,0,e2)= 2.;      // v=2+x-y
+            spatialCoefficientsForTZ(1,0,0,e2)= 1.;
+            spatialCoefficientsForTZ(0,1,0,e2)=-1.;
+          }
+          else if( degreeSpace2==2 )
+          {
+            spatialCoefficientsForTZ(2,0,0,e1)=1.;      // u=x^2 + 2xy + y^2 
+            spatialCoefficientsForTZ(1,1,0,e1)=2.;
+            spatialCoefficientsForTZ(0,2,0,e1)=1.;
 
-	    spatialCoefficientsForTZ(2,0,0,e2)= 1.;      // v=x^2 -2xy - y^2 
-	    spatialCoefficientsForTZ(1,1,0,e2)=-2.;
-	    spatialCoefficientsForTZ(0,2,0,e2)=-1.;
-	  }
-	  else if( degreeSpace2==3 )
-	  {
-	    spatialCoefficientsForTZ(2,0,0,e1)=1.;      // u=x^2 + 2xy + y^2 + .5*y^3 + .25*x^2*y + .2*x^3  - .3*x*y^2
-	    spatialCoefficientsForTZ(1,1,0,e1)=2.;
-	    spatialCoefficientsForTZ(0,2,0,e1)=1.;
-	    spatialCoefficientsForTZ(0,3,0,e1)=.5;
-	    spatialCoefficientsForTZ(2,1,0,e1)=.25;
-	    spatialCoefficientsForTZ(3,0,0,0,e1)=.2;
-	    spatialCoefficientsForTZ(1,2,0,0,e1)=-.3;
+            spatialCoefficientsForTZ(2,0,0,e2)= 1.;      // v=x^2 -2xy - y^2 
+            spatialCoefficientsForTZ(1,1,0,e2)=-2.;
+            spatialCoefficientsForTZ(0,2,0,e2)=-1.;
+          }
+          else if( degreeSpace2==3 )
+          {
+            spatialCoefficientsForTZ(2,0,0,e1)=1.;      // u=x^2 + 2xy + y^2 + .5*y^3 + .25*x^2*y + .2*x^3  - .3*x*y^2
+            spatialCoefficientsForTZ(1,1,0,e1)=2.;
+            spatialCoefficientsForTZ(0,2,0,e1)=1.;
+            spatialCoefficientsForTZ(0,3,0,e1)=.5;
+            spatialCoefficientsForTZ(2,1,0,e1)=.25;
+            spatialCoefficientsForTZ(3,0,0,0,e1)=.2;
+            spatialCoefficientsForTZ(1,2,0,0,e1)=-.3;
 
-	    spatialCoefficientsForTZ(2,0,0,e2)= 1.;      // v=x^2 -2xy - y^2 -.5*x^3 -.25*x*y^2  -.6*x^2*y + .1*y^3
-	    spatialCoefficientsForTZ(1,1,0,e2)=-2.;
-	    spatialCoefficientsForTZ(0,2,0,e2)=-1.;
-	    spatialCoefficientsForTZ(3,0,0,e2)=-.5;
-	    spatialCoefficientsForTZ(1,2,0,e2)=-.25;
-	    spatialCoefficientsForTZ(2,1,0,e2)=-.6;
-	    spatialCoefficientsForTZ(0,3,0,e2)= .1;
-	  }
-	  else if( degreeSpace2==4 ) 
-	  {
-	    if( degreeSpaceZ==0 )
-	    {
-	      spatialCoefficientsForTZ(2,0,0,e1)=1.;      // u=x^2 + 2xy + y^2 + .2*x^4 + .5*y^4 + xy^3
-	      spatialCoefficientsForTZ(1,1,0,e1)=2.;
-	      spatialCoefficientsForTZ(0,2,0,e1)=1.;
+            spatialCoefficientsForTZ(2,0,0,e2)= 1.;      // v=x^2 -2xy - y^2 -.5*x^3 -.25*x*y^2  -.6*x^2*y + .1*y^3
+            spatialCoefficientsForTZ(1,1,0,e2)=-2.;
+            spatialCoefficientsForTZ(0,2,0,e2)=-1.;
+            spatialCoefficientsForTZ(3,0,0,e2)=-.5;
+            spatialCoefficientsForTZ(1,2,0,e2)=-.25;
+            spatialCoefficientsForTZ(2,1,0,e2)=-.6;
+            spatialCoefficientsForTZ(0,3,0,e2)= .1;
+          }
+          else if( degreeSpace2==4 ) 
+          {
+            if( degreeSpaceZ==0 )
+            {
+              spatialCoefficientsForTZ(2,0,0,e1)=1.;      // u=x^2 + 2xy + y^2 + .2*x^4 + .5*y^4 + xy^3
+              spatialCoefficientsForTZ(1,1,0,e1)=2.;
+              spatialCoefficientsForTZ(0,2,0,e1)=1.;
 
-	      spatialCoefficientsForTZ(4,0,0,e1)=.2;   
-	      spatialCoefficientsForTZ(0,4,0,e1)=.5;   
-	      spatialCoefficientsForTZ(1,3,0,e1)=1.;   
+              spatialCoefficientsForTZ(4,0,0,e1)=.2;   
+              spatialCoefficientsForTZ(0,4,0,e1)=.5;   
+              spatialCoefficientsForTZ(1,3,0,e1)=1.;   
 
 
-	      spatialCoefficientsForTZ(2,0,0,e2)= 1.;      // v=x^2 -2xy - y^2 +.125*x^4 -.25*y^4 -.8*x^3 y
-	      spatialCoefficientsForTZ(1,1,0,e2)=-2.;
-	      spatialCoefficientsForTZ(0,2,0,e2)=-1.;
+              spatialCoefficientsForTZ(2,0,0,e2)= 1.;      // v=x^2 -2xy - y^2 +.125*x^4 -.25*y^4 -.8*x^3 y
+              spatialCoefficientsForTZ(1,1,0,e2)=-2.;
+              spatialCoefficientsForTZ(0,2,0,e2)=-1.;
 
-	      spatialCoefficientsForTZ(4,0,0,e2)=.125;
-	      spatialCoefficientsForTZ(0,4,0,e2)=-.25;
-	      spatialCoefficientsForTZ(3,1,0,e2)=-.8;
-	    }
-	    else if( degreeSpaceX==0 )// degreeSpaceX==0
-	    {
+              spatialCoefficientsForTZ(4,0,0,e2)=.125;
+              spatialCoefficientsForTZ(0,4,0,e2)=-.25;
+              spatialCoefficientsForTZ(3,1,0,e2)=-.8;
+            }
+            else if( degreeSpaceX==0 )// degreeSpaceX==0
+            {
               
-	      // switch x->z
-	      spatialCoefficientsForTZ(0,0,2,e1)=1.;      // u=x^2 + 2xy + y^2 + .2*x^4 + .5*y^4 + xy^3
-	      spatialCoefficientsForTZ(0,1,1,e1)=2.;
-	      spatialCoefficientsForTZ(0,2,0,e1)=1.;
+              // switch x->z
+              spatialCoefficientsForTZ(0,0,2,e1)=1.;      // u=x^2 + 2xy + y^2 + .2*x^4 + .5*y^4 + xy^3
+              spatialCoefficientsForTZ(0,1,1,e1)=2.;
+              spatialCoefficientsForTZ(0,2,0,e1)=1.;
 
-	      spatialCoefficientsForTZ(0,0,4,e1)=.2;   
-	      spatialCoefficientsForTZ(0,4,0,e1)=.5;   
-	      spatialCoefficientsForTZ(0,3,1,e1)=1.;   
-
-
-	      spatialCoefficientsForTZ(0,0,2,e2)= 1.;      // v=x^2 -2xy - y^2 +.125*x^4 -.25*y^4 -.8*x^3 y
-	      spatialCoefficientsForTZ(0,1,1,e2)=-2.;
-	      spatialCoefficientsForTZ(0,2,0,e2)=-1.;
-
-	      spatialCoefficientsForTZ(0,0,4,e2)=.125;
-	      spatialCoefficientsForTZ(0,4,0,e2)=-.25;
-	      spatialCoefficientsForTZ(0,1,3,e2)=-.8;
-	    }
-	    else  // degreeY==0   
-	    {
-	      spatialCoefficientsForTZ(2,0,0,e1)=1.;      // u=x^2 + 2xy + y^2 + .2*x^4 + .5*y^4 + xy^3
-	      spatialCoefficientsForTZ(1,0,1,e1)=2.;
-	      spatialCoefficientsForTZ(0,0,2,e1)=1.;
-
-	      spatialCoefficientsForTZ(4,0,0,e1)=.2;   
-	      spatialCoefficientsForTZ(0,0,4,e1)=.5;   
-	      spatialCoefficientsForTZ(1,0,3,e1)=1.;   
+              spatialCoefficientsForTZ(0,0,4,e1)=.2;   
+              spatialCoefficientsForTZ(0,4,0,e1)=.5;   
+              spatialCoefficientsForTZ(0,3,1,e1)=1.;   
 
 
-	      spatialCoefficientsForTZ(2,0,0,e2)= 1.;      // v=x^2 -2xy - y^2 +.125*x^4 -.25*y^4 -.8*x^3 y
-	      spatialCoefficientsForTZ(1,0,1,e2)=-2.;
-	      spatialCoefficientsForTZ(0,0,2,e2)=-1.;
+              spatialCoefficientsForTZ(0,0,2,e2)= 1.;      // v=x^2 -2xy - y^2 +.125*x^4 -.25*y^4 -.8*x^3 y
+              spatialCoefficientsForTZ(0,1,1,e2)=-2.;
+              spatialCoefficientsForTZ(0,2,0,e2)=-1.;
 
-	      spatialCoefficientsForTZ(4,0,0,e2)=.125;
-	      spatialCoefficientsForTZ(0,0,4,e2)=-.25;
-	      spatialCoefficientsForTZ(3,0,1,e2)=-.8;
-	    }
-	    
-	  }
-	  else
-	  {
-	    Overture::abort("unimplemented values of degreeSpace");
-	  }
-	}
-	else if( tzDegreeSpace==1 )
-	{
-	  spatialCoefficientsForTZ(0,0,0,uc)=1.;      // u=1 + x + y + z
-	  spatialCoefficientsForTZ(1,0,0,uc)=1.;
-	  spatialCoefficientsForTZ(0,1,0,uc)=1.;
-	  spatialCoefficientsForTZ(0,0,1,uc)=1.;
+              spatialCoefficientsForTZ(0,0,4,e2)=.125;
+              spatialCoefficientsForTZ(0,4,0,e2)=-.25;
+              spatialCoefficientsForTZ(0,1,3,e2)=-.8;
+            }
+            else  // degreeY==0   
+            {
+              spatialCoefficientsForTZ(2,0,0,e1)=1.;      // u=x^2 + 2xy + y^2 + .2*x^4 + .5*y^4 + xy^3
+              spatialCoefficientsForTZ(1,0,1,e1)=2.;
+              spatialCoefficientsForTZ(0,0,2,e1)=1.;
 
-	  spatialCoefficientsForTZ(0,0,0,vc)= 2.;      // v=2+x-2y+z
-	  spatialCoefficientsForTZ(1,0,0,vc)= 1.;
-	  spatialCoefficientsForTZ(0,1,0,vc)=-2.;
-	  spatialCoefficientsForTZ(0,0,1,vc)= 1.;
+              spatialCoefficientsForTZ(4,0,0,e1)=.2;   
+              spatialCoefficientsForTZ(0,0,4,e1)=.5;   
+              spatialCoefficientsForTZ(1,0,3,e1)=1.;   
+
+
+              spatialCoefficientsForTZ(2,0,0,e2)= 1.;      // v=x^2 -2xy - y^2 +.125*x^4 -.25*y^4 -.8*x^3 y
+              spatialCoefficientsForTZ(1,0,1,e2)=-2.;
+              spatialCoefficientsForTZ(0,0,2,e2)=-1.;
+
+              spatialCoefficientsForTZ(4,0,0,e2)=.125;
+              spatialCoefficientsForTZ(0,0,4,e2)=-.25;
+              spatialCoefficientsForTZ(3,0,1,e2)=-.8;
+            }
+            
+          }
+          else
+          {
+            Overture::abort("unimplemented values of degreeSpace");
+          }
+        }
+        else if( tzDegreeSpace==1 )
+        {
+          spatialCoefficientsForTZ(0,0,0,uc)=1.;      // u=1 + x + y + z
+          spatialCoefficientsForTZ(1,0,0,uc)=1.;
+          spatialCoefficientsForTZ(0,1,0,uc)=1.;
+          spatialCoefficientsForTZ(0,0,1,uc)=1.;
+
+          spatialCoefficientsForTZ(0,0,0,vc)= 2.;      // v=2+x-2y+z
+          spatialCoefficientsForTZ(1,0,0,vc)= 1.;
+          spatialCoefficientsForTZ(0,1,0,vc)=-2.;
+          spatialCoefficientsForTZ(0,0,1,vc)= 1.;
     
-	  spatialCoefficientsForTZ(1,0,0,wc)=-1.;      // w=-x+y+z
-	  spatialCoefficientsForTZ(0,1,0,wc)= 1.;
-	  spatialCoefficientsForTZ(0,0,1,wc)= 1.;
+          spatialCoefficientsForTZ(1,0,0,wc)=-1.;      // w=-x+y+z
+          spatialCoefficientsForTZ(0,1,0,wc)= 1.;
+          spatialCoefficientsForTZ(0,0,1,wc)= 1.;
 
-	}
-	else if( tzDegreeSpace==2 )
-	{
-	  spatialCoefficientsForTZ(2,0,0,uc)=1.;      // u=x^2 + 2xy + y^2 + xz  - .25*yz -.5*z^2
-	  spatialCoefficientsForTZ(1,1,0,uc)=2.;
-	  spatialCoefficientsForTZ(0,2,0,uc)=1.;
-	  spatialCoefficientsForTZ(1,0,1,uc)=1.;
-	  spatialCoefficientsForTZ(0,1,1,uc)=-.25;
-	  spatialCoefficientsForTZ(0,0,2,uc)=-.5;
+        }
+        else if( tzDegreeSpace==2 )
+        {
+          spatialCoefficientsForTZ(2,0,0,uc)=1.;      // u=x^2 + 2xy + y^2 + xz  - .25*yz -.5*z^2
+          spatialCoefficientsForTZ(1,1,0,uc)=2.;
+          spatialCoefficientsForTZ(0,2,0,uc)=1.;
+          spatialCoefficientsForTZ(1,0,1,uc)=1.;
+          spatialCoefficientsForTZ(0,1,1,uc)=-.25;
+          spatialCoefficientsForTZ(0,0,2,uc)=-.5;
       
-	  spatialCoefficientsForTZ(2,0,0,vc)= 1.;      // v=x^2 -2xy - y^2 + 3yz + .25*xz +.5*z^2
-	  spatialCoefficientsForTZ(1,1,0,vc)=-2.;
-	  spatialCoefficientsForTZ(0,2,0,vc)=-1.;
-	  spatialCoefficientsForTZ(0,1,1,vc)=+3.;
-	  spatialCoefficientsForTZ(1,0,1,vc)=.25;
-	  spatialCoefficientsForTZ(0,0,2,vc)=.5;
+          spatialCoefficientsForTZ(2,0,0,vc)= 1.;      // v=x^2 -2xy - y^2 + 3yz + .25*xz +.5*z^2
+          spatialCoefficientsForTZ(1,1,0,vc)=-2.;
+          spatialCoefficientsForTZ(0,2,0,vc)=-1.;
+          spatialCoefficientsForTZ(0,1,1,vc)=+3.;
+          spatialCoefficientsForTZ(1,0,1,vc)=.25;
+          spatialCoefficientsForTZ(0,0,2,vc)=.5;
       
-	  spatialCoefficientsForTZ(2,0,0,wc)= 1.;      // w=x^2 + y^2 - 2 z^2 + .25*xy 
-	  spatialCoefficientsForTZ(0,2,0,wc)= 1.;
-	  spatialCoefficientsForTZ(0,0,2,wc)=-2.;
-	  spatialCoefficientsForTZ(1,1,0,wc)=.25;
-	}
-	else if( tzDegreeSpace==0 )
-	{
-	  spatialCoefficientsForTZ(0,0,0,uc)=1.; // -1.; 
-	  spatialCoefficientsForTZ(0,0,0,vc)=1.; //-.5;
-	  spatialCoefficientsForTZ(0,0,0,wc)=1.; //.75; 
-	}
-	else if( tzDegreeSpace==3 )
-	{
-	  spatialCoefficientsForTZ(2,0,0,uc)=1.;      // u=x^2 + 2xy + y^2 + xz 
-	  spatialCoefficientsForTZ(1,1,0,uc)=2.;    //        + .125( x^3 + y^3 + z^3 ) -.75*x*y^2 + x^2*z +.4yz
-	  spatialCoefficientsForTZ(0,2,0,uc)=1.;
-	  spatialCoefficientsForTZ(1,0,1,uc)=1.;
+          spatialCoefficientsForTZ(2,0,0,wc)= 1.;      // w=x^2 + y^2 - 2 z^2 + .25*xy 
+          spatialCoefficientsForTZ(0,2,0,wc)= 1.;
+          spatialCoefficientsForTZ(0,0,2,wc)=-2.;
+          spatialCoefficientsForTZ(1,1,0,wc)=.25;
+        }
+        else if( tzDegreeSpace==0 )
+        {
+          spatialCoefficientsForTZ(0,0,0,uc)=1.; // -1.; 
+          spatialCoefficientsForTZ(0,0,0,vc)=1.; //-.5;
+          spatialCoefficientsForTZ(0,0,0,wc)=1.; //.75; 
+        }
+        else if( tzDegreeSpace==3 )
+        {
+          spatialCoefficientsForTZ(2,0,0,uc)=1.;      // u=x^2 + 2xy + y^2 + xz 
+          spatialCoefficientsForTZ(1,1,0,uc)=2.;    //        + .125( x^3 + y^3 + z^3 ) -.75*x*y^2 + x^2*z +.4yz
+          spatialCoefficientsForTZ(0,2,0,uc)=1.;
+          spatialCoefficientsForTZ(1,0,1,uc)=1.;
       
-	  spatialCoefficientsForTZ(3,0,0,uc)=.125; 
-	  spatialCoefficientsForTZ(0,3,0,uc)=.125; 
-	  spatialCoefficientsForTZ(0,0,3,uc)=.125; 
-	  spatialCoefficientsForTZ(1,2,0,uc)=-.75;
-	  spatialCoefficientsForTZ(2,0,1,uc)=+1.; 
-	  spatialCoefficientsForTZ(0,1,1,uc)=.4; 
+          spatialCoefficientsForTZ(3,0,0,uc)=.125; 
+          spatialCoefficientsForTZ(0,3,0,uc)=.125; 
+          spatialCoefficientsForTZ(0,0,3,uc)=.125; 
+          spatialCoefficientsForTZ(1,2,0,uc)=-.75;
+          spatialCoefficientsForTZ(2,0,1,uc)=+1.; 
+          spatialCoefficientsForTZ(0,1,1,uc)=.4; 
 
 
-	  spatialCoefficientsForTZ(2,0,0,vc)= 1.;      // v=x^2 -2xy - y^2 + 3yz 
-	  spatialCoefficientsForTZ(1,1,0,vc)=-2.;      //    + .25( x^3 + y^3 + z^3 ) -.375*x^2 y  -.375*y*z^2  
-	  spatialCoefficientsForTZ(0,2,0,vc)=-1.;
-	  spatialCoefficientsForTZ(0,1,1,vc)=+3.;
+          spatialCoefficientsForTZ(2,0,0,vc)= 1.;      // v=x^2 -2xy - y^2 + 3yz 
+          spatialCoefficientsForTZ(1,1,0,vc)=-2.;      //    + .25( x^3 + y^3 + z^3 ) -.375*x^2 y  -.375*y*z^2  
+          spatialCoefficientsForTZ(0,2,0,vc)=-1.;
+          spatialCoefficientsForTZ(0,1,1,vc)=+3.;
       
-	  spatialCoefficientsForTZ(3,0,0,vc)=.25; 
-	  spatialCoefficientsForTZ(0,3,0,vc)=.25; 
-	  spatialCoefficientsForTZ(0,0,3,vc)=.25; 
-	  spatialCoefficientsForTZ(2,1,0,vc)=-3.*.125; 
-	  spatialCoefficientsForTZ(0,1,2,vc)=-3.*.125; 
+          spatialCoefficientsForTZ(3,0,0,vc)=.25; 
+          spatialCoefficientsForTZ(0,3,0,vc)=.25; 
+          spatialCoefficientsForTZ(0,0,3,vc)=.25; 
+          spatialCoefficientsForTZ(2,1,0,vc)=-3.*.125; 
+          spatialCoefficientsForTZ(0,1,2,vc)=-3.*.125; 
       
       
-	  spatialCoefficientsForTZ(2,0,0,wc)= 1.;      // w=x^2 + y^2 - 2 z^2 
-	  spatialCoefficientsForTZ(0,2,0,wc)= 1.;      //      + .25x^3 -.2y^3 +.125 z^3 - x z^2 -.6*xy^2
-	  spatialCoefficientsForTZ(0,0,2,wc)=-2.;
+          spatialCoefficientsForTZ(2,0,0,wc)= 1.;      // w=x^2 + y^2 - 2 z^2 
+          spatialCoefficientsForTZ(0,2,0,wc)= 1.;      //      + .25x^3 -.2y^3 +.125 z^3 - x z^2 -.6*xy^2
+          spatialCoefficientsForTZ(0,0,2,wc)=-2.;
       
-	  spatialCoefficientsForTZ(3,0,0,wc)=.25; 
-	  spatialCoefficientsForTZ(0,3,0,wc)=-.2; 
-	  spatialCoefficientsForTZ(0,0,3,wc)=.125; 
-	  spatialCoefficientsForTZ(1,0,2,wc)=-1.;
-	  spatialCoefficientsForTZ(1,2,0,wc)=-.6;
-	}
-	else if( tzDegreeSpace==4 )
-	{
-	  spatialCoefficientsForTZ(2,0,0,uc)=1.;      // u=x^2 + 2xy + y^2 + xz
-	  spatialCoefficientsForTZ(1,1,0,uc)=2.;
-	  spatialCoefficientsForTZ(0,2,0,uc)=1.;
-	  spatialCoefficientsForTZ(1,0,1,uc)=1.;
-	  spatialCoefficientsForTZ(3,0,0,uc)=.5;      // + .5*x^3
+          spatialCoefficientsForTZ(3,0,0,wc)=.25; 
+          spatialCoefficientsForTZ(0,3,0,wc)=-.2; 
+          spatialCoefficientsForTZ(0,0,3,wc)=.125; 
+          spatialCoefficientsForTZ(1,0,2,wc)=-1.;
+          spatialCoefficientsForTZ(1,2,0,wc)=-.6;
+        }
+        else if( tzDegreeSpace==4 )
+        {
+          spatialCoefficientsForTZ(2,0,0,uc)=1.;      // u=x^2 + 2xy + y^2 + xz
+          spatialCoefficientsForTZ(1,1,0,uc)=2.;
+          spatialCoefficientsForTZ(0,2,0,uc)=1.;
+          spatialCoefficientsForTZ(1,0,1,uc)=1.;
+          spatialCoefficientsForTZ(3,0,0,uc)=.5;      // + .5*x^3
 
-	  spatialCoefficientsForTZ(4,0,0,uc)=.125;    // + .125*x^4 + .125*y^4 + .125*z^4  -.5*xz^3
-	  spatialCoefficientsForTZ(0,4,0,uc)=.125;    
-	  spatialCoefficientsForTZ(0,0,4,uc)=.125; 
-	  spatialCoefficientsForTZ(1,0,3,uc)=-.5; 
-	  spatialCoefficientsForTZ(0,1,3,uc)=.25;    // + .25*y*z^3 -.25*y^2*z^2 +.25*y^3z
-	  spatialCoefficientsForTZ(0,2,2,uc)=-.25; 
-	  spatialCoefficientsForTZ(0,3,1,uc)=.25; 
+          spatialCoefficientsForTZ(4,0,0,uc)=.125;    // + .125*x^4 + .125*y^4 + .125*z^4  -.5*xz^3
+          spatialCoefficientsForTZ(0,4,0,uc)=.125;    
+          spatialCoefficientsForTZ(0,0,4,uc)=.125; 
+          spatialCoefficientsForTZ(1,0,3,uc)=-.5; 
+          spatialCoefficientsForTZ(0,1,3,uc)=.25;    // + .25*y*z^3 -.25*y^2*z^2 +.25*y^3z
+          spatialCoefficientsForTZ(0,2,2,uc)=-.25; 
+          spatialCoefficientsForTZ(0,3,1,uc)=.25; 
       
       
-	  spatialCoefficientsForTZ(2,0,0,vc)= 1.;      // v=x^2 -2xy - y^2 + 3yz
-	  spatialCoefficientsForTZ(1,1,0,vc)=-2.;
-	  spatialCoefficientsForTZ(0,2,0,vc)=-1.;
-	  spatialCoefficientsForTZ(0,1,1,vc)=+3.;
+          spatialCoefficientsForTZ(2,0,0,vc)= 1.;      // v=x^2 -2xy - y^2 + 3yz
+          spatialCoefficientsForTZ(1,1,0,vc)=-2.;
+          spatialCoefficientsForTZ(0,2,0,vc)=-1.;
+          spatialCoefficientsForTZ(0,1,1,vc)=+3.;
       
-	  spatialCoefficientsForTZ(2,1,0,vc)=-1.5;     // -1.5x^2*y
+          spatialCoefficientsForTZ(2,1,0,vc)=-1.5;     // -1.5x^2*y
       
-	  spatialCoefficientsForTZ(4,0,0,vc)=.25; 
-	  spatialCoefficientsForTZ(0,4,0,vc)=.25; 
-	  spatialCoefficientsForTZ(0,0,4,vc)=.25; 
-	  spatialCoefficientsForTZ(3,1,0,vc)=-.5; 
-	  spatialCoefficientsForTZ(1,0,3,vc)=.25;    // + .25*x*z^3 -.25*x^2*z^2 +.25*x^3z
-	  spatialCoefficientsForTZ(2,0,2,vc)=-.25; 
-	  spatialCoefficientsForTZ(3,0,1,vc)=.25; 
+          spatialCoefficientsForTZ(4,0,0,vc)=.25; 
+          spatialCoefficientsForTZ(0,4,0,vc)=.25; 
+          spatialCoefficientsForTZ(0,0,4,vc)=.25; 
+          spatialCoefficientsForTZ(3,1,0,vc)=-.5; 
+          spatialCoefficientsForTZ(1,0,3,vc)=.25;    // + .25*x*z^3 -.25*x^2*z^2 +.25*x^3z
+          spatialCoefficientsForTZ(2,0,2,vc)=-.25; 
+          spatialCoefficientsForTZ(3,0,1,vc)=.25; 
       
       
-	  spatialCoefficientsForTZ(2,0,0,wc)= 1.;      // w=x^2 + y^2 - 2 z^2
-	  spatialCoefficientsForTZ(0,2,0,wc)= 1.;
-	  spatialCoefficientsForTZ(0,0,2,wc)=-2.;
+          spatialCoefficientsForTZ(2,0,0,wc)= 1.;      // w=x^2 + y^2 - 2 z^2
+          spatialCoefficientsForTZ(0,2,0,wc)= 1.;
+          spatialCoefficientsForTZ(0,0,2,wc)=-2.;
       
-	  spatialCoefficientsForTZ(4,0,0,wc)=.25; 
-	  spatialCoefficientsForTZ(0,4,0,wc)=-.2; 
-	  spatialCoefficientsForTZ(0,0,4,wc)=.125; 
-	  spatialCoefficientsForTZ(0,3,1,wc)=-1.;
-	  spatialCoefficientsForTZ(1,3,0,wc)=.25;    // + .25*x*y^3 -.25*x^2*y^2 +.25*x^3y
-	  spatialCoefficientsForTZ(2,2,0,wc)=-.25; 
-	  spatialCoefficientsForTZ(3,1,0,wc)=.25; 
-	}
-	else if( tzDegreeSpace>=5 )
-	{
-	  if( true || tzDegreeSpace!=5 ) printF(" ****WARNING***** using a TZ function with degree=5 in space *****\n");
-	  
-	  spatialCoefficientsForTZ(2,0,0,uc)=1.;      // u=x^2 + 2xy + y^2 + xz
-	  spatialCoefficientsForTZ(1,1,0,uc)=2.;
-	  spatialCoefficientsForTZ(0,2,0,uc)=1.;
-	  spatialCoefficientsForTZ(1,0,1,uc)=1.;
+          spatialCoefficientsForTZ(4,0,0,wc)=.25; 
+          spatialCoefficientsForTZ(0,4,0,wc)=-.2; 
+          spatialCoefficientsForTZ(0,0,4,wc)=.125; 
+          spatialCoefficientsForTZ(0,3,1,wc)=-1.;
+          spatialCoefficientsForTZ(1,3,0,wc)=.25;    // + .25*x*y^3 -.25*x^2*y^2 +.25*x^3y
+          spatialCoefficientsForTZ(2,2,0,wc)=-.25; 
+          spatialCoefficientsForTZ(3,1,0,wc)=.25; 
+        }
+        else if( tzDegreeSpace>=5 )
+        {
+          if( true || tzDegreeSpace!=5 ) printF(" ****WARNING***** using a TZ function with degree=5 in space *****\n");
+          
+          spatialCoefficientsForTZ(2,0,0,uc)=1.;      // u=x^2 + 2xy + y^2 + xz
+          spatialCoefficientsForTZ(1,1,0,uc)=2.;
+          spatialCoefficientsForTZ(0,2,0,uc)=1.;
+          spatialCoefficientsForTZ(1,0,1,uc)=1.;
     
-	  spatialCoefficientsForTZ(4,0,0,uc)=.125;    // + .125*x^4 + .125*y^4 + .125*z^4  -.5*xz^3
-	  spatialCoefficientsForTZ(0,4,0,uc)=.125;    
-	  spatialCoefficientsForTZ(0,0,4,uc)=.125; 
-	  spatialCoefficientsForTZ(1,0,3,uc)=-.5; 
-	  spatialCoefficientsForTZ(0,1,3,uc)=.25;    // + .25*y*z^3 -.25*y^2*z^2 +.25*y^3z
-	  spatialCoefficientsForTZ(0,2,2,uc)=-.25; 
-	  spatialCoefficientsForTZ(0,3,1,uc)=.25; 
+          spatialCoefficientsForTZ(4,0,0,uc)=.125;    // + .125*x^4 + .125*y^4 + .125*z^4  -.5*xz^3
+          spatialCoefficientsForTZ(0,4,0,uc)=.125;    
+          spatialCoefficientsForTZ(0,0,4,uc)=.125; 
+          spatialCoefficientsForTZ(1,0,3,uc)=-.5; 
+          spatialCoefficientsForTZ(0,1,3,uc)=.25;    // + .25*y*z^3 -.25*y^2*z^2 +.25*y^3z
+          spatialCoefficientsForTZ(0,2,2,uc)=-.25; 
+          spatialCoefficientsForTZ(0,3,1,uc)=.25; 
     
-	  spatialCoefficientsForTZ(0,5,0,uc)=.125;   // y^5
-    
-    
-	  spatialCoefficientsForTZ(2,0,0,vc)= 1.;      // v=x^2 -2xy - y^2 + 3yz
-	  spatialCoefficientsForTZ(1,1,0,vc)=-2.;
-	  spatialCoefficientsForTZ(0,2,0,vc)=-1.;
-	  spatialCoefficientsForTZ(0,1,1,vc)=+3.;
-    
-	  spatialCoefficientsForTZ(4,0,0,vc)=.25; 
-	  spatialCoefficientsForTZ(0,4,0,vc)=.25; 
-	  spatialCoefficientsForTZ(0,0,4,vc)=.25; 
-	  spatialCoefficientsForTZ(3,1,0,vc)=-.5; 
-	  spatialCoefficientsForTZ(1,0,3,vc)=.25;    // + .25*x*z^3 -.25*x^2*z^2 +.25*x^3z
-	  spatialCoefficientsForTZ(2,0,2,vc)=-.25; 
-	  spatialCoefficientsForTZ(3,0,1,vc)=.25; 
-    
-	  // spatialCoefficientsForTZ(5,0,0,vc)=.125;  // x^5
+          spatialCoefficientsForTZ(0,5,0,uc)=.125;   // y^5
     
     
-	  spatialCoefficientsForTZ(2,0,0,wc)= 1.;      // w=x^2 + y^2 - 2 z^2
-	  spatialCoefficientsForTZ(0,2,0,wc)= 1.;
-	  spatialCoefficientsForTZ(0,0,2,wc)=-2.;
+          spatialCoefficientsForTZ(2,0,0,vc)= 1.;      // v=x^2 -2xy - y^2 + 3yz
+          spatialCoefficientsForTZ(1,1,0,vc)=-2.;
+          spatialCoefficientsForTZ(0,2,0,vc)=-1.;
+          spatialCoefficientsForTZ(0,1,1,vc)=+3.;
     
-	  spatialCoefficientsForTZ(4,0,0,wc)=.25; 
-	  spatialCoefficientsForTZ(0,4,0,wc)=-.2; 
-	  spatialCoefficientsForTZ(0,0,4,wc)=.125; 
-	  spatialCoefficientsForTZ(0,3,1,wc)=-1.;
-	  spatialCoefficientsForTZ(1,3,0,wc)=.25;    // + .25*x*y^3 -.25*x^2*y^2 +.25*x^3y
-	  spatialCoefficientsForTZ(2,2,0,wc)=-.25; 
-	  spatialCoefficientsForTZ(3,1,0,wc)=.25; 
+          spatialCoefficientsForTZ(4,0,0,vc)=.25; 
+          spatialCoefficientsForTZ(0,4,0,vc)=.25; 
+          spatialCoefficientsForTZ(0,0,4,vc)=.25; 
+          spatialCoefficientsForTZ(3,1,0,vc)=-.5; 
+          spatialCoefficientsForTZ(1,0,3,vc)=.25;    // + .25*x*z^3 -.25*x^2*z^2 +.25*x^3z
+          spatialCoefficientsForTZ(2,0,2,vc)=-.25; 
+          spatialCoefficientsForTZ(3,0,1,vc)=.25; 
     
-	  // spatialCoefficientsForTZ(5,0,0,wc)=.125;
-	}
-	else
-	{
-	  printF("Cgsm:: not implemented for degree in space =%i \n",tzDegreeSpace);
-	  Overture::abort("error");
-	}
-
+          // spatialCoefficientsForTZ(5,0,0,vc)=.125;  // x^5
+    
+    
+          spatialCoefficientsForTZ(2,0,0,wc)= 1.;      // w=x^2 + y^2 - 2 z^2
+          spatialCoefficientsForTZ(0,2,0,wc)= 1.;
+          spatialCoefficientsForTZ(0,0,2,wc)=-2.;
+    
+          spatialCoefficientsForTZ(4,0,0,wc)=.25; 
+          spatialCoefficientsForTZ(0,4,0,wc)=-.2; 
+          spatialCoefficientsForTZ(0,0,4,wc)=.125; 
+          spatialCoefficientsForTZ(0,3,1,wc)=-1.;
+          spatialCoefficientsForTZ(1,3,0,wc)=.25;    // + .25*x*y^3 -.25*x^2*y^2 +.25*x^3y
+          spatialCoefficientsForTZ(2,2,0,wc)=-.25; 
+          spatialCoefficientsForTZ(3,1,0,wc)=.25; 
+    
+          // spatialCoefficientsForTZ(5,0,0,wc)=.125;
+        }
+        else
+        {
+          printF("Cgsm:: not implemented for degree in space =%i \n",tzDegreeSpace);
+          OV_ABORT("error");
+        }
 
 
       }
       else
       {
-	Overture::abort("ERROR:unimplemented number of dimensions");
+        Overture::abort("ERROR:unimplemented number of dimensions");
       }
+
+      if( compressibilityType==incompressibleSolid )
+      {
+        // TZ function for the pressure for incompressible solids
+        // printF("\n $$$$$$$ setTwilightZoneFunction: SET P COEFF $$$$$$$$$$$\n");
+
+        const int degreeSpaceX = tzDegreeSpace;  // do this for now 
+        const int degreeSpaceY = numberOfDimensions>1 ? tzDegreeSpace : 0;  
+        const int degreeSpaceZ = numberOfDimensions>2 ? tzDegreeSpace : 0;        
+        for( int iz=0; iz<=degreeSpaceZ; iz++ )
+        {
+          for( int iy=0; iy<=degreeSpaceY; iy++ )
+          {
+            for( int ix=0; ix<=degreeSpaceX; ix++ )
+            {
+              if( ix+iy+iz <= tzDegreeSpace )
+                spatialCoefficientsForTZ(ix,iy,iz,pc) = 1./(1 + .5*ix + .3*iy+ .4*iz); 
+              else
+                spatialCoefficientsForTZ(ix,iy,iz,pc) = 0.;
+            }
+          }
+        }
+      }
+
     }
     else
     {
@@ -1162,21 +1216,21 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
       // --------------------------------------------
       for( int n=0; n< numberOfComponents; n++ )
       {
-	const int tzDegreeSpace3 = numberOfDimensions==3 ? tzDegreeSpace : 0;
+        const int tzDegreeSpace3 = numberOfDimensions==3 ? tzDegreeSpace : 0;
         for( int m1=0; m1<=tzDegreeSpace; m1++ )for( int m2=0; m2<=tzDegreeSpace; m2++ )for( int m3=0; m3<=tzDegreeSpace3; m3++ )
-	{
-	  if( (m1+m2+m3)<=tzDegreeSpace )
-	  { // choose "random" coefficients
-	    spatialCoefficientsForTZ(m1,m2,m3,n)=(pow(-1.,m1+2*m2+3*m3+n) )/(1.+ (.25+n)*m1+m2+(1.5+n)*m3);
-	  }
-	}
+        {
+          if( (m1+m2+m3)<=tzDegreeSpace )
+          { // choose "random" coefficients
+            spatialCoefficientsForTZ(m1,m2,m3,n)=(pow(-1.,m1+2*m2+3*m3+n) )/(1.+ (.25+n)*m1+m2+(1.5+n)*m3);
+          }
+        }
       }
     }
     
     for( int n=0; n<numberOfComponents; n++ )
     {
       for( int i=0; i<ndp; i++ )
-	timeCoefficientsForTZ(i,n)= i<=degreeTime ? 1./(i+1) : 0. ;
+        timeCoefficientsForTZ(i,n)= i<=degreeTime ? 1./(i+1) : 0. ;
     }
   
     if( useSymmetricStressSolution && isFirstOrderSystem() )
@@ -1187,10 +1241,10 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
       timeCoefficientsForTZ(all,s21c)=timeCoefficientsForTZ(all,s12c);
       if( numberOfDimensions==3 )
       {
-	spatialCoefficientsForTZ(all,all,all,s31c)=spatialCoefficientsForTZ(all,all,all,s13c);
-	timeCoefficientsForTZ(all,s31c)=timeCoefficientsForTZ(all,s13c);
-	spatialCoefficientsForTZ(all,all,all,s32c)=spatialCoefficientsForTZ(all,all,all,s23c);
-	timeCoefficientsForTZ(all,s32c)=timeCoefficientsForTZ(all,s23c);
+        spatialCoefficientsForTZ(all,all,all,s31c)=spatialCoefficientsForTZ(all,all,all,s13c);
+        timeCoefficientsForTZ(all,s31c)=timeCoefficientsForTZ(all,s13c);
+        spatialCoefficientsForTZ(all,all,all,s32c)=spatialCoefficientsForTZ(all,all,all,s23c);
+        timeCoefficientsForTZ(all,s32c)=timeCoefficientsForTZ(all,s23c);
       }
     }
 
@@ -1221,9 +1275,9 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
 
       if( numberOfDimensions==3 )
       {
-	spatialCoefficientsForTZ(0,0,1,rhoc)=.025;
-	spatialCoefficientsForTZ(0,0,1,muc) =.0125;
-	spatialCoefficientsForTZ(0,0,1,lambdac)=.035;
+        spatialCoefficientsForTZ(0,0,1,rhoc)=.025;
+        spatialCoefficientsForTZ(0,0,1,muc) =.0125;
+        spatialCoefficientsForTZ(0,0,1,lambdac)=.035;
       }
     }
     else 
@@ -1231,7 +1285,7 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
       if( tzDegreeSpace>2 )
       {
         // Finish me for higher degree poly's 
-	printF("Cgsm::SmParameters:WARNING using degree=2 TZ for material properties instead of %i.\n",tzDegreeSpace);
+        printF("Cgsm::SmParameters:WARNING using degree=2 TZ for material properties instead of %i.\n",tzDegreeSpace);
       }
       
 
@@ -1249,9 +1303,9 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
 
       if( numberOfDimensions==3 )
       {
-	spatialCoefficientsForTZ(0,0,2,rhoc)=.025;
-	spatialCoefficientsForTZ(0,0,2,muc) =.0125;
-	spatialCoefficientsForTZ(0,0,2,lambdac)=.035;
+        spatialCoefficientsForTZ(0,0,2,rhoc)=.025;
+        spatialCoefficientsForTZ(0,0,2,muc) =.0125;
+        spatialCoefficientsForTZ(0,0,2,lambdac)=.035;
       }
     }
     // Material properties do NOT depend on time.
@@ -1267,6 +1321,7 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
   // -------------------------------------------------------------------------------------------
   else if( twilightZoneChoice==trigonometric )
   {
+    // --------------- DEFINE TRIGONOMETRIC TWLIGHTZONE -------
     const int nc = numberOfTZComponents; 
 
     RealArray fx(nc),fy(nc),fz(nc),ft(nc);
@@ -1288,14 +1343,35 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
 
     if( numberOfDimensions==2  )
     {   
-      // u1= .5*cos(pi x) cos( pi y )
-      // u2= .5*sin(pi x) cos( pi y )
-      assert( omega[0]==omega[1] );
+      if( compressibilityType==compressibleSolid )
+      {
+        // u1= .5*cos(pi x) cos( pi y )
+        // u2= .5*sin(pi x) cos( pi y )
+        assert( omega[0]==omega[1] );
+  
+        // gx or gy : shift by pi/2 to turn cos() into sin()
+        amplitude(uc)=.5;                        
+        amplitude(vc)=.5;  gx(vc)=.5/omega[0];
+      }
+      else
+      {
+        // Incompressible solid -- make div(uv)=0 
 
-      // gx or gy : shift by pi/2 to turn cos() into sin()
-      amplitude(uc)=.5;                        
-      amplitude(vc)=.5;  gx(vc)=.5/omega[0];  
-      
+        // u=cos(pi x) cos( pi y ) 
+        // v=sin(pi x) sin( pi y ) 
+        assert( omega[0]==omega[1] );
+  
+        gx( vc)=.5/ omega[0];   // shift by pi/2 to turn cos() into sin()
+        gy( vc)=.5/ omega[1];
+  
+        amplitude( uc)=1.;  cc( uc)=.0;
+        amplitude( vc)=1.;  cc( vc)=.0;
+  
+        // gy( pc)=.5/ omega[1]; // turn off for testing symmetry
+        // cc( pc)=.0;
+
+      }  
+        
       
       if( assignVelocities )
       {
@@ -1322,75 +1398,113 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
       // u1=    cos(pi x) cos( pi y ) cos( pi z)  
       // u2=.5  cos(pi x) sin( pi y ) cos( pi z)
       // u3=.75 cos(pi x) cos( pi y ) sin( pi z)
-	
+        
       if( omega[0]==omega[1] && omega[0]==omega[2] )
       {
-	amplitude(uc)=1.; 
-	amplitude(vc)=.5;  gy(vc)=.5/omega[1]; 
-	amplitude(wc)=.75; gz(wc)=.5/omega[2];
+        if( compressibilityType==compressibleSolid )
+        {        
+           amplitude(uc)=1.; 
+           amplitude(vc)=.5;  gy(vc)=.5/omega[1]; 
+           amplitude(wc)=.75; gz(wc)=.5/omega[2];
+        }
+        else
+        {
+          // Incompressible solid -- make div(uv)=0  **CHECK ME* added Aug 23, 2021
 
-	if( assignVelocities )
-	{
-	  // v1c = .75 * sin(pi x) cos( pi y ) cos( pi z)
-	  // v2c = .25 * cos(pi x) cos( pi y ) sin( pi z)
-	  // v3c =-.5  * sin(pi x) sin( pi y ) sin( pi z)
-	  amplitude(v1c)=.75; gx(v1c)=.5/omega[0]; 
-	  amplitude(v2c)=.25; gz(v2c)=.5/omega[0]; 
-	  amplitude(v3c)=-.5; gx(v3c)=.5/omega[0]; gy(v3c)=.5/omega[0]; gz(v3c)=.5/omega[0];
-	}
-	if( assignStress )
-	{
-	  // s11 = -.5* cos(pi x) cos( pi y ) cos( pi z)
-	  // s12 =  .4* sin(pi x) cos( pi y ) cos( pi z)
-	  // s13 =  .6* cos(pi x) cos( pi y ) sin( pi z)
-	  // s21 =  .4* sin(pi x) cos( pi y ) cos( pi z)
-	  // s22 = -.7* sin(pi x) cos( pi y ) sin( pi z)
-	  // s23 = .65* cos(pi x) sin( pi y ) sin( pi z)
-	  // s31 =  .6* cos(pi x) cos( pi y ) sin( pi z)
-	  // s32 = .65* cos(pi x) sin( pi y ) sin( pi z)
-	  // s33 =-.20* sin(pi x) sin( pi y ) sin( pi z)
-	  amplitude(s11c)=-.5;                      
-	  amplitude(s12c)= .4; gx(s12c)=.5/omega[0]; 
-	  amplitude(s13c)= .6; gz(s13c)=.5/omega[0]; 
+          // u=   cos(pi x) cos( pi y ) cos( pi z)
+          // v=.5 sin(pi x) sin( pi y ) cos( pi z)
+          // w=.5 sin(pi x) cos( pi y ) sin( pi z)
+          // p=   cos(pi x) cos( pi y ) cos( pi z)
+            
+          if(  omega[0]== omega[1] &&  omega[0]== omega[2] )
+          {
+            gx( vc)=.5/ omega[0];
+            gy( vc)=.5/ omega[1];
+            amplitude( vc)=.5;
+            
+            gx( wc)=.5/ omega[0];
+            gz( wc)=.5/ omega[2];
+            amplitude( wc)=.5;
+          }
+          else if(  omega[0]== omega[2] &&  omega[1]==0 )
+          {
+            // pseudo 2D case
+            gx( wc)=.5/ omega[0];   // shift by pi/2 to turn cos() into sin()
+            gz( wc)=.5/ omega[2];
+    
+            amplitude( uc)=.5;  cc( uc)=.0;
+            amplitude( wc)=.5;  cc( wc)=.0;
+          }
+          else
+          {
+            OV_ABORT("SmParameters:: define trig TZ coefficients : Invalid values for omega[0..2]");
+          }
+    
+                
+        }
 
-	  amplitude(s21c)= .4; gx(s21c)=.5/omega[0];
-	  amplitude(s22c)=-.7; gx(s22c)=.5/omega[0]; gz(s22c)=.5/omega[0]; 
-	  amplitude(s23c)=.65; gy(s23c)=.5/omega[0]; gz(s23c)=.5/omega[0]; 
+        if( assignVelocities )
+        {
+          // v1c = .75 * sin(pi x) cos( pi y ) cos( pi z)
+          // v2c = .25 * cos(pi x) cos( pi y ) sin( pi z)
+          // v3c =-.5  * sin(pi x) sin( pi y ) sin( pi z)
+          amplitude(v1c)=.75; gx(v1c)=.5/omega[0]; 
+          amplitude(v2c)=.25; gz(v2c)=.5/omega[0]; 
+          amplitude(v3c)=-.5; gx(v3c)=.5/omega[0]; gy(v3c)=.5/omega[0]; gz(v3c)=.5/omega[0];
+        }
+        if( assignStress )
+        {
+          // s11 = -.5* cos(pi x) cos( pi y ) cos( pi z)
+          // s12 =  .4* sin(pi x) cos( pi y ) cos( pi z)
+          // s13 =  .6* cos(pi x) cos( pi y ) sin( pi z)
+          // s21 =  .4* sin(pi x) cos( pi y ) cos( pi z)
+          // s22 = -.7* sin(pi x) cos( pi y ) sin( pi z)
+          // s23 = .65* cos(pi x) sin( pi y ) sin( pi z)
+          // s31 =  .6* cos(pi x) cos( pi y ) sin( pi z)
+          // s32 = .65* cos(pi x) sin( pi y ) sin( pi z)
+          // s33 =-.20* sin(pi x) sin( pi y ) sin( pi z)
+          amplitude(s11c)=-.5;                      
+          amplitude(s12c)= .4; gx(s12c)=.5/omega[0]; 
+          amplitude(s13c)= .6; gz(s13c)=.5/omega[0]; 
 
-	  amplitude(s31c)= .6; gz(s31c)=.5/omega[0];
-	  amplitude(s32c)=.65; gy(s32c)=.5/omega[0]; gz(s32c)=.5/omega[0]; 
-	  amplitude(s33c)=-.2; gx(s33c)=.5/omega[0]; gy(s33c)=.5/omega[0]; gz(s33c)=.5/omega[0]; 
-	}
+          amplitude(s21c)= .4; gx(s21c)=.5/omega[0];
+          amplitude(s22c)=-.7; gx(s22c)=.5/omega[0]; gz(s22c)=.5/omega[0]; 
+          amplitude(s23c)=.65; gy(s23c)=.5/omega[0]; gz(s23c)=.5/omega[0]; 
+
+          amplitude(s31c)= .6; gz(s31c)=.5/omega[0];
+          amplitude(s32c)=.65; gy(s32c)=.5/omega[0]; gz(s32c)=.5/omega[0]; 
+          amplitude(s33c)=-.2; gx(s33c)=.5/omega[0]; gy(s33c)=.5/omega[0]; gz(s33c)=.5/omega[0]; 
+        }
 
       }
       else if( omega[0]==omega[2] && omega[1]==0 )
       {
-	// pseudo 2D case
-	gx(wc)=.5/omega[0];   // shift by pi/2 to turn cos() into sin()
-	gz(wc)=.5/omega[2];
+        // pseudo 2D case
+        gx(wc)=.5/omega[0];   // shift by pi/2 to turn cos() into sin()
+        gz(wc)=.5/omega[2];
 
-	amplitude(uc)=.5;  cc(uc)=.0;
-	amplitude(wc)=.5;  cc(wc)=.0;
+        amplitude(uc)=.5;  cc(uc)=.0;
+        amplitude(wc)=.5;  cc(wc)=.0;
 
-	if( assignVelocities )
-	{
-	  OV_ABORT("Setup TZ - finish me");
-	}
-	if( assignStress )
-	{
-	  OV_ABORT("Setup TZ - finish me");
-	}
+        if( assignVelocities )
+        {
+          OV_ABORT("Setup TZ - finish me");
+        }
+        if( assignStress )
+        {
+          OV_ABORT("Setup TZ - finish me");
+        }
 
       }
       else
       {
-	Overture::abort("Invalid values for omega[0..2]");
+        Overture::abort("Invalid values for omega[0..2]");
       }
   
-	
+        
     }
 
-    if( useSymmetricStressSolution )
+    if( useSymmetricStressSolution && isFirstOrderSystem() )
     {
       // Make the TZ stress tensor symmetric: 
       Range all;
@@ -1398,9 +1512,9 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
       gx(s21c)=gx(s12c); gy(s21c)=gy(s12c); gz(s21c)=gz(s12c); gt(s21c)=gt(s12c); cc(s21c)=cc(s12c);
       if( numberOfDimensions==3 )
       {
-	amplitude(s31c)=amplitude(s13c); 
+        amplitude(s31c)=amplitude(s13c); 
         gx(s31c)=gx(s13c); gy(s31c)=gy(s13c); gz(s31c)=gz(s13c); gt(s31c)=gt(s13c); cc(s31c)=cc(s13c);
-	amplitude(s32c)=amplitude(s23c); 
+        amplitude(s32c)=amplitude(s23c); 
         gx(s32c)=gx(s23c); gy(s32c)=gy(s23c); gz(s32c)=gz(s23c); gt(s32c)=gt(s23c); cc(s32c)=cc(s23c);
       }
     }
@@ -1448,7 +1562,7 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
 
     tz  =  new OGPulseFunction( numberOfDimensions, numberOfTZComponents, 
                                 pulseData[0],pulseData[1],pulseData[2],pulseData[3],pulseData[4],pulseData[5],
-			        pulseData[6],pulseData[7],pulseData[8]); 
+                                pulseData[6],pulseData[7],pulseData[8]); 
   }
   else
   {
@@ -1490,31 +1604,31 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
 //       spatialCoefficientsForTZ(0,0,0,n)=2.+n;      
 //       if( degreeSpace>0 )
 //       {
-// 	spatialCoefficientsForTZ(1,0,0,n)=1.*ni;
-// 	spatialCoefficientsForTZ(0,1,0,n)=.5*ni;
-// 	spatialCoefficientsForTZ(0,0,1,n)=  dbase.get<int >("numberOfDimensions")==3 ? .25*ni : 0.;
+//      spatialCoefficientsForTZ(1,0,0,n)=1.*ni;
+//      spatialCoefficientsForTZ(0,1,0,n)=.5*ni;
+//      spatialCoefficientsForTZ(0,0,1,n)=  dbase.get<int >("numberOfDimensions")==3 ? .25*ni : 0.;
 //       }
 //       if( degreeSpace>1 )
 //       {
-// 	spatialCoefficientsForTZ(2,0,0,n)=.5*ni;
-// 	spatialCoefficientsForTZ(0,2,0,n)=.25*ni;
-// 	spatialCoefficientsForTZ(0,0,2,n)=  dbase.get<int >("numberOfDimensions")==3 ? .125*ni : 0.;
+//      spatialCoefficientsForTZ(2,0,0,n)=.5*ni;
+//      spatialCoefficientsForTZ(0,2,0,n)=.25*ni;
+//      spatialCoefficientsForTZ(0,0,2,n)=  dbase.get<int >("numberOfDimensions")==3 ? .125*ni : 0.;
 
-// 	if( false ) // *wdh* 050610
-// 	{
-// 	  // add cross terms
-// 	  printF("\n\n ************* add cross terms to TZ ************** \n\n");
-	    
+//      if( false ) // *wdh* 050610
+//      {
+//        // add cross terms
+//        printF("\n\n ************* add cross terms to TZ ************** \n\n");
+            
 
-// 	  spatialCoefficientsForTZ(1,1,0,n)=.125*ni;
-// 	  if(  dbase.get<int >("numberOfDimensions")>2 )
-// 	  {
-// 	    spatialCoefficientsForTZ(1,0,1,n)=.1*ni;
-// 	    spatialCoefficientsForTZ(0,1,1,n)=-.15*ni;
-// 	  }
-	    
-// 	}
-	  
+//        spatialCoefficientsForTZ(1,1,0,n)=.125*ni;
+//        if(  dbase.get<int >("numberOfDimensions")>2 )
+//        {
+//          spatialCoefficientsForTZ(1,0,1,n)=.1*ni;
+//          spatialCoefficientsForTZ(0,1,1,n)=-.15*ni;
+//        }
+            
+//      }
+          
 //       }
 //     }
 
@@ -1522,9 +1636,9 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
 //     {
 //       for( int i=0; i<=4; i++ )
 //       {
-// 	timeCoefficientsForTZ(i,n)= i<=degreeTime ? 1./(i+1) : 0. ;
+//      timeCoefficientsForTZ(i,n)= i<=degreeTime ? 1./(i+1) : 0. ;
 //       }
-	  
+          
 //     }
   
 //     // ::display(spatialCoefficientsForTZ,"spatialCoefficientsForTZ","%6.2f ");
@@ -1588,27 +1702,27 @@ readCoefficients( DialogData & dialog, const aString & answer, const aString & n
     for( m=0; m< min(maxNum,dbase.get<int >("numberOfComponents")); m++ )
       ad(m)= coeff(m);
     sScanF(answer(len,answer.length()-1),"%e %e %e %e %e %e %e %e %e %e  %e %e %e %e %e %e %e %e %e %e  %e %e %e %e %e %e %e %e %e %e",
-	   &ad(0),&ad(1),&ad(2),&ad(3),&ad(4),&ad(5),&ad(6),&ad(7),&ad(8),&ad(9),
-	   &ad(10),&ad(11),&ad(12),&ad(13),&ad(14),&ad(15),&ad(16),&ad(17),&ad(18),&ad(19),
-	   &ad(20),&ad(21),&ad(22),&ad(23),&ad(24),&ad(25),&ad(26),&ad(27),&ad(28),&ad(29));
+           &ad(0),&ad(1),&ad(2),&ad(3),&ad(4),&ad(5),&ad(6),&ad(7),&ad(8),&ad(9),
+           &ad(10),&ad(11),&ad(12),&ad(13),&ad(14),&ad(15),&ad(16),&ad(17),&ad(18),&ad(19),
+           &ad(20),&ad(21),&ad(22),&ad(23),&ad(24),&ad(25),&ad(26),&ad(27),&ad(28),&ad(29));
 
     if(  dbase.get<int >("numberOfComponents")>maxNum )
     {
       printF("setPdeParameters:WARNING:Only reading the first %i %s coefficients. Other values will be set to 1.\n"
-	     "                :Get Bill to fix this\n",maxNum,(const char*)name);
+             "                :Get Bill to fix this\n",maxNum,(const char*)name);
     }
    
     aString text;
     for( m=0; m<dbase.get<int >("numberOfComponents"); m++ )
     {
       if( m<maxNum )
-	coeff(m)=ad(m);
+        coeff(m)=ad(m);
       else
-	coeff(m)=1.;  // default value
-	
+        coeff(m)=1.;  // default value
+        
       printF("Setting %s coefficient for component %s to %8.2e\n",
-	     (const char*)name, (const char*) dbase.get<aString* >("componentName")[m],coeff(m));
-	
+             (const char*)name, (const char*) dbase.get<aString* >("componentName")[m],coeff(m));
+        
       text+=sPrintF(buff, "%g ", coeff(m));
     }
     dialog.setTextLabel(name,text);
@@ -1616,7 +1730,7 @@ readCoefficients( DialogData & dialog, const aString & answer, const aString & n
   else
   {
     printF(" SmParameters::readCoefficients:ERROR: inconsistent answer=[%s] and name=[%s]\n",
-	   (const char*)answer,(const char*)name);
+           (const char*)answer,(const char*)name);
    
     OV_ABORT("ERROR: This should not happen.");
   }
@@ -1674,12 +1788,23 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
   std::vector<real> & polyEos = dbase.get<std::vector<real> >("polyEos");
   int & hourGlassFlag = dbase.get<int>("hourGlassFlag");
 
-  int & fluxMethod = dbase.get<int>("fluxMethodForGodunovMethod");
-  int & slopeLimiting = dbase.get<int>("slopeLimitingForGodunovMethod");
-  int & slopeUpwinding = dbase.get<int>("slopeUpwindingForGodunovMethod");
-  int & pdeTypeForGodunovMethod = dbase.get<int>("pdeTypeForGodunovMethod");
+  int & fluxMethod                    = dbase.get<int>("fluxMethodForGodunovMethod");
+  int & slopeLimiting                 = dbase.get<int>("slopeLimitingForGodunovMethod");
+  int & slopeUpwinding                = dbase.get<int>("slopeUpwindingForGodunovMethod");
+  int & pdeTypeForGodunovMethod       = dbase.get<int>("pdeTypeForGodunovMethod");
 
-  real & tangentialStressDissipation = dbase.get<real>("tangentialStressDissipation");
+  const CompressibilityTypeEnum & compressibilityType = dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");
+
+  int & upwindSOS                     = dbase.get<int>("upwindSOS"); 
+  real & cdv                          = dbase.get<real>("cdv");   // coeff of div-damping for ILE
+  int & useCurlCurlBoundaryCondition  = dbase.get<int>("useCurlCurlBoundaryCondition"); 
+  int & numberOfCorrections           = dbase.get<int>("numberOfCorrections");    // number of corrections for predictor-corrector schemes
+  int & skipLastPressureSolve         = dbase.get<int>("skipLastPressureSolve");  // For ILE predictor-corrector schemes
+  int & projectLinearMode             = dbase.get<int>("projectLinearMode"); 
+
+  int & orderOfTimeAccuracy           = dbase.get<int>("orderOfTimeAccuracy");  
+
+  real & tangentialStressDissipation  = dbase.get<real>("tangentialStressDissipation");
   real & tangentialStressDissipation1 = dbase.get<real>("tangentialStressDissipation1");
   real displacementDissipation=0.;
   real displacementDissipation1=0.;
@@ -1705,7 +1830,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     dialog.setWindowTitle("Cgsm parameters");
 
     // ----- Text strings ------
-    const int numberOfTextStrings=40; // upper bound
+    const int numberOfTextStrings=50; // upper bound
     aString textCommands[numberOfTextStrings];
     aString textLabels[numberOfTextStrings];
     aString textStrings[numberOfTextStrings];
@@ -1787,6 +1912,9 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     textLabels[nt]="addedMassRelaxationFactor:";  sPrintF(textStrings[nt], "%g",dbase.get<real>("addedMassRelaxationFactor"));       nt++;
     textLabels[nt]="subIterationConvergenceTolerance:";  sPrintF(textStrings[nt], "%g",dbase.get<real>("subIterationConvergenceTolerance"));  nt++;
 
+    textLabels[nt]="divergence damping"; sPrintF(textStrings[nt], "%g",cdv); nt++; 
+    textLabels[nt]="number of corrections"; sPrintF(textStrings[nt], "%d",numberOfCorrections); nt++; 
+    textLabels[nt]="time order of accuracy"; sPrintF(textStrings[nt], "%i",orderOfTimeAccuracy); nt++; 
 
     // null strings terminal list
     assert( nt<numberOfTextStrings );
@@ -1800,9 +1928,17 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     aString cmd[maxCommands];
 
     aString tbLabels[] = {"set ghost by extrapolation",
-			  ""};
+                          "upwind for SOS",
+                          "use curl-curl bc",
+                          "skip last pressure solve",
+                          "project linear mode",
+                          ""};
     int tbState[10];
-    tbState[ 0] =  setGhostByExtrapolation;
+    tbState[ 0] = setGhostByExtrapolation;
+    tbState[ 1] = upwindSOS;
+    tbState[ 2] = useCurlCurlBoundaryCondition;
+    tbState[ 3] = skipLastPressureSolve;
+    tbState[ 4] = projectLinearMode;
 
     int numColumns=1;
     addPrefix(tbLabels,prefix,cmd,maxCommands);
@@ -1827,9 +1963,9 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     else
     {
       if( it==0 ) 
-	answer=command;
+        answer=command;
       else
-	break;
+        break;
     }
 
     if( answer(0,prefix.length()-1)==prefix )
@@ -1869,6 +2005,12 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     else if( dialog.getTextValue(answer,"relaxAlpha","%e",relaxAlpha) ){}//
     else if( dialog.getTextValue(answer,"relaxDelta","%e",relaxDelta) ){}//
     else if( dialog.getTextValue(answer,"rho","%e",rho) ){}//
+    else if( dialog.getTextValue(answer,"divergence damping","%e",cdv) ){}//
+    else if( dialog.getTextValue(answer,"number of corrections","%i",numberOfCorrections) )
+    {
+      printF("Setting numberOfCorrections=%d (for predictor-corrector schemes)\n",numberOfCorrections);
+    }
+    else if( dialog.getTextValue(answer,"time order of accuracy","%i",orderOfTimeAccuracy) ){}//
 
     else if( dialog.getTextValue(answer,"relaxCorrectionSteps:","%i",dbase.get<int>("relaxCorrectionSteps")) ){}//
     else if( dialog.getTextValue(answer,"addedMassRelaxationFactor:","%e",dbase.get<real>("addedMassRelaxationFactor")) ){}//
@@ -1878,7 +2020,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     {
       sScanF(answer(len,answer.length()),"%i",&dbase.get<int >("orderOfAccuracyForGodunovMethod"));
       if( pdeVariation==godunov )
-	dialog.setTextLabel("Godunov order of accuracy",sPrintF("%i",
+        dialog.setTextLabel("Godunov order of accuracy",sPrintF("%i",
                              dbase.get<int >("orderOfAccuracyForGodunovMethod")));
     }
     else if( dialog.getTextValue(answer,"Rg","%e",Rg) ){}//
@@ -1912,25 +2054,25 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     {
       sScanF(answer(len,answer.length()),"%e %e",&tangentialStressDissipation,&tangentialStressDissipation1);
       printF("Setting coefficients of tangential stress dissipatio, beta0+beta1/dt  to beta0=%9.3e, beta1=%9.3e\n",
-	     tangentialStressDissipation,tangentialStressDissipation1);
+             tangentialStressDissipation,tangentialStressDissipation1);
     }
     
     else if( len=answer.matches("displacement dissipation") )
     {
       if( u1c>=0 )
       {
-	sScanF(answer(len,answer.length()),"%e %e",&displacementDissipation,&displacementDissipation1);
-	printF("Setting coefficients of 4th-order displacement dissipation, beta0+beta1/dt to beta0=%9.3e, beta1=%9.3e\n",
-	       displacementDissipation,displacementDissipation1);
-	artificialDiffusion4(u1c)=displacementDissipation;
-	artificialDiffusion4(u2c)=displacementDissipation;
-	if( cg.numberOfDimensions()>2 )
-	  artificialDiffusion4(u3c)=displacementDissipation;
+        sScanF(answer(len,answer.length()),"%e %e",&displacementDissipation,&displacementDissipation1);
+        printF("Setting coefficients of 4th-order displacement dissipation, beta0+beta1/dt to beta0=%9.3e, beta1=%9.3e\n",
+               displacementDissipation,displacementDissipation1);
+        artificialDiffusion4(u1c)=displacementDissipation;
+        artificialDiffusion4(u2c)=displacementDissipation;
+        if( cg.numberOfDimensions()>2 )
+          artificialDiffusion4(u3c)=displacementDissipation;
 
         ad4dt(u1c)=displacementDissipation1;
-	ad4dt(u2c)=displacementDissipation1;
-	if( cg.numberOfDimensions()>2 )
-	  ad4dt(u3c)=displacementDissipation1;
+        ad4dt(u2c)=displacementDissipation1;
+        if( cg.numberOfDimensions()>2 )
+          ad4dt(u3c)=displacementDissipation1;
       }
     }
 
@@ -1938,7 +2080,29 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     {
       printF("setGhostByExtrapolation=%i\n",setGhostByExtrapolation);
     }
-    
+    else if( dialog.getToggleValue(answer,"upwind for SOS",upwindSOS) )
+    {
+      printF("upwindSOS=%i (1=use upwinding or second order systems)\n",upwindSOS);
+      if( compressibilityType==incompressibleSolid )
+      {
+        if( upwindSOS )
+          dbase.get<int >("extrapolateInterpolationNeighbours")=true;
+        else
+          dbase.get<int >("extrapolateInterpolationNeighbours")=false;
+      }
+    }
+    else if( dialog.getToggleValue(answer,"use curl-curl bc",useCurlCurlBoundaryCondition) )
+    {
+      printF("useCurlCurlBoundaryCondition=%i (1=use the curl-curl boundary condition for the pressure (ILE))\n",useCurlCurlBoundaryCondition);
+    }         
+    else if( dialog.getToggleValue(answer,"skip last pressure solve",skipLastPressureSolve) )
+    {
+      printF("Setting skipLastPressureSolve=%i (for incompressible solids)\n",skipLastPressureSolve);
+    } 
+    else if( dialog.getToggleValue(answer,"project linear mode",projectLinearMode) )
+    {
+      printF("projectLinearMode=%i (1=project out the linear in time/space mode for ILE.\n",projectLinearMode);
+    }         
 
 
     else if( len=answer.matches("TZ interface velocity") )
@@ -1968,30 +2132,30 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
       // ad=0.;
       // int m;
       // for( m=0; m< min(maxNum,dbase.get<int >("numberOfComponents")); m++ )
-      // 	ad(m)= artificialDiffusion(m);
+      //        ad(m)= artificialDiffusion(m);
       // sScanF(answer(len,answer.length()-1),"%e %e %e %e %e %e %e %e %e %e  %e %e %e %e %e %e %e %e %e %e  %e %e %e %e %e %e %e %e %e %e",
       //        &ad(0),&ad(1),&ad(2),&ad(3),&ad(4),&ad(5),&ad(6),&ad(7),&ad(8),&ad(9),
-      // 	     &ad(10),&ad(11),&ad(12),&ad(13),&ad(14),&ad(15),&ad(16),&ad(17),&ad(18),&ad(19),
-      // 	     &ad(20),&ad(21),&ad(22),&ad(23),&ad(24),&ad(25),&ad(26),&ad(27),&ad(28),&ad(29));
+      //             &ad(10),&ad(11),&ad(12),&ad(13),&ad(14),&ad(15),&ad(16),&ad(17),&ad(18),&ad(19),
+      //             &ad(20),&ad(21),&ad(22),&ad(23),&ad(24),&ad(25),&ad(26),&ad(27),&ad(28),&ad(29));
 
       // if(  dbase.get<int >("numberOfComponents")>maxNum )
       // {
-      // 	printF("setPdeParameters:WARNING:Only reading the first %i artificial diffusion parameters. Other values will be set to 1.\n"
+      //        printF("setPdeParameters:WARNING:Only reading the first %i artificial diffusion parameters. Other values will be set to 1.\n"
       //          "                :Get Bill to fix this\n",maxNum);
       // }
    
       // aString text;
       // for( m=0; m<dbase.get<int >("numberOfComponents"); m++ )
       // {
-      // 	if( m<maxNum )
+      //        if( m<maxNum )
       //     artificialDiffusion(m)=ad(m);
       //   else
       //     artificialDiffusion(m)=1.;  // default value
-	
+        
       //   printF("Setting Godunov constant-coefficient artficial diffusion for component %s to %8.2e\n",
-      // 	       (const char*) dbase.get<aString* >("componentName")[m],artificialDiffusion(m));
-	
-      // 	text+=sPrintF(buff, "%g ", artificialDiffusion(m));
+      //               (const char*) dbase.get<aString* >("componentName")[m],artificialDiffusion(m));
+        
+      //        text+=sPrintF(buff, "%g ", artificialDiffusion(m));
       // }
       // dialog.setTextLabel("artificial diffusion",text);
 
@@ -2008,30 +2172,30 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
       // ad=0.;
       // int m;
       // for( m=0; m< min(maxNum,dbase.get<int >("numberOfComponents")); m++ )
-      // 	ad(m)= artificialDiffusion4(m);
+      //        ad(m)= artificialDiffusion4(m);
       // sScanF(answer(len,answer.length()-1),"%e %e %e %e %e %e %e %e %e %e  %e %e %e %e %e %e %e %e %e %e  %e %e %e %e %e %e %e %e %e %e",
       //        &ad(0),&ad(1),&ad(2),&ad(3),&ad(4),&ad(5),&ad(6),&ad(7),&ad(8),&ad(9),
-      // 	     &ad(10),&ad(11),&ad(12),&ad(13),&ad(14),&ad(15),&ad(16),&ad(17),&ad(18),&ad(19),
-      // 	     &ad(20),&ad(21),&ad(22),&ad(23),&ad(24),&ad(25),&ad(26),&ad(27),&ad(28),&ad(29));
+      //             &ad(10),&ad(11),&ad(12),&ad(13),&ad(14),&ad(15),&ad(16),&ad(17),&ad(18),&ad(19),
+      //             &ad(20),&ad(21),&ad(22),&ad(23),&ad(24),&ad(25),&ad(26),&ad(27),&ad(28),&ad(29));
 
       // if(  dbase.get<int >("numberOfComponents")>maxNum )
       // {
-      // 	printF("setPdeParameters:WARNING:Only reading the first %i fourth-order artificial diffusion parameters. Other values will be set to 1.\n"
+      //        printF("setPdeParameters:WARNING:Only reading the first %i fourth-order artificial diffusion parameters. Other values will be set to 1.\n"
       //          "                :Get Bill to fix this\n",maxNum);
       // }
    
       // aString text;
       // for( m=0; m<dbase.get<int >("numberOfComponents"); m++ )
       // {
-      // 	if( m<maxNum )
+      //        if( m<maxNum )
       //     artificialDiffusion4(m)=ad(m);
       //   else
       //     artificialDiffusion4(m)=1.;  // default value
-	
+        
       //   printF("Setting Godunov constant-coefficient fourth-order artficial diffusion for component %s to %8.2e\n",
-      // 	       (const char*) dbase.get<aString* >("componentName")[m],artificialDiffusion4(m));
-	
-      // 	text+=sPrintF(buff, "%g ", artificialDiffusion4(m));
+      //               (const char*) dbase.get<aString* >("componentName")[m],artificialDiffusion4(m));
+        
+      //        text+=sPrintF(buff, "%g ", artificialDiffusion4(m));
       // }
       // dialog.setTextLabel("fourth-order artificial diffusion",text);
     }
@@ -2068,54 +2232,54 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
       std::vector<int> gridsToCheck;
       if( gridName=="all" )
       {
-	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	{
-	  gridsToCheck.push_back(grid);
-	}
+        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+        {
+          gridsToCheck.push_back(grid);
+        }
       }
       else if( gridName[gridName.length()-1]=='*' )
       {
-	// wild card: final char is a '*'
+        // wild card: final char is a '*'
         printF(" INFO: looking for a wild card match since the final character is a '*' ...\n");
         bool found=false;
         gridName=gridName(0,gridName.length()-2); // remove trailing '*'
-	
-	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	{
+        
+        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+        {
           // printF(" Check [%s] matches [%s] \n",(const char*)gridName,(const char*)cg[grid].getName());
-	  if( cg[grid].getName().matches(gridName) )
-	  {
-	    gridsToCheck.push_back(grid);
-	    printF(" -- (wild card match) Set coefficients for grid=%i (%s) to lambda=%8.2e mu=%8.2e\n",grid,
+          if( cg[grid].getName().matches(gridName) )
+          {
+            gridsToCheck.push_back(grid);
+            printF(" -- (wild card match) Set coefficients for grid=%i (%s) to lambda=%8.2e mu=%8.2e\n",grid,
                (const char*)cg[grid].getName(),lambda,mu);
-	    
+            
             found=true;
-	  }
-	}
+          }
+        }
         if( !found )
-	{
-	  printF("WARNING: No match for the wildcard name [%s*]\n",(const char*)gridName);
-	  continue;
-	}
+        {
+          printF("WARNING: No match for the wildcard name [%s*]\n",(const char*)gridName);
+          continue;
+        }
       }
       else
       {
         bool found=false;
-	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	{
-	  if( cg[grid].getName()==gridName )
-	  {
-	    gridsToCheck.push_back(grid);
+        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+        {
+          if( cg[grid].getName()==gridName )
+          {
+            gridsToCheck.push_back(grid);
             found=true;
-	    break;
-	  }
-	}
+            break;
+          }
+        }
         if( !found )
-	{
-	  printF("ERROR looking for the grid named [%s]\n",(const char*)gridName);
-	  gi.stopReadingCommandFile();
-	  continue;
-	}
+        {
+          printF("ERROR looking for the grid named [%s]\n",(const char*)gridName);
+          gi.stopReadingCommandFile();
+          continue;
+        }
       }
       
       if( gridsToCheck.size()>=1 )
@@ -2124,26 +2288,26 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
       for( int g=0; g<gridsToCheck.size(); g++ )
       {
         int grid=gridsToCheck[g];
-	
-	MappedGrid & mg = cg[grid];
-	const IntegerArray & bc = mg.boundaryCondition();
-	const IntegerArray & share = mg.sharedBoundaryFlag();
-	for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
-	{
-	  for( int side=0; side<=1; side++ )
-	  {
-	    if( share(side,axis)>=100 ) // **** for now -- material interfaces have share > 100
-	    {
-	      bc(side,axis)=interfaceBoundaryCondition;
+        
+        MappedGrid & mg = cg[grid];
+        const IntegerArray & bc = mg.boundaryCondition();
+        const IntegerArray & share = mg.sharedBoundaryFlag();
+        for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
+        {
+          for( int side=0; side<=1; side++ )
+          {
+            if( share(side,axis)>=100 ) // **** for now -- material interfaces have share > 100
+            {
+              bc(side,axis)=interfaceBoundaryCondition;
 
-	      printF(" ++++ setting bc(%i,%i) on grid=%i = interfaceBoundaryCondition\n",side,axis,grid);
-		
-	    }
-	  }
-	}
-	
-	lambdaGrid(grid)=lambda;
-	muGrid(grid)=mu;
+              printF(" ++++ setting bc(%i,%i) on grid=%i = interfaceBoundaryCondition\n",side,axis,grid);
+                
+            }
+          }
+        }
+        
+        lambdaGrid(grid)=lambda;
+        muGrid(grid)=mu;
 
       }
 
@@ -2155,13 +2319,13 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     {
       if( executeCommand )
       {
- 	returnValue= 1;  // when executing  dbase.get<real >("a") single command, return 1 if the command was not recognised.
-	break;
+        returnValue= 1;  // when executing  dbase.get<real >("a") single command, return 1 if the command was not recognised.
+        break;
       }
       else
       {
- 	printF("Unknown response=[%s]\n",(const char*)answer);
- 	gi.stopReadingCommandFile();
+        printF("Unknown response=[%s]\n",(const char*)answer);
+        gi.stopReadingCommandFile();
       }
      
     }
@@ -2191,14 +2355,14 @@ displayPdeParameters(FILE *file /* = stdout */ )
   int & numberOfComponents     = dbase.get<int>("numberOfComponents");
 
   fprintf(file,
-	  "PDE parameters: equation is `solid mechanics'.\n");
+          "PDE parameters: equation is `solid mechanics'.\n");
 
   // The  dbase.get<DataBase >("modelParameters") will be displayed here:
   Parameters::displayPdeParameters(file);
 
   fprintf(file,
-	  "  number of components is %i\n",
-	  numberOfComponents);
+          "  number of components is %i\n",
+          numberOfComponents);
 
 //   std::vector<real> & kappa = dbase.get<std::vector<real> >("kappa");
 //   std::vector<real> & a = dbase.get<std::vector<real> >("a");
@@ -2211,9 +2375,9 @@ displayPdeParameters(FILE *file /* = stdout */ )
 //     for( int m=0; m<numberOfComponents; m++ )
 //     {
 //       if( numberOfComponents==1 )
-// 	fprintf(file," %s=%g",(const char*)name,par[m]);
+//      fprintf(file," %s=%g",(const char*)name,par[m]);
 //       else
-// 	fprintf(file," %s[%i]=%g,",(const char*)name,m,par[m]);
+//      fprintf(file," %s[%i]=%g,",(const char*)name,m,par[m]);
 //     }
 //     fprintf(file,"\n");
 //   }
@@ -2300,13 +2464,13 @@ updateToMatchGrid(CompositeGrid & cg, IntegerArray & sharedBoundaryCondition )
 
 //   Range all;
 //   if( (  dbase.get<PDE>("pde")==compressibleNavierStokes &&  
-// 	 dbase.get<CnsParameters::PDEVariation >("pdeVariation")==conservativeGodunov &&  
-// 	 dbase.get<int >("numberOfSpecies")>0 ) ||
+//       dbase.get<CnsParameters::PDEVariation >("pdeVariation")==conservativeGodunov &&  
+//       dbase.get<int >("numberOfSpecies")>0 ) ||
 //       dbase.get<PDE>("pde")==compressibleMultiphase )
 //   {
 //     if(  dbase.get<realCompositeGridFunction* >("truncationError")==NULL )
 //       {
-// 	dbase.get<realCompositeGridFunction* >("truncationError") = new realCompositeGridFunction(cg,all,all,all);
+//      dbase.get<realCompositeGridFunction* >("truncationError") = new realCompositeGridFunction(cg,all,all,all);
 //       }
 //     else
 //       dbase.get<realCompositeGridFunction* >("truncationError")->updateToMatchGrid(cg,all,all,all);

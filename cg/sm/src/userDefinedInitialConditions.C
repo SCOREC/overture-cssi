@@ -93,6 +93,13 @@ userDefinedInitialConditions(CompositeGrid & cg, realCompositeGridFunction & u )
 
   bool assignStress = s11c >=0 ;
 
+  const SmParameters::CompressibilityTypeEnum & compressibilityType = parameters.dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");  
+  if( compressibilityType==SmParameters::incompressibleSolid )
+  {
+    // Choose the same seed so all times are the same.
+    // This avoids a linear in time growth mode for the SOS equations.
+    srand(1);  // 1 = means use default seed
+  }
 
   // Loop over all grids and assign values to all components.
   for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
@@ -139,92 +146,92 @@ userDefinedInitialConditions(CompositeGrid & cg, realCompositeGridFunction & u )
 
       if( pdeTypeForGodunovMethod==0 )
       {
-	// -- linear elasticity ---
+        // -- linear elasticity ---
         printF(">>> Cgsm:userDefinedInitialConditions: assignGaussianPulseIC (linear-elasticity)...\n");
-	if( numberOfDimensions==2 )
-	{
-	  // Displacements:
-	  ug(I1,I2,I3,uc)=U2D(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);   
-	  ug(I1,I2,I3,vc)=0.;
+        if( numberOfDimensions==2 )
+        {
+          // Displacements:
+          ug(I1,I2,I3,uc)=U2D(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);   
+          ug(I1,I2,I3,vc)=0.;
 
-	  if( assignVelocities )
-	  { // Some solvers need the velocity:
-	    ug(I1,I2,I3,v1c) =U2DT(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);   
-	    ug(I1,I2,I3,v2c) =0.;
-	  }
-	  if( assignStress )
-	  {  // Some solvers need the stress:
-	    ug(I1,I2,I3,s11c) =(lambda+2.*mu)*U2DX(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);
-	    ug(I1,I2,I3,s12c) =mu*U2DY(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);
-	    ug(I1,I2,I3,s21c) =ug(I1,I2,I3,s12c);
-	    ug(I1,I2,I3,s22c) =0.;
-	  }
-	}
-	else if( numberOfDimensions==3 )
-	{
-	  // Displacements:
-	  ug(I1,I2,I3,uc)=U3D(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);   
-	  ug(I1,I2,I3,vc)=0.;
-	  ug(I1,I2,I3,wc)=0.;
+          if( assignVelocities )
+          { // Some solvers need the velocity:
+            ug(I1,I2,I3,v1c) =U2DT(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);   
+            ug(I1,I2,I3,v2c) =0.;
+          }
+          if( assignStress )
+          {  // Some solvers need the stress:
+            ug(I1,I2,I3,s11c) =(lambda+2.*mu)*U2DX(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);
+            ug(I1,I2,I3,s12c) =mu*U2DY(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);
+            ug(I1,I2,I3,s21c) =ug(I1,I2,I3,s12c);
+            ug(I1,I2,I3,s22c) =0.;
+          }
+        }
+        else if( numberOfDimensions==3 )
+        {
+          // Displacements:
+          ug(I1,I2,I3,uc)=U3D(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);   
+          ug(I1,I2,I3,vc)=0.;
+          ug(I1,I2,I3,wc)=0.;
 
-	  if( assignVelocities )
-	  {
-	    ug(I1,I2,I3,v1c) =U3DT(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);   
-	    ug(I1,I2,I3,v2c) =0.;
-	    ug(I1,I2,I3,v3c) =0.;
-	  }
-	  if( assignStress )
-	  {
-	    ug(I1,I2,I3,s11c) =(lambda+2.*mu)*U3DX(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);
-	    ug(I1,I2,I3,s12c) =mu*U3DY(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);
-	    ug(I1,I2,I3,s13c) =mu*U3DZ(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);
-	    ug(I1,I2,I3,s21c) =ug(I1,I2,I3,s12c);
-	    ug(I1,I2,I3,s22c) =0.;
-	    ug(I1,I2,I3,s23c) =0.;
-	    ug(I1,I2,I3,s31c) =ug(I1,I2,I3,s13c);
-	    ug(I1,I2,I3,s32c) =ug(I1,I2,I3,s23c);
-	    ug(I1,I2,I3,s33c) =0.;
-	  }
-	}
+          if( assignVelocities )
+          {
+            ug(I1,I2,I3,v1c) =U3DT(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);   
+            ug(I1,I2,I3,v2c) =0.;
+            ug(I1,I2,I3,v3c) =0.;
+          }
+          if( assignStress )
+          {
+            ug(I1,I2,I3,s11c) =(lambda+2.*mu)*U3DX(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);
+            ug(I1,I2,I3,s12c) =mu*U3DY(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);
+            ug(I1,I2,I3,s13c) =mu*U3DZ(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);
+            ug(I1,I2,I3,s21c) =ug(I1,I2,I3,s12c);
+            ug(I1,I2,I3,s22c) =0.;
+            ug(I1,I2,I3,s23c) =0.;
+            ug(I1,I2,I3,s31c) =ug(I1,I2,I3,s13c);
+            ug(I1,I2,I3,s32c) =ug(I1,I2,I3,s23c);
+            ug(I1,I2,I3,s33c) =0.;
+          }
+        }
 
       }
       else
       {
-	// --- SVK model ---
+        // --- SVK model ---
         printF(">>> Cgsm:userDefinedInitialConditions: assignGaussianPulseIC (SVK)...\n");
 
-	RealArray ux(I1,I2,I3),uy(I1,I2,I3),vx(I1,I2,I3),vy(I1,I2,I3),
-	  f11(I1,I2,I3),f12(I1,I2,I3),f21(I1,I2,I3),f22(I1,I2,I3),
-	  s11(I1,I2,I3),s12(I1,I2,I3),s21(I1,I2,I3),s22(I1,I2,I3),trace(I1,I2,I3);
+        RealArray ux(I1,I2,I3),uy(I1,I2,I3),vx(I1,I2,I3),vy(I1,I2,I3),
+          f11(I1,I2,I3),f12(I1,I2,I3),f21(I1,I2,I3),f22(I1,I2,I3),
+          s11(I1,I2,I3),s12(I1,I2,I3),s21(I1,I2,I3),s22(I1,I2,I3),trace(I1,I2,I3);
 
-	ug(I1,I2,I3,uc)=amp*exp(-alpha*(SQR(vertex(I1,I2,I3,0)-xPulse-c*t)+SQR(vertex(I1,I2,I3,1)-yPulse)));
-	ug(I1,I2,I3,vc)=0.;
-	ug(I1,I2,I3,v1c)=2.*alpha*c*(vertex(I1,I2,I3,0)-xPulse-c*t)*ug(I1,I2,I3,uc);
-	ug(I1,I2,I3,v2c)=0.;
+        ug(I1,I2,I3,uc)=amp*exp(-alpha*(SQR(vertex(I1,I2,I3,0)-xPulse-c*t)+SQR(vertex(I1,I2,I3,1)-yPulse)));
+        ug(I1,I2,I3,vc)=0.;
+        ug(I1,I2,I3,v1c)=2.*alpha*c*(vertex(I1,I2,I3,0)-xPulse-c*t)*ug(I1,I2,I3,uc);
+        ug(I1,I2,I3,v2c)=0.;
 
-	ux=-2.*alpha*(vertex(I1,I2,I3,0)-xPulse-c*t)*ug(I1,I2,I3,uc);
-	uy=-2.*alpha*(vertex(I1,I2,I3,1)-yPulse)*ug(I1,I2,I3,uc);
-	vx=0.;
-	vy=0.;
+        ux=-2.*alpha*(vertex(I1,I2,I3,0)-xPulse-c*t)*ug(I1,I2,I3,uc);
+        uy=-2.*alpha*(vertex(I1,I2,I3,1)-yPulse)*ug(I1,I2,I3,uc);
+        vx=0.;
+        vy=0.;
 
-	f11=1.+ux;
-	f12=   uy;
-	f21=   vx;
-	f22=1.+vy;
-	s11=.5*(f11*f11+f21*f21-1.);          // this is E(i,j), for now
-	s12=.5*(f11*f12+f21*f22   );
-	s21=s12;
-	s22=.5*(f12*f12+f22*f22-1.);
-	trace=s11+s22;                        // this is Tr(E)
-	s11=lambda*trace+2.*mu*s11;           // this is S(i,j)
-	s12=             2.*mu*s12;
-	s21=s12;
-	s22=lambda*trace+2.*mu*s22;
+        f11=1.+ux;
+        f12=   uy;
+        f21=   vx;
+        f22=1.+vy;
+        s11=.5*(f11*f11+f21*f21-1.);          // this is E(i,j), for now
+        s12=.5*(f11*f12+f21*f22   );
+        s21=s12;
+        s22=.5*(f12*f12+f22*f22-1.);
+        trace=s11+s22;                        // this is Tr(E)
+        s11=lambda*trace+2.*mu*s11;           // this is S(i,j)
+        s12=             2.*mu*s12;
+        s21=s12;
+        s22=lambda*trace+2.*mu*s22;
 
-	ug(I1,I2,I3,s11c)=s11*f11+s12*f12;    // this is P(i,j) based on the current F(i,j)
-	ug(I1,I2,I3,s12c)=s11*f21+s12*f22;
-	ug(I1,I2,I3,s21c)=s21*f11+s22*f12;
-	ug(I1,I2,I3,s22c)=s21*f21+s22*f22;
+        ug(I1,I2,I3,s11c)=s11*f11+s12*f12;    // this is P(i,j) based on the current F(i,j)
+        ug(I1,I2,I3,s12c)=s11*f21+s12*f22;
+        ug(I1,I2,I3,s21c)=s21*f11+s22*f12;
+        ug(I1,I2,I3,s22c)=s21*f21+s22*f22;
 
       }
     } // end pulse option
@@ -304,58 +311,94 @@ userDefinedInitialConditions(CompositeGrid & cg, realCompositeGridFunction & u )
       if( numberOfDimensions==2 )
       {
         // Displacements:
-	FOR_3D(i1,i2,i3,I1,I2,I3)
-	{
-	  real x = xLocal(i1,i2,i3,0);
-	  real y = xLocal(i1,i2,i3,1);
-	  
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
+          real x = xLocal(i1,i2,i3,0);
+          real y = xLocal(i1,i2,i3,1);
+          
           // slope at x and y=0  is u2'(x)  with u2 = amp*sin(k*x)
           real dy = amp*k*cos(k*x); // tangent = (1,dy)/sqrt(1+dy^2)
-     	  // normal:
+          // normal:
           real an=sqrt(1.+dy*dy);
-	  real nx = -dy/an, ny=1./an; 
+          real nx = -dy/an, ny=1./an; 
 
-	  ug(i1,i2,i3,uc)=                 y*nx; 
-	  ug(i1,i2,i3,vc)=amp*sin(k*x)   + y*ny - y; 
+          ug(i1,i2,i3,uc)=                 y*nx; 
+          ug(i1,i2,i3,vc)=amp*sin(k*x)   + y*ny - y; 
 
-	}
-	
-	
+        }
+        
+        
         if( assignVelocities )
         { // Some solvers need the velocity:
           // standing wave has zero velocity at t=0:
-	  ug(I1,I2,I3,v1c)=0.;  
+          ug(I1,I2,I3,v1c)=0.;  
           ug(I1,I2,I3,v2c)=0.;
         }
         if( assignStress )
         {  // Some solvers need the stress:
-	  FOR_3D(i1,i2,i3,I1,I2,I3)
-	  {
-	    real x = xLocal(i1,i2,i3,0);
-	    real y = xLocal(i1,i2,i3,1);
-	  
-	    real dy = amp*k*cos(k*x); // tangent = (1,dy)/sqrt(1+dy^2)
-	    real an=sqrt(1.+dy*dy);
-	    real nx = -dy/an, ny=1./an; 
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
+            real x = xLocal(i1,i2,i3,0);
+            real y = xLocal(i1,i2,i3,1);
+          
+            real dy = amp*k*cos(k*x); // tangent = (1,dy)/sqrt(1+dy^2)
+            real an=sqrt(1.+dy*dy);
+            real nx = -dy/an, ny=1./an; 
 
             real dyx = -amp*k*k*sin(k*x);        // d(dy)/dx 
             real anx = dy*dyx/an;                //  d(an)/dx = .5/an * 2*dy*dyx
-	    real nxx = -dyx/an +dy*anx/(an*an);  // d(nx)/dx 
-	    real nyx = -anx/(an*an);             // d(ny)/dx 
-	    
+            real nxx = -dyx/an +dy*anx/(an*an);  // d(nx)/dx 
+            real nyx = -anx/(an*an);             // d(ny)/dx 
+            
 
             real ux = y*nxx;
-	    real uy = nx;
-	    real vx = amp*k*cos(k*x) + y*nyx;
-	    real vy = ny-1.;
-	    real div=ux+vy;
+            real uy = nx;
+            real vx = amp*k*cos(k*x) + y*nyx;
+            real vy = ny-1.;
+            real div=ux+vy;
 
-	    ug(i1,i2,i3,s11c)=lambda*div + 2.*mu*ux;
-	    ug(i1,i2,i3,s12c)=mu*(uy+vx);
-	    ug(i1,i2,i3,s21c)=ug(i1,i2,i3,s12c);
-	    ug(i1,i2,i3,s22c)=lambda*div + 2.*mu*vy;
+            ug(i1,i2,i3,s11c)=lambda*div + 2.*mu*ux;
+            ug(i1,i2,i3,s12c)=mu*(uy+vx);
+            ug(i1,i2,i3,s21c)=ug(i1,i2,i3,s12c);
+            ug(i1,i2,i3,s22c)=lambda*div + 2.*mu*vy;
 
-	  }
+          }
+        }
+      }
+    }  
+    
+#define myRand() (2.*rand()/RAND_MAX-1.)
+    else if( option=="random" )
+    {
+      // -- we could avoid building the vertex array on Cartesian grids ---
+
+      int i1,i2,i3;
+      if( numberOfDimensions==2 )
+      {
+        // Displacements:
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
+          ug(i1,i2,i3,uc)= myRand();
+          ug(i1,i2,i3,vc)= myRand();
+        }
+        
+        
+        if( assignVelocities )
+        { // Some solvers need the velocity:
+          // standing wave has zero velocity at t=0:
+          ug(I1,I2,I3,v1c)=myRand();  
+          ug(I1,I2,I3,v2c)=myRand();
+        }
+        if( assignStress )
+        {  // Some solvers need the stress:
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
+            ug(i1,i2,i3,s11c)=myRand();
+            ug(i1,i2,i3,s12c)=myRand();
+            ug(i1,i2,i3,s21c)=myRand();
+            ug(i1,i2,i3,s22c)=myRand();
+
+          }
         }
       }
       else
@@ -420,6 +463,7 @@ setupUserDefinedInitialConditions()
     "pulse",
     "rotation",
     "beam",
+    "random",
     "exit",
     ""
   };
@@ -462,7 +506,7 @@ setupUserDefinedInitialConditions()
       gi.inputString(answer2,"Enter the pulse location, amplitude and exponent: x,y,z,amp,alpha");
 
       sScanF(answer2,"%e %e %e %e %e",&pulseParameters(0),&pulseParameters(1),&pulseParameters(2),
-	     &pulseParameters(3),&pulseParameters(4));
+             &pulseParameters(3),&pulseParameters(4));
       printF("Pulse location = (%8.2e,%8.2e,%8.2e), amp=%8.2e, alpha=%8.2e\n",pulseParameters(0),
               pulseParameters(1),pulseParameters(2),pulseParameters(3),pulseParameters(4));
 
@@ -500,7 +544,7 @@ setupUserDefinedInitialConditions()
       option="beam";  // This name is used in the userDefinedInitialConditions function above when assigning the beam
 
       if( !db.has_key("beamParameters") )
-	db.put<RealArray>("beamParameters");
+        db.put<RealArray>("beamParameters");
 
       RealArray & beamParameters = db.get<RealArray>("beamParameters");
       beamParameters.redim(10);
@@ -516,6 +560,11 @@ setupUserDefinedInitialConditions()
       printF("Beam amp=%8.2e, k=%8.2e\n",beamParameters(0),beamParameters(1));
 
     }
+    else if( answer=="random" )
+    {
+      printF("Initial conditions will be random\n");
+      option="random";  // This name is used in the userDefinedInitialConditions function above 
+    }    
     else
     {
       printF("Unknown option =[%s]\n",(const char*)answer);

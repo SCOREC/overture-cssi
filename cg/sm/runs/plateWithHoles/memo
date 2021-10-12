@@ -1,0 +1,15 @@
+*******************************
+**** July 10, 2021
+
+create runs/plateWithHoles
+
+2D:
+ogen -noplot plateWithHolesGrid -numHoles1=12 -numHoles2=6 -interp=e -factor=2 
+
+ogen -noplot plateWithHolesGrid -numHoles1=12 -numHoles2=12 -interp=e -factor=2 
+
+cgsm plateWithHoles -g=plateWith12HolesGride2.order2 -pv=c -tp=.1 -tf=10.0 -x0=.0 -y0=.0 -option=2D
+cgsm plateWithHoles -g=plateWith12HolesGride4.order2 -pv=c -tp=.1 -tf=10.0 -x0=.0 -y0=.0 -option=2D
+
+Plot v1
+cgsm plateWithHoles -g=plateWith12HolesGride4.order2 -pv=g -tp=.1 -tf=10.0 -x0=.0 -y0=.0 -option=2D

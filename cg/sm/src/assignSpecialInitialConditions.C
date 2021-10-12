@@ -247,18 +247,18 @@ assignSpecialInitialConditions(int gfIndex, const EvaluationOptionsEnum evalOpti
         if( pdeVariation == SmParameters::hemp )
         {
             realCompositeGridFunction *& initialState = 
-      	parameters.dbase.get<realCompositeGridFunction*>("initialStateGridFunction");
+                parameters.dbase.get<realCompositeGridFunction*>("initialStateGridFunction");
             if( initialState == NULL )
             {
                 Range all;
-      	initialState = new realCompositeGridFunction(gf[0].cg,all,all,all,3);
-      	(*initialState)=1.;
+                initialState = new realCompositeGridFunction(gf[0].cg,all,all,all,3);
+                (*initialState)=1.;
             }
             else if( initialState->numberOfComponentGrids()!=numberOfComponentGrids )
             {
         // This is probably an AMR run 
                 Range all;
-      	initialState->updateToMatchGrid(gf[0].cg,all,all,all,3);
+                initialState->updateToMatchGrid(gf[0].cg,all,all,all,3);
                 (*initialState)=1.;
             }
             
@@ -377,13 +377,13 @@ assignSpecialInitialConditions(int gfIndex, const EvaluationOptionsEnum evalOpti
              // printF(" *** assignSpecial: v1=%e v2=%e\n",v1,v2);
                           if( evalOption==computeInitialConditions )
                           {
-                   	 U(i1,i2,i3,v1c) = v1;
-                   	 U(i1,i2,i3,v2c) = v2;
+                              U(i1,i2,i3,v1c) = v1;
+                              U(i1,i2,i3,v2c) = v2;
                           }
                           else
                           {
-                   	 ERR(i1,i2,i3,v1c) = U(i1,i2,i3,v1c) - v1;
-                   	 ERR(i1,i2,i3,v2c) = U(i1,i2,i3,v2c) - v2;
+                              ERR(i1,i2,i3,v1c) = U(i1,i2,i3,v1c) - v1;
+                              ERR(i1,i2,i3,v2c) = U(i1,i2,i3,v2c) - v2;
                           }
                       }
                   }
@@ -400,17 +400,17 @@ assignSpecialInitialConditions(int gfIndex, const EvaluationOptionsEnum evalOpti
                           real s22 = lambda*div + 2.*mu*U0Y(x0,y0,z0,vc,t);
                           if( evalOption==computeInitialConditions )
                           {
-                   	 U(i1,i2,i3,s11c) =s11;
-                   	 U(i1,i2,i3,s12c) =s12;
-                   	 U(i1,i2,i3,s21c) =s21;
-                   	 U(i1,i2,i3,s22c) =s22;
+                              U(i1,i2,i3,s11c) =s11;
+                              U(i1,i2,i3,s12c) =s12;
+                              U(i1,i2,i3,s21c) =s21;
+                              U(i1,i2,i3,s22c) =s22;
                           }
                           else
                           {
-                   	 ERR(i1,i2,i3,s11c) =U(i1,i2,i3,s11c) -s11;
-                   	 ERR(i1,i2,i3,s12c) =U(i1,i2,i3,s12c) -s12;
-                   	 ERR(i1,i2,i3,s21c) =U(i1,i2,i3,s21c) -s21;
-                   	 ERR(i1,i2,i3,s22c) =U(i1,i2,i3,s22c) -s22;
+                              ERR(i1,i2,i3,s11c) =U(i1,i2,i3,s11c) -s11;
+                              ERR(i1,i2,i3,s12c) =U(i1,i2,i3,s12c) -s12;
+                              ERR(i1,i2,i3,s21c) =U(i1,i2,i3,s21c) -s21;
+                              ERR(i1,i2,i3,s22c) =U(i1,i2,i3,s22c) -s22;
                           }
                       }
                   }
@@ -478,13 +478,13 @@ assignSpecialInitialConditions(int gfIndex, const EvaluationOptionsEnum evalOpti
              // printF(" *** assignSpecial: v1=%e v2=%e\n",v1,v2);
                           if( evalOption==computeInitialConditions )
                           {
-                   	 U(i1,i2,i3,v1c) = v1;
-                   	 U(i1,i2,i3,v2c) = v2;
+                              U(i1,i2,i3,v1c) = v1;
+                              U(i1,i2,i3,v2c) = v2;
                           }
                           else
                           {
-                   	 ERR(i1,i2,i3,v1c) = U(i1,i2,i3,v1c) - v1;
-                   	 ERR(i1,i2,i3,v2c) = U(i1,i2,i3,v2c) - v2;
+                              ERR(i1,i2,i3,v1c) = U(i1,i2,i3,v1c) - v1;
+                              ERR(i1,i2,i3,v2c) = U(i1,i2,i3,v2c) - v2;
                           }
                       }
                   }
@@ -501,17 +501,17 @@ assignSpecialInitialConditions(int gfIndex, const EvaluationOptionsEnum evalOpti
                           real s22 = lambda*div + 2.*mu*U0Y(x0,y0,z0,vc,t);
                           if( evalOption==computeInitialConditions )
                           {
-                   	 U(i1,i2,i3,s11c) =s11;
-                   	 U(i1,i2,i3,s12c) =s12;
-                   	 U(i1,i2,i3,s21c) =s21;
-                   	 U(i1,i2,i3,s22c) =s22;
+                              U(i1,i2,i3,s11c) =s11;
+                              U(i1,i2,i3,s12c) =s12;
+                              U(i1,i2,i3,s21c) =s21;
+                              U(i1,i2,i3,s22c) =s22;
                           }
                           else
                           {
-                   	 ERR(i1,i2,i3,s11c) =U(i1,i2,i3,s11c) -s11;
-                   	 ERR(i1,i2,i3,s12c) =U(i1,i2,i3,s12c) -s12;
-                   	 ERR(i1,i2,i3,s21c) =U(i1,i2,i3,s21c) -s21;
-                   	 ERR(i1,i2,i3,s22c) =U(i1,i2,i3,s22c) -s22;
+                              ERR(i1,i2,i3,s11c) =U(i1,i2,i3,s11c) -s11;
+                              ERR(i1,i2,i3,s12c) =U(i1,i2,i3,s12c) -s12;
+                              ERR(i1,i2,i3,s21c) =U(i1,i2,i3,s21c) -s21;
+                              ERR(i1,i2,i3,s22c) =U(i1,i2,i3,s22c) -s22;
                           }
                       }
                   }

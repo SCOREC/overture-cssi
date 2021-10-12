@@ -11,6 +11,7 @@
 #include "GridMaterialProperties.h"
 
 #define bcOptSM EXTERN_C_NAME(bcoptsm)
+#define bcOptIsm EXTERN_C_NAME(bcoptism)
 #define bcOptSmCons EXTERN_C_NAME(bcoptsmcons)
 #define abcSolidMechanics EXTERN_C_NAME(abcsolidmechanics)
 #define exmax EXTERN_C_NAME(exmax)
@@ -35,6 +36,7 @@ extern "C"
                const real & bcf02, const real & bcf12, 
                const real & bcf0, const int64_t & bcfOffset,
                const int&ipar, const real&rpar, const int&ierr );
+
   void bcOptSmCons(const int&nd,
                const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
                const int& gridIndexRange,real& u, const int&mask,const real&rsxy, const real&xy, 
@@ -46,6 +48,18 @@ extern "C"
                const real & bcf02, const real & bcf12,
                const real & bcf0, const int64_t & bcfOffset,
                const int&ipar, const real&rpar, const int&ierr );
+
+  void bcOptIsm(const int&nd,
+               const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
+               const int& gridIndexRange,real& u, const int&mask,const real&rsxy, const real&xy, 
+               const int & ndMatProp, const int& matIndex, const real& matValpc, const real& matVal,
+               const int&boundaryCondition, const int&addBoundaryForcing, 
+               const int& interfaceType, const int&dim,
+               const real & bcf00, const real & bcf10, 
+               const real & bcf01, const real & bcf11, 
+               const real & bcf02, const real & bcf12, 
+               const real & bcf0, const int64_t & bcfOffset,
+               const int&ipar, const real&rpar, const int&ierr );  
 }
 
 extern "C"
@@ -399,11 +413,14 @@ if( ok && useOpt )
   ipar[5] = gridType;
   ipar[6] = orderOfAccuracyInSpace;
   ipar[7] = orderOfExtrapolation;
-  ipar[8] = int(forcingOption==twilightZoneForcing);  // twilightZone *wdh* 090813
+  ipar[8] = forcingOption==twilightZoneForcing ? 1 : 0;  // twilightZone *wdh* 090813
   ipar[9] = useWhereMask;
   ipar[10]= debug; 
 
   ipar[15]=(int)materialFormat;
+  ipar[16]=pc; 
+  ipar[17]=upwindSOS;
+  ipar[18]=useCurlCurlBoundaryCondition;
 
   rpar[ 0]=dx[0];
   rpar[ 1]=dx[1];
@@ -422,15 +439,16 @@ if( ok && useOpt )
   rpar[13]=c2;
 
 
-// // ******** for testing ********
-//   for( int axis=0; axis<=2; axis++ )
-//   {
-//     for( int side=0; side<=1; side++ )
-//     {
-//       addBoundaryForcing(side,axis)=false;
-//     }
-//   }
-  
+  if( false )
+  { // for testing turn off addBoundaryForcing
+    for( int axis=0; axis<=2; axis++ )
+    {
+      for( int side=0; side<=1; side++ )
+      {
+        addBoundaryForcing(side,axis)=0;
+      }
+    }
+  }
 
   int ierr=0;
   const int bc0=-1;  // do all boundaries.
@@ -446,8 +464,23 @@ if( ok && useOpt )
 //                *gid.getDataPointer(),*dim.getDataPointer(),
 //                *uptr,*fptr,*maskptr,*rxptr, *xyptr,
 //                bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+    if( compressibilityType==SmParameters::incompressibleSolid )
+    {
+      // ---- incompressible solid ----
+      bcOptIsm( numberOfDimensions, 
+               uu.getBase(0),uu.getBound(0),
+               uu.getBase(1),uu.getBound(1),
+               uu.getBase(2),uu.getBound(2),
+               gid(0,0), *uptr, *maskptr, *rxptr, *xyptr, 
+               ndMatProp,*matIndexPtr,*matValPtr,*matValPtr, 
+               *bc.getDataPointer(),
+               *pAddBoundaryForcing,*interfaceType.getDataPointer(),*pdbc, 
+               *pbcf[0][0],*pbcf[1][0], *pbcf[0][1],*pbcf[1][1], *pbcf[0][2],*pbcf[1][2],
+               *pbcf[0][0],pbcfOffset[0],
+               ipar[0], rpar[0], ierr );      
 
-    if( useConservative )
+    }
+    else if( useConservative )
     {
       bcOptSmCons( numberOfDimensions, 
                    uu.getBase(0),uu.getBound(0),
@@ -751,86 +784,10 @@ if( ok && useOpt )
 } // end use opt
 #endMacro    
 
-
-
 // =========================================================================================================
-/// \brief Apply boundary conditions for the second-order-system .
-///
-///  \param option: 
-///
-///
+//  Macro apply Dirichlet type boundary conditions
 // =========================================================================================================
-void Cgsm::
-assignBoundaryConditionsSOS( int option, int grid, real t, real dt, realMappedGridFunction & u, 
-                             realMappedGridFunction & uOld, int current )
-// Note: uOld = u[current]
-{
-
-  FILE *& debugFile  =parameters.dbase.get<FILE* >("debugFile");
-  FILE *& logFile    =parameters.dbase.get<FILE* >("logFile");
-  FILE *& pDebugFile =parameters.dbase.get<FILE* >("pDebugFile");
-
-  localDebugFile=pDebugFile;
-  
-  const int prev = (current-1+numberOfTimeLevels) % numberOfTimeLevels;
-  const int next = (current+1) % numberOfTimeLevels;
-
-  SmParameters::PDEModel & pdeModel = parameters.dbase.get<SmParameters::PDEModel>("pdeModel");
-
-  const int & numberOfComponents = parameters.dbase.get<int >("numberOfComponents");
-  const int & uc =  parameters.dbase.get<int >("uc");
-  const int & vc =  parameters.dbase.get<int >("vc");
-  const int & wc =  parameters.dbase.get<int >("wc");
-  const int & rc =  parameters.dbase.get<int >("rc");
-  const int & tc =  parameters.dbase.get<int >("tc");
-
-  SmParameters::PDEVariation & pdeVariation = parameters.dbase.get<SmParameters::PDEVariation>("pdeVariation");
-
-  const int & u1c = parameters.dbase.get<int >("u1c");
-  const int & u2c = parameters.dbase.get<int >("u2c");
-  const int & u3c = parameters.dbase.get<int >("u3c");
-
-  const int & orderOfAccuracyInSpace = parameters.dbase.get<int>("orderOfAccuracy");
-  const int & orderOfAccuracyInTime  = parameters.dbase.get<int>("orderOfTimeAccuracy");
-
-  real & rho=parameters.dbase.get<real>("rho");
-  real & mu = parameters.dbase.get<real>("mu");
-  real & lambda = parameters.dbase.get<real>("lambda");
-  RealArray & muGrid = parameters.dbase.get<RealArray>("muGrid");
-  RealArray & lambdaGrid = parameters.dbase.get<RealArray>("lambdaGrid");
-  // bool & gridHasMaterialInterfaces = parameters.dbase.get<bool>("gridHasMaterialInterfaces");
-  int & debug = parameters.dbase.get<int >("debug");
-
-  lambda = lambdaGrid(grid);
-  mu = muGrid(grid);
-  c1=(mu+lambda)/rho, c2= mu/rho;
-
-//   const real cc= c*sqrt( kx*kx+ky*ky );
-
-  MappedGrid & mg = *u.getMappedGrid();
-  MappedGridOperators & mgop = (*cgop)[grid];
-  
-  const int numberOfDimensions = mg.numberOfDimensions();
-  
-  // The RHS for BC's are saved in these next two objects:
-  const RealArray & bcData = parameters.dbase.get<RealArray>("bcData");
-  BoundaryData::BoundaryDataArray & pBoundaryData = parameters.getBoundaryData(grid);
-
-  // The interfaceType(side,axis,grid) defines which faces are interfaces.
-  const IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
-
-  const bool & applyFilter = parameters.dbase.get<bool >("applyFilter");
-
-  Range all;
-  BoundaryConditionParameters bcParams;            
-  BoundaryConditionParameters extrapParams;
-
-  Range C=numberOfComponents;
-
-
-  // *wdh* 081009
-  u.periodicUpdate();
-
+#beginMacro applyDirichletTypeBoundaryConditions()
   if( forcingOption==twilightZoneForcing )
   {
     // assign exact values on dirichletBoundaryCondition boundaries for TZ
@@ -894,6 +851,7 @@ assignBoundaryConditionsSOS( int option, int grid, real t, real dt, realMappedGr
   }
 
 
+
   if( false )  // --- *wdh* 090824 -- moved to below ---
   {  
     
@@ -917,78 +875,13 @@ assignBoundaryConditionsSOS( int option, int grid, real t, real dt, realMappedGr
     }
   }
   
+#endMacro
 
 
-  bool isRectangular = mg.isRectangular();
-
-  if( false && isRectangular && useConservative ) // ***********************
-  {
-    // for testing : pretend the grid is NOT rectangular 
-    if( t < 2.*dt )
-      printF("\n *******assignBC: treat rectangular grid as Cartesian for bug in Cons BC ********** \n");
-    isRectangular=false; 
-    mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter | MappedGrid::THEinverseVertexDerivative );
-  }
-
-  const real dtb2=dt*.5;
-
-  const aString & specialInitialConditionOption = parameters.dbase.get<aString>("specialInitialConditionOption");
-  const bool applySpecialSolutionBoundaryConditions = specialInitialConditionOption != "default";
-
-  bool centerNeeded = applySpecialSolutionBoundaryConditions;
-  if( centerNeeded )
-  {
-    mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter );
-  }
-
-  // Hemp: here is where we store the initial state (mass,density,energy)
-  realMappedGridFunction *pstate0 = NULL;
-  if( pdeVariation == SmParameters::hemp )
-  {
-    assert( parameters.dbase.get<realCompositeGridFunction*>("initialStateGridFunction")!=NULL );
-    pstate0 = &(*(parameters.dbase.get<realCompositeGridFunction*>("initialStateGridFunction")))[grid];
-  }
-  realMappedGridFunction & state0 = *pstate0;
-
-  const realArray & x = mg.center();
-
-  real dx[3]={0.,0.,0.}; //
-
-   
-
-  if( isRectangular )
-    mg.getDeltaX(dx);
-    
-  #ifdef USE_PPP
-   realSerialArray uLocal; getLocalArrayWithGhostBoundaries(u,uLocal);
-   realSerialArray det;  
-   if( pdeVariation == SmParameters::hemp ) 
-     getLocalArrayWithGhostBoundaries(mg.centerJacobian(),det);
-   realSerialArray xLocal; if( centerNeeded ) getLocalArrayWithGhostBoundaries(x,xLocal);
-   realSerialArray state0Local;
-   if( pdeVariation == SmParameters::hemp )
-     getLocalArrayWithGhostBoundaries(state0,state0Local);
-
-  #else
-   realSerialArray & uLocal = u;
-   const realSerialArray & xLocal = x;
-   const realSerialArray & det = mg.centerJacobian();
-   realSerialArray & state0Local = *pstate0;
-  #endif
-  
-   const IntegerArray & bcg = mg.boundaryCondition();
-   IntegerArray gid, dim, bc;
-   getLocalBoundsAndBoundaryConditions( u, gid, dim, bc );
-
-
-   Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
-   Index Igv[3], &Ig1=Igv[0], &Ig2=Igv[1], &Ig3=Igv[2];
-
-   bool useOpt=true; 
-   int side,axis;
-
-
-   // *wdh* 090204 -- new dirichlet boundary condition : assign the exact solution for testing ---
+// =========================================================================================================
+// Macro: apply special dirichlet-type boundary conditions for special solutions 
+// =========================================================================================================
+#beginMacro applySpecialBoundaryConditionsMacro()
    if( applySpecialSolutionBoundaryConditions )
    {
      for( int axis=axis1; axis<mg.numberOfDimensions(); axis++ )
@@ -1079,8 +972,183 @@ assignBoundaryConditionsSOS( int option, int grid, real t, real dt, realMappedGr
        }
      }
    }
+#endMacro   
+
+
+
+
+// =========================================================================================================
+/// \brief Apply boundary conditions for the second-order-system .
+///
+///  \param option: 
+///
+///
+// =========================================================================================================
+void Cgsm::
+assignBoundaryConditionsSOS( int option, int grid, real t, real dt, realMappedGridFunction & u, 
+                             realMappedGridFunction & uOld, int current )
+// Note: uOld = u[current]
+{
+
+  // printF("\n ******* ENTERING assignBoundaryConditionsSOS t=%9.3e ********* \n",t);
+
+  FILE *& debugFile  =parameters.dbase.get<FILE* >("debugFile");
+  FILE *& logFile    =parameters.dbase.get<FILE* >("logFile");
+  FILE *& pDebugFile =parameters.dbase.get<FILE* >("pDebugFile");
+
+  localDebugFile=pDebugFile;
+  
+  const int prev = (current-1+numberOfTimeLevels) % numberOfTimeLevels;
+  const int next = (current+1) % numberOfTimeLevels;
+
+  SmParameters::PDEModel & pdeModel = parameters.dbase.get<SmParameters::PDEModel>("pdeModel");
+
+  const int & numberOfComponents           = parameters.dbase.get<int >("numberOfComponents");
+  const int & uc                           =  parameters.dbase.get<int >("uc");
+  const int & vc                           =  parameters.dbase.get<int >("vc");
+  const int & wc                           =  parameters.dbase.get<int >("wc");
+  const int & rc                           =  parameters.dbase.get<int >("rc");
+  const int & tc                           =  parameters.dbase.get<int >("tc");
+  const int & pc                           =  parameters.dbase.get<int >("pc");
+  const int & upwindSOS                    = parameters.dbase.get<int>("upwindSOS"); 
+  const int & useCurlCurlBoundaryCondition = parameters.dbase.get<int>("useCurlCurlBoundaryCondition"); 
+
+  SmParameters::PDEVariation & pdeVariation = parameters.dbase.get<SmParameters::PDEVariation>("pdeVariation");
+  const SmParameters::CompressibilityTypeEnum & compressibilityType = parameters.dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");
+
+  const int & u1c = parameters.dbase.get<int >("u1c");
+  const int & u2c = parameters.dbase.get<int >("u2c");
+  const int & u3c = parameters.dbase.get<int >("u3c");
+
+  const int & orderOfAccuracyInSpace = parameters.dbase.get<int>("orderOfAccuracy");
+  const int & orderOfAccuracyInTime  = parameters.dbase.get<int>("orderOfTimeAccuracy");
+
+  real & rho=parameters.dbase.get<real>("rho");
+  real & mu = parameters.dbase.get<real>("mu");
+  real & lambda = parameters.dbase.get<real>("lambda");
+  RealArray & muGrid = parameters.dbase.get<RealArray>("muGrid");
+  RealArray & lambdaGrid = parameters.dbase.get<RealArray>("lambdaGrid");
+  // bool & gridHasMaterialInterfaces = parameters.dbase.get<bool>("gridHasMaterialInterfaces");
+  int & debug = parameters.dbase.get<int >("debug");
+
+  lambda = lambdaGrid(grid);
+  mu = muGrid(grid);
+  c1=(mu+lambda)/rho, c2= mu/rho;
+
+//   const real cc= c*sqrt( kx*kx+ky*ky );
+
+  MappedGrid & mg = *u.getMappedGrid();
+  MappedGridOperators & mgop = (*cgop)[grid];
+  
+  const int numberOfDimensions = mg.numberOfDimensions();
+  
+  // The RHS for BC's are saved in these next two objects:
+  const RealArray & bcData = parameters.dbase.get<RealArray>("bcData");
+  BoundaryData::BoundaryDataArray & pBoundaryData = parameters.getBoundaryData(grid);
+
+  // The interfaceType(side,axis,grid) defines which faces are interfaces.
+  const IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
+
+  const bool & applyFilter = parameters.dbase.get<bool >("applyFilter");
+
+  Range all;
+  BoundaryConditionParameters bcParams;            
+  BoundaryConditionParameters extrapParams;
+
+  Range C=numberOfComponents;
+  if( compressibilityType==SmParameters::incompressibleSolid )
+  {
+    // Skip p in C 
+    C = Range(uc,uc+numberOfDimensions-1);
+  }
+
+  //    return; // ############
+
+
+  // *wdh* 081009
+
+  u.periodicUpdate();
+
+  if( compressibilityType==SmParameters::compressibleSolid )
+  {
+    // Note: the incompressible case is now done in the bcOpt routine 
+    applyDirichletTypeBoundaryConditions();
+  }
+
+
+
+
+  bool isRectangular = mg.isRectangular();
+
+  if( false && isRectangular && useConservative ) // ***********************
+  {
+    // for testing : pretend the grid is NOT rectangular 
+    if( t < 2.*dt )
+      printF("\n *******assignBC: treat rectangular grid as Cartesian for bug in Cons BC ********** \n");
+    isRectangular=false; 
+    mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter | MappedGrid::THEinverseVertexDerivative );
+  }
+
+  const real dtb2=dt*.5;
+
+  const aString & specialInitialConditionOption = parameters.dbase.get<aString>("specialInitialConditionOption");
+  const bool applySpecialSolutionBoundaryConditions = specialInitialConditionOption != "default";
+
+  bool centerNeeded = applySpecialSolutionBoundaryConditions;
+  if( centerNeeded )
+  {
+    mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter );
+  }
+
+  // Hemp: here is where we store the initial state (mass,density,energy)
+  realMappedGridFunction *pstate0 = NULL;
+  if( pdeVariation == SmParameters::hemp )
+  {
+    assert( parameters.dbase.get<realCompositeGridFunction*>("initialStateGridFunction")!=NULL );
+    pstate0 = &(*(parameters.dbase.get<realCompositeGridFunction*>("initialStateGridFunction")))[grid];
+  }
+  realMappedGridFunction & state0 = *pstate0;
+
+  const realArray & x = mg.center();
+
+  real dx[3]={0.,0.,0.}; //
+
    
 
+  if( isRectangular )
+    mg.getDeltaX(dx);
+    
+  #ifdef USE_PPP
+   realSerialArray uLocal; getLocalArrayWithGhostBoundaries(u,uLocal);
+   realSerialArray det;  
+   if( pdeVariation == SmParameters::hemp ) 
+     getLocalArrayWithGhostBoundaries(mg.centerJacobian(),det);
+   realSerialArray xLocal; if( centerNeeded ) getLocalArrayWithGhostBoundaries(x,xLocal);
+   realSerialArray state0Local;
+   if( pdeVariation == SmParameters::hemp )
+     getLocalArrayWithGhostBoundaries(state0,state0Local);
+
+  #else
+   realSerialArray & uLocal = u;
+   const realSerialArray & xLocal = x;
+   const realSerialArray & det = mg.centerJacobian();
+   realSerialArray & state0Local = *pstate0;
+  #endif
+  
+   const IntegerArray & bcg = mg.boundaryCondition();
+   IntegerArray gid, dim, bc;
+   getLocalBoundsAndBoundaryConditions( u, gid, dim, bc );
+
+
+   Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
+   Index Igv[3], &Ig1=Igv[0], &Ig2=Igv[1], &Ig3=Igv[2];
+
+   bool useOpt=true; 
+   int side,axis;
+
+
+   // *wdh* 090204 -- new dirichlet boundary condition : assign the exact solution for testing ---
+   applySpecialBoundaryConditionsMacro();
 
 
    // *wdh* 041127 -- apply opt BC's after above dirichlet BC's ----
@@ -1088,81 +1156,100 @@ assignBoundaryConditionsSOS( int option, int grid, real t, real dt, realMappedGr
     
 
    // *wdh* 090824 -- moved from above 
-   if( parameters.dbase.get<int >("extrapolateInterpolationNeighbours") &&
-       parameters.dbase.get<int>("useNewExtrapInterpNeighbours") )
+   if( compressibilityType==SmParameters::compressibleSolid )
    {
-     // *new way* 091123 -- MappedGridOperators uses new AssignInterpNeighbours class
-
-     // -- See op/tests/testExtrapInterpNeighbours for proper way to apply --
-     if( debug & 2 )
-       printF("assignBC-SOS: Use new extrapolateInterpolationNeighbours at t=%g\n",t);
-
-     extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForInterpolationNeighbours");
-     u.applyBoundaryCondition(C,BCTypes::extrapolateInterpolationNeighbours,BCTypes::allBoundaries,0.,t,extrapParams);
-
-     // extrap 2nd ghost line extended
-     extrapParams.ghostLineToAssign=2;
-     extrapParams.extraInTangentialDirections=2;
-
-     u.applyBoundaryCondition(C,BCTypes::extrapolate,BCTypes::allBoundaries,0.,t,extrapParams);
-
-     // reset 
-     extrapParams.ghostLineToAssign=1;
-     extrapParams.extraInTangentialDirections=0;
-
-     // NOTE: We must also call finishBoundaryConditions to fix corners and update ghosts -- done below --
-
+     if( parameters.dbase.get<int >("extrapolateInterpolationNeighbours") &&
+         parameters.dbase.get<int>("useNewExtrapInterpNeighbours") )
+     {
+       // *new way* 091123 -- MappedGridOperators uses new AssignInterpNeighbours class
+  
+       // -- See op/tests/testExtrapInterpNeighbours for proper way to apply --
+       if( debug & 2 )
+         printF("assignBC-SOS: Use new extrapolateInterpolationNeighbours at t=%g\n",t);
+  
+       extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForInterpolationNeighbours");
+       u.applyBoundaryCondition(C,BCTypes::extrapolateInterpolationNeighbours,BCTypes::allBoundaries,0.,t,extrapParams);
+  
+       // extrap 2nd ghost line extended
+       extrapParams.ghostLineToAssign=2;
+       extrapParams.extraInTangentialDirections=2;
+  
+       u.applyBoundaryCondition(C,BCTypes::extrapolate,BCTypes::allBoundaries,0.,t,extrapParams);
+  
+       // reset 
+       extrapParams.ghostLineToAssign=1;
+       extrapParams.extraInTangentialDirections=0;
+  
+       // NOTE: We must also call finishBoundaryConditions to fix corners and update ghosts -- done below --
+  
+     }
+     else  if( parameters.dbase.get<int >("extrapolateInterpolationNeighbours") ) // *wdh* 090823
+     {
+       // *** OLD WAY ***
+  
+       // extrapolate the 2nd ghost line and interpolation neighbours for higher-order dissipation
+       // -- is this the right place to do this ? 
+       extrapParams.ghostLineToAssign=2;
+       extrapParams.orderOfExtrapolation=orderOfAccuracyInSpace+1;
+       if( applyFilter )
+         extrapParams.orderOfExtrapolation=orderOfAccuracyInSpace+1; // *wdh* 090824 -- try this with the 4th order filter
+       u.applyBoundaryCondition(C,BCTypes::extrapolate,BCTypes::allBoundaries,0.,t,extrapParams);
+       extrapParams.ghostLineToAssign=1;
+       
+       if( debug & 8  )
+         printF(" extrapolateInterpolationNeighbours at t=%g\n",t);
+  
+       // if( grid==0 ) printF(" u(19,13)=%9.2e before extrapolateInterpolationNeighbours\n",u(19,13,0,0));
+       // if( grid==0 ) printF(" u(10,8)=%9.2e before extrapolateInterpolationNeighbours\n",u(10,8,0,0));
+  
+       if( debug & 2 && grid==0 )
+       {
+         ::display(uLocal,sPrintF("uLocal before extrapolateInterpolationNeighbours, t=%e",t),pDebugFile,"%4.2f ");
+       }
+       
+  
+       // extrapParams.orderOfExtrapolation=2;
+       u.applyBoundaryCondition(C,BCTypes::extrapolateInterpolationNeighbours,BCTypes::allBoundaries,0.,t);
+       //extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForInterpolationNeighbours");
+       //u.applyBoundaryCondition(C,BCTypes::extrapolateInterpolationNeighbours,BCTypes::allBoundaries,0.,t,extrapParams);
+  
+       if( debug & 2 && grid==0 )
+       {
+         // u.updateGhostBoundaries();
+         fflush(0);
+         Communication_Manager::Sync();
+         ::display(uLocal,sPrintF("uLocal after extrapolateInterpolationNeighbours, t=%e",t),pDebugFile,"%4.2f ");
+       }
+  
+       // BoundaryConditionParameters ep;
+       // ep.orderOfExtrapolation=3;
+       // u.applyBoundaryCondition(C,BCTypes::extrapolateInterpolationNeighbours,BCTypes::allBoundaries,0.,t,ep);
+  
+       // extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForInterpolationNeighbours");
+       // u.applyBoundaryCondition(C,BCTypes::extrapolateInterpolationNeighbours,BCTypes::allBoundaries,0.,t,
+       //                          extrapParams,grid);
+  
+       // if( grid==0 ) printF(" u(19,13)=%9.2e after extrapolateInterpolationNeighbours\n",u(19,13,0,0));
+       // if( grid==0 ) printF(" u(10,8)=%9.2e after extrapolateInterpolationNeighbours\n",u(10,8,0,0));
+  
+     }
    }
-   else  if( parameters.dbase.get<int >("extrapolateInterpolationNeighbours") ) // *wdh* 090823
+   else
    {
-     // *** OLD WAY ***
 
-     // extrapolate the 2nd ghost line and interpolation neighbours for higher-order dissipation
-     // -- is this the right place to do this ? 
-     extrapParams.ghostLineToAssign=2;
-     extrapParams.orderOfExtrapolation=orderOfAccuracyInSpace+1;
-     if( applyFilter )
-       extrapParams.orderOfExtrapolation=orderOfAccuracyInSpace+1; // *wdh* 090824 -- try this with the 4th order filter
-     u.applyBoundaryCondition(C,BCTypes::extrapolate,BCTypes::allBoundaries,0.,t,extrapParams);
-     extrapParams.ghostLineToAssign=1;
-     
-     if( debug & 8  )
-       printF(" extrapolateInterpolationNeighbours at t=%g\n",t);
+      // printF("CgSM:applyBC: extrapolateInterpolationNeighbours=%d\n",parameters.dbase.get<int >("extrapolateInterpolationNeighbours") );
+      if( parameters.dbase.get<int >("extrapolateInterpolationNeighbours") )
+      {
+        if( cg.numberOfComponentGrids() > 1 )
+        {
+          extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForInterpolationNeighbours");
 
-     // if( grid==0 ) printF(" u(19,13)=%9.2e before extrapolateInterpolationNeighbours\n",u(19,13,0,0));
-     // if( grid==0 ) printF(" u(10,8)=%9.2e before extrapolateInterpolationNeighbours\n",u(10,8,0,0));
+          // printF("CgSM:applyBC: extrapolateInterpolationNeighbours: orderOfExtrapolation=%d, t=%9.3e\n",extrapParams.orderOfExtrapolation,t);
 
-     if( debug & 2 && grid==0 )
-     {
-       ::display(uLocal,sPrintF("uLocal before extrapolateInterpolationNeighbours, t=%e",t),pDebugFile,"%4.2f ");
-     }
-     
-
-     // extrapParams.orderOfExtrapolation=2;
-     u.applyBoundaryCondition(C,BCTypes::extrapolateInterpolationNeighbours,BCTypes::allBoundaries,0.,t);
-     //extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForInterpolationNeighbours");
-     //u.applyBoundaryCondition(C,BCTypes::extrapolateInterpolationNeighbours,BCTypes::allBoundaries,0.,t,extrapParams);
-
-     if( debug & 2 && grid==0 )
-     {
-       // u.updateGhostBoundaries();
-       fflush(0);
-       Communication_Manager::Sync();
-       ::display(uLocal,sPrintF("uLocal after extrapolateInterpolationNeighbours, t=%e",t),pDebugFile,"%4.2f ");
-     }
-
-     // BoundaryConditionParameters ep;
-     // ep.orderOfExtrapolation=3;
-     // u.applyBoundaryCondition(C,BCTypes::extrapolateInterpolationNeighbours,BCTypes::allBoundaries,0.,t,ep);
-
-     // extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForInterpolationNeighbours");
-     // u.applyBoundaryCondition(C,BCTypes::extrapolateInterpolationNeighbours,BCTypes::allBoundaries,0.,t,
-     //                          extrapParams,grid);
-
-     // if( grid==0 ) printF(" u(19,13)=%9.2e after extrapolateInterpolationNeighbours\n",u(19,13,0,0));
-     // if( grid==0 ) printF(" u(10,8)=%9.2e after extrapolateInterpolationNeighbours\n",u(10,8,0,0));
-
-   }
+          u.applyBoundaryCondition(C,BCTypes::extrapolateInterpolationNeighbours,BCTypes::allBoundaries,0.,t,extrapParams);          
+        }
+      }
+   } // end extrapolateInterpolationBoundaries
 
 //     // assign any radiation BC's
 //     for( int i=0; i<2; i++ )
@@ -1176,20 +1263,44 @@ assignBoundaryConditionsSOS( int option, int grid, real t, real dt, realMappedGr
       
 //     }
     
+   bool finishBCs = !useConservative || 
+       (parameters.dbase.get<int>("useNewExtrapInterpNeighbours") && parameters.dbase.get<int >("extrapolateInterpolationNeighbours"));
+   if( compressibilityType==SmParameters::incompressibleSolid )
+    finishBCs=false;
 
-   if( !useConservative || 
-       (parameters.dbase.get<int>("useNewExtrapInterpNeighbours") && parameters.dbase.get<int >("extrapolateInterpolationNeighbours") ) ) 
+   // printF("\n +++++++++ applyBCSOS: finishBCs=%d\n",(int)finishBCs);
+   if( finishBCs )
+   // if( !useConservative || 
+   //     (parameters.dbase.get<int>("useNewExtrapInterpNeighbours") && parameters.dbase.get<int >("extrapolateInterpolationNeighbours") ) ) 
    {
      // *wdh* 090911 -- do NOT change SOS-C values!
 
      // *wdh* 091123 -- for now apply finishBC to SOS-C TOO !
 
-     u.finishBoundaryConditions();  // do this for now -- corners needed --
+     // --- Aug 23, 2021 : extrap extra corner ghost for upwind 
+     if( upwindSOS )
+     {
+       int numGhost = orderOfAccuracyInSpace/2;
+       if( upwindSOS ) numGhost++;
+       extrapParams.ghostLineToAssign=1;  // reset 
+       extrapParams.numberOfCornerGhostLinesToAssign = numGhost;
+
+       u.finishBoundaryConditions(extrapParams);  // $$$ do this for now -- corners needed --
+      }
+      else
+      {
+        // NOTE: the above $$$ did not work for SOS scheme WDH Oct 11, 2021
+        u.finishBoundaryConditions();
+      }
+
+     // *wdh* Do not finish BC for pressure Aug 14, 2021
+     // u.finishBoundaryConditions(bcParams,C);  // do this for now -- corners needed --
    }
    else
    {
      // for SOS-C we need to fixup the 2nd-ghost at corners if we extrap interp neighbours  ************ FIX ME ****
-
+     // printF("DO NOT CALL finish BCs\n");
+     u.periodicUpdate();
      u.updateGhostBoundaries();  // *wdh* 091123 
    }
    

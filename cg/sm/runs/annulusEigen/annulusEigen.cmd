@@ -74,7 +74,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug,"ad=f"=>\$ad,"ad4=f"=>\$ad4, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,"iw=i"=>\$iw,\
   "mu=f"=>\$mu,"lambda=f"=>\$lambda,"rho=f"=>\$rho,"dtMax=f"=>\$dtMax, "cons=i"=>\$cons,"pv=s"=>\$pv,\
-  "godunovOrder=f"=>\$godunovOrder,"p0=f"=>\$p0,"p1=f"=>\$p1,"modem=i"=>\$modem,"ts=s"=>\$ts,"en=s"=>\$en,\
+  "godunovOrder=f"=>\$godunovOrder,"p0=f"=>\$p0,"p1=f"=>\$p1,"modem=i"=>\$modem,"moden=i"=>\$moden,"ts=s"=>\$ts,"en=s"=>\$en,\
   "c0=f"=>\$c0,"cl=f"=>\$cl,"filter=i"=>\$filter,"filterOrder=i"=>\$filterOrder,"filterStages=i"=>\$filterStages );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }

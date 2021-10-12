@@ -5,23 +5,23 @@
 !
 ! These next include files will define the macros that will define the difference approximations
 ! The actual macro is called below
-c Use this next macro to declare the statement functions that are defined below
-c To include derivatives of rx use OPTION=RX
+! Use this next macro to declare the statement functions that are defined below
+! To include derivatives of rx use OPTION=RX
 
 
-c Define statement functions for difference approximations of order 2 
-c To include derivatives of rx use OPTION=RX
-c To include derivatives of rx use OPTION=RX
+! Define statement functions for difference approximations of order 2 
+! To include derivatives of rx use OPTION=RX
+! To include derivatives of rx use OPTION=RX
 
 
 
-c Use this next macro to declare the statement functions that are defined below
-c To include derivatives of rx use OPTION=RX
+! Use this next macro to declare the statement functions that are defined below
+! To include derivatives of rx use OPTION=RX
 
 
-c Define statement functions for difference approximations of order 4 
-c To include derivatives of rx use OPTION=RX
-c To include derivatives of rx use OPTION=RX
+! Define statement functions for difference approximations of order 4 
+! To include derivatives of rx use OPTION=RX
+! To include derivatives of rx use OPTION=RX
 
 
 ! ---------------------------------------------------------------------------
