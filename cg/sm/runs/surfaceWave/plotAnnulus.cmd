@@ -13,11 +13,11 @@ $show
 # 
 solution: $solution
 derived types
-specify displacement components
-  0 1 2 
-speed
-# stressNorm
-displacementNorm
+  specify displacement components
+    0 1 2 
+  # speed
+  # stressNorm
+  displacementNorm
 exit
 #
 #   ------ CONTOURS -------------

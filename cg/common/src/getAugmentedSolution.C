@@ -25,7 +25,7 @@ getAugmentedSolution( GridFunction & gf0, realCompositeGridFunction & v )
 //\end{CompositeGridSolverInclude.tex}  
 // ========================================================================================
 {
-  checkArrayIDs(sPrintF("getAugmentedSolution: start") ); 
+  checkArrayIDs(sPrintF("getAugmentedSolution: start") );
 
   // No need to compute the augmented solution if graphics plotting is off
   if( (parameters.dbase.get<GenericGraphicsInterface* >("ps")!=NULL && 
@@ -60,6 +60,9 @@ getAugmentedSolution( GridFunction & gf0, realCompositeGridFunction & v )
   bool plotErrorsInKnownSolution = parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution")!=Parameters::noKnownSolution;
   // plotErrorsInKnownSolution=false; // *** TEMP ****
   // printF("$$$$$$$$$$$$$ getAugmentedSolution: plotErrorsInKnownSolution = %d $$$$$$$$$$$$$$$\n",(int)plotErrorsInKnownSolution);
+
+  if( false )
+    printP(" ###### DomainSolver::getAugmentedSolution at t=%9.2e, plotErrorsInKnownSolution=%d #####\n",gf0.t,plotErrorsInKnownSolution);
 
   if( plotErrorsInKnownSolution )
   {
@@ -143,8 +146,13 @@ getAugmentedSolution( GridFunction & gf0, realCompositeGridFunction & v )
     if( !parameters.dbase.has_key("errorGridFunction") )
     {
       printF("getAugmentedSolution: known solution is there but no errors have been computed for plotting !?\n");
+
+      // added *wdh* Nov 27, 2021 for cgmp so that it includes error components in option menu
+      printF("getAugmentedSolution: I am calling determineErrors ....\n");
+      determineErrors( gf0 );  
     } 
-    else
+
+    if( true )
     {
       plotMoreComponents=true;
 

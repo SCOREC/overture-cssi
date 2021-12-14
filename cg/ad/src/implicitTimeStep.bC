@@ -36,7 +36,8 @@ int Cgad::
 implicitTimeStep(  real & t0, real & dt0, int correction, AdvanceOptions & advanceOptions )
 {
    
-  if( pdeName=="advection diffusion" )
+  if( pdeName=="advection diffusion" || 
+      pdeName=="convection diffusion" )
   {
     // call base class version 
     DomainSolver::implicitTimeStep(  t0,dt0, correction, advanceOptions );
@@ -49,6 +50,7 @@ implicitTimeStep(  real & t0, real & dt0, int correction, AdvanceOptions & advan
   }
   else
   {
+    printF("Cgad::implicitTimeStep: Unknown pdeName=[%s]\n",(const char*)pdeName);
     OV_ABORT("--AD-- implicitTimeStep: ERROR: unknown pdeName!");
   }
   

@@ -241,29 +241,30 @@ $tol=.001;  $nbz=2;   # amr tol and number-of-buffer-zones
 $stressRelaxation=0; $relaxAlpha=0.1; $relaxDelta=0.1; $varMat=0; $tangentialStressDissipation=1.;
 $incompressible=0; # set to 1 for incompressible solids
 $upwindSOS=0;      # set to 1 for upwind dissipation for second-order systems
-$bc1=""; $bc2=""; $bc3=""; $bc4=""; $bc5=""; $bc6=""; 
+$bc1=""; $bc2=""; $bc3=""; $bc4=""; $bc5=""; $bc6=""; $bc7=""; 
 $godunovType=0; $useCurlCurl=1;
 $cdv=.5;           # divergence damping 
-$numberOfCorrections=1; $skipLastPressureSolve=0; 
+$numberOfCorrections=1; $skipLastPressureSolve=0; $psolver="yale"; 
 #
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet,"diss=f"=>\$diss,\
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"varMat=f"=>\$varMat,\
   "mu=f"=>\$mu,"lambda=f"=>\$lambda,"rho=f"=>\$rho,"godunovType=i"=>\$godunovType,\
-  "dtMax=f"=>\$dtMax, "cons=i"=>\$cons,"pv=s"=>\$pv,\
+  "dtMax=f"=>\$dtMax, "cons=i"=>\$cons,"pv=s"=>\$pv,"psolver=s"=>\$psolver,\
   "godunovOrder=f"=>\$godunovOrder,"ts=s"=>\$ts,"en=s"=>\$en,"fx=f"=>\$fx,"fy=f"=>\$fy,"fz=f"=>\$fz,"ft=f"=>\$ft,\
   "dissOrder=i"=>\$dissOrder,"filter=i"=>\$filter,"filterOrder=i"=>\$filterOrder,"filterStages=i"=>\$filterStages,\
   "filterFrequency=i"=>\$filterFrequency,"filterIterations=i"=>\$filterIterations,"checkGhostErr=i"=>\$checkGhostErr,\
   "ad=f"=>\$ad,"ad4=f"=>\$ad4,"stressRelaxation=f"=>\$stressRelaxation,"relaxAlpha=f"=>\$relaxAlpha,\
   "relaxDelta=f"=>\$relaxDelta,"tangentialStressDissipation=f"=>\$tangentialStressDissipation,\
-  "bc1=s"=>\$bc1,"bc2=s"=>\$bc2,"bc3=s"=>\$bc3,"bc4=s"=>\$bc4,"bc5=s"=>\$bc5,"bc6=s"=>\$bc6,\
+  "bc1=s"=>\$bc1,"bc2=s"=>\$bc2,"bc3=s"=>\$bc3,"bc4=s"=>\$bc4,"bc5=s"=>\$bc5,"bc6=s"=>\$bc6,"bc7=s"=>\$bc7,\
   "amr=i"=>\$amr,"tol=f"=>\$tol,"nrl=i"=>\$nrl,"nbz=i"=>\$nbz,"ratio=i"=>\$ratio,"useTopHat=i"=>\$useTopHat,\
   "xTopHat=f"=>\$xTopHat,"yTopHat=f"=>\$yTopHat,"zTopHat=f"=>\$zTopHat,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,\
   "incompressible=i"=>\$incompressible,"upwindSOS=i"=>\$upwindSOS,"cdv=f"=>\$cdv,"orderInTime=i"=>\$orderInTime,\
   "skipLastPressureSolve=i"=>\$skipLastPressureSolve,"numberOfCorrections=i"=>\$numberOfCorrections,"useCurlCurl=i"=>\$useCurlCurl );
 # -------------------------------------------------------------------------------------------------
-if( $solver eq "best" ){ $solver="choose best iterative solver"; }
+if( $psolver eq "best" ){ $psolver="choose best iterative solver"; }
+if( $psolver eq "mg" ){ $psolver="multigrid"; }
 if( $tz eq "poly" ){ $tz="polynomial"; }
 if( $tz eq "trig" ){ $tz="trigonometric"; }
 if( $order eq "2" ){ $order = "second order accurate"; }else{ $order = "fourth order accurate"; }
@@ -339,7 +340,13 @@ if( $bc6 eq "dirichlet" || $bc6 eq "e" ){ $bc6="bcNumber6=dirichletBoundaryCondi
      elsif( $bc6 eq "t" ){ $bc6="bcNumber6=tractionBC"; }\
      elsif( $bc6 eq "s" ){ $bc6="bcNumber6=slipWall"; }\
      elsif( $bc6 eq "sym" ){ $bc6="bcNumber6=symmetry"; }\
-     else{ $bc6="#"; }
+     else{  $bc6="#"; }
+if( $bc7 eq "dirichlet" ||   $bc7 eq "e" ){ $bc7="bcNumber7=dirichletBoundaryCondition"; }\
+     elsif( $bc7 eq "d" ){                  $bc7="bcNumber7=displacementBC"; }\
+     elsif( $bc7 eq "t" ){                  $bc7="bcNumber7=tractionBC"; }\
+     elsif( $bc7 eq "s" ){                  $bc7="bcNumber7=slipWall"; }\
+     elsif( $bc7 eq "sym" ){                $bc7="bcNumber7=symmetry"; }\
+     else{  $bc7="#"; }     
 #
 if( $en eq "max" ){ $errorNorm="maximum norm"; }
 if( $en eq "l1" ){ $errorNorm="l1 norm"; }
@@ -406,6 +413,12 @@ SMPDE:artificial diffusion $ad $ad $ad $ad $ad $ad $ad $ad $ad $ad $ad $ad $ad $
 SMPDE:fourth-order artificial diffusion $ad4 $ad4 $ad4 $ad4 $ad4 $ad4 $ad4 $ad4 $ad4 $ad4 $ad4 $ad4 $ad4 $ad4 $ad4 
 cfl $cfl
 use conservative difference $cons
+#
+  pressure solver options
+   $ogesSolver=$psolver; $ogesRtol=$rtolp; $ogesAtol=$atolp; $ogesIluLevels=$iluLevels;
+   include $ENV{CG}/ins/cmd/ogesOptions.h
+  exit
+#
 # Adjust TZ coeff's for nonlinear models
 if( $godunovType eq 2 ){ $tzCmds = \
   "OBTZ:assign polynomial coefficients\n " . \
@@ -450,6 +463,7 @@ $bc3
 $bc4
 $bc5
 $bc6
+$bc7
 # bcNumber1=symmetry
 # bcNumber2=symmetry
 # bcNumber3=tractionBC

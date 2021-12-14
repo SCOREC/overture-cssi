@@ -1820,7 +1820,8 @@
           else if( boundaryCondition(side,axis).eq.tractionBC )then 
             ! ------ TRACTION BC ----
             !  if( addBoundaryForcing(side,axis).eq.0 .and. assignTwilightZone==0 )then   *** FIX ME ***
-            if( addBoundaryForcing(side,axis)==0 .and. twilightZone==0 )then
+            ! if( addBoundaryForcing(side,axis)==0 .and. twilightZone==0 )then   ! FOR NOW SKIP addBoundaryFORCING  *** FIX ME *****
+            if( twilightZone==0 )then   ! FOR NOW SKIP addBoundaryFORCING  *** FIX ME ***** addBoundaryForcing =1 for an exact solution 
                 fe(0)=0.; fe(1)=0.;  fe(2)=0.; fe(3)=0.;   ! holds forcing 
                 numberOfEquations=4;      ! number of ghost points we solve for   
                   ! outward normal for rectangular
@@ -1858,7 +1859,7 @@
                         ! w.x = -u.z    
                           ! no forcing 
                           do ghost=1,numGhost
-                            js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3; 
+                            js1 = ghost*is1; js2 = ghost*is2; js3 = ghost*is3; 
                             ! Note: Use wider stencil on farther ghost  
                             !  u(-2)  = u(2) + (2 * 2*dx) ( ... )  
                               u(i1-js1,i2-js2,i3-js3,u1c)=u(i1+js1,i2+js2,i3+js3,u1c) +js1*dx(0)*2.*( uy23r(i1,i2,i3,u2c) + uz23r(i1,i2,i3,u3c) )
@@ -1870,7 +1871,7 @@
                         ! v.y = - u.x - w.z 
                         ! w.y = - v.z 
                           do ghost=1,numGhost
-                            js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+                            js1 = ghost*is1; js2 = ghost*is2; js3 = ghost*is3;
                               u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) +js2*dx(1)*2.*( ux23r(i1,i2,i3,u2c) )
                               u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) +js2*dx(1)*2.*( ux23r(i1,i2,i3,u1c) + uz23r(i1,i2,i3,u3c) )               
                               u(i1-js1,i2-js2,i3,u3c)=u(i1+js1,i2+js2,i3,u3c) +js2*dx(1)*2.*( uz23r(i1,i2,i3,u2c) )
@@ -1881,7 +1882,7 @@
                         ! v.z = - w.y
                         ! w.z = - ( u.x + v.y )
                             do ghost=1,numGhost
-                              js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+                              js1 = ghost*is1; js2 = ghost*is2; js3 = ghost*is3;
                               u(i1-js1,i2-js2,i3-js3,u1c)=u(i1+js1,i2+js2,i3+js3,u1c) +js3*dx(2)*2.*( ux23r(i1,i2,i3,u3c) )
                               u(i1-js1,i2-js2,i3-js3,u2c)=u(i1+js1,i2+js2,i3+js3,u2c) +js3*dx(2)*2.*( uy23r(i1,i2,i3,u3c)  )               
                               u(i1-js1,i2-js2,i3-js3,u3c)=u(i1+js1,i2+js2,i3+js3,u3c) +js3*dx(2)*2.*( ux23r(i1,i2,i3,u1c) + uy23r(i1,i2,i3,u2c) )
@@ -1929,7 +1930,7 @@
                           ! include forcing terms 
                           ! beginLoopsMask2d()
                           do ghost=1,numGhost
-                            js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+                            js1 = ghost*is1; js2 = ghost*is2; js3 = ghost*is3;
                               ! *check me* added Sept 15, 2021
                               u(i1-js1,i2-js2,i3-js3,u1c)=u(i1+js1,i2+js2,i3+js3,u1c) +dx(0)*2.*( js1*(uy23r(i1,i2,i3,u2c) + uz23r(i1,i2,i3,u3c)) +bcf(side,axis,i1,i2,i3,u1c) )
                               u(i1-js1,i2-js2,i3-js3,u2c)=u(i1+js1,i2+js2,i3+js3,u2c) +dx(0)*2.*( js1*uy23r(i1,i2,i3,u1c)             + (1./mu)*bcf(side,axis,i1,i2,i3,u2c) )
@@ -1941,7 +1942,7 @@
                         ! w.y = - v.z 
                           ! include forcing terms
                           do ghost=1,numGhost
-                            js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+                            js1 = ghost*is1; js2 = ghost*is2; js3 = ghost*is3;
                               ! *check me* added Sept 15, 2021                       
                               u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) + dx(1)*2.*( js2*ux23r(i1,i2,i3,u2c)  +             (1./mu)*bcf(side,axis,i1,i2,i3,u1c) )
                               u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) + dx(1)*2.*( js2*(ux23r(i1,i2,i3,u1c) + uz23r(i1,i2,i3,u3c)) + bcf(side,axis,i1,i2,i3,u2c) )               
@@ -1954,7 +1955,7 @@
                         ! w.z = - ( u.x + v.y )
                             ! include forcing terms
                             do ghost=1,numGhost
-                              js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+                              js1 = ghost*is1; js2 = ghost*is2; js3 = ghost*is3;
                               ! *check me* added Sept 15, 2021                       
                               u(i1-js1,i2-js2,i3-js3,u1c)=u(i1+js1,i2+js2,i3+js3,u1c) + dx(2)*2.*( js3*( ux23r(i1,i2,i3,u3c) ) +              (1./mu)*bcf(side,axis,i1,i2,i3,u1c) )
                               u(i1-js1,i2-js2,i3-js3,u2c)=u(i1+js1,i2+js2,i3+js3,u2c) + dx(2)*2.*( js3*( uy23r(i1,i2,i3,u3c) ) +              (1./mu)*bcf(side,axis,i1,i2,i3,u2c) )               
@@ -2013,7 +2014,7 @@
                           ! u.x = -v.y + ue.x -ve.y 
                           ! write(*,'(" bcOptIsm: assign traction values for axis==0 and TZ")')
                           do ghost=1,numGhost
-                            js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+                            js1 = ghost*is1; js2 = ghost*is2; js3 = ghost*is3;
                               ! *check me* added Sept 15, 2021                
                               u(i1-js1,i2-js2,i3-js3,u1c)=u(i1+js1,i2+js2,i3+js3,u1c) + js1*dx(0)*2.*( uy23r(i1,i2,i3,u2c) + uz23r(i1,i2,i3,u3c) - ( ux0 +vy0 + wz0 ) )
                               u(i1-js1,i2-js2,i3-js3,u2c)=u(i1+js1,i2+js2,i3+js3,u2c) + js1*dx(0)*2.*( uy23r(i1,i2,i3,u1c) - ( vx0 + uy0 ) )
@@ -2032,7 +2033,7 @@
                         ! w.y = - v.z 
                           ! Twilight-zone: 
                           do ghost=1,numGhost
-                            js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+                            js1 = ghost*is1; js2 = ghost*is2; js3 = ghost*is3;
                               ! *check me* added Sept 15, 2021                       
                               u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) +js2*dx(1)*2.*( ux23r(i1,i2,i3,u2c) - ( uy0 + vx0) )
                               u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) +js2*dx(1)*2.*( (ux23r(i1,i2,i3,u1c) + uz23r(i1,i2,i3,u3c)) -( ux0 + vy0 + wz0 ) )               
@@ -2203,7 +2204,7 @@
                      end if
                      ! ************ assign corner points outside edges ***********************
                      if( bc1.gt.0 .and. bc2.gt.0 )then
-                       write(*,'(" assign edges: edgeDirection=",i2," sidea,sideb=",2i3)') edgeDirection,sidea,sideb
+                       ! write(*,'(" assign edges: edgeDirection=",i2," sidea,sideb=",2i3)') edgeDirection,sidea,sideb
                        do ghost1=1,numGhost
                        do ghost2=1,numGhost
                          ! shift to ghost point "(m1,m2)"
@@ -2315,7 +2316,7 @@
                      end if
                      ! ************ assign corner points outside edges ***********************
                      if( bc1.gt.0 .and. bc2.gt.0 )then
-                       write(*,'(" assign edges: edgeDirection=",i2," sidea,sideb=",2i3)') edgeDirection,sidea,sideb
+                       ! write(*,'(" assign edges: edgeDirection=",i2," sidea,sideb=",2i3)') edgeDirection,sidea,sideb
                        do ghost1=1,numGhost
                        do ghost2=1,numGhost
                          ! shift to ghost point "(m1,m2)"

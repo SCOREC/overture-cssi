@@ -93,7 +93,7 @@ assignInitialConditions(int gfIndex)
 
   if( debug() & 2 )
     printF("DomainSolver::assignInitialConditions: gfIndex=%i t=%9.3e initialConditionOption=%i\n",
-	   gfIndex,t,initialConditionOption);
+           gfIndex,t,initialConditionOption);
 
 
   // Look for the sub-directory in the data-base to store variables used here and in assignInitialConditions
@@ -135,7 +135,7 @@ assignInitialConditions(int gfIndex)
     if( gfIndex!=current )
     {
       printF("assignInitialConditions:INFO: assigning IC's at t=%10.4e (gfIndex=%i, past time?) from solution at t=%10.4e (current=%i)\n",
-	     t,gfIndex,gf[current].t,current);
+             t,gfIndex,gf[current].t,current);
       
       u.dataCopy(gf[current].u);
     }
@@ -150,20 +150,20 @@ assignInitialConditions(int gfIndex)
 
       if( true ) // Here is an even newer way which should handle all cases and parallel *wdh* 110321
       {
-	const int & numberOfComponents=parameters.dbase.get<int >("numberOfComponents");
-	Range C=numberOfComponents;
+        const int & numberOfComponents=parameters.dbase.get<int >("numberOfComponents");
+        Range C=numberOfComponents;
 
-	InterpolatePointsOnAGrid interp;
+        InterpolatePointsOnAGrid interp;
 
-	interp.setAssignAllPoints(true);  // assign all points -- extrap if necessary
-	// interp.setInterpolationWidth( width ); // we could change the interp width here
-	  
-	interp.interpolateAllPoints( uSF,u, C, C );  // interpolate u from uSF
+        interp.setAssignAllPoints(true);  // assign all points -- extrap if necessary
+        // interp.setInterpolationWidth( width ); // we could change the interp width here
+          
+        interp.interpolateAllPoints( uSF,u, C, C );  // interpolate u from uSF
       }
       else
       {
-	  
-	interpolateAllPoints( uSF,u );  // interpolate u from uSF
+          
+        interpolateAllPoints( uSF,u );  // interpolate u from uSF
       }
     }
     
@@ -188,52 +188,52 @@ assignInitialConditions(int gfIndex)
 
       if( initialConditionOption==Parameters::uniformInitialCondition )
       {
-	ForAllComponents( n )
-	{
-	  if( ok )
-	  {
-	    if( initialConditions(n)!=(real)Parameters::defaultValue )
-	      ug(I1,I2,I3,n)=initialConditions(n);
-	    else
-	      ug(I1,I2,I3,n)=0.;
-	  }
-	}
+        ForAllComponents( n )
+        {
+          if( ok )
+          {
+            if( initialConditions(n)!=(real)Parameters::defaultValue )
+              ug(I1,I2,I3,n)=initialConditions(n);
+            else
+              ug(I1,I2,I3,n)=0.;
+          }
+        }
       }
       else if( initialConditionOption==Parameters::twilightZoneFunctionInitialCondition )
       {
-	gf[gfIndex].cg.update(MappedGrid::THEcenter);
-	u.updateToMatchGrid(gf[gfIndex].cg,nullRange,nullRange,nullRange,parameters.dbase.get<int >("numberOfComponents")); 
+        gf[gfIndex].cg.update(MappedGrid::THEcenter);
+        u.updateToMatchGrid(gf[gfIndex].cg,nullRange,nullRange,nullRange,parameters.dbase.get<int >("numberOfComponents")); 
         OGFunction *& exactSolution = parameters.dbase.get<OGFunction* >("exactSolution");
-	assert( exactSolution!=NULL );
-	// exactSolution->assignGridFunction( u,parameters.dbase.get<real >("tInitial") );   //  Twilight-zone flow
-	exactSolution->assignGridFunction( u,t );   //  Twilight-zone flow
+        assert( exactSolution!=NULL );
+        // exactSolution->assignGridFunction( u,parameters.dbase.get<real >("tInitial") );   //  Twilight-zone flow
+        exactSolution->assignGridFunction( u,t );   //  Twilight-zone flow
 
         // u.display("assignInitialConditions: u after assign TZ IC's");
       }
 
       else if( initialConditionOption==Parameters::stepFunctionInitialCondition )
       {
-	real *up = ug.Array_Descriptor.Array_View_Pointer3;
-	const int uDim0=ug.getRawDataSize(0);
-	const int uDim1=ug.getRawDataSize(1);
-	const int uDim2=ug.getRawDataSize(2);
+        real *up = ug.Array_Descriptor.Array_View_Pointer3;
+        const int uDim0=ug.getRawDataSize(0);
+        const int uDim1=ug.getRawDataSize(1);
+        const int uDim2=ug.getRawDataSize(2);
         #define U(i0,i1,i2,i3) up[i0+uDim0*(i1+uDim1*(i2+uDim2*(i3)))]
 
         if( c.isRectangular() )
-	{
+        {
           if( !ok ) continue;  // no points on this processor
 
-	  real dx[3],xab[2][3];
-	  c.getRectangularGridParameters( dx, xab );
+          real dx[3],xab[2][3];
+          c.getRectangularGridParameters( dx, xab );
             
-	  const int i1a=c.gridIndexRange(0,0);
-	  const int i2a=c.gridIndexRange(0,1);
-	  const int i3a=c.gridIndexRange(0,2);
+          const int i1a=c.gridIndexRange(0,0);
+          const int i2a=c.gridIndexRange(0,1);
+          const int i3a=c.gridIndexRange(0,2);
             
-	  const real xa=xab[0][0], dx0=dx[0];
-	  const real ya=xab[0][1], dy0=dx[1];
-	  const real za=xab[0][2], dz0=dx[2];
-                  	
+          const real xa=xab[0][0], dx0=dx[0];
+          const real ya=xab[0][1], dy0=dx[1];
+          const real za=xab[0][2], dz0=dx[2];
+                        
 #define VERTEX0(i1,i2,i3) (xa+dx0*(i1-i1a))
 #define VERTEX1(i1,i2,i3) (ya+dy0*(i2-i2a))
 #define VERTEX2(i1,i2,i3) (za+dz0*(i3-i3a))
@@ -242,40 +242,40 @@ assignInitialConditions(int gfIndex)
 #define XSTEP(i1,i2,i3) (stepNormalx*VERTEX0(i1,i2,i3)+stepNormaly*VERTEX1(i1,i2,i3)+stepNormalz*VERTEX2(i1,i2,i3)-stepNormalEquationValue)
 
           printF("assignIC: step function: grid=%i stepNormal=(%9.2e,%9.2e,%9.2e), stepNormalEquationValue=%9.2e\n",
-		 grid,stepNormalx,stepNormaly,stepNormalz,stepNormalEquationValue);
-	  
+                 grid,stepNormalx,stepNormaly,stepNormalz,stepNormalEquationValue);
+          
 
           int i1,i2,i3;
-	  ForAllComponents( n )
-	  {
+          ForAllComponents( n )
+          {
             real uLeftn=uLeft(n), uRightn=uRight(n);
-	    if( stepSharpness>0. )
-	    {
+            if( stepSharpness>0. )
+            {
               FOR_3(i1,i2,i3,I1,I2,I3)
-	        U(i1,i2,i3,n)=uLeftn+(uRightn-uLeftn)*(.5+.5*tanh(stepSharpness*(XSTEP(i1,i2,i3))));
-	    }
-	    else
-	    {
+                U(i1,i2,i3,n)=uLeftn+(uRightn-uLeftn)*(.5+.5*tanh(stepSharpness*(XSTEP(i1,i2,i3))));
+            }
+            else
+            {
               FOR_3(i1,i2,i3,I1,I2,I3)
               {
-		
-		if( XSTEP(i1,i2,i3) <= 0. )
-		{
-		  U(i1,i2,i3,n)=uLeftn;
-		}
-		else
-		{
-		  U(i1,i2,i3,n)=uRightn;
-		}
-	      }
-	    }
-	  }
-	}
-	else
-	{
-	  c.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
+                
+                if( XSTEP(i1,i2,i3) <= 0. )
+                {
+                  U(i1,i2,i3,n)=uLeftn;
+                }
+                else
+                {
+                  U(i1,i2,i3,n)=uRightn;
+                }
+              }
+            }
+          }
+        }
+        else
+        {
+          c.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
           if( !ok ) continue;  // no points on this processor
-	  
+          
           #ifndef USE_PPP
             const realArray & vertex = c.center();
           #else
@@ -283,46 +283,46 @@ assignInitialConditions(int gfIndex)
             realSerialArray vertex; getLocalArrayWithGhostBoundaries(c.center(),vertex);
           #endif
 
-	  realSerialArray x(I1,I2,I3);
+          realSerialArray x(I1,I2,I3);
           if( c.numberOfDimensions()==2 )
-  	    x=stepNormalx*vertex(I1,I2,I3,0)+stepNormaly*vertex(I1,I2,I3,1)-stepNormalEquationValue;
+            x=stepNormalx*vertex(I1,I2,I3,0)+stepNormaly*vertex(I1,I2,I3,1)-stepNormalEquationValue;
           else
             x=stepNormalx*vertex(I1,I2,I3,0)+
               stepNormaly*vertex(I1,I2,I3,1)+
               stepNormalz*vertex(I1,I2,I3,2)-stepNormalEquationValue;
 
-	  ForAllComponents( n )
-	  {
-	    if( stepSharpness>0. )
-	      ug(I1,I2,I3,n)=uLeft(n)+(uRight(n)-uLeft(n))*(.5+.5*tanh(stepSharpness*(x)));
-	    
-	    else
-	    {
-// 	      where( x <= 0. )
-// 	      {
-// 		ug(I1,I2,I3,n)=uLeft(n);
-// 	      }
-// 	      otherwise()  // trouble with P++ ??
-// 	      {
-// 		ug(I1,I2,I3,n)=uRight(n);
-// 	      }
+          ForAllComponents( n )
+          {
+            if( stepSharpness>0. )
+              ug(I1,I2,I3,n)=uLeft(n)+(uRight(n)-uLeft(n))*(.5+.5*tanh(stepSharpness*(x)));
+            
+            else
+            {
+//            where( x <= 0. )
+//            {
+//              ug(I1,I2,I3,n)=uLeft(n);
+//            }
+//            otherwise()  // trouble with P++ ??
+//            {
+//              ug(I1,I2,I3,n)=uRight(n);
+//            }
               ug(I1,I2,I3,n)=uRight(n);
               where( x <= 0. )
- 	      {
- 		ug(I1,I2,I3,n)=uLeft(n);
+              {
+                ug(I1,I2,I3,n)=uLeft(n);
 
- 	      }
-	    }
-	  }
-	}
+              }
+            }
+          }
+        }
         if( debug() & 32 )
-	{
-	  ::display(ug,"initial conditions: ug (local array)",parameters.dbase.get<FILE* >("pDebugFile"));
-	}
-	if( debug() & 32 )
-	{
-	  ::display(u[grid],"Here are the initial conditions, u[grid]",parameters.dbase.get<FILE* >("debugFile"));
-	}
+        {
+          ::display(ug,"initial conditions: ug (local array)",parameters.dbase.get<FILE* >("pDebugFile"));
+        }
+        if( debug() & 32 )
+        {
+          ::display(u[grid],"Here are the initial conditions, u[grid]",parameters.dbase.get<FILE* >("debugFile"));
+        }
       }
     
     }
@@ -341,7 +341,7 @@ assignInitialConditions(int gfIndex)
 // ===================================================================================================================
 int DomainSolver::
 getInitialConditions(const aString & command /* = nullString */,
-		     DialogData *interface /* =NULL */,
+                     DialogData *interface /* =NULL */,
                      GUIState *guiState /* = NULL */,
                      DialogState *dialogState /* = NULL */ )
 {
@@ -455,8 +455,8 @@ getInitialConditions(const aString & command /* = nullString */,
       aString *label = new aString[numberOfComponents+1];
       for( int n=0; n<numberOfComponents; n++ )
       {
-	label[n]=u.getName(n);
-	cmd[n]="plot:"+u.getName(n);
+        label[n]=u.getName(n);
+        cmd[n]="plot:"+u.getName(n);
 
       }
       cmd[numberOfComponents]="";
@@ -468,13 +468,13 @@ getInitialConditions(const aString & command /* = nullString */,
     }
     
     aString pbCommands[] = {"uniform flow...", 
-			    "step function...",
-			    "read from a show file...",
+                            "step function...",
+                            "read from a show file...",
                             "twilight zone...",
                             "known solution",
-			    "user defined...",
+                            "user defined...",
                             "change contour plot",
-			    ""};
+                            ""};
     int numRows=7;
     addPrefix(pbCommands,prefix,cmd,maxCommands);
     dialog.setPushButtons( cmd, pbCommands, numRows );
@@ -495,9 +495,9 @@ getInitialConditions(const aString & command /* = nullString */,
 
       while( nt<numberOfTextStrings && inputTextCommands[nt]!="" )
       {
-	textCommands[nt]=inputTextCommands[nt];
-	textLabels[nt]  =inputTextLabels[nt];
-	textStrings[nt] =inputTextStrings[nt];
+        textCommands[nt]=inputTextCommands[nt];
+        textLabels[nt]  =inputTextLabels[nt];
+        textStrings[nt] =inputTextStrings[nt];
         nt++;
       }
     }
@@ -549,9 +549,9 @@ getInitialConditions(const aString & command /* = nullString */,
     ForAllComponents( n )
     {
       textStrings[nt]+=
-	sPrintF(buff,"%s=%g",(const char *)parameters.dbase.get<aString* >("componentName")[n],
-		initialConditions(n)!=(real)Parameters::defaultValue ? 
-		initialConditions(n) :0.);
+        sPrintF(buff,"%s=%g",(const char *)parameters.dbase.get<aString* >("componentName")[n],
+                initialConditions(n)!=(real)Parameters::defaultValue ? 
+                initialConditions(n) :0.);
 
       if( n!=numberOfComponents ) textStrings[nt]+=", ";
       
@@ -583,12 +583,12 @@ getInitialConditions(const aString & command /* = nullString */,
       textStrings[nt]="";
       ForAllComponents( n )
       {
-	textStrings[nt]+=
-	  sPrintF(buff,"%s=%g",(const char *)parameters.dbase.get<aString* >("componentName")[n],
-		  initialConditions(n)!=(real)Parameters::defaultValue ? 
-		  initialConditions(n) :0.);
+        textStrings[nt]+=
+          sPrintF(buff,"%s=%g",(const char *)parameters.dbase.get<aString* >("componentName")[n],
+                  initialConditions(n)!=(real)Parameters::defaultValue ? 
+                  initialConditions(n) :0.);
 
-	if( n<numberOfComponents-1 ) textStrings[nt]+=", ";
+        if( n<numberOfComponents-1 ) textStrings[nt]+=", ";
       
       }
       nt++;
@@ -726,24 +726,24 @@ getInitialConditions(const aString & command /* = nullString */,
       // **** -- this may not be needed:
       for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
       {
-	MappedGrid & c = cg[grid];
-	getIndex( c.dimension(),I1,I2,I3 );
-	ForAllComponents( n )
-	  if( initialConditions(n)!=(real)Parameters::defaultValue )
-	    u[grid](I1,I2,I3,n)=initialConditions(n);
-	  else
-	    u[grid](I1,I2,I3,n)=0.;
+        MappedGrid & c = cg[grid];
+        getIndex( c.dimension(),I1,I2,I3 );
+        ForAllComponents( n )
+          if( initialConditions(n)!=(real)Parameters::defaultValue )
+            u[grid](I1,I2,I3,n)=initialConditions(n);
+          else
+            u[grid](I1,I2,I3,n)=0.;
       }
     ------ */
 
       aString textString;
       ForAllComponents( n )
       {
-	textString+=
-	  sPrintF(buff,"%s=%g",(const char *)parameters.dbase.get<aString* >("componentName")[n],
-		  initialConditions(n)!=(real)Parameters::defaultValue ? 
-		  initialConditions(n) :0.);
-	if( n<numberOfComponents-1 ) textString+=", ";
+        textString+=
+          sPrintF(buff,"%s=%g",(const char *)parameters.dbase.get<aString* >("componentName")[n],
+                  initialConditions(n)!=(real)Parameters::defaultValue ? 
+                  initialConditions(n) :0.);
+        if( n<numberOfComponents-1 ) textString+=", ";
       }
       uniformFlowDialog.setTextLabel("uniform state",textString);
 
@@ -782,10 +782,10 @@ getInitialConditions(const aString & command /* = nullString */,
                                            parameters.dbase.get<int >("tzDegreeTime"));
       }
       if( // ** wdh* 060416 parameters.dbase.get<bool >("twilightZoneFlow") && 
-	 parameters.dbase.get<bool >("twilightZoneFlow") && 
+         parameters.dbase.get<bool >("twilightZoneFlow") && 
           parameters.dbase.get<bool >("assignInitialConditionsWithTwilightZoneFlow") ) 
       {
-	initialConditionOption=Parameters::twilightZoneFunctionInitialCondition;
+        initialConditionOption=Parameters::twilightZoneFunctionInitialCondition;
         newInitialConditionsChosen=true;
       }
       else if( initialConditionOption==Parameters::knownSolutionInitialCondition )
@@ -807,16 +807,16 @@ getInitialConditions(const aString & command /* = nullString */,
     {
       if( uLeft.getLength(0)!=numberOfComponents )
       {
-	uLeft.redim(numberOfComponents);    uLeft=0.;
-	uRight.redim(numberOfComponents);   uRight=0.;
+        uLeft.redim(numberOfComponents);    uLeft=0.;
+        uRight.redim(numberOfComponents);   uRight=0.;
       }
       aString answer2 = answer(len,answer.length()-1);
       parameters.inputParameterValues(answer2,"state behind", uLeft);
       aString textString;
       ForAllComponents( n )
       {
-	textString+= sPrintF(buff,"%s=%g",(const char *)parameters.dbase.get<aString* >("componentName")[n],uLeft(n));
-	if( n<numberOfComponents-1 ) textString+=", ";
+        textString+= sPrintF(buff,"%s=%g",(const char *)parameters.dbase.get<aString* >("componentName")[n],uLeft(n));
+        if( n<numberOfComponents-1 ) textString+=", ";
       }
       stepFunctionDialog.setTextLabel("state behind",textString);
     }
@@ -824,16 +824,16 @@ getInitialConditions(const aString & command /* = nullString */,
     {
       if( uLeft.getLength(0)!=numberOfComponents )
       {
-	uLeft.redim(numberOfComponents);    uLeft=0.;
-	uRight.redim(numberOfComponents);   uRight=0.;
+        uLeft.redim(numberOfComponents);    uLeft=0.;
+        uRight.redim(numberOfComponents);   uRight=0.;
       }
       aString answer2 = answer(len,answer.length()-1);
       parameters.inputParameterValues(answer2,"state ahead", uRight);
       aString textString;
       ForAllComponents( n )
       {
-	textString+= sPrintF(buff,"%s=%g",(const char *)parameters.dbase.get<aString* >("componentName")[n],uRight(n));
-	if( n<numberOfComponents-1 ) textString+=", ";
+        textString+= sPrintF(buff,"%s=%g",(const char *)parameters.dbase.get<aString* >("componentName")[n],uRight(n));
+        if( n<numberOfComponents-1 ) textString+=", ";
       }
       stepFunctionDialog.setTextLabel("state ahead",textString);
     }
@@ -842,7 +842,7 @@ getInitialConditions(const aString & command /* = nullString */,
       sScanF(answer(len,answer.length()-1),"%e %e %e %e",&stepNormalx,&stepNormaly,&stepNormalz,
              &stepNormalEquationValue);
       stepFunctionDialog.setTextLabel("step: a*x+b*y+c*z=d",sPrintF("%g, %g, %g, %g (a,b,c,d)",stepNormalx,
-								   stepNormaly,stepNormalz,stepNormalEquationValue));
+                                                                   stepNormaly,stepNormalz,stepNormalEquationValue));
     }
     else if( len=answer.matches("step sharpness") )
     {
@@ -877,11 +877,11 @@ getInitialConditions(const aString & command /* = nullString */,
     {
       if( answer=="choose file from menu..." )
       {
-	gi.inputFileName(nameOfShowFile, ">> Enter the name of the (old) show file", ".show");
+        gi.inputFileName(nameOfShowFile, ">> Enter the name of the (old) show file", ".show");
       }
       else
       {
-	nameOfShowFile=answer(len+1,answer.length()-1);
+        nameOfShowFile=answer(len+1,answer.length()-1);
       }
       
       printF("nameOfShowFile=[%s]\n",(const char*)nameOfShowFile);
@@ -904,12 +904,12 @@ getInitialConditions(const aString & command /* = nullString */,
       sScanF(answer(len,answer.length()-1),"%i",&solutionNumber);
       if( numberOfSolutions>0 )
       {
-	showFileDialog.setTextLabel("solution number",sPrintF("%i  (from %i to %i, -1=last)",
-							      solutionNumber,1,numberOfSolutions));
+        showFileDialog.setTextLabel("solution number",sPrintF("%i  (from %i to %i, -1=last)",
+                                                              solutionNumber,1,numberOfSolutions));
       }
       else
       {
-	showFileDialog.setTextLabel("solution number",sPrintF("%i  (-1=last)",solutionNumber));
+        showFileDialog.setTextLabel("solution number",sPrintF("%i  (-1=last)",solutionNumber));
       }
     }
     else if( answer=="read from a show file" || answer=="assign solution from show file" )
@@ -917,8 +917,8 @@ getInitialConditions(const aString & command /* = nullString */,
       const bool oldWay= answer=="read from a show file";
       if( !oldWay && nameOfShowFile=="" )
       {
-	gi.outputString("You must choose the name of a show file before you can assign a solution");
-	continue;
+        gi.outputString("You must choose the name of a show file before you can assign a solution");
+        continue;
       }
 
       initialConditionOption=Parameters::readInitialConditionFromShowFile; newInitialConditionsChosen=true;
@@ -931,57 +931,57 @@ getInitialConditions(const aString & command /* = nullString */,
 
       if( oldWay )
       {
-	gi.inputFileName(nameOfShowFile,"Enter the name of the (old) show file:");
-	if( nameOfShowFile=="" )
-	  continue;
+        gi.inputFileName(nameOfShowFile,"Enter the name of the (old) show file:");
+        if( nameOfShowFile=="" )
+          continue;
 
         showFileReader.open(nameOfShowFile);
 
-	const int numberOfFrameSeries = showFileReader.getNumberOfFrameSeries();
-	if( numberOfFrameSeries> 1 )
-	{
-	  printF("INFO: There are %i frame series in this show file\n",numberOfFrameSeries);
+        const int numberOfFrameSeries = showFileReader.getNumberOfFrameSeries();
+        if( numberOfFrameSeries> 1 )
+        {
+          printF("INFO: There are %i frame series in this show file\n",numberOfFrameSeries);
           printF("The domain name for the current grid is [%s]\n",(const char*)cg.getDomainName(0));
           int frameSeriesToUse=-1;
-	  for( int fs=0; fs<numberOfFrameSeries; fs++ )
-	  {
-	    printF(" frame series %i : [%s]\n",fs,(const char*)showFileReader.getFrameSeriesName(fs));
-	    if( showFileReader.getFrameSeriesName(fs)==cg.getDomainName(0) )
-	    {
+          for( int fs=0; fs<numberOfFrameSeries; fs++ )
+          {
+            printF(" frame series %i : [%s]\n",fs,(const char*)showFileReader.getFrameSeriesName(fs));
+            if( showFileReader.getFrameSeriesName(fs)==cg.getDomainName(0) )
+            {
               frameSeriesToUse=fs;
-	    }
-	  }
+            }
+          }
           if( frameSeriesToUse>=0 )
-	  {
-	    printF("INFO: I will read the solution from frame series %i (%s) since the name matches this domain.\n",
-		   frameSeriesToUse,(const char*)showFileReader.getFrameSeriesName(frameSeriesToUse));
-	    showFileReader.setCurrentFrameSeries(frameSeriesToUse);
-	  }
+          {
+            printF("INFO: I will read the solution from frame series %i (%s) since the name matches this domain.\n",
+                   frameSeriesToUse,(const char*)showFileReader.getFrameSeriesName(frameSeriesToUse));
+            showFileReader.setCurrentFrameSeries(frameSeriesToUse);
+          }
           else
-	  {
+          {
             printF("WARNING: There are multiple frame series but I cannot find a name that matches the domain %s.\n"
                    " I will just read from the first frame series.\n", 
                    (const char*)cg.getDomainName(0));
-	  }
-	  
-	}
+          }
+          
+        }
 
-	int numberOfFrames=showFileReader.getNumberOfFrames();
-	numberOfSolutions = max(1,numberOfFrames);
-	solutionNumber=numberOfSolutions;  // use last
+        int numberOfFrames=showFileReader.getNumberOfFrames();
+        numberOfSolutions = max(1,numberOfFrames);
+        solutionNumber=numberOfSolutions;  // use last
 
         gi.inputString(answer,sPrintF(buff,"Enter the solution to use, from 1 to %i (-1=use last)",
-				      numberOfSolutions));
-	if( answer!="" )
-	{
-	  sScanF(answer,"%i",&solutionNumber);
-	}
+                                      numberOfSolutions));
+        if( answer!="" )
+        {
+          sScanF(answer,"%i",&solutionNumber);
+        }
       } // end if oldWay
       
 
       if( solutionNumber<0 || solutionNumber>numberOfSolutions )
       {
-	solutionNumber=numberOfSolutions;
+        solutionNumber=numberOfSolutions;
       }
       
       // Save the show file grid and solution in the data base in case we need to build AMR levels
@@ -999,12 +999,12 @@ getInitialConditions(const aString & command /* = nullString */,
 
       if( false && cgSF.numberOfRefinementLevels()>1 )
       {
-	PlotStuffParameters & psp = parameters.dbase.get<GraphicsParameters >("psp");
+        PlotStuffParameters & psp = parameters.dbase.get<GraphicsParameters >("psp");
         psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
         printF(" cgSF.numberOfRefinementLevels()=%i \n",cgSF.numberOfRefinementLevels());
-	
+        
         psp.set(GI_TOP_LABEL,"getInitialConditions: cgSF.refinementLevel[1]");
-	PlotIt::plot(gi,cgSF.refinementLevel[1],psp);
+        PlotIt::plot(gi,cgSF.refinementLevel[1],psp);
 
         psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
       }
@@ -1015,235 +1015,235 @@ getInitialConditions(const aString & command /* = nullString */,
       found = db.get(tInitial,"t");
       if( found==0 )
       {
-	printF("getInitialConditions: time taken from file =%9.3e\n", tInitial);
+        printF("getInitialConditions: time taken from file =%9.3e\n", tInitial);
 
         dialog.setTextLabel("initial time",sPrintF("%g",tInitial));
 
         gf[current].t=tInitial;
-	
+        
       }
     
       // read any header comments that go with this solution
       int numberOfHeaderComments;
       const aString *headerComment=showFileReader.getHeaderComments(numberOfHeaderComments);
       for( int i=0; i<numberOfHeaderComments; i++ )
-	printF("Header comment: %s \n",(const char *)headerComment[i]);
+        printF("Header comment: %s \n",(const char *)headerComment[i]);
 
       
       printF(" getInitialConditions:cg.numberOfGrids()=%i, cgSF.numberOfGrids()=%i,\n",cg.numberOfGrids(),
-	     cgSF.numberOfGrids());
+             cgSF.numberOfGrids());
       printF(" getInitialConditions:cg.numberOfComponentGrids()=%i, cgSF.numberOfComponentGrids()=%i,\n",
-	     cg.numberOfComponentGrids(),
-	     cgSF.numberOfComponentGrids());
+             cg.numberOfComponentGrids(),
+             cgSF.numberOfComponentGrids());
     
       int showFileGridIsMoving=false;
       db.get(showFileGridIsMoving,"isMovingGridProblem");
       if( useGridFromShowFile && showFileGridIsMoving )
       {
-	printF("getInitialConditions:The show file holds a moving grid problem. "
+        printF("getInitialConditions:The show file holds a moving grid problem. "
                "I will use the grid from the show file.\n");
 
-	if( parameters.isMovingGridProblem() ) // 2011/07/13 -- only read moving grid data if we are really moving
-	{
-	  printF("getInitialConditions:INFO reading in movingGrids info from the show file.\n");
-	  parameters.dbase.get<MovingGrids >("movingGrids").get(db,"movingGrids");
-	}
-	
+        if( parameters.isMovingGridProblem() ) // 2011/07/13 -- only read moving grid data if we are really moving
+        {
+          printF("getInitialConditions:INFO reading in movingGrids info from the show file.\n");
+          parameters.dbase.get<MovingGrids >("movingGrids").get(db,"movingGrids");
+        }
+        
       }
 
       bool gridWasTakenFromTheShowFile=false;
       if( useGridFromShowFile ) // *wdh* 090819 || cgSF.numberOfRefinementLevels()>1 || showFileGridIsMoving )
       {
         // use the grid from the show file in the case of AMR or moving grids
-	// use the grid from the show file if it has refinement levels -- fix this -- should be an option
+        // use the grid from the show file if it has refinement levels -- fix this -- should be an option
 
-	gridWasTakenFromTheShowFile=true;
-	
-	if( cgSF.numberOfRefinementLevels()>1 )
-	  printF("Grid in showfile has AMR grids. I will use this grid instead\n");
-	else if( showFileGridIsMoving )
-	  printF("Grid in showfile is moving. I will use this grid instead\n");
-	
+        gridWasTakenFromTheShowFile=true;
+        
+        if( cgSF.numberOfRefinementLevels()>1 )
+          printF("Grid in showfile has AMR grids. I will use this grid instead\n");
+        else if( showFileGridIsMoving )
+          printF("Grid in showfile is moving. I will use this grid instead\n");
+        
         // useGridFromShowFile=true;
         const int oldNumberOfBaseGrids=cg.numberOfBaseGrids();
-	
-	if( cg->interpolant!=NULL )
-	{
-	  printF("getInitialConditions:Interpolant is there. (showFileGridIsMoving=%i)\n",showFileGridIsMoving);
-	}
-	
+        
+        if( cg->interpolant!=NULL )
+        {
+          printF("getInitialConditions:Interpolant is there. (showFileGridIsMoving=%i)\n",showFileGridIsMoving);
+        }
+        
         Interpolant *interpolant=cg->interpolant;
-	cg.reference(cgSF);
-	if( true )
-	{
-	  // 100501 -- new way : fixes reference counting 
-	  if( interpolant!=NULL )
-	  {
-	    printF("update the interpolant..\n");
+        cg.reference(cgSF);
+        if( true )
+        {
+          // 100501 -- new way : fixes reference counting 
+          if( interpolant!=NULL )
+          {
+            printF("update the interpolant..\n");
             interpolant->updateToMatchGrid(cg);
-	  }
-	}
-	else
-	{
+          }
+        }
+        else
+        {
 
-	  cg->interpolant=interpolant;
-	  if( cg->interpolant!=NULL )
-	  {
-	    printF("update the interpolant..\n");
-	    cg->interpolant->updateToMatchGrid(cg);
-	  }
-	}
-	
-	gf[current].cg.reference(cg);  // *wdh* 061211
-	
-	u.updateToMatchGrid(cg,nullRange,nullRange,nullRange,parameters.dbase.get<int >("numberOfComponents")); 
-	parameters.updateToMatchGrid(cg);
+          cg->interpolant=interpolant;
+          if( cg->interpolant!=NULL )
+          {
+            printF("update the interpolant..\n");
+            cg->interpolant->updateToMatchGrid(cg);
+          }
+        }
+        
+        gf[current].cg.reference(cg);  // *wdh* 061211
+        
+        u.updateToMatchGrid(cg,nullRange,nullRange,nullRange,parameters.dbase.get<int >("numberOfComponents")); 
+        parameters.updateToMatchGrid(cg);
 
-	// For now the AMR overlapping grid interp points are not saved in the show file -- so we regenerate them here
-	// The problem is that these interp points need to live on the appropriate processor and thus it is
-	// easier to re-create them 
+        // For now the AMR overlapping grid interp points are not saved in the show file -- so we regenerate them here
+        // The problem is that these interp points need to live on the appropriate processor and thus it is
+        // easier to re-create them 
 #ifdef USE_PPP
-	printF("getInitialConditions::updateRefinements for AMR grid to build AMR interpolation points\n");
-	  
-	if(  parameters.dbase.get<Ogen* >("gridGenerator")==NULL )
-	  parameters.dbase.get<Ogen* >("gridGenerator") = new Ogen(*parameters.dbase.get<GenericGraphicsInterface* >("ps"));
-	parameters.dbase.get<Ogen* >("gridGenerator")->updateRefinement(cg);
+        printF("getInitialConditions::updateRefinements for AMR grid to build AMR interpolation points\n");
+          
+        if(  parameters.dbase.get<Ogen* >("gridGenerator")==NULL )
+          parameters.dbase.get<Ogen* >("gridGenerator") = new Ogen(*parameters.dbase.get<GenericGraphicsInterface* >("ps"));
+        parameters.dbase.get<Ogen* >("gridGenerator")->updateRefinement(cg);
 #endif
-	
+        
 
         // update equation domain lists here?
         if( cg.numberOfBaseGrids()>oldNumberOfBaseGrids && 
             parameters.dbase.get<ListOfEquationDomains* >("pEquationDomainList")!=NULL )
-	{
+        {
           ListOfEquationDomains & equationDomainList = *(parameters.dbase.get<ListOfEquationDomains* >("pEquationDomainList"));
           const int numberOfEquationDomains=equationDomainList.size();
           if( numberOfEquationDomains>1 )
-	  {
-	    printF("WARNING:read from show file: The grid in the show file has more base grids\n"
-		   " I am setting the EquationDomain for these extra base grids to be domain 0\n");
-	  }
-	  equationDomainList.gridDomainNumberList.resize(cg.numberOfComponentGrids());
-	  for( int grid=oldNumberOfBaseGrids; grid<cg.numberOfBaseGrids(); grid++ )
-	  { // Assume new base grids use equation domain 0 :
-	    equationDomainList.gridDomainNumberList[grid]=0;
-	  }
-	}
-	
+          {
+            printF("WARNING:read from show file: The grid in the show file has more base grids\n"
+                   " I am setting the EquationDomain for these extra base grids to be domain 0\n");
+          }
+          equationDomainList.gridDomainNumberList.resize(cg.numberOfComponentGrids());
+          for( int grid=oldNumberOfBaseGrids; grid<cg.numberOfBaseGrids(); grid++ )
+          { // Assume new base grids use equation domain 0 :
+            equationDomainList.gridDomainNumberList[grid]=0;
+          }
+        }
+        
         // assign equation domain numbers for any refinement grids:
         updateEquationDomainsForAMR( cg,parameters );
-	
+        
       } // end if useGridFromShowFile
       
 
-// 	GridCollection & rl = cg.refinementLevel[0];
-// 	printF(" number of grids on level=0 is %i\n",rl.numberOfGrids());
-// 	GridCollection & rl0 = (*u.getCompositeGrid()).refinementLevel[0];
-// 	printF(" number of grids on level=0 is %i\n",rl0.numberOfGrids());
+//      GridCollection & rl = cg.refinementLevel[0];
+//      printF(" number of grids on level=0 is %i\n",rl.numberOfGrids());
+//      GridCollection & rl0 = (*u.getCompositeGrid()).refinementLevel[0];
+//      printF(" number of grids on level=0 is %i\n",rl0.numberOfGrids());
       cgSF.update(MappedGrid::THEmask);
       cg.update(MappedGrid::THEmask);
       if( alwaysInterpolateFromShowFile || (!gridWasTakenFromTheShowFile && isDifferent(cg,cgSF)) )
       {
-	// kkc 090330 added the check for the number of components just in case we store more in the solution than needed
-	//            much of the code is copied from the stuff in the "else" section of the if block
-	Range all;
+        // kkc 090330 added the check for the number of components just in case we store more in the solution than needed
+        //            much of the code is copied from the stuff in the "else" section of the if block
+        Range all;
         const int numberOfComponentsSF=uSF.getComponentBound(0)-uSF.getComponentBase(0)+1;
-	const int nc=min(numberOfComponents,numberOfComponentsSF);
+        const int nc=min(numberOfComponents,numberOfComponentsSF);
         if( nc!=numberOfComponents )
-	{
-	  printF("getInitialConditions:WARNING:numberOfComponents in show file =%i is not equal "
+        {
+          printF("getInitialConditions:WARNING:numberOfComponents in show file =%i is not equal "
                  "to numberOfComponents=%i\n",
                  numberOfComponentsSF,numberOfComponents);
-	  if( numberOfComponents>nc )
+          if( numberOfComponents>nc )
             printF(" getInitialConditions:I am setting the values for the extra variables to zero.\n");
-	}
-	Range C(0,nc-1);
+        }
+        Range C(0,nc-1);
         printF("Interpolating the solution from the show file to the existing grid...\n");
-	// cg.update(MappedGrid::THEcenter); // *wdh* 110730 -- turn this off
+        // cg.update(MappedGrid::THEcenter); // *wdh* 110730 -- turn this off
 
-	if( true ) // Here is an even newer way which should handle all cases and parallel *wdh* 110321
-	{
+        if( true ) // Here is an even newer way which should handle all cases and parallel *wdh* 110321
+        {
           InterpolatePointsOnAGrid interp;
 
           interp.setAssignAllPoints(true);  // assign all points -- extrap if necessary
           // interp.setInterpolationWidth( width ); // we could change the interp width here
-	  
-	  interp.interpolateAllPoints( uSF,u, C, C );  // interpolate u from uSF
-	}
-	else if ( numberOfComponentsSF==numberOfComponents )
-	  { // kkc 090330 original way
-	    int status = interpolateAllPoints( uSF,u);
-	    if ( !status )
-	      printF("getInitialConditions:WARNING:interpolateAllPoints returned %i\n",status);
-	  }
-	else
-	{ // kkc 090330 only if there are a different number of components
-	  InterpolatePoints interp;
-	  interp.interpolateAllPoints( uSF,u, C, C );  // interpolate u from uSF
-	}
+          
+          interp.interpolateAllPoints( uSF,u, C, C );  // interpolate u from uSF
+        }
+        else if ( numberOfComponentsSF==numberOfComponents )
+          { // kkc 090330 original way
+            int status = interpolateAllPoints( uSF,u);
+            if ( !status )
+              printF("getInitialConditions:WARNING:interpolateAllPoints returned %i\n",status);
+          }
+        else
+        { // kkc 090330 only if there are a different number of components
+          InterpolatePoints interp;
+          interp.interpolateAllPoints( uSF,u, C, C );  // interpolate u from uSF
+        }
       }
       else
       {
         printF("readFromShow: Just copy values since the grids look the same. (Choose 'always interpolate' to force the"
                " solution to be interpolated.)\n");
 
-	Range all;
+        Range all;
         const int numberOfComponentsSF=uSF.getComponentBound(0)-uSF.getComponentBase(0)+1;
-	const int nc=min(numberOfComponents,numberOfComponentsSF);
+        const int nc=min(numberOfComponents,numberOfComponentsSF);
         if( nc!=numberOfComponents )
-	{
-	  printF("getInitialConditions:WARNING:numberOfComponents in show file =%i is not equal "
+        {
+          printF("getInitialConditions:WARNING:numberOfComponents in show file =%i is not equal "
                  "to numberOfComponents=%i\n",
                  numberOfComponentsSF,numberOfComponents);
-	  if( numberOfComponents>nc )
+          if( numberOfComponents>nc )
             printF(" getInitialConditions:I am setting the values for the extra variables to zero.\n");
-	}
-	Range C(0,nc-1);
-	for( int grid=0; grid<cg.numberOfGrids(); grid++ )
-	{
+        }
+        Range C(0,nc-1);
+        for( int grid=0; grid<cg.numberOfGrids(); grid++ )
+        {
           if( nc<numberOfComponents )
-	  {
+          {
             // u[grid](all,all,all,Range(nc,numberOfComponents-1))=0.;  // ----------------- fix this ------------
             assign(u[grid],0.,all,all,all,Range(nc,numberOfComponents-1));
-	  }
-	  
-	  // ::display(uSF[grid],"uSF","%5.2f ");
-	  
+          }
+          
+          // ::display(uSF[grid],"uSF","%5.2f ");
+          
 
-	  // u[grid](all,all,all,C)=uSF[grid](all,all,all,C);
+          // u[grid](all,all,all,C)=uSF[grid](all,all,all,C);
           assign( u[grid],all,all,all,C, uSF[grid],all,all,all,C);
-	  
+          
           RealArray uMin(numberOfComponents),uMax(numberOfComponents);
-	  
+          
           GridFunctionNorms::getBounds(u[grid],uMin,uMax);  
 
-// 	  for( int c=0; c<numberOfComponents; c++ )
-// 	  {
+//        for( int c=0; c<numberOfComponents; c++ )
+//        {
 //             real minU,maxU;
-// 	    where( cg[grid].mask()!=0 )
-// 	    {
-// 	      minU=min(u[grid](all,all,all,c));
-// 	      maxU=max(u[grid](all,all,all,c));
-// 	    }
-	  for( int c=0; c<numberOfComponents; c++ )
-	  {
-	    printF("Values from show file: grid=%i: component=%i: min=%e, max=%e \n",grid,c,uMin(c),uMax(c));
-	  }
-	}
+//          where( cg[grid].mask()!=0 )
+//          {
+//            minU=min(u[grid](all,all,all,c));
+//            maxU=max(u[grid](all,all,all,c));
+//          }
+          for( int c=0; c<numberOfComponents; c++ )
+          {
+            printF("Values from show file: grid=%i: component=%i: min=%e, max=%e \n",grid,c,uMin(c),uMax(c));
+          }
+        }
         if( Parameters::checkForFloatingPointErrors )
           checkSolution(u,"getInitialCond");
       }
       
       if( false && cg.numberOfRefinementLevels()>1 )
       {
-	PlotStuffParameters & psp = parameters.dbase.get<GraphicsParameters >("psp");
+        PlotStuffParameters & psp = parameters.dbase.get<GraphicsParameters >("psp");
         psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
-	// psp.set(GI_TOP_LABEL,"getInitialConditions: Solution from the show file");
-	// PlotIt::contour(gi,u,psp);
+        // psp.set(GI_TOP_LABEL,"getInitialConditions: Solution from the show file");
+        // PlotIt::contour(gi,u,psp);
 
         printF(" gf[current].cg.numberOfRefinementLevels()=%i \n",cg.numberOfRefinementLevels());
-	
+        
         psp.set(GI_TOP_LABEL,"getInitialConditions: cg.refinementLevel[1]");
-	PlotIt::plot(gi,cg.refinementLevel[1],psp);
+        PlotIt::plot(gi,cg.refinementLevel[1],psp);
 
         psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
       }
@@ -1251,7 +1251,7 @@ getInitialConditions(const aString & command /* = nullString */,
 
       if( useGridFromShowFile )
       { // delete the show file solution since it is no longer needed.
-	delete puSF;  puSF=NULL;
+        delete puSF;  puSF=NULL;
         delete pcgSF; pcgSF=NULL;
       }
       
@@ -1276,9 +1276,9 @@ getInitialConditions(const aString & command /* = nullString */,
       initialConditionOption=Parameters::readInitialConditionFromRestartFile; newInitialConditionsChosen=true;
 
       gi.inputString(answer,sPrintF(buff,"Enter the restart file name (default value=%s)",
-				    (const char *)parameters.dbase.get<aString >("restartFileName")));
+                                    (const char *)parameters.dbase.get<aString >("restartFileName")));
       if( answer!="" )
-	parameters.dbase.get<aString >("restartFileName")=answer;
+        parameters.dbase.get<aString >("restartFileName")=answer;
       printF(" attempt to read the restart file\n");
 
       readRestartFile(u,tInitial,parameters.dbase.get<aString >("restartFileName"));  
@@ -1296,33 +1296,33 @@ getInitialConditions(const aString & command /* = nullString */,
     
       for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
       {
-	MappedGrid & c = cg[grid];
+        MappedGrid & c = cg[grid];
         #ifdef USE_PPP
          realSerialArray uLocal; getLocalArrayWithGhostBoundaries(u[grid],uLocal);
         #else
          realSerialArray & uLocal = u[grid]; 
         #endif
 
-	getIndex( c.dimension(),I1,I2,I3 );
+        getIndex( c.dimension(),I1,I2,I3 );
         
         int includeGhost=1;
-	bool ok = ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1,I2,I3,includeGhost);
-	if( !ok ) continue;
-	ForAllComponents( n )
-	{
-	  if( initialConditions(n)!=(real)Parameters::defaultValue )
-	  {
-	    // u[grid](I1,I2,I3,n)=initialConditions(n);
+        bool ok = ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1,I2,I3,includeGhost);
+        if( !ok ) continue;
+        ForAllComponents( n )
+        {
+          if( initialConditions(n)!=(real)Parameters::defaultValue )
+          {
+            // u[grid](I1,I2,I3,n)=initialConditions(n);
             // assign( u[grid],initialConditions(n),I1,I2,I3,n);
             uLocal(I1,I2,I3,n)=initialConditions(n);
-	  }
-	  else
-	  {
-	    // u[grid](I1,I2,I3,n)=0.;
+          }
+          else
+          {
+            // u[grid](I1,I2,I3,n)=0.;
             // assign( u[grid],0.,I1,I2,I3,n);
             uLocal(I1,I2,I3,n)=0.;
-	  }
-	}
+          }
+        }
       }
     }
     else if( answer=="step function" || answer=="rotated step function" || answer=="smooth step function" )
@@ -1342,43 +1342,43 @@ getInitialConditions(const aString & command /* = nullString */,
       if( answer=="step function" || answer=="smooth step function" )
       {
         gi.inputString(answer2,"Enter the step function position: `x=value' or `y=value' or `z=value'");
-	// also allow a*x+b*y=c
-	char buff[80];
-	sScanF(answer2,"%1s=%e",buff,&stepPosition);
-	stepNormalEquationValue=stepPosition;
-	aString axisName;
-	axisName=buff;
+        // also allow a*x+b*y=c
+        char buff[80];
+        sScanF(answer2,"%1s=%e",buff,&stepPosition);
+        stepNormalEquationValue=stepPosition;
+        aString axisName;
+        axisName=buff;
         stepNormalx=stepNormaly=stepNormalz=0.;
-	if( axisName=="x" )
-	{
-	  stepAxis=0;
-	  stepNormalx=1.;
-	}
-	else if( axisName=="y" )
-	{
-	  stepAxis=1;
-	  stepNormaly=1.;
-	}
-	else if( axisName=="z" )
-	{
-	  stepAxis=2;
-	  stepNormalz=1.;
-	}
-	else
-	{
-	  printF("ERROR: Expecting an answer of the form `x=value' or `y=value' or `z=value', answer=[%s]\n",(const char*)answer2);
+        if( axisName=="x" )
+        {
+          stepAxis=0;
+          stepNormalx=1.;
+        }
+        else if( axisName=="y" )
+        {
+          stepAxis=1;
+          stepNormaly=1.;
+        }
+        else if( axisName=="z" )
+        {
+          stepAxis=2;
+          stepNormalz=1.;
+        }
+        else
+        {
+          printF("ERROR: Expecting an answer of the form `x=value' or `y=value' or `z=value', answer=[%s]\n",(const char*)answer2);
           gi.stopReadingCommandFile();
-	  break;
-	}
-	
+          break;
+        }
+        
         if( answer=="smooth step function" )
-	{
-	  stepSharpness=20.;
-	  gi.inputString(answer2,"Enter the sharpness exponent beta, tanh(beta*(x-x0))");
-	  sScanF(answer2,"%e",&stepSharpness);
+        {
+          stepSharpness=20.;
+          gi.inputString(answer2,"Enter the sharpness exponent beta, tanh(beta*(x-x0))");
+          sScanF(answer2,"%e",&stepSharpness);
           printF(" step sharpness = %e\n",stepSharpness);
-	}
-	
+        }
+        
 
       }
       else
@@ -1386,9 +1386,9 @@ getInitialConditions(const aString & command /* = nullString */,
         // look for a*x+b*y=d
         gi.inputString(answer2,"Enter step equation parameters a,b,c,d (ax+by+cz=d)");
         stepNormalx=1.;
-	stepNormaly=-.2;
-	stepNormalz=0.;
-	stepNormalEquationValue=.15;
+        stepNormaly=-.2;
+        stepNormalz=0.;
+        stepNormalEquationValue=.15;
 
         sScanF(answer2,"%e %e %e %e",&stepNormalx,&stepNormaly,&stepNormalz,&stepNormalEquationValue);
 /* ---
@@ -1398,12 +1398,12 @@ getInitialConditions(const aString & command /* = nullString */,
         sScanF(answer2(0,i-1),"%e",&a);
         i+=3;
         int i0=i;
-	while( answer[i]!='*' && i<length ) i++;
+        while( answer[i]!='*' && i<length ) i++;
         sScanF(answer2(i0,i-1),"%e",&b);
         i0=i+3;
-	sScanF(answer2(i0,length-1),"%e",&d);
+        sScanF(answer2(i0,length-1),"%e",&d);
 --- */
-	
+        
 
       }
       stepPosition=stepNormalEquationValue;
@@ -1448,53 +1448,53 @@ getInitialConditions(const aString & command /* = nullString */,
     
       for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
       {
-	MappedGrid & c = cg[grid];
+        MappedGrid & c = cg[grid];
         const realArray & center = c.center();
-	getIndex( c.dimension(),I1,I2,I3 );
-	u[grid](I1,I2,I3,pc)=0.;
-	if( cg.numberOfDimensions()==2 )
-	{
-	  u[grid](I1,I2,I3,uc)=(-sin(twoPi*center(I1,I2,I3,axis2))
-				*sin(   Pi*center(I1,I2,I3,axis1))
-				*sin(   Pi*center(I1,I2,I3,axis1)));
-	  u[grid](I1,I2,I3,vc)=(+sin(twoPi*center(I1,I2,I3,axis1))
-				*sin(   Pi*center(I1,I2,I3,axis2))
-				*sin(   Pi*center(I1,I2,I3,axis2)));
-	}
-	else
-	{
-	  const int symmetryAxis=axis1;
-	  if( symmetryAxis==axis3 )
-	  {
-	    u[grid](I1,I2,I3,uc)=(-sin(twoPi*center(I1,I2,I3,axis2))
-				  *sin(   Pi*center(I1,I2,I3,axis1))
-				  *sin(   Pi*center(I1,I2,I3,axis1)));
-	    u[grid](I1,I2,I3,vc)=(+sin(twoPi*center(I1,I2,I3,axis1))
-				  *sin(   Pi*center(I1,I2,I3,axis2))
-				  *sin(   Pi*center(I1,I2,I3,axis2)));
-	    u[grid](I1,I2,I3,wc)=0.;
-	  }
-	  else if( symmetryAxis==axis1 ) 
-	  {
-	    u[grid](I1,I2,I3,uc)=0.;
-	    u[grid](I1,I2,I3,vc)=(-sin(twoPi*center(I1,I2,I3,axis3))
-				  *sin(   Pi*center(I1,I2,I3,axis2))
-				  *sin(   Pi*center(I1,I2,I3,axis2)));
-	    u[grid](I1,I2,I3,wc)=(+sin(twoPi*center(I1,I2,I3,axis2))
-				  *sin(   Pi*center(I1,I2,I3,axis3))
-				  *sin(   Pi*center(I1,I2,I3,axis3)));
-	  }
-	  else 
-	  {
-	    u[grid](I1,I2,I3,uc)=(-sin(twoPi*center(I1,I2,I3,axis3))
-				  *sin(   Pi*center(I1,I2,I3,axis1))
-				  *sin(   Pi*center(I1,I2,I3,axis1)));
-	    u[grid](I1,I2,I3,vc)=0.;
-	    u[grid](I1,I2,I3,wc)=(+sin(twoPi*center(I1,I2,I3,axis1))
-				  *sin(   Pi*center(I1,I2,I3,axis3))
-				  *sin(   Pi*center(I1,I2,I3,axis3)));
-	  }
-	}
+        getIndex( c.dimension(),I1,I2,I3 );
+        u[grid](I1,I2,I3,pc)=0.;
+        if( cg.numberOfDimensions()==2 )
+        {
+          u[grid](I1,I2,I3,uc)=(-sin(twoPi*center(I1,I2,I3,axis2))
+                                *sin(   Pi*center(I1,I2,I3,axis1))
+                                *sin(   Pi*center(I1,I2,I3,axis1)));
+          u[grid](I1,I2,I3,vc)=(+sin(twoPi*center(I1,I2,I3,axis1))
+                                *sin(   Pi*center(I1,I2,I3,axis2))
+                                *sin(   Pi*center(I1,I2,I3,axis2)));
+        }
+        else
+        {
+          const int symmetryAxis=axis1;
+          if( symmetryAxis==axis3 )
+          {
+            u[grid](I1,I2,I3,uc)=(-sin(twoPi*center(I1,I2,I3,axis2))
+                                  *sin(   Pi*center(I1,I2,I3,axis1))
+                                  *sin(   Pi*center(I1,I2,I3,axis1)));
+            u[grid](I1,I2,I3,vc)=(+sin(twoPi*center(I1,I2,I3,axis1))
+                                  *sin(   Pi*center(I1,I2,I3,axis2))
+                                  *sin(   Pi*center(I1,I2,I3,axis2)));
+            u[grid](I1,I2,I3,wc)=0.;
+          }
+          else if( symmetryAxis==axis1 ) 
+          {
+            u[grid](I1,I2,I3,uc)=0.;
+            u[grid](I1,I2,I3,vc)=(-sin(twoPi*center(I1,I2,I3,axis3))
+                                  *sin(   Pi*center(I1,I2,I3,axis2))
+                                  *sin(   Pi*center(I1,I2,I3,axis2)));
+            u[grid](I1,I2,I3,wc)=(+sin(twoPi*center(I1,I2,I3,axis2))
+                                  *sin(   Pi*center(I1,I2,I3,axis3))
+                                  *sin(   Pi*center(I1,I2,I3,axis3)));
+          }
+          else 
+          {
+            u[grid](I1,I2,I3,uc)=(-sin(twoPi*center(I1,I2,I3,axis3))
+                                  *sin(   Pi*center(I1,I2,I3,axis1))
+                                  *sin(   Pi*center(I1,I2,I3,axis1)));
+            u[grid](I1,I2,I3,vc)=0.;
+            u[grid](I1,I2,I3,wc)=(+sin(twoPi*center(I1,I2,I3,axis1))
+                                  *sin(   Pi*center(I1,I2,I3,axis3))
+                                  *sin(   Pi*center(I1,I2,I3,axis3)));
+          }
+        }
       }
     }
   
@@ -1509,36 +1509,36 @@ getInitialConditions(const aString & command /* = nullString */,
     }
     else if ( answer=="no forcing" )
       {
-	if ( parameters.dbase.get<realCompositeGridFunction* >("forcingFunction") ) 
-	  {
-	    delete parameters.dbase.get<realCompositeGridFunction* >("forcingFunction");
-	    parameters.dbase.get<realCompositeGridFunction* >("forcingFunction") = 0;
-	  }
+        if ( parameters.dbase.get<realCompositeGridFunction* >("forcingFunction") ) 
+          {
+            delete parameters.dbase.get<realCompositeGridFunction* >("forcingFunction");
+            parameters.dbase.get<realCompositeGridFunction* >("forcingFunction") = 0;
+          }
       }
     else if ( answer=="showfile forcing" )
       {
-	aString fileName;
-	gi.inputFileName(fileName,"Enter the name of the forcing function show file (e.g. forcing.show)");
-	if ( fileName != "" )
-	  {
-	    ShowFileReader showFileReader;
-	    showFileReader.open(fileName);
-	    int numberOfFrames=showFileReader.getNumberOfFrames();
-	    int numberOfSolutions = max(1,numberOfFrames);
-	    solutionNumber=numberOfSolutions;  
+        aString fileName;
+        gi.inputFileName(fileName,"Enter the name of the forcing function show file (e.g. forcing.show)");
+        if ( fileName != "" )
+          {
+            ShowFileReader showFileReader;
+            showFileReader.open(fileName);
+            int numberOfFrames=showFileReader.getNumberOfFrames();
+            int numberOfSolutions = max(1,numberOfFrames);
+            solutionNumber=numberOfSolutions;  
 
-	    CompositeGrid cgSF;
-	    realCompositeGridFunction uSF(cg);
-	    showFileReader.getASolution(solutionNumber,cgSF,uSF);
-	    parameters.dbase.get<realCompositeGridFunction* >("forcingFunction") = new realCompositeGridFunction;
-	    parameters.dbase.get<realCompositeGridFunction* >("forcingFunction")->updateToMatchGridFunction(u);
-	    cg.update(MappedGrid::THEcenter);
-	    cgSF.update(MappedGrid::THEmask);
-	    cg.update(MappedGrid::THEmask);
-	    interpolateAllPoints( uSF,*parameters.dbase.get<realCompositeGridFunction* >("forcingFunction") );  // interpolate u from uSF
-	    parameters.dbase.get<Parameters::ForcingType >("forcingType") = Parameters::showfileForcing;
-	    //	    PlotIt::contour(gi,*parameters.dbase.get<realCompositeGridFunction* >("forcingFunction"));
-	  }
+            CompositeGrid cgSF;
+            realCompositeGridFunction uSF(cg);
+            showFileReader.getASolution(solutionNumber,cgSF,uSF);
+            parameters.dbase.get<realCompositeGridFunction* >("forcingFunction") = new realCompositeGridFunction;
+            parameters.dbase.get<realCompositeGridFunction* >("forcingFunction")->updateToMatchGridFunction(u);
+            cg.update(MappedGrid::THEcenter);
+            cgSF.update(MappedGrid::THEmask);
+            cg.update(MappedGrid::THEmask);
+            interpolateAllPoints( uSF,*parameters.dbase.get<realCompositeGridFunction* >("forcingFunction") );  // interpolate u from uSF
+            parameters.dbase.get<Parameters::ForcingType >("forcingType") = Parameters::showfileForcing;
+            //      PlotIt::contour(gi,*parameters.dbase.get<realCompositeGridFunction* >("forcingFunction"));
+          }
       }
     else if( dialog.getTextValue(answer,"initial time","%g",tInitial) )
     {
@@ -1561,16 +1561,16 @@ getInitialConditions(const aString & command /* = nullString */,
       int component=-1;
       for( int n=0; n<numberOfComponents; n++ )
       {
-	if( name==u.getName(n) )
-	{
-	  component=n;
-	  break;
-	}
+        if( name==u.getName(n) )
+        {
+          component=n;
+          break;
+        }
       }
       if( component==-1 )
       {
-	printF("ERROR: unknown component name =[%s]\n",(const char*)name);
-	component=0;
+        printF("ERROR: unknown component name =[%s]\n",(const char*)name);
+        component=0;
       }
       dialog.getOptionMenu("plot component:").setCurrentChoice(component);
       parameters.dbase.get<GraphicsParameters >("psp").set(GI_COMPONENT_FOR_CONTOURS,component);
@@ -1580,13 +1580,13 @@ getInitialConditions(const aString & command /* = nullString */,
     {
       if( executeCommand )
       {
-	returnValue= 1;  // when executing a single command, return 1 if the command was not recognised.
+        returnValue= 1;  // when executing a single command, return 1 if the command was not recognised.
         break;
       }
       else
       {
-	printF("Unknown response: [%s]\n",(const char*)answer);
-	gi.stopReadingCommandFile();
+        printF("Unknown response: [%s]\n",(const char*)answer);
+        gi.stopReadingCommandFile();
       }
        
     }
@@ -1595,13 +1595,13 @@ getInitialConditions(const aString & command /* = nullString */,
     {
       // Assign the initial conditions (AMR hierachy is built later in buildAmrGridsForInitialConditions)
       if(  newInitialConditionsChosen &&
-	   (initialConditionOption==Parameters::uniformInitialCondition || 
-	    initialConditionOption==Parameters::stepFunctionInitialCondition ||
+           (initialConditionOption==Parameters::uniformInitialCondition || 
+            initialConditionOption==Parameters::stepFunctionInitialCondition ||
             initialConditionOption==Parameters::twilightZoneFunctionInitialCondition ||
-	    initialConditionOption==Parameters::userDefinedInitialCondition ||
+            initialConditionOption==Parameters::userDefinedInitialCondition ||
             initialConditionOption==Parameters::knownSolutionInitialCondition ) )
       {
-	assignInitialConditions(current);
+        assignInitialConditions(current);
 
       }
       

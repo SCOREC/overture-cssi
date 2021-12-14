@@ -9,7 +9,7 @@ ArrayEvolution::
 ArrayEvolution()
 {
   current=-1;                   // current time level in vector
-  maximumNumberOfTimeLevels=4;  // max levels to store in vectors 
+  maximumNumberOfTimeLevels=5;  // max levels to store in vectors 
   orderOfTimeAccuracy=2;        // default order of accuracy 
 }
 
@@ -135,10 +135,11 @@ int ArrayEvolution::eval( real t, RealArray & x, int numberOfDerivatives /* =0 *
       // int numLevelsNeeded=orderOfAccuracy;
 
       // do this for now, assume t is closest to current time:
-      int l1=      current;
-      int l2=ovmod(current-1,maximumNumberOfTimeLevels);
-      int l3=ovmod(current-2,maximumNumberOfTimeLevels);
-      int l4=ovmod(current-3,maximumNumberOfTimeLevels);
+      const int l1=      current;
+      const int l2=ovmod(current-1,maximumNumberOfTimeLevels);
+      const int l3=ovmod(current-2,maximumNumberOfTimeLevels);
+      const int l4=ovmod(current-3,maximumNumberOfTimeLevels);
+      const int l5=ovmod(current-4,maximumNumberOfTimeLevels); // added Dec 13, 2021 for champ4
       if( numberOfTimesLevels>1 )
       {
         // check that t is closest to times[l1] 
@@ -189,8 +190,28 @@ int ArrayEvolution::eval( real t, RealArray & x, int numberOfDerivatives /* =0 *
         real c4 = ( (t-t1)*(t-t2)*(t-t3) )/( (t4-t1)*(t4-t2)*(t4-t3) );
         x = c1*timeHistory[l1] + c2*timeHistory[l2] + c3*timeHistory[l3] + c4*timeHistory[l4];
       }
+      else if( orderOfAccuracy==5 || numberOfTimesLevels<=4 ) 
+      {
+        // *new* Dec 13, 2021 *check me*
+        if( orderOfAccuracy>5 )
+          printF("ArrayEvolution:eval:WARNING: t=%9.3e: requested orderOfAccuracy=%i "
+                 "but only computing to order=4 since there are only %i time-levels\n",
+                 t,orderOfAccuracy,numberOfTimesLevels);
+        // Lagrange interpolation in time, 5 time levels
+        real t1=times[l1], t2=times[l2], t3=times[l3], t4=times[l4], t5=times[l5];
+        assert( fabs(t1-t2) > tEps && fabs(t2-t3)>tEps && fabs(t3-t4)>tEps && fabs(t4-t5)>tEps );
+
+        const real c1 = ( (t-t2)*(t-t3)*(t-t4)*(t-t5) )/( (t1-t2)*(t1-t3)*(t1-t4)*(t1-t5) );
+        const real c2 = ( (t-t3)*(t-t4)*(t-t5)*(t-t1) )/( (t2-t3)*(t2-t4)*(t2-t5)*(t2-t1) );
+        const real c3 = ( (t-t4)*(t-t5)*(t-t1)*(t-t2) )/( (t3-t4)*(t3-t5)*(t3-t1)*(t3-t2) );
+        const real c4 = ( (t-t5)*(t-t1)*(t-t2)*(t-t3) )/( (t4-t5)*(t4-t1)*(t4-t2)*(t4-t3) );
+        const real c5 = ( (t-t1)*(t-t2)*(t-t3)*(t-t4) )/( (t5-t1)*(t5-t2)*(t5-t3)*(t5-t4) );
+
+        x = c1*timeHistory[l1] + c2*timeHistory[l2] + c3*timeHistory[l3] + c4*timeHistory[l4] + c5*timeHistory[l5];
+      }      
       else
       {
+        // --- could implement general case ---
         printF("ArrayEvolution:eval:ERROR: orderOfAccuracy=%i not implemented\n",orderOfAccuracy);
         OV_ABORT("finish me");
       }

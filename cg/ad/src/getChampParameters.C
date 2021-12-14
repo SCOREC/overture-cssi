@@ -45,12 +45,18 @@ int getChampParameters( int grid, int side, int axis, real dt, real dx, Paramete
   Real lambdaD = kappaLeft[0]*dt/(dx*dx); 
 
   // do this for now 
-  Real pl =1.;
+  Real pl =1.;  // default value 
   Real pr =1.; 
   // printF("***** fillChampBC: (side,axis,grid)=(%d,%d,%d) : theta=Kleft/Kright=%g, beta=Dleft/Dright=%g, Sl=%g, Sr=%g\n ****",side,axis,grid,theta,beta,Sl,Sr);
 
-  champParameters(0,side,axis,grid)=pl;     // optimized Scwartz Parameter for side 1 : Sl = pl/dx
-  champParameters(1,side,axis,grid)=pr;     // optimized Scwartz Parameter for side 2 : Sr = pr/dx 
+  if( champParameters(0,side,axis,grid)<0  )
+  {
+     // use default.
+    // This value may have been set in CgAd: setupPdeParameters
+    champParameters(0,side,axis,grid)=pl;     // optimized Scwartz Parameter for side 1 : Sl = pl/dx
+  }
+  champParameters(1,side,axis,grid)=pr;     // optimized Scwartz Parameter for side 2 : Sr = pr/dx   ** FIX ME : get from other side if needed
+
   champParameters(2,side,axis,grid)=theta;  // K1/K2
   champParameters(3,side,axis,grid)=beta;   // D1/D2         
 

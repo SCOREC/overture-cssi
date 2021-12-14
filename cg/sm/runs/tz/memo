@@ -1,4 +1,86 @@
 *************************
+**** Fri Oct 22, 2021
+
+return to 3D -> do more tests
+
+periodic box -- looks ok 
+cgsm -noplot tz -g=sphereInABoxe2ppp.order2 -diss=0 -tf=.5 -tp=.01 -psolver=best -tz=trig -fx=1 -fy=1 -fz=1 -pv=nc -ts=me -incompressible=1 -upwindSOS=0 -bc1=t -bc2=t -bc3=e -bc4=e -bc5=e -bc6=e -bc7=t -go=og
+
+-->t=1.0000e-02 dt=5.0e-03 maxNorm errors:[1.8750e-03,1.0955e-03,1.1887e-03,1.2355e-01,], maxNorm(u):[1.00e+00,5.00e-01,5.00e-01,1.05e+00,]
+>>> Cgsm: ILE22: t=1.00e-02, steps=2, dt=5.0e-03 TS=ME |div(U)|=9.22e-02, |curl(U)|=2.73e-02, |div(U)|/|grad(U)|=2.95e-02 |grad(U)|=3.13e+00, cpu=1.15e+02(s)
+-->t=2.0000e-02 dt=5.0e-03 maxNorm errors:[1.8578e-03,1.1011e-03,1.2009e-03,5.2937e-02,], maxNorm(u):[9.98e-01,4.99e-01,4.99e-01,1.03e+00,]
+>>> Cgsm: ILE22: t=2.00e-02, steps=4, dt=5.0e-03 TS=ME |div(U)|=8.83e-02, |curl(U)|=2.73e-02, |div(U)|/|grad(U)|=2.83e-02 |grad(U)|=3.12e+00, cpu=2.72e+02(s)
+-->t=3.0000e-02 dt=5.0e-03 maxNorm errors:[1.8311e-03,1.4863e-03,1.2157e-03,6.0489e-02,], maxNorm(u):[9.96e-01,4.98e-01,4.98e-01,1.02e+00,]
+>>> Cgsm: ILE22: t=3.00e-02, steps=6, dt=5.0e-03 TS=ME |div(U)|=8.42e-02, |curl(U)|=2.74e-02, |div(U)|/|grad(U)|=2.70e-02 |grad(U)|=3.11e+00, cpu=3.17e+02(s)
+
+
+-bc7=t : looks ok
+cgsm -noplot tz -g=sphereInABoxe2.order2 -diss=0 -tf=.5 -tp=.01 -psolver=best -tz=poly -degreex=2 -degreet=2 -pv=nc -ts=me -incompressible=1 -upwindSOS=0 -bc1=t -bc2=t -bc3=e -bc4=e -bc5=e -bc6=e -bc7=t -go=og
+
+-->t=1.0000e-02 dt=5.0e-03 maxNorm errors:[4.6261e-04,6.9689e-04,5.1883e-04,1.0105e-01,], maxNorm(u):[3.87e+01,4.75e+01,2.04e+01,3.78e+01,]
+>>> Cgsm: ILE22: t=1.00e-02, steps=2, dt=5.0e-03 TS=ME degree(X,T)=(2,2) |div(U)|=1.60e-01, |curl(U)|=6.03e+00, |div(U)|/|grad(U)|=7.59e-03 |grad(U)|=2.11e+01, cpu=4.84e+01(s)
+-->t=2.0000e-02 dt=5.0e-03 maxNorm errors:[8.8865e-04,9.8393e-04,9.1538e-04,1.3996e-01,], maxNorm(u):[3.89e+01,4.77e+01,2.05e+01,3.80e+01,]
+>>> Cgsm: ILE22: t=2.00e-02, steps=4, dt=5.0e-03 TS=ME degree(X,T)=(2,2) |div(U)|=1.58e-01, |curl(U)|=6.06e+00, |div(U)|/|grad(U)|=7.45e-03 |grad(U)|=2.12e+01, cpu=7.30e+01(s)
+-->t=3.0000e-02 dt=5.0e-03 maxNorm errors:[1.4231e-03,1.3855e-03,1.1515e-03,1.4538e-01,], maxNorm(u):[3.91e+01,4.80e+01,2.06e+01,3.82e+01,]
+>>> Cgsm: ILE22: t=3.00e-02, steps=6, dt=5.0e-03 TS=ME degree(X,T)=(2,2) |div(U)|=1.56e-01, |curl(U)|=6.09e+00, |div(U)|/|grad(U)|=7.33e-03 |grad(U)|=2.13e+01, cpu=9.24e+01(s)
+-->t=4.0000e-02 dt=5.0e-03 maxNorm errors:[2.3157e-03,1.9614e-03,1.5185e-03,1.4169e-01,], maxNorm(u):[3.93e+01,4.82e+01,2.07e+01,3.84e+01,]
+>>> Cgsm: ILE22: t=4.00e-02, steps=8, dt=5.0e-03 TS=ME degree(X,T)=(2,2) |div(U)|=1.54e-01, |curl(U)|=6.12e+00, |div(U)|/|grad(U)|=7.20e-03 |grad(U)|=2.14e+01, cpu=1.12e+02(s)
+
+
+
+
+sphere-in-a-box: looks ok 
+cgsm -noplot tz -g=sphereInABoxe2.order2 -diss=0 -tf=.5 -tp=.01 -psolver=best -tz=poly -degreex=2 -degreet=2 -pv=nc -ts=me -incompressible=1 -upwindSOS=0 -bc1=t -bc2=t -bc3=e -bc4=e -bc5=e -bc6=e -go=og
+
+-->t=1.0000e-02 dt=5.0e-03 maxNorm errors:[4.6499e-04,6.9581e-04,5.1906e-04,2.6622e-01,], maxNorm(u):[3.87e+01,4.75e+01,2.04e+01,3.78e+01,]
+>>> Cgsm: ILE22: t=1.00e-02, steps=2, dt=5.0e-03 TS=ME degree(X,T)=(2,2) |div(U)|=1.60e-01, |curl(U)|=6.03e+00, |div(U)|/|grad(U)|=7.59e-03 |grad(U)|=2.11e+01, cpu=5.20e+01(s)
+-->t=2.0000e-02 dt=5.0e-03 maxNorm errors:[8.1015e-04,8.1321e-04,7.7893e-04,2.5851e-01,], maxNorm(u):[3.89e+01,4.77e+01,2.05e+01,3.80e+01,]
+>>> Cgsm: ILE22: t=2.00e-02, steps=4, dt=5.0e-03 TS=ME degree(X,T)=(2,2) |div(U)|=1.58e-01, |curl(U)|=6.06e+00, |div(U)|/|grad(U)|=7.44e-03 |grad(U)|=2.12e+01, cpu=1.19e+02(s)
+-->t=3.0000e-02 dt=5.0e-03 maxNorm errors:[1.5795e-03,1.4103e-03,1.1997e-03,2.8529e-01,], maxNorm(u):[3.91e+01,4.80e+01,2.06e+01,3.82e+01,]
+>>> Cgsm: ILE22: t=3.00e-02, steps=6, dt=5.0e-03 TS=ME degree(X,T)=(2,2) |div(U)|=1.56e-01, |curl(U)|=6.09e+00, |div(U)|/|grad(U)|=7.32e-03 |grad(U)|=2.13e+01, cpu=1.94e+02(s)
+-->t=4.0000e-02 dt=5.0e-03 maxNorm errors:[2.4845e-03,2.0981e-03,1.5954e-03,2.0545e-01,], maxNorm(u):[3.93e+01,4.82e+01,2.07e+01,3.84e+01,]
+>>> Cgsm: ILE22: t=4.00e-02, steps=8, dt=5.0e-03 TS=ME degree(X,T)=(2,2) |div(U)|=1.55e-01, |curl(U)|=6.12e+00, |div(U)|/|grad(U)|=7.21e-03 |grad(U)|=2.14e+01, cpu=2.17e+02(s)
+-->t=5.0000e-02 dt=5.0e-03 maxNorm errors:[3.4570e-03,2.8572e-03,2.1489e-03,1.4796e-01,], maxNorm(u):[3.95e+01,4.85e+01,2.08e+01,3.86e+01,]
+>>> Cgsm: ILE22: t=5.00e-02, steps=10, dt=5.0e-03 TS=ME degree(X,T)=(2,2) |div(U)|=1.53e-01, |curl(U)|=6.16e+00, |div(U)|/|grad(U)|=7.10e-03 |grad(U)|=2.15e+01, cpu=2.40e+02(s)
+
+
+
+
+
+-psolver=best: 
+cgsm -noplot tz -g=nonBox2.order2 -diss=0 -tf=.5 -tp=.1 -psolver=best -tz=poly -degreex=2 -degreet=2 -pv=nc -ts=me -incompressible=1 -upwindSOS=0 -bc1=t -bc2=t -bc3=e -bc4=e -bc5=e -bc6=e -go=og
+
+NON-BOX -- EXACT
+cgsm -noplot tz -g=nonBox1.order2 -diss=0 -tf=.5 -tp=.1 -tz=poly -degreex=2 -degreet=2 -pv=nc -ts=me -incompressible=1 -upwindSOS=0 -bc1=t -bc2=t -bc3=e -bc4=e -bc5=e -bc6=e -go=og
+
+BOX
+cgsm -noplot tz -g=box1.order2 -diss=0 -tf=.5 -tp=.1 -tz=poly -degreex=2 -degreet=2 -pv=nc -ts=me -incompressible=1 -upwindSOS=0 -bc1=t -bc2=t -bc3=e -bc4=e -bc5=e -bc6=e -go=og
+
+
+
+*************************
+**** Fri Oct 16, 2021
+
+
+test pc2 on curvilinear
+
+exact: 
+cgsm -noplot tz -g=nonSquare16.order2 -diss=0 -tf=1 -tp=.1 -tz=poly -degreex=2 -degreet=2 -pv=nc -ts=pc2 -incompressible=1 -upwindSOS=0 -bc1=t -bc2=e -bc3=e -bc4=e -go=og
+
+exact
+cgsm -noplot tz -g=rotatedSquare16.order2 -diss=0 -tf=1 -tp=.1 -tz=poly -degreex=2 -degreet=2 -pv=nc -ts=pc2 -incompressible=1 -upwindSOS=0 -bc1=t -bc2=e -bc3=e -bc4=e -go=og
+
+*************************
+**** Wed Oct 13, 2021
+
+Return to 3D ILE
+
+EXACT
+cgsm -noplot tz -g=box1.order2 -diss=0 -tf=.5 -tp=.1 -tz=poly -degreex=2 -degreet=2 -pv=nc -ts=me -incompressible=1 -upwindSOS=0 -bc1=e -bc2=e -bc3=e -bc4=e -bc5=t -bc6=t -go=og
+
+
+
+*************************
 **** Mon Oct 11, 2021
 
 CHECKS are broken .. BUGS FOUND

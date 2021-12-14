@@ -100,69 +100,69 @@ userDefinedInitialConditions(int current, real t, real dt )
       // Add the Gaussian pulse terms:
       for( int m=0; m<numberOfGaussianPulses; m++ )
       {
-	real a    = gaussianParameters(0,m);
-	real beta = gaussianParameters(1,m); 
-	real omega= gaussianParameters(2,m); 
-	real p    = gaussianParameters(3,m);
-	real x0   = gaussianParameters(4,m); 
-	real y0   = gaussianParameters(5,m); 
-	real z0   = gaussianParameters(6,m);
-	real t0   = gaussianParameters(7,m);
+        real a    = gaussianParameters(0,m);
+        real beta = gaussianParameters(1,m); 
+        real omega= gaussianParameters(2,m); 
+        real p    = gaussianParameters(3,m);
+        real x0   = gaussianParameters(4,m); 
+        real y0   = gaussianParameters(5,m); 
+        real z0   = gaussianParameters(6,m);
+        real t0   = gaussianParameters(7,m);
 
-	if( true )
-	  printF("UIC: Gaussian pulse %i: setting a=%8.2e, beta=%8.2e, omega=%8.2e, p=%8.2e, x0=%8.2e, y0=%8.2e, "
-		 "z0=%8.2e, t0=%8.2e\n", m,a,beta,omega,p,x0,y0,z0,t0);
+        if( true )
+          printF("UIC: Gaussian pulse %i: setting a=%8.2e, beta=%8.2e, omega=%8.2e, p=%8.2e, x0=%8.2e, y0=%8.2e, "
+                 "z0=%8.2e, t0=%8.2e\n", m,a,beta,omega,p,x0,y0,z0,t0);
 
-	const real cost =cos(2.*Pi*omega*(t-t0));
-	const real costm=cos(2.*Pi*omega*(t-t0-dt));
+        const real cost =cos(2.*Pi*omega*(t-t0));
+        const real costm=cos(2.*Pi*omega*(t-t0-dt));
 
-	if( method==nfdtd )
-	{
-	  // -- We are solving Maxwell's as a second-order system ---
+        if( method==nfdtd )
+        {
+          // -- We are solving Maxwell's as a second-order system ---
           // We must assign u(t) and u(t-dt) as initial conditions
-	  printF("UIC: t=%8.2e, cost=%8.3e\n",t,cost);
-	  
+          printF("UIC: t=%8.2e, cost=%8.3e\n",t,cost);
+          
 
-	  if( mg.numberOfDimensions()==2 )
-	  {
-	    FOR_3D(i1,i2,i3,I1,I2,I3)
-	    {
-	      real x= xLocal(i1,i2,i3,0), y=xLocal(i1,i2,i3,1);
-	      real g = a*exp( -beta*pow( SQR(x-x0)+SQR(y-y0), p ) );
+          if( mg.numberOfDimensions()==2 )
+          {
+            FOR_3D(i1,i2,i3,I1,I2,I3)
+            {
+              real x= xLocal(i1,i2,i3,0), y=xLocal(i1,i2,i3,1);
+              real g = a*exp( -beta*pow( SQR(x-x0)+SQR(y-y0), p ) );
 
-	      uLocal(i1,i2,i3,ex) += -(y-y0)*cost*g;
-	      uLocal(i1,i2,i3,ey) +=  (x-x0)*cost*g;
-	      uLocal(i1,i2,i3,hz) +=         cost*g;
+              uLocal(i1,i2,i3,ex) += -(y-y0)*cost*g;
+              uLocal(i1,i2,i3,ey) +=  (x-x0)*cost*g;
+              uLocal(i1,i2,i3,hz) +=         cost*g;
 
-	      umLocal(i1,i2,i3,ex) += -(y-y0)*costm*g;
-	      umLocal(i1,i2,i3,ey) +=  (x-x0)*costm*g;
-	      umLocal(i1,i2,i3,hz) +=         costm*g;
-	    }
-	  }
-	  else
-	  {
-	    // -- 3D ---
-	    FOR_3D(i1,i2,i3,I1,I2,I3)
-	    {
-	      real x= xLocal(i1,i2,i3,0), y=xLocal(i1,i2,i3,1), z=xLocal(i1,i2,i3,2);
-	      real g = a*exp( -beta*pow( SQR(x-x0)+SQR(y-y0)+SQR(z-z0), p ) );
+              umLocal(i1,i2,i3,ex) += -(y-y0)*costm*g;
+              umLocal(i1,i2,i3,ey) +=  (x-x0)*costm*g;
+              umLocal(i1,i2,i3,hz) +=         costm*g;
+            }
+          }
+          else
+          {
+            // -- 3D ---
+            FOR_3D(i1,i2,i3,I1,I2,I3)
+            {
+              real x= xLocal(i1,i2,i3,0), y=xLocal(i1,i2,i3,1), z=xLocal(i1,i2,i3,2);
+              real g = a*exp( -beta*pow( SQR(x-x0)+SQR(y-y0)+SQR(z-z0), p ) );
 
-	      uLocal(i1,i2,i3,ex) += ((z-z0)-(y-y0))*cost*g;
-	      uLocal(i1,i2,i3,ey) += ((x-x0)-(z-z0))*cost*g;
-	      uLocal(i1,i2,i3,ez) += ((y-y0)-(x-x0))*cost*g;
+              uLocal(i1,i2,i3,ex) += ((z-z0)-(y-y0))*cost*g;
+              uLocal(i1,i2,i3,ey) += ((x-x0)-(z-z0))*cost*g;
+              uLocal(i1,i2,i3,ez) += ((y-y0)-(x-x0))*cost*g;
 
-	      umLocal(i1,i2,i3,ex) += ((z-z0)-(y-y0))*costm*g;
-	      umLocal(i1,i2,i3,ey) += ((x-x0)-(z-z0))*costm*g;
-	      umLocal(i1,i2,i3,ez) += ((y-y0)-(x-x0))*costm*g;
+              umLocal(i1,i2,i3,ex) += ((z-z0)-(y-y0))*costm*g;
+              umLocal(i1,i2,i3,ey) += ((x-x0)-(z-z0))*costm*g;
+              umLocal(i1,i2,i3,ez) += ((y-y0)-(x-x0))*costm*g;
 
-	    }
-	  }
-	}
-	else // method!=nfdtd
-	{
-	  printF("userDefinedInitialConditions:ERROR: method!=nfdtd -- not implemented for other methods yet.\n");
-	  OV_ABORT("ERROR");
-	}
+            }
+          }
+        }
+        else // method!=nfdtd
+        {
+          printF("userDefinedInitialConditions:ERROR: method!=nfdtd -- not implemented for other methods yet.\n");
+          OV_ABORT("ERROR");
+        }
 
 
       } // end for m 
@@ -248,25 +248,25 @@ setupUserDefinedInitialConditions()
 
       if( numberOfDimensions==2 )
       {
-	printF("The Gaussian pulse initial condition in 2D is of the form:\n"
+        printF("The Gaussian pulse initial condition in 2D is of the form:\n"
                " g(x,y,t) = a*cos(2*pi*omega*(t-t0) )*exp( -beta*[ (x-x0)^2 + (y-y0)^2 ]^p )\n"
-	       " F(Ex) = -(y-y0)*g(x,y,t) \n"
-	       " F(Ey) =  (x-x0)*g(x,y,t) \n"
-	       " F(Hz) =         g(x,y,t) \n"
-	  );
+               " F(Ex) = -(y-y0)*g(x,y,t) \n"
+               " F(Ey) =  (x-x0)*g(x,y,t) \n"
+               " F(Hz) =         g(x,y,t) \n"
+          );
       }
       else
       {
-	printF("The Gaussian pulse initial condition in 3D is of the form:\n"
+        printF("The Gaussian pulse initial condition in 3D is of the form:\n"
                " g(x,y,z,t) = a*cos(2*pi*omega*(t-t0) )*exp( -beta*[ (x-x0)^2 + (y-y0)^2 + (z-z0)^2 ]^p )\n"
-	       " F(Ex) = [(z-z0)-(y-y0)]*g(x,y,z,t) \n"
-	       " F(Ey) = [(x-x0)-(z-z0)]*g(x,y,z,t) \n"
-	       " F(Ez) = [(y-xy)-(x-x0)]*g(x,y,z,t) \n"
-	  );
+               " F(Ex) = [(z-z0)-(y-y0)]*g(x,y,z,t) \n"
+               " F(Ey) = [(x-x0)-(z-z0)]*g(x,y,z,t) \n"
+               " F(Ez) = [(y-xy)-(x-x0)]*g(x,y,z,t) \n"
+          );
       }
       
       if( !db.has_key("gaussianParameters") )
-	db.put<RealArray>("gaussianParameters");
+        db.put<RealArray>("gaussianParameters");
 
       RealArray & gaussianParameters = db.get<RealArray>("gaussianParameters");
       gaussianParameters.redim(8,numberOfGaussianPulses);
@@ -275,7 +275,7 @@ setupUserDefinedInitialConditions()
       for( int m=0; m<numberOfGaussianPulses; m++ )
       {
         real a=1., beta=10., omega=1., p=1., x0=0., y0=0., z0=0., t0=0.;
-	gi.inputString(answer2,sPrintF("Pulse %i: Enter a,beta,omega,p,x0,y0,z0,t0",m));
+        gi.inputString(answer2,sPrintF("Pulse %i: Enter a,beta,omega,p,x0,y0,z0,t0",m));
         sScanF(answer2,"%e %e %e %e %e %e %e %e",&a,&beta,&omega,&p,&x0,&y0,&z0,&t0);
 
         printF("Gaussian pulse %i: setting a=%8.2e, beta=%8.2e, omega=%8.2e, p=%8.2e, x0=%8.2e, y0=%8.2e, "

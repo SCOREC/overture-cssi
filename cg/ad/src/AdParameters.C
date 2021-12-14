@@ -460,6 +460,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
 
     // push buttons
     aString pbCommands[] = {"user defined coefficients",
+                            "champ parameters",
                             ""};
 
     const int numRows=2;
@@ -560,6 +561,78 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
       printF("CGAD: setting assignKnownSolutionAtBoundaries=%d\n",assignKnownSolutionAtBoundaries);
     }
 
+    else if( answer=="user defined coefficients" ) 
+    {
+      updateUserDefinedCoefficients(gi);
+    }
+
+    else if( answer=="champ parameters" ) 
+    {
+      // *NOTE* This should probably be put in the base class 
+
+      printF("Enter the optimized Schwartz parameter 'p' for the CHAMP interface conditions.\n");
+      printF("   Enter grid=-1 to set the value for all grids.\n");
+      printF("   Enter side=-1 to set the value for all side.\n");
+      printF("   Enter axis=-1 to set the value for all axes.\n");
+
+      aString answer2;
+      for( ;; )
+      {
+        gi.inputString(answer2,"Enter grid, side, axis, p (enter `done' when finished)");
+
+        if( answer2=="done" )
+        {
+          break;
+        }
+        else
+        {
+          int grid=-1, side=-1, axis=-1;
+          Real p = 1.; // pL or pR 
+          sScanF(answer2,"%i %i %i %e",&grid,&side,&axis,&p);
+          if( grid<-1 || grid>cg.numberOfComponentGrids() || side<-1 || side>1 or axis<-1 || axis>3 )
+          {
+            printF("ERROR: invalid value for one of: grid=%d, side=%d, axis=%d : numberOfComponentGrids=%d\n",
+                     grid,side,axis);
+            continue;
+          }
+          if( !dbase.has_key("champParameters") )
+          {
+            dbase.put<RealArray>("champParameters");
+            RealArray & champParameters = dbase.get<RealArray>("champParameters");
+
+            // ---- number of champ paramters we save-- 
+            const int numChampPar=6;  // ** SHOULD MATCH VALUE IN champBoundaryConditions.bC ** FIX ME
+
+            // const Real pl    = champParameters(0,side,axis,grid);    // optimized Scwartz Parameter for side 1
+            // const Real pr    = champParameters(1,side,axis,grid);    // optimized Scwartz Parameter for side 2
+            // const Real theta = champParameters(2,side,axis,grid);    // K1/K2
+            // const Real beta  = champParameters(3,side,axis,grid);    // D1/D2   
+            // champParameters(4,side,axis,grid) = Sl;  
+            // champParameters(5,side,axis,grid) = dxs; 
+            // 
+            champParameters.redim(numChampPar,2,3,cg.numberOfComponentGrids());
+            champParameters=-123456.; 
+          }
+          const int axisStart = axis==-1 ? 0 : axis;
+          const int axisEnd   = axis==-1 ? cg.numberOfDimensions()-1 : axis;
+          const int sideStart = side==-1 ? 0 : side;
+          const int sideEnd   = side==-1 ? 1 : side;
+          const int gridStart = grid==-1 ? 0 : grid;
+          const int gridEnd   = grid==-1 ? cg.numberOfComponentGrids()-1 : grid;
+          for( int grid=gridStart; grid<=gridEnd; grid++ )
+          for( int axis=axisStart; axis<=axisEnd; axis++ )
+          for( int side=sideStart; side<=sideEnd; side++ )
+          {
+            printF("Setting p=%g for grid=%d, side=%d, axis=%d (%s)\n",p,grid,side,axis,(const char*)cg[grid].getName());
+            
+            RealArray & champParameters = dbase.get<RealArray>("champParameters");
+            champParameters(0,side,axis,grid) = p;
+          }
+        }
+      }
+    }    
+
+
     else if( answer.matches("kappa") ||
              answer.matches("a") ||
              answer.matches("b") ||
@@ -623,10 +696,6 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     }
 
 
-    else if( answer=="user defined coefficients" ) 
-    {
-      updateUserDefinedCoefficients(gi);
-    }
 
     else if(  dbase.get<ListOfShowFileParameters >("pdeParameters").matchAndSetValue( answer ) )
     {

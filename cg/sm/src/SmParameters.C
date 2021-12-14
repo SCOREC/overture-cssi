@@ -114,6 +114,8 @@ SmParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
   if( !dbase.has_key("pressurePoissonIsSingular") ) dbase.put<int>("pressurePoissonIsSingular")=0;  
   if( !dbase.has_key("useCurlCurlBoundaryCondition") ) dbase.put<int>("useCurlCurlBoundaryCondition")=1;
 
+   if( !dbase.has_key("pressureSolverInitialized") )  dbase.put<int>("pressureSolverInitialized")=false;
+
   // Project the linear in time and space mode
   if( !dbase.has_key("projectLinearMode") )          dbase.put<int>("projectLinearMode")=0;
   if( !dbase.has_key("projectLinearModeFrequency") ) dbase.put<int>("projectLinearModeFrequency")=100;
@@ -397,19 +399,23 @@ setParameters(const int & numberOfDimensions0 /* =2 */,const aString & reactionN
     aString *& componentName = dbase.get<aString* >("componentName");
     delete  componentName;
     componentName= new aString [ numberOfComponents];
-    if( uc>=0 ) componentName[uc]="u";
-    if( vc>=0 ) componentName[vc]="v";
-    if( wc>=0 ) componentName[wc]="w";
+    // *wdh* switch to names u1,u2,u3  Oct 21, 2021
+    if( u1c>=0 ) componentName[u1c]="u1";
+    if( u2c>=0 ) componentName[u2c]="u2";
+    if( u3c>=0 ) componentName[u3c]="u3";    
+    // if( uc>=0 ) componentName[uc]="u";
+    // if( vc>=0 ) componentName[vc]="v";
+    // if( wc>=0 ) componentName[wc]="w";
     if( rc>=0 ) componentName[rc]="r";
     if( tc>=0 ) componentName[tc]="T";
     if( pc>=0 ) componentName[pc]="p";
   
 
-    addShowVariable( "u",uc );
-    addShowVariable( "v",vc );
+    addShowVariable( "u1",u1c );
+    addShowVariable( "u2",u2c );
     if( numberOfDimensions>2 )
     {
-      addShowVariable( "w",wc );
+      addShowVariable( "u3",u3c );
     }
     if( compressibilityType==incompressibleSolid )
       addShowVariable( "p",pc );

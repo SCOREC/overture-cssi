@@ -1802,7 +1802,8 @@
           else if( boundaryCondition(side,axis).eq.tractionBC )then 
             ! ------ TRACTION BC ----
             !  if( addBoundaryForcing(side,axis).eq.0 .and. assignTwilightZone==0 )then   *** FIX ME ***
-            if( addBoundaryForcing(side,axis)==0 .and. twilightZone==0 )then
+            ! if( addBoundaryForcing(side,axis)==0 .and. twilightZone==0 )then   ! FOR NOW SKIP addBoundaryFORCING  *** FIX ME *****
+            if( twilightZone==0 )then   ! FOR NOW SKIP addBoundaryFORCING  *** FIX ME ***** addBoundaryForcing =1 for an exact solution 
                 fe(0)=0.; fe(1)=0.;  fe(2)=0.; fe(3)=0.;   ! holds forcing 
                 numberOfEquations=4;      ! number of ghost points we solve for   
                   ! outward normal for rectangular
@@ -1840,7 +1841,7 @@
                         ! w.x = -u.z    
                           ! no forcing 
                           do ghost=1,numGhost
-                            js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3; 
+                            js1 = ghost*is1; js2 = ghost*is2; js3 = ghost*is3; 
                             ! Note: Use wider stencil on farther ghost  
                             !  u(-2)  = u(2) + (2 * 2*dx) ( ... )  
                               u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) +js1*dx(0)*2.*uy22r(i1,i2,i3,u2c)
@@ -1851,7 +1852,7 @@
                         ! v.y = - u.x - w.z 
                         ! w.y = - v.z 
                           do ghost=1,numGhost
-                            js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+                            js1 = ghost*is1; js2 = ghost*is2; js3 = ghost*is3;
                               u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) +js2*dx(1)*2.*ux22r(i1,i2,i3,u2c)
                               u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) +js2*dx(1)*2.*ux22r(i1,i2,i3,u1c)
                           end do
@@ -1903,7 +1904,7 @@
                           ! include forcing terms 
                           ! beginLoopsMask2d()
                           do ghost=1,numGhost
-                            js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+                            js1 = ghost*is1; js2 = ghost*is2; js3 = ghost*is3;
                               u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) +dx(0)*2.*( js1*uy22r(i1,i2,i3,u2c) +         bcf(side,axis,i1,i2,i3,u1c) )
                               u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) +dx(0)*2.*( js1*uy22r(i1,i2,i3,u1c) + (1./mu)*bcf(side,axis,i1,i2,i3,u2c) )
                           end do
@@ -1913,7 +1914,7 @@
                         ! w.y = - v.z 
                           ! include forcing terms
                           do ghost=1,numGhost
-                            js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+                            js1 = ghost*is1; js2 = ghost*is2; js3 = ghost*is3;
                               u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) +dx(1)*2.*(js2*ux22r(i1,i2,i3,u2c) + (1./mu)*bcf(side,axis,i1,i2,i3,u1c) )
                               u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) +dx(1)*2.*(js2*ux22r(i1,i2,i3,u1c) + bcf(side,axis,i1,i2,i3,u2c) )
                           end do
@@ -1972,7 +1973,7 @@
                           ! u.x = -v.y + ue.x -ve.y 
                           ! write(*,'(" bcOptIsm: assign traction values for axis==0 and TZ")')
                           do ghost=1,numGhost
-                            js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+                            js1 = ghost*is1; js2 = ghost*is2; js3 = ghost*is3;
                               u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) -js1*dx(0)*2.*(-uy22r(i1,i2,i3,u2c) + ux0 + vy0 )
                               u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) -js1*dx(0)*2.*(-uy22r(i1,i2,i3,u1c) + vx0 + uy0 )
                             ! OGF2D(i1-js1,i2-js2,i3,t,u0,v0)
@@ -1985,7 +1986,7 @@
                         ! w.y = - v.z 
                           ! Twilight-zone: 
                           do ghost=1,numGhost
-                            js1 = ghost*is1; js2 = ghost*is2; j3 = ghost*is3;
+                            js1 = ghost*is1; js2 = ghost*is2; js3 = ghost*is3;
                               u(i1-js1,i2-js2,i3,u1c)=u(i1+js1,i2+js2,i3,u1c) -js2*dx(1)*2.*(-ux22r(i1,i2,i3,u2c) +uy0+vx0)
                               u(i1-js1,i2-js2,i3,u2c)=u(i1+js1,i2+js2,i3,u2c) -js2*dx(1)*2.*(-ux22r(i1,i2,i3,u1c) +vy0+ux0)
                           end do 

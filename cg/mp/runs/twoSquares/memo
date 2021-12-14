@@ -2,6 +2,440 @@ To FIX:
   (1) CHAMP residual is different than normal jumps -- fix CGMP convergence test 
 
 
+
+*****************************************************************
+*********  Mon Dec 13, 2021
+
+ORDER=2: 
+cgmp twoDomainsCHT.cmd -g=doubleAnnulusGride4.order2.hdf -dtMax=.025 -useChamp=1 -domain1=innerDomain -domain2=outerDomain -kappa1=.1 -ktc1=.1 -kappa2=.05 -ktc2=.2 -known=concentricCylinders -ncc=1 -mcc=0 -tf=.5 -tp=.1  -ts=bdf -bdfOrder=2 -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=1 -dtMax=.025 -go=og
+
+ +++Cgmp::MSA: hasHeatFluxInterfaces: correction=4 heatFluxInterfacesHaveConverged=1
+ +++++MSA: relaxCorrectionSteps: all domains have converged at correction step=4.
+============= Cgad time-step info for domain 0 (outerDomain)(solidB) steps=4==================
+---- determineErrors at t=1.000e-01,  maxNorm errors: [7.31e-05]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (4 steps)
+   0.100 7.31e-05 1.02e-01 2.50e-02 4.03e+00        0
+============= Cgad time-step info for domain 1 (innerDomain)(solidA) steps=4==================
+---- determineErrors at t=1.000e-01,  maxNorm errors: [4.03e-04]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (4 steps)
+   0.100 4.03e-04 2.79e-01 2.50e-02 4.03e+00        0
+
+
+
+ORDER=4: **FIX ME***
+ArrayEvolution:eval:ERROR: orderOfAccuracy=5 not implemented
+
+
+DOUBLE ANNULUS  
+cgmp twoDomainsCHT.cmd -g=doubleAnnulusGride4.order4.hdf -dtMax=.025 -useChamp=1 -domain1=innerDomain -domain2=outerDomain -kappa1=.1 -ktc1=.1 -kappa2=.05 -ktc2=.2 -known=concentricCylinders -ncc=1 -mcc=0 -tf=.5 -tp=.1  -ts=bdf -bdfOrder=2 -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=1 -dtMax=.025 -go=og
+
+
+
+CONTINUE WORK ON initializeInterfaceData( real & t0, real & dt0 )
+
+>>>> NONSQUARE: TRY degreet=2 AND 0 CORRECTIONS --> **EXACT 
+cgmp twoDomainsCHT.cmd -g=twoNonSquaresInterfacee1.order2.hdf -dtMax=.025 -useChamp=1  -p1=.5 -p2=.25 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=bdf -bdfOrder=2 -useMultiStage=1 -nc=0 -coupled=0 -itol=1e-12 -debug=3 -degreet1=2 -degreet2=2 -go=og
+
+
+>>>> TRY degreet=2 AND 0 CORRECTIONS --> NOW EXACT 
+cgmp twoDomainsCHT.cmd -g=twoSquaresInterfacee1.order2.hdf -dtMax=.025 -useChamp=1  -p1=.5 -p2=.25 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=bdf -bdfOrder=2 -useMultiStage=1 -nc=0 -coupled=0 -itol=1e-12 -debug=3 -degreet1=2 -degreet2=2 -go=og
+
+solidA:
+ @@@@@@ --interfaceRightHandSide-- Save heat flux time history at t=1.000e-02 @@@@@@@ 
++++++ getChampResidual for (grid,side,axis)=(0,0,0) maxRes=1.60e-14, l2Res=2.12e-15
+solidB:CGAD::getInterfaceResidual: t=1.000e-02: Max residual in champ interface conditions = 1.60e-14
+<<<<<<<<<<< DONE: CGMP: getInterfaceResiduals: domain=1, t=1.000e-02, CHAMP maxRes=1.60e-14 <<<<<<<<< 
+
+--MP-- After takeTimeStep: interface 0: (correction=0 t=1.000e-02) :  max-interface-residual=6.39e-14, ratio= 0.0000 tol=1.00e-12
+*** Cgmp: t=1.000e-02 interface iterations have converged (1 iterations)****
+ +++Cgmp::MSA: hasHeatFluxInterfaces: correction=0 heatFluxInterfacesHaveConverged=1
+
++++++++++++++++++++++ STEP=0 t+dt=1.00e-02 END CORRECTION STAGE 0 +++++++++++++++++++++++++++++++++++++
+
+============= Cgad time-step info for domain 0 (leftDomain)(solidA) steps=1==================
+     t    err(T)    uMax     dt       cpu    mem (Mb) (1 steps)
+   0.010 1.11e-15 2.76e+00 1.00e-02 2.43e+00        0
+============= Cgad time-step info for domain 1 (rightDomain)(solidB) steps=1==================
+     t    err(T)    uMax     dt       cpu    mem (Mb) (1 steps)
+   0.010 1.78e-15 4.27e+00 1.00e-02 2.43e+00        0
+
+
+
+
+
+
+
+
+>>>> TRY degreet=1 AND 0 CORRECTIONS --> NOW EXACT 
+cgmp twoDomainsCHT.cmd -g=twoSquaresInterfacee1.order2.hdf -dtMax=.025 -useChamp=1  -p1=.5 -p2=.25 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=bdf -bdfOrder=2 -useMultiStage=1 -nc=0 -coupled=0 -itol=1e-12 -debug=3 -degreet1=1 -degreet2=1 -go=og
+
+--MP-- After takeTimeStep: interface 0: (correction=0 t=2.000e-02) :  max-interface-residual=7.11e-14, ratio= 0.0000 tol=1.00e-12
+*** Cgmp: t=2.000e-02 interface iterations have converged (1 iterations)****
+ +++Cgmp::MSA: hasHeatFluxInterfaces: correction=0 heatFluxInterfacesHaveConverged=1
+
++++++++++++++++++++++ STEP=1 t+dt=2.00e-02 END CORRECTION STAGE 0 +++++++++++++++++++++++++++++++++++++
+
+============= Cgad time-step info for domain 0 (leftDomain)(solidA) steps=2==================
+     t    err(T)    uMax     dt       cpu    mem (Mb) (2 steps)
+   0.020 2.22e-15 2.78e+00 1.00e-02 1.07e+01        0
+============= Cgad time-step info for domain 1 (rightDomain)(solidB) steps=2==================
+     t    err(T)    uMax     dt       cpu    mem (Mb) (2 steps)
+   0.020 3.55e-15 4.29e+00 1.00e-02 1.07e+01        0
+
+
+
+
+*****************************************************************
+*********  Sun Dec 12, 2021
+
+FIX STARTUP -- PAST TIME interface values needed for initial guess of CHAMP 
+
+TRY degreet=1 AND 0 CORRECTIONS --> NOT EXACT 
+cgmp twoDomainsCHT.cmd -g=twoSquaresInterfacee1.order2.hdf -dtMax=.025 -useChamp=1  -p1=.5 -p2=.25 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=bdf -bdfOrder=2 -useMultiStage=1 -nc=0 -coupled=0 -itol=1e-12 -debug=3 -degreet1=1 -degreet2=1 -go=og
+
+
+TRY degreet=0 AND NO CORRECTIONS--> exact 
+cgmp twoDomainsCHT.cmd -g=twoSquaresInterfacee1.order2.hdf -dtMax=.025 -useChamp=1  -p1=.5 -p2=.25 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=bdf -bdfOrder=2 -useMultiStage=1 -nc=0 -coupled=0 -itol=1e-12 -debug=3 -degreet1=0 -degreet2=0 -go=og
+
+
+
+cgmp twoDomainsCHT.cmd -g=twoSquaresInterfacee1.order2.hdf -dtMax=.025 -useChamp=1  -p1=.5 -p2=.25 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=bdf -bdfOrder=2 -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=3 -go=og
+
+
+*****************************************************************
+*********  Sat Dec 11, 2021
+
+START TEST ORDER=4
+
+FIXED residual computation in champResidualOpt.bf90
+
+DOUBLE ANNULUS
+cgmp twoDomainsCHT.cmd -g=doubleAnnulusGride4.order4.hdf -dtMax=.025 -useChamp=1 -domain1=innerDomain -domain2=outerDomain -kappa1=.1 -ktc1=.1 -kappa2=.05 -ktc2=.2 -known=concentricCylinders -ncc=1 -mcc=0 -tf=.5 -tp=.1  -ts=bdf -bdfOrder=2 -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=1 -dtMax=.025 -go=og
+
+============= Cgad time-step info for domain 0 (outerDomain)(solidB) steps=4==================
+---- determineErrors at t=1.000e-01,  maxNorm errors: [1.64e-04]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (4 steps)
+   0.100 1.64e-04 1.02e-01 2.50e-02 1.15e+01        0
+============= Cgad time-step info for domain 1 (innerDomain)(solidA) steps=4==================
+---- determineErrors at t=1.000e-01,  maxNorm errors: [3.82e-04]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (4 steps)
+   0.100 3.82e-04 2.79e-01 2.50e-02 1.15e+01        0
+
+
+
+TWO-SQUARES
+cgmp twoDomainsCHT.cmd -g=twoSquaresInterfacee1.order4.hdf -dtMax=.025 -useChamp=1  -p1=.5 -p2=.25 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=bdf -bdfOrder=2 -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=3 -go=og
+
+Runs -- 
+
+ =============== START getInterfaceGridFaceDescriptor (grid,side,axis)=(0,0,0) =======================
++++++ getChampResidual for (grid,side,axis)=(0,0,0) maxRes=4.00e-14, l2Res=5.32e-15
+solidB:CGAD::getInterfaceResidual: t=1.000e-02: Max residual in champ interface conditions = 4.00e-14
+<<<<<<<<<<< DONE: CGMP: getInterfaceResiduals: domain=1, t=1.000e-02, CHAMP maxRes=4.00e-14 <<<<<<<<< 
+
+--MP-- After takeTimeStep: interface 0: (correction=5 t=1.000e-02) :  max-interface-residual=7.04e-13, ratio= 0.0023 tol=1.00e-12
+*** Cgmp: t=1.000e-02 interface iterations have converged (6 iterations)****
+ +++Cgmp::MSA: hasHeatFluxInterfaces: correction=5 heatFluxInterfacesHaveConverged=1
+
++++++++++++++++++++++ STEP=0 t+dt=1.00e-02 END CORRECTION STAGE 5 +++++++++++++++++++++++++++++++++++++
+
+ +++++MSA: relaxCorrectionSteps: all domains have converged at correction step=5.
+============= Cgad time-step info for domain 0 (leftDomain)(solidA) steps=1==================
+     t    err(T)    uMax     dt       cpu    mem (Mb) (1 steps)
+   0.010 2.22e-15 2.76e+00 1.00e-02 4.60e+00        0
+============= Cgad time-step info for domain 1 (rightDomain)(solidB) steps=1==================
+     t    err(T)    uMax     dt       cpu    mem (Mb) (1 steps)
+   0.010 2.66e-15 4.27e+00 1.00e-02 4.60e+00        0
+
+
+
++++++++++++++++++++++ STEP=1 t+dt=2.00e-02 END CORRECTION STAGE 21 +++++++++++++++++++++++++++++++++++++
+
+ +++++MSA: relaxCorrectionSteps: all domains have converged at correction step=21.
+============= Cgad time-step info for domain 0 (leftDomain)(solidA) steps=2==================
+     t    err(T)    uMax     dt       cpu    mem (Mb) (2 steps)
+   0.020 4.44e-15 2.78e+00 1.00e-02 8.33e+00        0
+============= Cgad time-step info for domain 1 (rightDomain)(solidB) steps=2==================
+     t    err(T)    uMax     dt       cpu    mem (Mb) (2 steps)
+   0.020 6.66e-15 4.29e+00 1.00e-02 8.33e+00        0
+
+
+
+
+*****************************************************************
+*********  Fri Dec 10, 2021
+
+FIXES MADE FOR BDF
+
+**** FIXED STARTUP IN adDomain.h 
+
+
+TEST ANNULUS --> BDF looks first order
+cgmp twoDomainsCHT.cmd -g=doubleAnnulusGride8.order2.hdf -dtMax=.025 -useChamp=1 -domain1=innerDomain -domain2=outerDomain -kappa1=.1 -ktc1=.1 -kappa2=.05 -ktc2=.2 -known=concentricCylinders -ncc=1 -mcc=0 -tf=.5 -tp=.1  -ts=bdf -bdfOrder=2 -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=1 -dtMax=.0125 -go=og
+
+G8 
+============= Cgad time-step info for domain 0 (outerDomain)(solidB) steps=8==================
+---- determineErrors at t=1.000e-01,  maxNorm errors: [3.39e-05]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (8 steps)
+   0.100 3.39e-05 1.03e-01 1.25e-02 4.99e+00        0
+============= Cgad time-step info for domain 1 (innerDomain)(solidA) steps=8==================
+---- determineErrors at t=1.000e-01,  maxNorm errors: [7.55e-05]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (8 steps)
+   0.100 7.55e-05 2.79e-01 1.25e-02 4.99e+00        0
+
+
+cgmp twoDomainsCHT.cmd -g=doubleAnnulusGride4.order2.hdf -dtMax=.025 -useChamp=1 -domain1=innerDomain -domain2=outerDomain -kappa1=.1 -ktc1=.1 -kappa2=.05 -ktc2=.2 -known=concentricCylinders -ncc=1 -mcc=0 -tf=.5 -tp=.1  -ts=bdf -bdfOrder=2 -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=1 -dtMax=.025 -go=og
+
+>>>>BDF 
+============= Cgad time-step info for domain 0 (outerDomain)(solidB) steps=4==================
+---- determineErrors at t=1.000e-01,  maxNorm errors: [7.31e-05]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (4 steps)
+   0.100 7.31e-05 1.02e-01 2.50e-02 9.32e+00        0
+============= Cgad time-step info for domain 1 (innerDomain)(solidA) steps=4==================
+---- determineErrors at t=1.000e-01,  maxNorm errors: [4.03e-04]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (4 steps)
+   0.100 4.03e-04 2.79e-01 2.50e-02 9.32e+00        0
+
+
+
+
+
+cgmp twoDomainsCHT.cmd -g=doubleAnnulusGride4.order2.hdf -dtMax=.025 -useChamp=1 -domain1=innerDomain -domain2=outerDomain -kappa1=.1 -ktc1=.1 -kappa2=.05 -ktc2=.2 -known=concentricCylinders -ncc=1 -mcc=0 -tf=.5 -tp=.1  -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=1 -dtMax=.025 -go=og
+>>>TS=IM 
+============= Cgad time-step info for domain 0 (outerDomain)(solidB) steps=4==================
+---- determineErrors at t=1.000e-01,  maxNorm errors: [1.25e-04]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (4 steps)
+   0.100 1.25e-04 1.02e-01 2.50e-02 3.39e+00        0
+============= Cgad time-step info for domain 1 (innerDomain)(solidA) steps=4==================
+---- determineErrors at t=1.000e-01,  maxNorm errors: [4.49e-04]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (4 steps)
+   0.100 4.49e-04 2.79e-01 2.50e-02 3.39e+00        
+
+*** Cgmp: t=5.000e-01 interface iterations have converged (5 iterations)****
+ +++Cgmp::MSA: hasHeatFluxInterfaces: correction=4 heatFluxInterfacesHaveConverged=1
+ +++++MSA: relaxCorrectionSteps: all domains have converged at correction step=4.
+============= Cgad time-step info for domain 0 (outerDomain)(solidB) steps=20==================
+---- determineErrors at t=5.000e-01,  maxNorm errors: [1.87e-04]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (20 steps)
+   0.500 1.87e-04 2.84e-02 2.50e-02 5.72e+00        0
+============= Cgad time-step info for domain 1 (innerDomain)(solidA) steps=20==================
+---- determineErrors at t=5.000e-01,  maxNorm errors: [3.00e-04]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (20 steps)
+   0.500 3.00e-04 7.74e-02 2.50e-02 5.72e+00        0
+
+
+
+TEST BDF -- works -> EXACT 
+cgmp twoDomainsCHT.cmd -g=twoSquaresInterfacee1.order2.hdf -dtMax=.025 -useChamp=1  -p1=.5 -p2=.25 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=bdf -bdfOrder=2 -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=3 -go=og
+
+============= Cgad time-step info for domain 0 (leftDomain)(solidA) steps=2==================
+     t    err(T)    uMax     dt       cpu    mem (Mb) (2 steps)
+   0.020 3.11e-15 2.78e+00 1.00e-02 5.34e+00        0
+============= Cgad time-step info for domain 1 (rightDomain)(solidB) steps=2==================
+     t    err(T)    uMax     dt       cpu    mem (Mb) (2 steps)
+   0.020 4.00e-15 4.29e+00 1.00e-02 5.34e+00        0
+
+
+
+*****************************************************************
+*********  Thurs Dec 9, 2021
+
+
+START WORK ON CHMAP ORDER=4
+cgmp twoDomainsCHT.cmd -g=twoSquaresInterfacee1.order4.hdf -dtMax=.025 -useChamp=1  -p1=.5 -p2=.25 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=3 -go=og
+
+
+ORDER=2 : NOTE TIME_STEPPING
+Implicit time stepping. IMEX AB-CN scheme. Order of predictor corrector=2
+
+cgmp twoDomainsCHT.cmd -g=twoSquaresInterfacee1.order2.hdf -dtMax=.025 -useChamp=1  -p1=.5 -p2=.25 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=3 -go=og
+
+
+
+TWO NON SQUARES -- dx finer on right --> EXACT
+cgmp twoDomainsCHT.cmd -g=twoHorizontalNonSquarese2.order2.hdf -dtMax=.025 -useChamp=1  -p1=.5 -p2=.25 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=3 -go=og
+
+
+
+TWO SQUARES -- dx finer on right  ***Sijia is different****
+  --> exact
+cgmp twoDomainsCHT.cmd -g=twoHorizontalSquarese1.order2.hdf -dtMax=.025 -useChamp=1  -p1=.5 -p2=.25 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=3 -go=og
+
+ **** champBC:ERROR: rectangular: There is a difference between coeff from Sijia and WDH, maxDiff= 8.75e+01 *** 
+champBC: (i1,i2,i3)=( 10,  0,  0) (m1,m2,m3)=( -1, -1,  0) coeff= 0.000e+00 (WDH),  coeff= 0.000e+00 (Sijia) diff= 0.00e+00
+champBC: (i1,i2,i3)=( 10,  0,  0) (m1,m2,m3)=(  0, -1,  0) coeff= 1.250e+01 (WDH),  coeff= 3.000e+01 (Sijia) diff=-1.75e+01
+champBC: (i1,i2,i3)=( 10,  0,  0) (m1,m2,m3)=(  1, -1,  0) coeff= 0.000e+00 (WDH),  coeff= 0.000e+00 (Sijia) diff= 0.00e+00
+champBC: (i1,i2,i3)=( 10,  0,  0) (m1,m2,m3)=( -1,  0,  0) coeff= 1.500e+01 (WDH),  coeff= 4.000e+01 (Sijia) diff=-2.50e+01
+champBC: (i1,i2,i3)=( 10,  0,  0) (m1,m2,m3)=(  0,  0,  0) coeff=-5.250e+01 (WDH),  coeff=-1.400e+02 (Sijia) diff= 8.75e+01
+champBC: (i1,i2,i3)=( 10,  0,  0) (m1,m2,m3)=(  1,  0,  0) coeff= 2.250e+01 (WDH),  coeff= 5.000e+01 (Sijia) diff=-2.75e+01
+champBC: (i1,i2,i3)=( 10,  0,  0) (m1,m2,m3)=( -1,  1,  0) coeff= 0.000e+00 (WDH),  coeff= 0.000e+00 (Sijia) diff= 0.00e+00
+champBC: (i1,i2,i3)=( 10,  0,  0) (m1,m2,m3)=(  0,  1,  0) coeff= 1.250e+01 (WDH),  coeff= 3.000e+01 (Sijia) diff=-1.75e+01
+champBC: (i1,i2,i3)=( 10,  0,  0) (m1,m2,m3)=(  1,  1,  0) coeff= 0.000e+00 (WDH),  coeff= 0.000e+00 (Sijia) diff= 0.00e+00
+
+
+
+*****************************************************************
+*********  Wed Dec 8, 2021
+
+TWO NON SQUARES -- dx finer on right 
+cgmp twoDomainsCHT.cmd -g=twoHorizontalNonSquarese2.order2.hdf -dtMax=.025 -useChamp=1  -p1=.5 -p2=.25 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=3 -go=og
+
+
+>>>>>>> champBC::INFO max-diff in coeff between Sijia and WDH =  3.55e-15 <<<<<<<<<
+CHAMP-MATRIX: max-residual=3.75e-01
+Error occured in file src/champBoundaryConditions.C, function champBoundaryConditions, line 1142.
+residual is too large ??
+
+
+
+
+TWO SQUARES -- dx finer on right  ***Sijia is different****
+cgmp twoDomainsCHT.cmd -g=twoHorizontalSquarese2.order2.hdf -dtMax=.025 -useChamp=1  -p1=.5 -p2=.25 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=3 -go=og
+
+
+
+DOUBLE ANNULUS
+cgmp twoDomainsCHT.cmd -g=doubleAnnulusGride4.order2.hdf -dtMax=.025 -useChamp=1 -p1=.5 -p2=.25 -domain1=innerDomain -domain2=outerDomain -kappa1=.1 -ktc1=.1 -kappa2=.05 -ktc2=.2 -known=concentricCylinders -ncc=1 -mcc=0 -tf=.5 -tp=.1 -ts=im -useMultiStage=1 -nc=2 -coupled=0 -itol=1e-12 -debug=1 -dtMax=.025 -go=og
+
+
+TEST TWO SQUARES VERTICAL 
+ogen -noplot twoSquaresInterface -prefix=twoVerticalSquares -interp=e -orientation=vertical -order=2 -factor=1 
+
+
+VERTICAL NON SQUARES - CHANGE CHAMP PARAMETERS (p1 and p2)
+cgmp twoDomainsCHT.cmd -g=twoVerticalNonSquarese2.order2.hdf -dtMax=.025 -useChamp=1 -p1=.5 -p2=.25 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=im -useMultiStage=1 -nc=2 -coupled=0 -itol=1e-12 -debug=3 -go=og
+
+
+
+VERTICAL NON SQUARES - EXACT 
+cgmp twoDomainsCHT.cmd -g=twoVerticalNonSquarese2.order2.hdf -dtMax=.025 -useChamp=1 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=3 -go=og
+
+VERTICAL SQUARES - EXACT 
+cgmp twoDomainsCHT.cmd -g=twoVerticalSquarese2.order2.hdf -dtMax=.025 -useChamp=1 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=3 -go=og
+
+*** Cgmp: t=2.000e-02 interface iterations have converged (6 iterations)****
+ +++Cgmp::MSA: hasHeatFluxInterfaces: correction=5 heatFluxInterfacesHaveConverged=1
+
++++++++++++++++++++++ STEP=1 t+dt=2.00e-02 END CORRECTION STAGE 5 +++++++++++++++++++++++++++++++++++++
+
+ +++++MSA: relaxCorrectionSteps: all domains have converged at correction step=5.
+============= Cgad time-step info for domain 0 (leftDomain)(solidA) steps=2==================
+     t    err(T)    uMax     dt       cpu    mem (Mb) (2 steps)
+   0.020 2.66e-15 3.54e+00 1.00e-02 5.79e+00        0
+============= Cgad time-step info for domain 1 (rightDomain)(solidB) steps=2==================
+     t    err(T)    uMax     dt       cpu    mem (Mb) (2 steps)
+   0.020 4.44e-15 4.29e+00 1.00e-02 5.79e+00        0
+
+
+
+TWO HORIZONTAL NON SQUARES - EXACT 
+cgmp twoDomainsCHT.cmd -g=twoNonSquaresInterfacee2.order2.hdf -dtMax=.025 -useChamp=1 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=3 -go=og
+
+
+
+TWO HORIZONTAL SQUARES - exact 
+cgmp twoDomainsCHT.cmd -g=twoSquaresInterfacee2.order2.hdf -dtMax=.025 -useChamp=1 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=3 -go=og
+
+
+*****************************************************************
+*********  Tues Dec 7, 2021
+
+TWO SQUARES VERTICAL 
+
+ogen -noplot twoSquaresInterface -prefix=twoVerticalSquares -interp=e -orientation=vertical -order=2 -factor=1 
+
+
+DOES TZ WORK FOR CHAMP ??
+
+TZ + CHAMP : exact
+cgmp twoDomainsCHT.cmd -g=twoSquaresInterfacee2.order2.hdf -dtMax=.025 -useChamp=1 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -tf=.5 -tp=.01 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=3 -go=og
+
+ +++++MSA: relaxCorrectionSteps: all domains have converged at correction step=4.
+============= Cgad time-step info for domain 0 (leftDomain)(solidA) steps=2==================
+     t    err(T)    uMax     dt       cpu    mem (Mb) (2 steps)
+   0.020 3.55e-15 2.78e+00 1.00e-02 9.03e+00        0
+============= Cgad time-step info for domain 1 (rightDomain)(solidB) steps=2==================
+     t    err(T)    uMax     dt       cpu    mem (Mb) (2 steps)
+   0.020 3.55e-15 4.29e+00 1.00e-02 9.03e+00        0
+
+
+
+
+cgmp twoDomainsCHT.cmd -g=doubleAnnulusGride4.order2.hdf -dtMax=.025 -useChamp=1 -domain1=innerDomain -domain2=outerDomain -kappa1=.1 -ktc1=.1 -kappa2=.05 -ktc2=.2 -known=concentricCylinders -ncc=1 -mcc=0 -uMin=-.4 -uMax=.2 -tf=.5 -tp=.1 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=1 -dtMax=.025 -go=og
+
+
+============= Cgad time-step info for domain 0 (outerDomain)(solidB) steps=4==================
+---- determineErrors at t=1.000e-01,  maxNorm errors: [1.25e-04]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (4 steps)
+   0.100 1.25e-04 1.02e-01 2.50e-02 3.39e+00        0
+============= Cgad time-step info for domain 1 (innerDomain)(solidA) steps=4==================
+---- determineErrors at t=1.000e-01,  maxNorm errors: [4.49e-04]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (4 steps)
+   0.100 4.49e-04 2.79e-01 2.50e-02 3.39e+00        0
+
+
+
+*****************************************
+*********  Sat Nov 27, 2021
+
+REVISIT CHAMP: CREATE CONVERGENCE CHECK BEFORE GETTING Sijia's routines
+
+
+>>>>>>>>>>>>>>>> DOUBLE ANNULUS <<<<<<<<<<<<<<<<<<
+cgmp twoDomainsCHT.cmd -g=doubleAnnulusGride8.order2.hdf -dtMax=.025 -useChamp=1 -domain1=innerDomain -domain2=outerDomain -kappa1=.1 -ktc1=.1 -kappa2=.05 -ktc2=.2 -known=concentricCylinders -ncc=1 -mcc=0 -uMin=-.4 -uMax=.2 -tf=.5 -tp=.1 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=1 -dtMax=.0125 -go=og
+
+G8
+============= Cgad time-step info for domain 0 (outerDomain)(solidB) steps=40==================
+---- determineErrors at t=5.000e-01,  maxNorm errors: [5.11e-05]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (40 steps)
+   0.500 5.11e-05 2.84e-02 1.25e-02 4.24e+01        0
+============= Cgad time-step info for domain 1 (innerDomain)(solidA) steps=40==================
+---- determineErrors at t=5.000e-01,  maxNorm errors: [6.82e-05]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (40 steps)
+   0.500 6.82e-05 7.72e-02 1.25e-02 4.24e+01        0
+
+   
+cgmp twoDomainsCHT.cmd -g=doubleAnnulusGride4.order2.hdf -dtMax=.025 -useChamp=1 -domain1=innerDomain -domain2=outerDomain -kappa1=.1 -ktc1=.1 -kappa2=.05 -ktc2=.2 -known=concentricCylinders -ncc=1 -mcc=0 -uMin=-.4 -uMax=.2 -tf=.5 -tp=.1 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=1 -dtMax=.025 -go=og
+
+G4
+============= Cgad time-step info for domain 0 (outerDomain)(solidB) steps=20==================
+---- determineErrors at t=5.000e-01,  maxNorm errors: [1.87e-04]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (20 steps)
+   0.500 1.87e-04 2.84e-02 2.50e-02 6.77e+00        0
+============= Cgad time-step info for domain 1 (innerDomain)(solidA) steps=20==================
+---- determineErrors at t=5.000e-01,  maxNorm errors: [3.00e-04]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (20 steps)
+   0.500 3.00e-04 7.74e-02 2.50e-02 6.77e+00        0
+
+
+
+*****************************************
+*********  Sat Nov 27, 2021
+
+REVISIT CHAMP:
+
+>>>>>>>>>>>>> TWO SQUARES <<<<<<<<<<<<<<<<<<<<
+-------------- G4 ----------------
+cgmp twoDomainsCHT.cmd -g=twoSquaresInterfacee4.order2.hdf -dtMax=.025 -useChamp=1 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -known=planeInterfaceMode -uMin=-1.5 -uMax=1.2 -tf=.5 -tp=.1 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=3 -go=og
+
++++++++++++++++++++++ STEP=3 t+dt=1.00e-01 END CORRECTION STAGE 5 +++++++++++++++++++++++++++++++++++++
+
+ +++++MSA: relaxCorrectionSteps: all domains have converged at correction step=5.
+============= Cgad time-step info for domain 0 (leftDomain)(solidA) steps=4==================
+---- determineErrors at t=1.000e-01,  maxNorm errors: [1.05e-04]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (4 steps)
+   0.100 1.05e-04 1.26e+00 2.50e-02 3.15e+00        0
+============= Cgad time-step info for domain 1 (rightDomain)(solidB) steps=4==================
+---- determineErrors at t=1.000e-01,  maxNorm errors: [1.72e-05]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (4 steps)
+   0.100 1.72e-05 2.89e-01 2.50e-02 3.15e+00        0
+
+
+
+>>>>>>>>>>>>>>>> DOUBLE ANNULUS <<<<<<<<<<<<<<<<<<
+cgmp twoDomainsCHT.cmd -g=doubleAnnulusGride4.order2.hdf -dtMax=.025 -useChamp=1 -domain1=innerDomain -domain2=outerDomain -kappa1=.1 -ktc1=.1 -kappa2=.05 -ktc2=.2 -known=concentricCylinders -ncc=1 -mcc=0 -uMin=-.4 -uMax=.2 -tf=.5 -tp=.1 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=1 -show=doubleAnnlusG4.show -go=og
+
+
 *****************************************
 *********  Tues Oct 12, 2021
 

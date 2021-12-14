@@ -130,7 +130,8 @@ if( orderOfAccuracy==4 )
 const int orderOfPredictorCorrector = parameters.dbase.get<int >("orderOfPredictorCorrector");
 const int orderOfTimeExtrapolationForPressure = parameters.dbase.get<int >("orderOfTimeExtrapolationForPressure");
 
-printF("--METHOD-- initializePredictorCorrector: mCur=%i, mOld=%i gf[mCur].t=%9.2e\n",mCur,mOld,gf[mCur].t);
+printP("--METHOD-- initializePredictorCorrector: numberOfPastTimes=%i, numberOfPastTimeDerivatives=%i\n",numberOfPastTimes,numberOfPastTimeDerivatives);
+printP("--METHOD-- initializePredictorCorrector: mCur=%i, mOld=%i gf[mCur].t=%9.2e\n",mCur,mOld,gf[mCur].t);
 fPrintF(debugFile,"--METHOD-- initializePredictorCorrector: mCur=%i, mOld=%i gf[mCur].t=%9.2e\n",mCur,mOld,gf[mCur].t);
 
 if( movingGridProblem() )
@@ -322,6 +323,8 @@ if( parameters.dbase.get<bool >("twilightZoneFlow") )
     gf[mOld].t=t0-dt0; 
  
   // assign u(t-dt) with the TZ solution: 
+  if( debug() & 1 )
+    printP("--METHOD-- initializePredictorCorrector: get past solution mOld=%d, t0-dt0=%9.3e\n",mOld,t0-dt0);
   e.assignGridFunction( gf[mOld].u,t0-dt0 );
   updateStateVariables(gf[mOld]); // *wdh* 080204 
   if( parameters.useConservativeVariables() )

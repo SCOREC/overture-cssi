@@ -209,6 +209,8 @@ real
 getChampResidual( realCompositeGridFunction & u, Parameters & parameters, Real t, Real dt )
 {
 
+
+
   CompositeGrid & cg = *u.getCompositeGrid();
   const int numberOfDimensions = cg.numberOfDimensions();
   int numberOfComponents = 1;
@@ -227,7 +229,8 @@ getChampResidual( realCompositeGridFunction & u, Parameters & parameters, Real t
   const int & orderOfAccuracy    = parameters.dbase.get<int>("orderOfAccuracy");
   assert( orderOfAccuracy==2 || orderOfAccuracy==4 );
 
-
+  if( debug & 1 )
+    printF("+++++ Entering getChampResidual t=%9.3e +++++\n",t);
 
   RealArray & champParameters = parameters.dbase.get<RealArray>("champParameters");
 

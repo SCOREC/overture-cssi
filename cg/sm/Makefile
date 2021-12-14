@@ -11,9 +11,21 @@ NODEP := $(strip $(filter usage doc clean cleano cleanc cleandep,$(MAKECMDGOALS)
 # set to "on" to build 6th and 8th order (but general BC's not implemented yet)
 buildHigherOrder := off
 
-# sparse solver packages:  -- these are not used yet
-usePETSc   := off
-useSuperLU := off
+# sparse solver packages:  
+# To compile with PETSc you should set: 
+# setenv usePETSc  
+ifeq ($(usePETSc),)
+  usePETSc   := off
+else
+  usePETSc   := on
+endif
+# To compile with SuperLU you should set: 
+# setenv useSuperLU 
+ifeq ($(useSuperLU),)
+  useSuperLU := off
+else
+  useSuperLU := on
+endif
 
 include configFile
 include $(CONFIGDIR)/make.dirs
@@ -42,6 +54,8 @@ all: $(BINDIR)cgsm
 
 cgsm: $(BINDIR)cgsm
 
+testExact: $(BINDIR)testExact	
+
 usage: 
 	-@echo "usage : "
 	-@echo "        % make " $(COPTS) "<all|cgsm>"
@@ -60,7 +74,7 @@ include $(PKG_INCLUDE)
 include $(CONFIGDIR)/make.src
 
 # add dependencies for main programs that are not in the previous source file lists
-DEP += cgsmMain.d
+DEP += cgsmMain.d testExact.d
 
 #* QSRC := $(SRC_FILES)
 #* 
@@ -97,7 +111,7 @@ DEP += cgsmMain.d
 #* COBJ := $(patsubst %.F, , $(COBJ))
 #* COBJ := $(addprefix $(OBJPREFIX),$(COBJ))
 
-.PHONY: doc cgsm
+.PHONY: doc cgsm testExact
 
 #* # compile some fortran files optimized
 #* $(OBJO) : $(OBJPREFIX)%.o : %.f
@@ -115,11 +129,26 @@ SHARED_LIBRARY = $(LIBDIR)libCgsm$(SHARED_LIBRARY_EXT)
 
 # make cgsm in the bin dir:
 PETSC_FILES_OBJ := $(addprefix $(OBJPREFIX),$(PETSC_FILES))
+
+# compile PETSc files optimized
+$(PETSC_FILES_OBJ) : $(OBJPREFIX)%.o : %.C
+	$(CXX) $(CXX_FLAGSO) -o $@ -c $<
+
 CGSM_EXTRA_FILES = $(PETSC_FILES_OBJ)
 
 $(BINDIR)cgsm: $(SHARED_LIBRARY) $(OBJDIR)cgsmMain.o $(CGSM_EXTRA_FILES) $(libCommon)
 	-@mkdir -p $(BINDIR)
 	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)cgsmMain.o $(CGSM) $(CGSM_EXTRA_FILES) $(LIBS)
+
+# test exact solutions: 
+$(BINDIR)testExact: $(SHARED_LIBRARY) $(OBJDIR)testExact.o $(CGSM_EXTRA_FILES) $(libCommon)
+	-@mkdir -p $(BINDIR)
+	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)testExact.o $(CGSM) $(CGSM_EXTRA_FILES) $(LIBS)
+
+# $(OBJDIR)testExact.o: src/testExact.C
+# 	$(CXX) $(CXX_FLAGS) -c src/testExact.C	
+
+$(OBJDIR)testExact.o : src/testExact.C; $(CXX) $(CXX_FLAGS) -o $*.o -c $<	
 
 mytest:
 	@echo "FNOBJO=" $(FNOBJO)

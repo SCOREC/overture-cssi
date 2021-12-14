@@ -1,0 +1,101 @@
+# 
+# Compute eigenvalues for vibrations of a sphere
+#  See also res/maxwell/bessel.maple
+#
+# restart; read "sphere.maple";
+#
+
+clear;
+
+Digits:=15: #
+
+psi := x^(-n-1/2)*BesselJ(n+1/2,x):
+
+psip := diff(psi,x);
+
+plot(subs(n=1,psip),x=0..10*Pi);
+
+xp := fsolve(subs(n=1,psip),x=1.8*Pi,1.7*Pi..1.9*Pi):
+
+printf(" n=%d : m=%d  x/Pi = %19.14e\n",1,1,xp/Pi);
+
+xp := fsolve(subs(n=1,psip),x=2.8*Pi,2.7*Pi..2.9*Pi):
+
+printf(" n=%d : m=%d  x/Pi = %19.14e\n",1,2,xp/Pi);
+
+
+#% printf(" Jn_x(xp)=0 : n=%d m=%d xp =%19.14e \n",n,m,xp):
+
+# ------------  n>1 
+
+f := (n-1)*psi + x*psip;
+
+plot(subs(n=2,f),x=0..10*Pi);
+
+# n=2: Zeros:
+#    2.5, 7.2, 10.5, 13.8, 17 
+nn:=2:
+m:=1: 
+x0:= 2.5: # guess for first zero 
+xp := fsolve(subs(n=2,f),x=x0,x0-1..x0+1);
+printf(" n=%d : m=%d  x/Pi = %19.14e\n",nn,m,xp/Pi):
+
+m:=2:
+x0:= 7.2: # guess for zero 
+xp := fsolve(subs(n=2,f),x=x0,x0-1..x0+1):
+printf(" n=%d : m=%d  x/Pi = %19.14e\n",nn,m,xp/Pi);
+
+
+# --------------------------------------------------------------------------
+
+g := sin(x)/x;
+
+psi1 := simplify( (1/x)*diff(g,x) );
+
+psi2 := simplify( (1/x)*diff(psi1,x) );
+
+psi3 := simplify( (1/x)*diff(psi2,x) );
+
+
+#%plot(BesselJ(3/2,x),x=0..20);
+#%plot(x^(-1/2)*BesselJ(3/2,x),x=0..20);
+#%plot(subs(n=1,psi),x=0..20);
+
+#%series(x^(-3/2)*BesselJ(3/2,x),x=0);
+
+#%jnp := diff(BesselJ(n,x),x):
+
+
+#* f0 := BesselJ(n+1/2,x);
+#* f1 := BesselJ(n+1+1/2,x);
+#* f2 := BesselJ(n+2+1/2,x);
+#* f := BesselJ(n+1+1/2,x) - (n+1)*BesselJ(n+1/2,x)/x:
+#* 
+#* z1:= .1:
+#* z2:= 5.:
+#* 
+#* xp := fsolve(subs(n=1,f),x=.27,z1..z2);
+#* 
+#* z2:= 8.:
+#* xp := fsolve(subs(n=1,f),x=6.,z1..z2);
+#* 
+#* 
+#* z2:= 10.:
+#* xp := fsolve(subs(n=1,f),x=9.5,z1..z2);
+#* 
+#* # plot([subs(n=1,f),subs(n=1,f1)],x=0..20);
+#* # plot([subs(n=2,f),subs(n=2,f1)],x=0..20);
+#* # plot([subs(n=10,f),subs(n=10,f1)],x=0..20);
+#* 
+#* # plot([subs(n=2,f),subs(n=2,f2)],x=0..20);
+#* # plot([subs(n=2,f),subs(n=2,f0)],x=0..20);
+#* 
+#* xp := fsolve(subs(n=2,f),x=4.,3..5);
+#* xp := fsolve(subs(n=2,f),x=7.8,6..9);
+#* 
+#* 
+#* # The first zero of f(n,x) seems to lie
+#* #  between [n,f1z] where f1z is the first zero of f
+#* #  The next zeros lie close to the zeros of f1
+#* 
+#* # The zeros of f seem to lie between the zeros of f0

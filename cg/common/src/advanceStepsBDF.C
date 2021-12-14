@@ -424,7 +424,7 @@ initializeTimeSteppingBDF( real & t0, real & dt0 )
     }
     if( debug() & 1 )
     {
-        printF("DomainSolver::initializeTimeSteppingBDF:INFO: predictorOrder=%i\n",predictorOrder);
+        printP("DomainSolver::initializeTimeSteppingBDF:INFO: predictorOrder=%i , orderOfBDF=%d\n",predictorOrder,orderOfBDF);
     }
     
     const int numberOfGridFunctions =  orderOfBDF+1;
@@ -472,7 +472,6 @@ initializeTimeSteppingBDF( real & t0, real & dt0 )
 
   // **** To initialize the method we need to compute du/dt at times t and t-dt *****
 
-  // this is a macro (pcMacros.h):
     const int & numberOfSolutionLevels = parameters.dbase.get<int>("numberOfSolutionLevels");
     const int & numberOfTimeDerivativeLevels = parameters.dbase.get<int>("numberOfTimeDerivativeLevels");
     int numberOfExtraPressureTimeLevels=0;
@@ -480,9 +479,11 @@ initializeTimeSteppingBDF( real & t0, real & dt0 )
     const int numberOfPastTimeDerivatives=0;       // BDF needs no past u_t
   // const int numberOfPastTimes=1; 
   // const int numberOfPastTimeDerivatives=1;       
+  // this is a macro (pcMacros.h):
     const int orderOfPredictorCorrector = parameters.dbase.get<int >("orderOfPredictorCorrector");
     const int orderOfTimeExtrapolationForPressure = parameters.dbase.get<int >("orderOfTimeExtrapolationForPressure");
-    printF("--BDF-- initializePredictorCorrector: mCur=%i, mOld=%i gf[mCur].t=%9.2e\n",mCur,mOld,gf[mCur].t);
+    printP("--BDF-- initializePredictorCorrector: numberOfPastTimes=%i, numberOfPastTimeDerivatives=%i\n",numberOfPastTimes,numberOfPastTimeDerivatives);
+    printP("--BDF-- initializePredictorCorrector: mCur=%i, mOld=%i gf[mCur].t=%9.2e\n",mCur,mOld,gf[mCur].t);
     fPrintF(debugFile,"--BDF-- initializePredictorCorrector: mCur=%i, mOld=%i gf[mCur].t=%9.2e\n",mCur,mOld,gf[mCur].t);
     if( movingGridProblem() )
     { 
@@ -716,6 +717,8 @@ initializeTimeSteppingBDF( real & t0, real & dt0 )
         else
             gf[mOld].t=t0-dt0; 
     // assign u(t-dt) with the TZ solution: 
+        if( debug() & 1 )
+            printP("--BDF-- initializePredictorCorrector: get past solution mOld=%d, t0-dt0=%9.3e\n",mOld,t0-dt0);
         e.assignGridFunction( gf[mOld].u,t0-dt0 );
         updateStateVariables(gf[mOld]); // *wdh* 080204 
         if( parameters.useConservativeVariables() )
@@ -1253,6 +1256,7 @@ initializeTimeSteppingBDF( real & t0, real & dt0 )
   //         determineErrors( fn[1],t0-dt0 );
   //       }
     init=false;
+
 
     return 0;
 }

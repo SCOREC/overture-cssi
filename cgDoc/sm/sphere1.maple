@@ -1,0 +1,62 @@
+# 
+# Compute eigenvalues for vibrations of a sphere
+#  See also res/maxwell/bessel.maple
+#
+# restart; read "sphere1.maple";
+#
+
+clear;
+
+Digits:=25: #
+
+psi0 := sin(x)/x;
+
+psi0p := simplify( diff(psi0,x) );
+
+# psi1 := simplify( (1/x)*diff(psi0,x) );
+
+rho := 1:
+lambda := 1:
+mu :=1:
+a:=1:
+
+# x= omega
+
+h := x*evalf( ( rho/(lambda+2*mu) )^(1/2) ):
+
+kappa := x*evalf( (rho/mu)^(1/2) ):
+
+kbh := simplify(kappa/h):
+
+
+ka := kappa*a: # kappa*a
+ha := h*a:
+
+f := subs(x=ha,psi0) + (4/(ka^2))*ha*subs(x=ha,psi0p);
+
+
+# ---------- plot : ----------------
+# plot(f,x=0..20);
+# plot(f,x=16..25);
+
+
+n := 0:
+for m from 1 to 4 do
+
+  if m = 1 then
+    x0 := 4.4: # guess for first zero 
+   elif m=2 then
+    x0 := 10.5;
+   elif m=3 then
+    x0 := 16.:
+   else
+    x0 := 21.5:
+  end if;
+
+  xp := fsolve(f,x=x0,x0-.5..x0+.5);
+
+  hap := evalf(subs(x=xp,ha)):
+
+  printf(" Class II : n=%d : root m=%d  omega=%19.14e, omega/Pi = %19.14e, h*a/Pi=%19.14e omega/Pi=%19.14e \n",n,m,xp,xp/Pi,hap/Pi);
+
+od:

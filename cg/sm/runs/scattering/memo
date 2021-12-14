@@ -1,0 +1,134 @@
+*************************
+**** Fri Oct 22, 2021
+
+OK (compiled dbg)  problems compiled opt !!
+cgsm -noplot scattering.cmd -g=sphereInABoxe2ppp.order2.hdf -psolver=best -kx=1 -beta=20 -k0=5 -x0=-2 -ts=me -bc7=t -tf=2 -tp=.05 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+
+
+
+ADD periodic update after advSmOpt and before apply BC's 
+
+check for memory bugs..
+valgrind $cgsm -noplot scattering.cmd -g=sphereInABoxe2ppp.order2.hdf -psolver=best -kx=1 -beta=20 -k0=5 -x0=-2 -ts=me -bc7=t -tf=2 -tp=.01 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+
+==22686== Conditional jump or move depends on uninitialised value(s)
+==22686==    at 0x8EA9C08: dgeco_ (in /home/henshw/Overture.g/lib/libOverture.so)
+==22686==    by 0x5F5EFAA: bcism3dorder2c_ (bcIsm3dOrder2c.f90:2089)
+==22686==    by 0x5F073FA: bcoptism_ (bcOptIsm.f90:633)
+==22686==    by 0x4F8377E: Cgsm::assignBoundaryConditionsSOS(int, int, double, double, doubleMappedGridFunction&, doubleMappedGridFunction&, int) (assignBoundaryConditionsSOS.C:1752)
+==22686==    by 0x4EE9555: Cgsm::assignBoundaryConditions(int, int, double, double, doubleMappedGridFunction&, doubleMappedGridFunction&, int) (assignBoundaryConditions.C:229)
+==22686==    by 0x4EE92BE: Cgsm::applyBoundaryConditions(int, double, int, int) (assignBoundaryConditions.C:173)
+==22686==    by 0x5017A40: Cgsm::advanceIncompressible(int, double, double, doubleCompositeGridFunction*, double) (advanceIncompressible.C:791)
+==22686==    by 0x4ECDB8E: Cgsm::advance(int, double, double, AdvanceOptions*) (advance.C:115)
+==22686==    by 0x4ECB349: Cgsm::solve() (solve.C:651)
+==22686==    by 0x11EF8E: main (cgsmMain.C:150)
+
+
+cgsm -noplot scattering.cmd -g=sphereInABoxe2ppp.order2.hdf -psolver=best -kx=1 -beta=20 -k0=5 -x0=-2 -ts=me -bc7=t -tf=2 -tp=.05 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+
+REDO -- looks ok ?!
+cgsm -noplot scattering.cmd -g=sphereInABoxe2ppp.order2.hdf -psolver=best -kx=1 -beta=20 -k0=5 -x0=-2 -ts=me -bc7=t -tf=2 -tp=.01 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+
+
+
+ogen -noplot boxArg -prefix=nonBox -periodic=p -order=2 -factor=4
+
+cgsm -noplot scattering.cmd -g=nonBox4p.order2 -psolver=best -kx=1 -beta=20 -k0=5 -x0=.5 -ts=me -bc7=t -tf=2 -tp=.01 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+
+
+looks OK; 
+
+cgsm -noplot scattering.cmd -g=box4p.order2 -psolver=best -kx=1 -beta=20 -k0=5 -x0=.5 -ts=me -bc7=t -tf=2 -tp=.01 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+
+
+******************************************
+***** Thurs Oct 21, 2021
+
+START ON 3D scattering
+
+-> check a simpler case with overlapping grids on the boundary -> split cic maybe
+
+ogen -noplot sphereInABox -order=2 -interp=e -periodic=ppp -factor=2
+
+TROUBLE -- nan's in pressure solve
+cgsm -noplot scattering.cmd -g=sphereInABoxe2ppp.order2.hdf -psolver=best -kx=1 -beta=20 -k0=5 -x0=-2 -ts=me -bc7=t -tf=2 -tp=.01 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+
+bc=d 
+cgsm -noplot scattering.cmd -g=sphereInABoxe2ppp.order2.hdf -psolver=best -kx=1 -beta=20 -k0=5 -x0=-2 -ts=me -bc7=d -tf=2 -tp=.01 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+
+
+
+
+Fix BC's for bodies 
+
+ogen -noplot rpiGrid -interp=e -order=2 -periodic=p -ya=-3 -factor=4 
+ogen -noplot rpiGrid -interp=e -order=2 -periodic=p -ya=-3 -factor=8 
+
+
+cgsm -noplot scattering.cmd -g=rpiGride4p.order2.hdf -kx=0 -ky=1 -ax=1 -ay=0 -beta=20 -k0=5 -y0=-2.0 -ts=me -bc5=t -bc6=t -bc7=t -tf=2 -tp=.1 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+
+
+
+******************************************
+***** Wed Oct 20, 2021
+
+
+START ON GAUSSIAN PLANE WAVE FOR INCOMPRESSIBLE SM
+
+
+START ON RPI grid
+
+ogen -noplot rpiGrid -interp=e -order=2 -periodic=p -ya=-3 -factor=4 
+ogen -noplot rpiGrid -interp=e -order=2 -periodic=p -ya=-3 -factor=8 
+
+cgsm -noplot scattering.cmd -g=rpiGride8p.order2.hdf -kx=0 -ky=1 -ax=1 -ay=0 -beta=20 -k0=5 -y0=-2.0 -ts=me -tf=2 -tp=.1 -cfl=0.9 -cdv=.25 -upwindSOS=1 -show=rpiG8.show -go=go >! rpiG8.out 
+cgsm -noplot scattering.cmd -g=rpiGride4p.order2.hdf -kx=0 -ky=1 -ax=1 -ay=0 -beta=20 -k0=5 -y0=-2.0 -ts=me -tf=2 -tp=.1 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+
+
+SHAPES: 
+ogen -noplot shapesArg -order=2 -interp=e -periodic=p -xa=-2 -ya=-1.25 -yb=1.25 -factor=2
+ogen -noplot shapesArg -order=2 -interp=e -periodic=p -xa=-2 -ya=-1.25 -yb=1.25 -factor=4
+ogen -noplot shapesArg -order=2 -interp=e -periodic=p -xa=-2 -ya=-1.25 -yb=1.25 -factor=8
+
+
+cgsm -noplot scattering.cmd -g=shapese8p.order2.hdf -kx=1 -beta=50 -k0=10 -x0=-1.75 -ts=me -tf=5 -tp=.1 -cfl=0.9 -cdv=.25 -upwindSOS=1 -show=shapesG8.show -go=go >! shapesG8.out 
+
+cgsm -noplot scattering.cmd -g=shapese4p.order2.hdf -kx=1 -beta=30 -k0=5 -x0=-1.75 -ts=me -tf=10 -tp=.1 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+cgsm -noplot scattering.cmd -g=shapese2p.order2.hdf -kx=1 -beta=30 -k0=5 -x0=-1.75 -ts=me -tf=10 -tp=.1 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+
+
+CHANGE SCALING of kx,ky,kz: do NOT scale by 2*pi
+
+
+CIC DISPLACEMENT
+cgsm -noplot scattering.cmd -g=cice4p.order2 -kx=1 -beta=30 -k0=2 -x0=-1.5 -bc5=d -ts=me -tf=10 -tp=.1 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og
+
+CIC TRACTION
+cgsm -noplot scattering.cmd -g=cice8p.order2 -kx=1 -beta=50 -k0=5 -x0=-1.5 -ts=me -tf=10 -tp=.1 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+
+
+
+Traction BC does not work as a symmtry condition
+cgsm -noplot scattering.cmd -g=square64.order2 -kx=1 -beta=50 -k0=5 -x0=.25 -ts=me -tf=1 -tp=.1 -cfl=0.9 -cdv=.25 -bc1=t -bc2=t -bc3=t -bc4=t -upwindSOS=1 -go=og 
+
+cgsm -noplot scattering.cmd -g=square64p.order2 -kx=1 -beta=50 -k0=5 -x0=.25 -ts=me -tf=1 -tp=.1 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+
+cgsm -noplot scattering.cmd -g=square64p.order2 -kx=1 -beta=50 -x0=.25 -ts=me -tf=1 -tp=.1 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+
+-->t=1.0000e-01 dt=9.1e-03 maxNorm errors:[0.0000e+00,1.7538e-02,0.0000e+00,], maxNorm(u):[0.00e+00,9.98e-01,0.00e+00,]
+>>> Cgsm: ILE22u: t=1.00e-01, steps=11, dt=9.1e-03 TS=ME |div(U)|=0.00e+00, |curl(U)|=6.03e+00, |div(U)|/|grad(U)|=0.00e+00 |grad(U)|=6.03e+00, cpu=6.66e+00(s)
+
+
+
+cgsm -noplot scattering.cmd -g=square128p.order2 -kx=1 -beta=10 -x0=.25 -ts=me -tf=1 -tp=.1 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+cgsm -noplot scattering.cmd -g=square64p.order2 -kx=1 -beta=10 -x0=.25 -ts=me -tf=1 -tp=.1 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+
+
+G128
+-->t=1.0000e-01 dt=4.8e-03 maxNorm errors:[0.0000e+00,6.0679e-03,0.0000e+00,], maxNorm(u):[0.00e+00,9.95e-01,0.00e+00,]
+>>> Cgsm: ILE22u: t=1.00e-01, steps=21, dt=4.8e-03 TS=ME |div(U)|=0.00e+00, |curl(U)|=1.68e+01, |div(U)|/|grad(U)|=0.00e+00 |grad(U)|=1.68e+01, cpu=9.62e+00(s)
+
+G64
+-->t=1.0000e-01 dt=9.1e-03 maxNorm errors:[0.0000e+00,2.9730e-02,0.0000e+00,], maxNorm(u):[0.00e+00,9.71e-01,0.00e+00,]
+>>> Cgsm: ILE22u: t=1.00e-01, steps=11, dt=9.1e-03 TS=ME |div(U)|=0.00e+00, |curl(U)|=1.57e+01, |div(U)|/|grad(U)|=0.00e+00 |grad(U)|=1.57e+01, cpu=8.44e+00(s)
+

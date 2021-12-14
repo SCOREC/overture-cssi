@@ -134,7 +134,7 @@ setParameters(const int & numberOfDimensions0 /* =2 */,const aString & reactionN
 // ==================================================================================================
 {
 
-  printF("MpParameters::setParameters called...\n");
+  printF("MpParameters::setParameters called, calling base class setParameters...\n");
   Parameters::setParameters(numberOfDimensions0,reactionName);
   
   return 0;

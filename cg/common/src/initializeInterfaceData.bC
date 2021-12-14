@@ -1,0 +1,199 @@
+#include "DomainSolver.h"
+// #include "CompositeGridOperators.h"
+// #include "GridCollectionOperators.h"
+// #include "interpPoints.h"
+// #include "SparseRep.h"
+// #include "ExposedPoints.h"
+// #include "Ogen.h"
+// #include "App.h"
+// #include "ParallelUtility.h"
+// #include "Oges.h"
+// #include "OgesParameters.h"
+#include "AdamsPCData.h"
+// #include "gridFunctionNorms.h"
+// #include "updateOpt.h"
+// #include "AdvanceOptions.h"
+#include "Interface.h"  
+
+#define ForBoundary(side,axis)   for( int axis=0; axis<mg.numberOfDimensions(); axis++ ) \
+                                 for( int side=0; side<=1; side++ )
+
+
+// ===============================================================================
+// Macro: Initialize Champ interface data                                  
+// ===============================================================================
+#beginMacro initializeChampInterfaceData( mCur )
+
+  CompositeGrid & cg = gf[mCur].cg;
+  for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+  {
+    MappedGrid & mg = cg[grid];
+    ForBoundary(side,axis)
+    {
+
+      if( interfaceType(side,axis,grid) != Parameters::noInterface &&
+          interfaceCommunicationMode==Parameters::requestInterfaceDataWhenNeeded )
+      {
+
+        // ---- this face is on a domain interface -----
+
+        // -- sanity check: is BC Neumann or Dirichlet ?
+        const int bc = interfaceCondition(side,axis,grid);
+        assert( bc==Parameters::dirichletInterface || bc==Parameters::neumannInterface );
+
+
+        GridFaceDescriptor & gfdSource = getInterfaceGridFaceDescriptor( grid, side, axis, parameters );
+        const int domain = gfdSource.domain;  // source domain (this domain)
+
+        // --- GET THE GridFaceDescriptor from the OPPOSITE SIDE --- 
+        bool sameSide=false;   // this means get info about the opposite side
+        GridFaceDescriptor & gfdTarget = getInterfaceGridFaceDescriptor( grid, side, axis, parameters, sameSide );
+        const int domain2 = gfdTarget.domain, grid2 = gfdTarget.grid, side2=gfdTarget.side, axis2=gfdTarget.axis; 
+
+        // These next lines worked, but simpler to get parameters2 below using getInterfaceParameters
+        // --- GET THE SOLVER FOR THE OPPOSITE SIDE --- 
+        // assert( pCgmp->domainSolver[domain2]!=NULL );
+        // // Here is the solver in the other side: 
+        // DomainSolver & solver2 = *(pCgmp->domainSolver[domain2]);
+        // const RealArray & champParameters2 = solver2.parameters.dbase.get<RealArray>("champParameters"); // old way
+
+        // -- save interface info here : 
+        GridFaceDescriptor sourceInfo(domain,grid,side,axis);
+
+
+        // We need the champ parameter "S" from the target domain
+
+        Parameters & parameters2 = getInterfaceParameters( grid,side,axis,parameters ); // parameters for the adjacent domain
+
+        const RealArray & champParameters2 = parameters2.dbase.get<RealArray>("champParameters");
+        const Real Sr    = champParameters2(4,side2,axis2,grid2);  
+
+        sourceInfo.a[0] =  Sr;  // optimized Schwartz parameter for the OPPOSITE DOMAIN ("right")
+        sourceInfo.a[1] = -1.;  // flip sign of normal
+        // Do this for now: 
+        sourceInfo.dbase.put<int>("getChampData")=1;  // this tells interfaceRHS to evaluate champ data
+
+        Index I1,I2,I3;                                            
+        getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3);
+        RealArray data(I1,I2,I3); // save data here (not used in the end)
+        sourceInfo.u = &data;     // set the pointer as to where the source data should be saved in interfaceRHS
+
+        int interfaceDataOptions = Parameters::heatFluxInterfaceData;
+        bool saveTimeHistory=true;
+
+        // printP("(grid,side,axis)=(%d,%d,%d) (grid2,side2,axis2)=(%d,%d,%d)\n",grid,side,axis, grid2,side2,axis2);
+
+        if( debug() & 1 )
+          printP("INFO: Champ parameter from the opposite side is Sr = %g\n",Sr);
+
+        int gfIndex = mCur; // Use this index 
+        interfaceRightHandSide( DomainSolver::getInterfaceRightHandSide, 
+                                interfaceDataOptions,
+                                sourceInfo, 
+                                gfdSource,
+                                gfIndex, 
+                                gf[gfIndex].t,
+                                saveTimeHistory ); 
+
+      } // end if interfaceType
+    } // end for boundary 
+
+  } // end for grid 
+#endMacro
+
+
+// ===================================================================================================================
+/// \brief Initialize any interface data such as time history data of interface fluxes
+/// \details 
+/// \param t0 (input) : current time
+/// \param dt0 (input) : current time step
+///
+// ===================================================================================================================
+int DomainSolver::
+initializeInterfaceData( real & t0, real & dt0 )
+{
+  const int applyChampInterfaceConditions = parameters.dbase.get<int>("applyChampInterfaceConditions"); 
+
+  if( !applyChampInterfaceConditions )  // do this for now 
+    return 0;
+
+  FILE *& debugFile =parameters.dbase.get<FILE* >("debugFile");
+  FILE *& pDebugFile =parameters.dbase.get<FILE* >("pDebugFile");
+  const int & orderOfBDF = parameters.dbase.get<int>("orderOfBDF");
+
+  const Parameters::TimeSteppingMethod & timeSteppingMethod = 
+                    parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod");
+  const Parameters::ImplicitMethod & implicitMethod = parameters.dbase.get<Parameters::ImplicitMethod>("implicitMethod");
+  if( implicitMethod==Parameters::backwardDifferentiationFormula )
+  {
+
+    const int orderOfAccuracy = parameters.dbase.get<int >("orderOfAccuracy");
+    const int orderOfTimeAccuracy = parameters.dbase.get<int >("orderOfTimeAccuracy");
+    const int & predictorOrder = parameters.dbase.get<int>("predictorOrder");
+
+    printP("\n ------- INITIALIZE INTERFACE DATA BDF : orderOfAccuracy=%d, orderOfTimeAccuracy=%d -----------\n\n",
+           orderOfAccuracy,orderOfTimeAccuracy);
+
+        if( !parameters.dbase.get<DataBase >("modelData").has_key("AdamsPCData") )
+    {
+      // this must be the initial call to this routine
+      parameters.dbase.get<DataBase >("modelData").put<AdamsPCData>("AdamsPCData");
+    }
+
+    AdamsPCData & adamsData = parameters.dbase.get<DataBase >("modelData").get<AdamsPCData>("AdamsPCData");
+    
+    real & dtb=adamsData.dtb;
+    int &mab0 =adamsData.mab0, &mab1=adamsData.mab1, &mab2=adamsData.mab2;
+    int &nab0 =adamsData.nab0, &nab1=adamsData.nab1, &nab2=adamsData.nab2, &nab3=adamsData.nab3;
+    int &ndt0=adamsData.ndt0;
+    real *dtp = adamsData.dtp;
+
+
+    const int & numberOfSolutionLevels = parameters.dbase.get<int>("numberOfSolutionLevels");
+    const int & numberOfTimeDerivativeLevels = parameters.dbase.get<int>("numberOfTimeDerivativeLevels");
+
+
+    const int numberOfGridFunctions =  orderOfBDF+1;
+    int & mCur = mab0;
+    const int mNew   = (mCur + 1 + numberOfGridFunctions) % numberOfGridFunctions; // holds u(t+dt)
+    const int mPrev  = (mCur - 1 + numberOfGridFunctions) % numberOfGridFunctions; // holds u(t-dt)
+    const int mPrev2 = (mCur - 2 + numberOfGridFunctions) % numberOfGridFunctions; // holds u(t-2*dt)
+
+    const Parameters::InterfaceCommunicationModeEnum & interfaceCommunicationMode = 
+                      parameters.dbase.get<Parameters::InterfaceCommunicationModeEnum>("interfaceCommunicationMode");
+
+    // Here is the Cgmp object:
+    // DomainSolver *pCgmp = parameters.dbase.get<DomainSolver*>("multiDomainSolver");
+    const IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
+    const bool interfaceBoundaryConditionsAreSpecified=parameters.dbase.has_key("interfaceCondition");
+    IntegerArray & interfaceCondition = (interfaceBoundaryConditionsAreSpecified ? 
+                                         parameters.dbase.get<IntegerArray>("interfaceCondition") :
+                                         Overture::nullIntArray() );
+
+
+    assert( gf[mPrev].t == t0-dt0 );
+
+    int numPast = orderOfTimeAccuracy;
+    for( int past=-numPast; past<=0;  past++ ) // past = -2,-1,0
+    {
+      // --- Evaluate the solution at a past time and then evaluate the interface data ---
+      int mPrev  = (mCur + past + 2*numberOfGridFunctions) % numberOfGridFunctions; // holds u(t-dt)  
+
+      gf[mPrev].t = t0 + past*dt0; 
+      printP(" ---> init CHAMP interface data for mPrev=%d t=%9.3e\n",mPrev,mPrev2,gf[mPrev].t);
+      if( mPrev != mCur )
+      {
+        assignInitialConditions( mPrev );  // t-dt may also already be assigned **CHECK ME**
+      }
+
+      // Macro: will call interfaceRightHandSide, which is where Champ interface time-history data is saved
+      initializeChampInterfaceData( mPrev );
+
+    }
+
+      // OV_ABORT("STOP HERE FOR NOW");
+
+  }
+
+  return 0;
+}

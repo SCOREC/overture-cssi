@@ -1,5 +1,49 @@
 
 ********************************
+***** Fri Dec 10, 2021
+
+START TEST BDF AND CHAMP
+
+FIXED STARTUP FOR CGAD AND BDF 
+
+TS=BDF
+conv.p twoDomainsCHT.conv -problem=planeInterfaceMode -cg=twoSquaresInterface -known=planeInterfaceMode -useChamp=1 -ts=bdf -domain1=leftDomain -domain2=rightDomain -tp=.7 -tf=.7 -ng=2
+
+                grid  & N &  $T$ & r 
+twoSquaresInterfacee1 &     1 & 8.10e-04 &       
+twoSquaresInterfacee2 &     2 & 1.25e-04 &  6.48 
+twoSquaresInterfacee4 &     4 & 2.23e-05 &  5.61 
+twoSquaresInterfacee8 &     8 & 4.60e-06 &  4.85 
+Convergence rates: c0=2.49 
+
+
+
+TS=IM CHAMP 
+conv.p twoDomainsCHT.conv -problem=planeInterfaceMode -cg=twoSquaresInterface -known=planeInterfaceMode -useChamp=1 -domain1=leftDomain -domain2=rightDomain -tp=.7 -tf=.7 -ng=3
+                grid  & N &  $T$ & r 
+twoSquaresInterfacee1 &     1 & 8.64e-04 &       
+twoSquaresInterfacee2 &     2 & 1.34e-04 &  6.45 
+twoSquaresInterfacee4 &     4 & 2.46e-05 &  5.45 
+twoSquaresInterfacee8 &     8 & 5.18e-06 &  4.75 
+Convergence rates: c0=2.46 
+
+
+NO CHAMP:
+TS=IM
+conv.p twoDomainsCHT.conv -problem=planeInterfaceMode -cg=twoSquaresInterface -known=planeInterfaceMode -useChamp=0 -domain1=leftDomain -domain2=rightDomain -tp=.7 -tf=.7 -ng=4
+
+
+                grid  & N &  $T$ & r 
+twoSquaresInterfacee1 &     1 & 8.17e-04 &       
+twoSquaresInterfacee2 &     2 & 2.06e-04 &  3.97 
+twoSquaresInterfacee4 &     4 & 5.14e-05 &  4.01 
+twoSquaresInterfacee8 &     8 & 1.28e-05 &  4.02 
+Convergence rates: c0=2.00 
+
+
+
+
+********************************
 ***** Wed/Thurs May 5/6, 2021
 
 >>> PLANE INTER MODE -- tables for mpRef
@@ -16,7 +60,7 @@ conv.p twoDomainsCHT.conv -problem=planeInterfaceMode -cg=twoSquaresInterface -k
 
 SIGHNS BUGS FIXED IN  Lc operator 
 
-### CHAMP: looks OK -- champ is moe accurate than DN (?)
+### CHAMP: looks OK -- champ is more accurate than DN (?)
 conv.p twoDomainsCHT.conv -problem=doubleAnnulusChamp -cg=doubleAnnulusGrid -known=concentricCylinders -useChamp=1 -tp=.3 -tf=.3 -nMode=1 -mRoot=0 -ng=6
 
                 grid  & N &  $ & r 

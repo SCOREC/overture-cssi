@@ -87,7 +87,7 @@ enum TimeSteppingMethod
   adamsPredictorCorrector4,
   variableTimeStepAdamsPredictorCorrector,
   laxFriedrichs,                          
-  implicit,                                  ///< implicit predictor-corrector   
+  implicit,                                  ///< implicit predictor-corrector or BDF
   rKutta,
   midPoint,
   implicitAllSpeed,
@@ -97,6 +97,7 @@ enum TimeSteppingMethod
   steadyStateNewton,
   secondOrderSystemTimeStepping,
   adi,
+  // bdfTimeStepping,             : BDF is included wit implicit, using ImplicitMethod
   numberOfTimeSteppingMethods
 };
 

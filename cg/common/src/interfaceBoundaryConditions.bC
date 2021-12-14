@@ -1,6 +1,7 @@
 #include "DomainSolver.h"
 #include "Interface.h"
 #include "ParallelUtility.h"
+#include "ArrayEvolution.h"
 
 // ****** NOTE: this base class implementation assumes that interface BC is for the Temperature only *****
 
@@ -42,7 +43,7 @@ setInterfaceBoundaryCondition( GridFaceDescriptor & info )
   {
     printF("DomainSolver::setInterfaceBoundaryCondition:ERROR: invalid values: (side,axis,grid)=(%i,%i,%i)\n",
            side,axis,grid);
-    Overture::abort("DomainSolver::setInterfaceBoundaryCondition:ERROR");
+    OV_ABORT("DomainSolver::setInterfaceBoundaryCondition:ERROR");
   }
 
   if( interfaceType(side,axis,grid)==Parameters::heatFluxInterface )
@@ -67,7 +68,7 @@ setInterfaceBoundaryCondition( GridFaceDescriptor & info )
     if( bcData.getLength(0)<3*numberOfComponents || bcData.getLength(1)!=2 )
     {
       bcData.display("error");
-      Overture::abort("error");
+      OV_ABORT("error");
     }
 
     const int tc = parameters.dbase.get<int >("tc");   
@@ -282,7 +283,7 @@ getInterfaceDataOptions( GridFaceDescriptor & info, int & interfaceDataOptions )
 // =====================================================================================================
 #beginMacro getChampRhsMacro(f)
 
-  if( debug() & 2 )
+  if( debug() & 4 )
     printF("DomainSolver::interfaceRightHandSide:CHAMP RHS: S = a[0]=%g,   a[1]=%g (= (+/-) 1 ?) \n",a[0],a[1]);
 
   const bool isRectangular=mg.isRectangular();
@@ -360,10 +361,14 @@ getInterfaceDataOptions( GridFaceDescriptor & info, int & interfaceDataOptions )
 
       f(J1,J2,J3,tc) -= ue(K1,K2,K3,N);
 
-      if( true || debug() & 8  )
+      if( debug() & 8  )
       {
         printP("RHS FOR CHAMP AFTER ADDING TZ CORRECTION, t=%9.3e\n",t);
         ::display(f(J1,J2,J3,tc) ," a[0]*u + a[1]*( k u.n ) - [a[0]*ue + a[1]*( k ue.n )]");
+        e.gd( ue ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,K1,K2,K3,N,t);  // exact solution 
+        ::display(ue(K1,K2,K3,tc) ," ue on the first line inside");
+        ::display(uLocal(K1,K2,K3,tc) ," uLocal on the first line inside");
+
       }
 
     }
@@ -444,6 +449,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
   // gfIndex <0 means choose the grid function corresponding to time t
 
   // *** THIS NEXT CODE IS DUPLICATED IN interfaceRightHandSide in CGINS AND CGSM **FIX ME**
+  bool getValuesByTimeExtrapolation = false;
   if( gfIndex==-1 )
   {
     // Find the solution that matches time=t
@@ -482,12 +488,17 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
       {
         // ************** FIX ME ************
         printP("interfaceRightHandSide:WARNING cannot find gfIndex to match t=%9.3e\n"
-               "      currentGF=%i, gf[currentGF].t=%9.3e, nextGF=%i, gf[nextGF].t=%9.3e\n",
-               t,currentGF,gf[currentGF].t,nextGF,gf[nextGF].t);
+               "      currentGF=%i, gf[currentGF].t=%9.3e, nextGF=%i, gf[nextGF].t=%9.3e, saveTimeHistory=%d\n",
+               t,currentGF,gf[currentGF].t,nextGF,gf[nextGF].t,(int)saveTimeHistory);
         if( fabs(gf[currentGF].t-t) <  fabs(gf[nextGF].t-t) )
           gfIndex=currentGF; 
         else
           gfIndex=nextGF; 
+
+        getValuesByTimeExtrapolation=true;
+        if( !gfd.dbase.has_key("heatFluxHistory") )
+          getValuesByTimeExtrapolation=false;       // there is no time history yet
+
         // OV_ABORT("fix me");
       }
     }
@@ -624,9 +635,29 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
       }    
       if( getChampData )
       {
-          // --- get interface RHS for the CHAMP CHT conditions  -----
-    
-        getChampRhsMacro(f);
+        // --- get interface RHS for the CHAMP CHT conditions  -----
+        if( getValuesByTimeExtrapolation )
+        {
+          // const int orderOfAccuracyInSpace = parameters.dbase.get<int>("orderOfAccuracyInSpace");
+          ArrayEvolution & heatFluxHistory = gfd.dbase.get<ArrayEvolution>("heatFluxHistory");
+
+          // const int orderOfAccuracy = parameters.dbase.get<int>("orderOfAccuracy");
+          const int orderOfTimeAccuracy = parameters.dbase.get<int >("orderOfTimeAccuracy");
+
+          const int orderOfTimeExtrapolation = orderOfTimeAccuracy+1; // Use this many time-levels to extrapolate the time data
+          const int numTimeLevelsInHistory = heatFluxHistory.getNumberOfTimeLevels();
+          printP(" >>>> interfaceRightHandSide: EVAL CHAMP RHS USING TIME EXTRAPOLATION TO t=%9.3e, orderOfTimeExtrapolation=%d, orderOfTimeAccuracy=%d, numTimeLevelsInHistory=%d <<<<<\n\n",
+                t,orderOfTimeExtrapolation,orderOfTimeAccuracy,numTimeLevelsInHistory);
+
+          const int numberOfTimeDerivatives=0;
+          heatFluxHistory.eval( t, f, numberOfTimeDerivatives, orderOfTimeExtrapolation );
+
+          saveTimeHistory=false; // do NOT save this value in the time history  
+        }
+        else
+        {
+          getChampRhsMacro(f);
+        }
 
       }
       else 
@@ -639,9 +670,27 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
     else
     {
       printF("DomainSolver::interfaceRightHandSide:ERROR: unknown option=%i\n",option);
-      Overture::abort("error");
+      OV_ABORT("error");
     }
 
+    // *wdh* Dec 11, 2021
+    if( saveTimeHistory )
+    {
+      // -- save a time history of the heat flux
+      if( !gfd.dbase.has_key("heatFluxHistory") )
+      {
+        gfd.dbase.put<ArrayEvolution>("heatFluxHistory");
+        printP("\n @@@@@@ --interfaceRightHandSide-- Create ArrayEvolution heatFluxTimeHistory at t=%9.3e (for time extrap of champ RHS data) @@@@@@@ \n",t);
+      }
+      ArrayEvolution & heatFluxHistory = gfd.dbase.get<ArrayEvolution>("heatFluxHistory");
+
+      heatFluxHistory.add( t, f );
+      printP("\n @@@@@@ --interfaceRightHandSide-- Save heat flux time history at t=%9.3e @@@@@@@ \n",t);
+    }
+
+
+
+    
     // This next block was split and moved up above *wdh* April 22, 2021
     // if( // false &&  // turn this off for testing the case where the same TZ holds across all domains
     //     twilightZoneFlow )
@@ -681,7 +730,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
     //   }
     //   else
     //   {
-    //     Overture::abort("error");
+    //     OV_ABORT("error");
     //   }
     
     // } // end if TZ 
@@ -769,7 +818,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
         #ifndef USE_PPP
           f(J1,J2,J3,V)=traction(I1,I2,I3,D);
         #else
-          Overture::abort("ERROR: finish me for parallel");
+          OV_ABORT("ERROR: finish me for parallel");
         #endif
 
         // f(J1,J2,J3,V)=-traction(I1,I2,I3,D); // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -836,7 +885,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
              if( !parameters.dbase.has_key("u1c") )
              {
                printP("interfaceRightHandSide:ERROR: unable to find variable u1c in the data-base\n");
-               Overture::abort("error");
+               OV_ABORT("error");
              }
              const int u1c = parameters.dbase.get<int >("u1c");
              assert( u1c>=0 );
@@ -858,7 +907,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
       else
       {
         printP("ERROR: unknown className=[%s]\n",(const char*)getClassName());
-        Overture::abort("error");
+        OV_ABORT("error");
       }
       
         
@@ -875,7 +924,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
   {
     printP("DomainSolver::interfaceRightHandSide:unexpected interfaceType=%i for (grid,side,axis)=(%d,%d,%d)\n",
            interfaceType(side,axis,grid),grid,side,axis);
-    Overture::abort("error");
+    OV_ABORT("error");
   }
   
 

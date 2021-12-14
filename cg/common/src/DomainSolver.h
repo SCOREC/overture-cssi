@@ -515,6 +515,10 @@ implicitSolve(const real & dt0,
 virtual int 
 initializeInterfaces(GridFunction & cgf);
 
+// Initialize interface data such as time histories of interface heat fluxes -- *wdh* Dec 12, 2021
+virtual int 
+initializeInterfaceData(  real & t0, real & dt0 );
+
 virtual int
 initializeSolution();
 

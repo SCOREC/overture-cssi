@@ -258,6 +258,7 @@ writeParameterSummary( FILE * file )
       }
 
       fPrintF(file," applyChampInterfaceConditions=%d (for multi-domain problems).\n",parameters.dbase.get<int>("applyChampInterfaceConditions"));
+      fPrintF(file," champOption = %d (0=use old, 1=use new implementation).\n",parameters.dbase.get<int>("champOption"));
     }
 
   }

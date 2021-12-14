@@ -28,21 +28,26 @@ $ad=0.; $ad4=0.;  # art. diss for Godunov
 $incompressible=1; # set to 1 for incompressible solids
 $upwindSOS=0;      # set to 1 for upwind dissipation for second-order systems
 $cdv=1.;           # divergence damping 
-$known="strip"; $bc1="t"; $bc2="d"; 
+$known="strip"; $bc1="t"; $bc2="d"; $bc3="d"; $bc4="d"; $bc5="d"; $bc4="d"; 
 $icase=1; $useCurlCurl=1; $skipLastPressureSolve=0; 
+$n=1; $m=1; # Jn, lambda_nm
 $orderInTime=-1; # -1 = use default
+$psolver="yale"; $iluLevels=1; $ogesDebug=0; $rtolp=1.e-3; $atolp=1.e-4;  # For the pressure solve
 #
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"known=s"=>\$known, \
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug,"ad=f"=>\$ad,"ad4=f"=>\$ad4, \
- "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bc1=s"=>\$bc1,"bc2=s"=>\$bc2,"go=s"=>\$go,"noplot=s"=>\$noplot,"iw=i"=>\$iw,\
+ "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bc1=s"=>\$bc1,"bc2=s"=>\$bc2,"bc3=s"=>\$bc3,"bc4=s"=>\$bc4,\
+ "go=s"=>\$go,"noplot=s"=>\$noplot,"iw=i"=>\$iw,\
   "mu=f"=>\$mu,"lambda=f"=>\$lambda,"rho=f"=>\$rho,"dtMax=f"=>\$dtMax, "cons=i"=>\$cons,"pv=s"=>\$pv,\
   "icase=f"=>\$icase,"p0=f"=>\$p0,"p1=f"=>\$p1,"modem=i"=>\$modem,"moden=i"=>\$moden,"ts=s"=>\$ts,"en=s"=>\$en,\
   "c0=f"=>\$c0,"cl=f"=>\$cl,"filter=i"=>\$filter,"filterOrder=i"=>\$filterOrder,"filterStages=i"=>\$filterStages,\
   "upwindSOS=i"=>\$upwindSOS,"cdv=f"=>\$cdv,"useCurlCurl=i"=>\$useCurlCurl,"orderInTime=i"=>\$orderInTime,\
-  "skipLastPressureSolve=i"=>\$skipLastPressureSolve );
+  "skipLastPressureSolve=i"=>\$skipLastPressureSolve,"psolver=s"=>\$psolver,"rtolp=f"=>\$rtolp,"atolp=f"=>\$atolp,\
+  "iluLevels=i"=>\$iluLevels,"n=i"=>\$n,"m=i"=>\$m );
 # -------------------------------------------------------------------------------------------------
-if( $solver eq "best" ){ $solver="choose best iterative solver"; }
+if( $psolver eq "best" ){ $psolver="choose best iterative solver"; }
+if( $psolver eq "mg" ){ $psolver="multigrid"; }
 if( $tz eq "poly" ){ $tz="polynomial"; }else{ $tz="trigonometric"; }
 if( $order eq "2" ){ $order = "second order accurate"; }else{ $order = "fourth order accurate"; }
 if( $model eq "ins" ){ $model = "incompressible Navier Stokes"; }else\
@@ -95,8 +100,8 @@ $cmds
 # 
 OBTZ:user defined known solution 
   if( $known eq "strip"   ){ $cmd="incompressible surface wave\n $icase 1"; }
-  if( $known eq "annulus" ){ $cmd="incompressible annulus solution\n $icase"; }
-  if( $known eq "disk" ){ $cmd="incompressible disk solution\n $icase"; }
+  if( $known eq "annulus" ){ $cmd="incompressible annulus solution\n $icase $n $m"; }
+  if( $known eq "disk" ){ $cmd="incompressible disk solution\n $icase $n $m"; }
   $cmd
 #  incompressible surface wave
 #    1 1
@@ -112,12 +117,22 @@ times to plot $tPlot
 dissipation $diss
 # order of dissipation $dissOrder
 cfl $cfl
+#
+  pressure solver options
+   $ogesSolver=$psolver; $ogesRtol=$rtolp; $ogesAtol=$atolp; $ogesIluLevels=$iluLevels;
+   include $ENV{CG}/ins/cmd/ogesOptions.h
+  exit
+#
 # use conservative difference $cons
 boundary conditions
   if( $bc1 eq "t" ){ $bc1 = "tractionBC"; }else{ $bc1="displacementBC"; }
   if( $bc2 eq "t" ){ $bc2 = "tractionBC"; }else{ $bc2="displacementBC"; }
+  if( $bc3 eq "t" ){ $bc3 = "tractionBC"; }else{ $bc3="displacementBC"; }
+  if( $bc4 eq "t" ){ $bc4 = "tractionBC"; }else{ $bc4="displacementBC"; }
   bcNumber1=$bc1
   bcNumber2=$bc2
+  bcNumber3=$bc3
+  bcNumber4=$bc4
   # bcNumber1=tractionBC
   # bcNumber2=displacementBC
 done

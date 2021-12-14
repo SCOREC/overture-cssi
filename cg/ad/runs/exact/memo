@@ -3,6 +3,44 @@ FIX:
 
 
 ***************************************************
+******* Fri Dec 10, 2021
+
+CHECK BDF -- initialization
+
+
+cgad -noplot exact -g=annulus2.order2 -known=annulusEigen -n=2 -m=0 -a=1.0 -amp=1.0 -bcOpt=0 -ts=bdf -dtMax=.01 -go=og
+
+# This option should properly assign past tine values at startup
+use new time-stepping startup $useNewTimeSteppingStartup  
+#
+
+>>>> BDF2
+--BDF-- Initialize past time values for scheme, numberOfPastTimes=1 numberOfPastTimeDerivatives=0 ---
+ -- BDF-- USE NEW STARTUP numberOfPastTimes=1 mCur=0 mOld=2
+
+
+
+---- determineErrors at t=1.000e-01,  maxNorm errors: [2.54e-04]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (10 steps)
+   0.100 2.54e-04 2.31e-01 1.00e-02 1.65e+01        0
+
+
+IM-PC
+---- determineErrors at t=1.000e-01,  maxNorm errors: [3.27e-04]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (9 steps)
+   0.100 3.27e-04 2.31e-01 1.00e-02 1.35e+01        0
+
+EXPLIC
+cgad -noplot exact -g=annulus2.order2 -known=annulusEigen -n=2 -m=0 -a=1.0 -amp=1.0 -bcOpt=0 -go=og
+
+
+---- determineErrors at t=1.000e-01,  maxNorm errors: [3.45e-04]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (44 steps)
+   0.100 3.45e-04 2.31e-01 2.22e-03 1.07e+01        0
+
+
+
+***************************************************
 ******* Wed May 5, 2021
 
 REVISIT ANNULUS EXACT SOLUTION -- bug fixed

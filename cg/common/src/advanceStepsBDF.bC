@@ -378,7 +378,7 @@ initializeTimeSteppingBDF( real & t0, real & dt0 )
   }
   if( debug() & 1 )
   {
-    printF("DomainSolver::initializeTimeSteppingBDF:INFO: predictorOrder=%i\n",predictorOrder);
+    printP("DomainSolver::initializeTimeSteppingBDF:INFO: predictorOrder=%i , orderOfBDF=%d\n",predictorOrder,orderOfBDF);
   }
   
   const int numberOfGridFunctions =  orderOfBDF+1;
@@ -426,7 +426,6 @@ initializeTimeSteppingBDF( real & t0, real & dt0 )
 
   // **** To initialize the method we need to compute du/dt at times t and t-dt *****
 
-  // this is a macro (pcMacros.h):
   const int & numberOfSolutionLevels = parameters.dbase.get<int>("numberOfSolutionLevels");
   const int & numberOfTimeDerivativeLevels = parameters.dbase.get<int>("numberOfTimeDerivativeLevels");
   int numberOfExtraPressureTimeLevels=0;
@@ -434,7 +433,9 @@ initializeTimeSteppingBDF( real & t0, real & dt0 )
   const int numberOfPastTimeDerivatives=0;       // BDF needs no past u_t
   // const int numberOfPastTimes=1; 
   // const int numberOfPastTimeDerivatives=1;       
+  // this is a macro (pcMacros.h):
   initializePredictorCorrector(BDF,uti);
+
 
   return 0;
 }

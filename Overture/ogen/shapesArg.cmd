@@ -2,7 +2,7 @@
 # Shapes in a 2d box
 #
 #
-# usage: ogen [noplot] shapesArg -factor=<num> -order=[2/4/6/8] -interp=[e/i]
+# usage: ogen [noplot] shapesArg -factor=<num> -order=[2/4/6/8] -interp=[e/i] -periodic=[|p|np|pn]
 # 
 # examples:
 #     ogen noplot shapesArg -order=2 -factor=1 
@@ -16,19 +16,24 @@ $order=2; $factor=1; $interp="i"; # default values
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids";
 $name=""; $xa=-1.25; $xb=1.25; $ya=-1.; $yb=1.;
 $rgd="var"; $dist=.175;
+$periodic="";
 $numGhost=-1;  # if this value is set, then use this number of ghost points
 # 
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,"xa=f"=> \$xa,"xb=f"=> \$xb,"ya=f"=> \$ya,"yb=f"=> \$yb,\
             "interp=s"=> \$interp,"name=s"=> \$name,"prefix=s"=> \$prefix,"rgd=s"=> \$rgd,"dist=f"=> \$dist,\
-            "numGhost=i"=>\$numGhost );
+            "numGhost=i"=>\$numGhost,"periodic=s"=>\$periodic );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
 elsif( $order eq 8 ){ $orderOfAccuracy="eighth order"; $ng=6; }
 if( $interp eq "e" ){ $interpType = "explicit for all grids"; }
 # 
-$suffix = ".order$order";
+$suffix=""; 
+if( $periodic eq "p" ){ $suffix = "p"; }
+if( $periodic eq "np" ){ $suffix = "np"; }
+if( $periodic eq "pn" ){ $suffix = "pn"; }
+$suffix .= ".order$order";
 if( $numGhost ne -1 ){ $ng = $numGhost; } # overide number of ghost
 if( $numGhost ne -1 ){ $suffix .= ".ng$numGhost"; } 
 if( $name eq "" ){$name = $prefix . "$interp$factor" . $suffix . ".hdf";}
@@ -46,6 +51,11 @@ create mappings
     $nx = int( ($xb-$xa)/$ds +1.5 ); 
     $ny = int( ($yb-$ya)/$ds +1.5 ); 
     $nx $ny
+    boundary conditions
+      if( $periodic eq "p" ){ $bc ="-1 -1 -1 -1"; }\
+      elsif( $periodic eq "np" ){ $bc ="1 2 -1 -1"; }\
+      elsif( $periodic eq "pn" ){ $bc ="-1 -1 3 4"; }else{ $bc="1 2 3 4"; }   
+      $bc     
   exit
 #
   SmoothedPolygon

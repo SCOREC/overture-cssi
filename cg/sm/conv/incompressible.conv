@@ -18,7 +18,7 @@ $cgsm = "$CGBUILDPREFIX/sm/bin/cgsm";  # command for cgsm
 $cmdDir="$ENV{CG}/sm/runs/surfaceWave"; 
 # 
 $known="annulus"; 
-$icase=1; $mode=1; 
+$icase=1; $mode=1; $n=1; $m=1; # Jn( lambda_mn r )
 $bc1="d"; $bc2="d"; # displacement BC
 $upwindSOS=1; 
 $pv = "nc";  $en="max"; $ng=5; $cdv=1.; $ts="me"; $alwaysCompute=1; $mu=1.; $cfl=.9; 
@@ -27,7 +27,7 @@ $showAllComponents=0;  # set to 1 to include all components in the table.
 $useCurlCurl=1; 
 #
 GetOptions("pv=s"=>\$pv,"en=s"=>\$en,"mode=i"=>\$mode,"ng=i"=>\$ng,"bcn=s"=>\$bcn,"ts=s"=>\$ts,"cdv=f"=>\$cdv,\
-           "alwaysCompute=i"=>\$alwaysCompute,"mu=f"=>\$mu,"icase=i"=>\$icase,\
+           "alwaysCompute=i"=>\$alwaysCompute,"mu=f"=>\$mu,"icase=i"=>\$icase,"n=i"=>\$n,"m=i"=>\$m,\
            "showAllComponents=i"=>\$showAllComponents,"known=s"=>\$known,\
            "cfl=f"=>\$cfl,"upwindSOS=i"=>\$upwindSOS,"useCurlCurl=i"=>\$useCurlCurl,"tf=f"=>\$tf,"tp=f"=>\$tp );
 # -- periodic strip known solutions ---
@@ -39,16 +39,16 @@ if( $known eq "strip" ){ \
       if( $icase eq "1" ){ $bc1="t"; $bc2="d"; } \
       if( $icase eq "2" ){ $bc1="t"; $bc2="t"; } \
       if( $icase eq "3" ){ $bc1="t"; $bc2="t"; } \
-      $caseLabel = "Case$icase" . "BC$bc1$bc2";  \
+      $caseLabel = "Case$icase" . "BC$bc1$bc2" . "Moden$n" . "m$m";  \
     }
 # -- annulus known solutions ---
 if( $known eq "annulus" ){ \
       $cmdFile="$cmdDir/surfaceWave.cmd"; $shortName="an";  \
       $gridPrefix="annulus"; \
       if( $icase eq "1" ){ $bc1="d"; $bc2="d"; } \
-      if( $icase eq "2" ){ $bc1="d"; $bc2="t"; } \
+      if( $icase eq "2" ){ $bc1="t"; $bc2="d"; } \
       if( $icase eq "3" ){ $bc1="t"; $bc2="t"; } \
-      $caseLabel = "Case$icase" . "BC$bc1$bc2";  \
+      $caseLabel = "Case$icase" . "BC$bc1$bc2". "Moden$n" . "m$m";  \
     }
 # -- disk known solutions ---
 if( $known eq "disk" ){ \
@@ -56,9 +56,12 @@ if( $known eq "disk" ){ \
       $gridPrefix="sicFixede"; \
       if( $icase eq "1" ){ $bc1="d"; $bc2="d"; } \
       if( $icase eq "2" ){ $bc1="t"; $bc2="t"; } \
-      $caseLabel = "Case$icase" . "BC$bc1";  \
+      $caseLabel = "Case$icase" . "BC$bc1". "Moden$n" . "m$m";  \
     }    
 $check="sm.check";
+# 
+$caseName=$known . "IncompressibleElasticity" . "TS$ts" . $caseLabel;
+$name=$caseName;
 # if( $pv eq "nc" || $pv eq "c" ){ $numberOfComponents = 2; }
 # if( $pv eq "g" ){ $numberOfComponents = 8; }
 if( $pv eq "h" ){ $numberOfComponents = 11; }
@@ -66,9 +69,6 @@ if( $ts eq "me" ){ $ts = "modifiedEquationTimeStepping"; }
 if( $ts eq "fe" ){ $ts = "forwardEuler"; }
 if( $ts eq "ie" ){ $ts = "improvedEuler"; }
 if( $ts eq "ab" ){ $ts = "adamsBashforth2"; }
-# 
-$caseName=$known . "IncompressibleElasticity" . $caseLabel;
-$name=$caseName;
 #
 #
 # --- define the table heading and caption --
@@ -77,10 +77,10 @@ $numberOfComponents = 4;
 $title ="grid  \& N \& \$\\|\\uv\\|\$ \& \$u_1\$ \&  \$u_2\$ \& \$p\$  ";
 @componentName = ( "uv", "u1", "u2", "p" );
 # 
-$caption= "\\caption\{SM-ILE, $name, icase=$icase, \$t=$tf\$, cfl=$cfl, bc1=$bc1, bc2=$bc2, upwindSOS=$upwindSOS, cdv=$cdv, useCurlCurl=$useCurlCurl $date}\\label\{table:$name}"; 
+$caption= "\\caption\{SM-ILE, $name, ts=$ts, icase=$icase, n=$n, m=$m, \$t=$tf\$, cfl=$cfl, bc1=$bc1, bc2=$bc2, upwindSOS=$upwindSOS, cdv=$cdv, useCurlCurl=$useCurlCurl $date}\\label\{table:$name}"; 
 $outputFile="$name" . ".ConvTable.tex"; 
 # 
-$options = "-ts=$ts -tf=$tf -tp=$tp -cfl=$cfl -known=$known -icase=$icase -bc1=$bc1 -bc2=$bc2 -cdv=$cdv -upwindSOS=$upwindSOS -useCurlCurl=$useCurlCurl -go=go"; 
+$options = "-ts=$ts -tf=$tf -tp=$tp -cfl=$cfl -known=$known -icase=$icase -n=$n -m=$m -bc1=$bc1 -bc2=$bc2 -cdv=$cdv -upwindSOS=$upwindSOS -useCurlCurl=$useCurlCurl -go=go"; 
 $gName1 = $gridPrefix . "2.order2";
 $gName2 = $gridPrefix . "4.order2";
 $gName3 = $gridPrefix . "8.order2";

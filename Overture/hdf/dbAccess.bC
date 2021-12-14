@@ -35,7 +35,7 @@ DataBase* getSubDir( DataBase & db, const string & fullPathName, string & name)
       printf("\n+++ getSubDir: Entries in subDir +++\n");
       for( DataBase::iterator e=subDir.begin(); e!=subDir.end(); e++ )
       {
-	cout << "name="<< (*e).first <<endl;
+        cout << "name="<< (*e).first <<endl;
       }
 
       pDataBase = &(pDataBase->get<DataBase>(dirName));
@@ -99,11 +99,11 @@ int functionName( DataBase *pdb, char *name_, TYPE & value, int & nameLength)
       DataBase subDir =pDataBase->get<DataBase>(dirName);
       if( debug & 1 ) 
       {
-	printf("+++ functionName: Entries in subDir +++\n");
-	for( DataBase::iterator e=subDir.begin(); e!=subDir.end(); e++ )
-	{
-	  cout << "name="<< (*e).first <<endl;
-	}
+        printf("+++ functionName: Entries in subDir +++\n");
+        for( DataBase::iterator e=subDir.begin(); e!=subDir.end(); e++ )
+        {
+          cout << "name="<< (*e).first <<endl;
+        }
       }
       pDataBase = &(pDataBase->get<DataBase>(dirName));
     }

@@ -3,7 +3,7 @@
 #
 
 # C++ source files:
-SRC_FILES += advanceIncompressible.C pressure.C projectLinearMode.C
+SRC_FILES += advanceIncompressible.C pressure.C projectLinearMode.C SmCylinderExactSolution.C
 
 
 # # *** fortran files the we always compile optimized ***
@@ -35,6 +35,9 @@ src/incompressible/advanceIncompressible.C : src/incompressible/advanceIncompres
 src/incompressible/pressure.C : src/incompressible/pressure.bC boundaryMacros.h; $(BPP) -quiet -clean $<
 
 src/incompressible/projectLinearMode.C : src/incompressible/projectLinearMode.bC; $(BPP) -quiet -clean $<
+
+src/incompressible/SmCylinderExactSolution.C : src/incompressible/SmCylinderExactSolution.bC; $(BPP) -quiet -clean $<
+
 
 src/incompressible/advOptIsm.f90: src/incompressible/advOptIsm.bf90; $(BPP) -quiet -clean -I$(Overture)/include $<
 src/incompressible/bcOptIsm.f90: src/incompressible/bcOptIsm.bf90; $(BPP) -quiet -clean -I$(Overture)/include $<

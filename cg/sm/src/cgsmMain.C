@@ -17,7 +17,7 @@
 
 #include "Cgsm.h"
 #include "ParallelUtility.h"
-
+#include "Oges.h"
 #include "CgSolverUtil.h"
 
 int 
@@ -39,6 +39,9 @@ main(int argc, char *argv[])
   // Use this to avoid un-necessary communication: 
   Optimization_Manager::setForceVSG_Update(Off);
   const int myid=Communication_Manager::My_Process_Number;
+
+  // This macro will initialize the PETSc solver if OVERTURE_USE_PETSC is defined.
+  INIT_PETSC_SOLVER();
 
   int plotOption=true;
   bool smartRelease=false;
@@ -62,22 +65,22 @@ main(int argc, char *argv[])
         continue; // these commands are processed by getGraphicsInterface below 
       else if( line=="memory" )
       {
-	reportMemory=true;
+        reportMemory=true;
         Diagnostic_Manager::setTrackArrayData(TRUE);
       }
       else if( line=="loadBalance" || line=="-loadBalance" )
       {
-	loadBalance=true;
+        loadBalance=true;
       }
       else if( len=line.matches("-numberOfParallelGhost=") )
       {
-	sScanF(line(len,line.length()-1),"%i",&numberOfParallelGhost);
+        sScanF(line(len,line.length()-1),"%i",&numberOfParallelGhost);
         if( numberOfParallelGhost<0 || numberOfParallelGhost>10 )
-	{
-	  printF("ERROR: numberOfParallelGhost=%i is no valid!\n",numberOfParallelGhost);
-	  OV_ABORT("error");
-	}
-	printF("Setting numberOfParallelGhost=%i\n",numberOfParallelGhost);
+        {
+          printF("ERROR: numberOfParallelGhost=%i is no valid!\n",numberOfParallelGhost);
+          OV_ABORT("error");
+        }
+        printF("Setting numberOfParallelGhost=%i\n",numberOfParallelGhost);
       }
       else if( line=="release" )
       {

@@ -137,6 +137,34 @@ coeff(m,i1,i2,i3)=0.
   //    dr12(axis) = 1./( 2*dr(axis) )  : for computing D0 
   //    inverseVertexDerivative         : name of metric array
 
+  #define d12(axis) dr12L[axis]
+  #define inverseVertexDerivative rxLeft
+  Real r1xxL = RXX2(i1,i2,i3);  // r1 == R
+  Real r1yyL = RYY2(i1,i2,i3);
+  Real r2xxL = SXX2(i1,i2,i3);  // r2 == S 
+  Real r2yyL = SYY2(i1,i2,i3);
+  const Real c1L  = r1xxL + r1yyL ;                                  // coeff of D/D r_1 in Laplacian
+  const Real c2L  = r2xxL + r2yyL ;                                  // coeff of D/D r_2 in Laplacian
+
+  const Real c11L = SQR(rxL(i1,i2,i3,0,0)) + SQR(rxL(i1,i2,i3,0,1)); // coeff of D^2/D r_1^2 in Laplacian 
+  const Real c12L = rxL(i1,i2,i3,0,0)*rxL(i1,i2,i3,1,0) + rxL(i1,i2,i3,0,1)*rxL(i1,i2,i3,1,1); // coeff of D^2/(D r_1 D_r2) in Laplacian
+  const Real c21L = c12L;  
+  const Real c22L = SQR(rxL(i1,i2,i3,1,0)) + SQR(rxL(i1,i2,i3,1,1)); // coeff of D^2/D r_2^2 in Laplacian 
+  
+  Real b1Lr2, b2Lr2;
+  if( axis2==0 )
+  {  // D0r2 
+    b1Lr2 = ( b1Lm(i1,i2+1,i3,j1,j2+1,j3) - b1Lm(i1,i2-1,i3,j1,j2-1,j3) )/(2.*drL[1]);
+    b2Lr2 = ( b2Lm(i1,i2+1,i3,j1,j2+1,j3) - b2Lm(i1,i2-1,i3,j1,j2-1,j3) )/(2.*drL[1]);
+  }
+  else
+  {
+    // D0r1 
+    b1Lr2 = ( b1Lm(i1+1,i2,i3,j1+1,j2,j3) - b1Lm(i1-1,i2,i3,j1-1,j2,j3) )/(2.*drL[0]);
+    b2Lr2 = ( b2Lm(i1+1,i2,i3,j1+1,j2,j3) - b2Lm(i1-1,i2,i3,j1-1,j2,j3) )/(2.*drL[0]);
+
+  }
+  
   #define d12(axis) dr12R[axis]
   #define inverseVertexDerivative rxRight
   Real r1xxR = RXX2(j1,j2,j3);  // r1 == R
@@ -151,6 +179,19 @@ coeff(m,i1,i2,i3)=0.
   const Real c12R = rxR(j1,j2,j3,0,0)*rxR(j1,j2,j3,1,0) + rxR(j1,j2,j3,0,1)*rxR(j1,j2,j3,1,1); // coeff of D^2/(D r_1 D_r2) in Laplacian
   const Real c21R = c12R;  
   const Real c22R = SQR(rxR(j1,j2,j3,1,0)) + SQR(rxR(j1,j2,j3,1,1)); // coeff of D^2/D r_2^2 in Laplacian 
+
+  Real b1Rr2, b2Rr2;
+  if( axis2==0 )
+  {  // D0r2 
+    b1Rr2 = ( b1Rm(i1,i2+1,i3,j1,j2+1,j3) - b1Rm(i1,i2-1,i3,j1,j2-1,j3) )/(2.*drR[1]);
+    b2Rr2 = ( b2Rm(i1,i2+1,i3,j1,j2+1,j3) - b2Rm(i1,i2-1,i3,j1,j2-1,j3) )/(2.*drR[1]);
+  }
+  else
+  {
+    // D0r1 
+    b1Rr2 = ( b1Rm(i1+1,i2,i3,j1+1,j2,j3) - b1Rm(i1-1,i2,i3,j1-1,j2,j3) )/(2.*drR[0]);
+    b2Rr2 = ( b2Rm(i1+1,i2,i3,j1+1,j2,j3) - b2Rm(i1-1,i2,i3,j1-1,j2,j3) )/(2.*drR[0]);
+  }
 
   // --- we ned to evaluate tangential derivatives of
   //          b2L/b1R
@@ -173,6 +214,106 @@ coeff(m,i1,i2,i3)=0.
   }
 #endMacro
 
+// ===============================================================================
+// Macro: 
+// Retrieve information about the domain solver on the opposite side:
+//   int domain2, side2, axis2
+//   DomainSolver solver2
+//   GridFunction gf2
+//   CompositeGrid cg2
+//   MappedGrid mg2
+//   Boundary index: J1,J2,J3
+//   bool isRectaangular2
+//   real dx2[]
+//   CompositeGridOperators cgop2
+//   MappedGridOperators mgop2
+// ===============================================================================
+#beginMacro getOppositeSideDomainInfo()
+  // For testing the solver on the opposite side is just the the same
+  DomainSolver *pSolver2 = this;
+  int domain2 = 0, grid2 = grid, side2=1-side, axis2=axis; // right side of the left grid.
+  //int domain2 = 0, grid2 = grid, side2=side, axis2=axis; 
+  
+  if( multiDomainProblem )
+  {
+   // --- GET THE SOLVER FOR THE OPPOSITE SIDE --- 
+    bool sameSide=false; 
+    GridFaceDescriptor & gfd = getInterfaceGridFaceDescriptor( grid, side, axis, parameters, sameSide );
+    domain2 = gfd.domain, grid2 = gfd.grid, side2=gfd.side, axis2=gfd.axis; 
+    // Here is the Cgmp object:
+    DomainSolver *pCgmp = parameters.dbase.get<DomainSolver*>("multiDomainSolver");
+    assert( pCgmp->domainSolver[domain2]!=NULL );
+    // Here is the solver in the other side: 
+    // DomainSolver & solver2 = *(pCgmp->domainSolver[domain2]);
+    pSolver2 = pCgmp->domainSolver[domain2]; 
+
+  }
+  DomainSolver & solver2 = *pSolver2;
+
+  const int current2 = solver2.current;   // index of grid function that holds the current solution 
+  printF("FILL CHAMP MATRIX: OPPOSITE SIDE: domain2=%d, grid2=%i, side2=%i, axis2=%i className=%s, name=%s current2=%d\n",
+       domain2,grid2,side2,axis2,(const char*)solver2.getClassName(),(const char*)solver2.getName(),current2);
+
+  // -- find the CompositeGrid and MappedGrid for the opposite side
+  GridFunction & gf2 = solver2.gf[current2];  
+  CompositeGrid & cg2 = gf2.cg; 
+  MappedGrid & mg2 = cg2[grid2];
+  getBoundaryIndex(mg2.gridIndexRange(),side2,axis2,Jb1,Jb2,Jb3);
+
+  const bool isRectangular2 = mg2.isRectangular();
+  real dx2[3]={1.,1.,1.};
+  if( isRectangular2 )
+    mg2.getDeltaX(dx2);
+  else
+    mg2.update(MappedGrid::THEinverseVertexDerivative);  
+
+  // --------- Operators on Opposite side -----------
+  CompositeGridOperators & cgop2 = *gf2.u.getOperators();
+  MappedGridOperators & mgop2 = cgop2[grid2]; 
+
+
+  // ---- consistency checks -------
+
+  printF(" THIS SIDE    : Ib1=[%d,%d] Ib2=[%d,%d] Ib3=[%d,%d]\n",Ib1.getBase(),Ib1.getBound(), Ib2.getBase(),Ib2.getBound(), Ib3.getBase(),Ib3.getBound());
+  printF(" OPPOSITE SIDE: Jb1=[%d,%d] Jb2=[%d,%d] Jb3=[%d,%d]\n",Jb1.getBase(),Jb1.getBound(), Jb2.getBase(),Jb2.getBound(), Jb3.getBase(),Jb3.getBound());
+
+  int axisp1  = (axis  +1 ) % numberOfDimensions;
+  int axis2p1 = (axis2 +1 ) % numberOfDimensions;
+  // For now we that both sides are indexed in a similiar way: Ib1 <-> Jb1 and Ib2 <-> Jb2
+  if(  !( Ibv[axis].getLength() == Jbv[axis2].getLength() && Ibv[axisp1] == Jbv[axis2p1] ) )
+  {
+    printF("CGAD:CHAMP:FILL MATRIX CURVILINEAR: ERROR: Indexes of interfaces do not match -- this is currently required\n");
+    printF(" THIS SIDE    : Ib1=[%d,%d] Ib2=[%d,%d] Ib3=[%d,%d]\n",Ib1.getBase(),Ib1.getBound(), Ib2.getBase(),Ib2.getBound(), Ib3.getBase(),Ib3.getBound());
+    printF(" OPPOSITE SIDE: Jb1=[%d,%d] Jb2=[%d,%d] Jb3=[%d,%d]\n",Jb1.getBase(),Jb1.getBound(), Jb2.getBase(),Jb2.getBound(), Jb3.getBase(),Jb3.getBound());
+
+    OV_ABORT("champBoundaryConditions::ERROR");
+  }
+
+  if( isRectangular != isRectangular2 )
+  {
+    printF("CGAD:CHAMP: isRectangular=%d is NOT EQUAL TO isRectagular2=%d -- this is currently required\n", 
+           (int)isRectangular2,(int)isRectangular2);
+    OV_ABORT("champBoundaryConditions::ERROR");
+  }
+
+#endMacro
+
+// ==========================================================================
+// Macro: fill the matrix with extrapolation for a given ghost=1,2,3,...
+// ==========================================================================
+#beginMacro fillGhostExtrapolation(ghost)                  
+
+  const int i1m=i1-is1*ghost, i2m=i2-is2*ghost, i3m=i3-is3*ghost; //  ghost point is (i1m,i2m,i3m)
+
+  // --- fill in the coefficients of the extrapolation formula ---
+  for( int me=0; me<=extrapOrder; me++ )
+  {
+    coeff(me,i1m,i2m,i3m) = extrapCoeff[me];
+    const int j1=i1m + me*is1, j2=i2m + me*is2, j3=i3m + me*is3;     // index of point "m" in extrap formula is shifted in the direction (is1,is2,is3)
+    setEquationNumber(me, e,i1m,i2m,i3m,  c,j1,j2,j3 );             // macro to set equationNumber
+  }                
+
+#endMacro
 
 // ====================================================================================================
 //
@@ -212,14 +353,46 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
   const int & multiDomainProblem = parameters.dbase.get<int>("multiDomainProblem"); 
   const bool twilightZoneFlow = parameters.dbase.get<bool>("twilightZoneFlow");
 
+  const int orderOfAccuracy = parameters.dbase.get<int>("orderOfAccuracy"); 
+
+  const int extrapOrder = orderOfAccuracy+1;
+
+  const Real extrapCoeff3[] = {1.,-3.,3.,-1.};
+  const Real extrapCoeff4[] = {1.,-4.,6.,-4.,1.};
+  const Real extrapCoeff5[] = {1.,-5.,10.,-10.,5.,-1.};
+  const Real *extrapCoeff;
+  if( extrapOrder==3 )
+    extrapCoeff = extrapCoeff3;
+  else if( extrapOrder==4 )
+    extrapCoeff = extrapCoeff4;
+  else if( extrapOrder==5 )
+    extrapCoeff = extrapCoeff5;
+  else
+   {
+    printF("Cgad::champBoundaryConditions: unexpected extrapOrder=%d\n",extrapOrder);
+    OV_ABORT("ERROR");
+   }
+
+
   // Sl = optimized Schwartz parameter
   // theta = Ktc1/Ktc2
   // beta  = Dc1/Dc2
   if( !parameters.dbase.has_key("champParameters") )
   {
+    // NOTE: This array may have already been created in CgAd: setupPdeParameters
+
     parameters.dbase.put<RealArray>("champParameters");
     RealArray & champParameters = parameters.dbase.get<RealArray>("champParameters");
-    const int numChampPar=5; 
+
+    // ---- number of champ paramters we save-- 
+    const int numChampPar=6; 
+    // const Real pl    = champParameters(0,side,axis,grid);    // optimized Scwartz Parameter for side 1
+    // const Real pr    = champParameters(1,side,axis,grid);    // optimized Scwartz Parameter for side 2
+    // const Real theta = champParameters(2,side,axis,grid);    // K1/K2
+    // const Real beta  = champParameters(3,side,axis,grid);    // D1/D2   
+    // champParameters(4,side,axis,grid) = Sl;  
+    // champParameters(5,side,axis,grid) = dxs; 
+    // 
     champParameters.redim(numChampPar,2,3,cg.numberOfComponentGrids());
     champParameters=-123456.; 
 
@@ -290,7 +463,8 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
     const int equationNumberLength2=equationNumber.getLength(2);
     const int equationNumberBase3  =equationNumber.getBase(3);
     
-    const int orderOfAccuracy=mgop.getOrderOfAccuracy(); assert( orderOfAccuracy==2 );
+    const int orderOfAccuracy2 = mgop.getOrderOfAccuracy(); 
+    assert( orderOfAccuracy2==orderOfAccuracy );
     
     // stencil width's and half-width's :
     const int width = orderOfAccuracy+1;
@@ -300,16 +474,42 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
     
     Range M0 = stencilSize;
     Range M = coeff.dimension(0);
+
+    const int numGhost = halfWidth1; // number of ghost points 
+
+    // For coefficients from Sijia: 
+    Real coefB[5][5]={0.,0.,0.,0.,0.,
+                      0.,0.,0.,0.,0.,
+                      0.,0.,0.,0.,0.,
+                      0.,0.,0.,0.,0.,
+                      0.,0.,0.,0.,0.}; // initialize
+    #define coefA(i,j) coefB[i+halfWidth1][j+halfWidth2]    
       
     ForBoundary(side,axis)
     {
       if( interfaceType(side,axis,grid) == Parameters::heatFluxInterface && mg.boundaryCondition(side,axis)>0 )
       {
-        printF("+++++ CHAMP BC: FILL MATRIX BC FOR (grid,side,axis)=(%d,%d,%d) (heatFluxInterface)\n",grid,side,axis);
+        printF("+++++ CHAMP BC: FILL MATRIX BC FOR (grid,side,axis)=(%d,%d,%d) order=%d, numGhost=%d (heatFluxInterface)\n",
+             grid,side,axis,orderOfAccuracy,numGhost );
 
         // Set the index-shift for this side
         is1=is2=is3=0;
         isv[axis]=1-2*side;
+
+        getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+
+        OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal); 
+
+        // Retrieve information about the domain solver on the opposite side:
+        //   int domain2, side2, axis2
+        //   DomainSolver solver2
+        //   GridFunction gf2
+        //   CompositeGrid cg2
+        //   MappedGrid mg2
+        //   Boundary index: J1,J2,J3
+        //   CompositeGridOperators cgop2
+        //   MappedGridOperators mgop2        
+        getOppositeSideDomainInfo();         
 
         // NO: 
         // Champ h = (=/-) dx[axis] : sign depends on which side we are on 
@@ -318,7 +518,11 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
         // const Real isc = 1-2*side; 
         // const Real dxs = -isc*dx[axis]; 
 
-        const Real dxs = dx[axis]; 
+        // const Real dxs = dx[axis]; 
+        const Real dxs = dx2[axis2]; 
+
+        if( isRectangular && isRectangular2 )
+          printF("+++++ CHAMP BC: dx[axis]=%9.3e. Opposite side: dx2[axis2]=%9.3e\n",dx[axis],dx2[axis2]);
 
 
         // ** OLD: 
@@ -356,23 +560,15 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
         }
 
         const Real pl    = champParameters(0,side,axis,grid);    // optimized Scwartz Parameter for side 1
-        const Real pr    = champParameters(1,side,axis,grid);    // optimized Scwartz Parameter for side 2
+        // pr is not used here and (currently) may not be correct: 
+        // const Real pr    = champParameters(1,side,axis,grid);    // optimized Scwartz Parameter for side 2
         const Real theta = champParameters(2,side,axis,grid);    // K1/K2
         const Real beta  = champParameters(3,side,axis,grid);    // D1/D2    
 
 
-        printF("***** fillChampBC: (side,axis,grid)=(%d,%d,%d) : theta=Kleft/Kright=%g, beta=Dleft/Dright=%g ****\n",side,axis,grid,theta,beta); 
+        printF("***** fillChampBC: (side,axis,grid)=(%d,%d,%d) : theta=Kleft/Kright=%g, beta=Dleft/Dright=%g, CHAMP parameter pl=%g ****\n",
+             side,axis,grid,theta,beta,pl); 
 
-        getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-
-        OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal); 
-        
-
-
-        // GridFaceDescriptor & myGFD = getInterfaceGridFaceDescriptor( grid, side, axis, parameters );
-            // real *sourceMixedBC = myGFD.dbase.get<real[2]>("sourceMixedBC");
-            // printF("After getInterfaceGridFaceDescriptor: myGFD.a=[%g,%g], sourceMixedBC=[%g,%g]\n",myGFD.a[0],myGFD.a[1],sourceMixedBC[0],sourceMixedBC[1]);
-        
         
         // --- Fill in the CHAMP interface conditions -----
         //   [ theta*D_x + h*L[beta] ] + Sl*[ I + theta*h*D_x + (h^2)/2 *L[beta] ] 
@@ -391,7 +587,8 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
 
           // store SL
           const Real Sl = pl/dxs; 
-          champParameters(4,side,axis,grid)=Sl; // save this           
+          champParameters(4,side,axis,grid)=Sl;  // save this           
+          champParameters(5,side,axis,grid)=dxs; // save this           
         
           // Evaluate the (single component) Laplace operator for points on the boundary
           realSerialArray xxCoeff(M0,Ib1,Ib2,Ib3), yyCoeff(M0,Ib1,Ib2,Ib3), xCoeff(M0,Ib1,Ib2,Ib3), yCoeff(M0,Ib1,Ib2,Ib3), idCoeff(M0,Ib1,Ib2,Ib3);
@@ -401,24 +598,46 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
           mgop.assignCoefficients(MappedGridOperators::yDerivative ,yCoeff, Ib1,Ib2,Ib3,0,0);
           mgop.assignCoefficients(MappedGridOperators::identityOperator,idCoeff,Ib1,Ib2,Ib3,0,0);
             
+              
+          Real maxDiff=0; // for testing compute any difference between coeff from Sijia and WDH
+
           FOR_3D(i1,i2,i3,Ib1,Ib2,Ib3) // loop over points on the boundary
           {
+            //printF("n1=%g,n2=%g\n",normal(i1,i2,i3,0),normal(i1,i2,i3,1));
             const real a0 = Sl;
             const real a1 = theta + Sl*dxs*theta;
-            // ONLY VALID FOR CARTESIAN : axis==0 
-            const real a2 = dxs*( beta      ) + Sl*( .5*SQR(dxs)*beta      );
-            const real a3 = dxs*( (beta-1.) ) + Sl*( .5*SQR(dxs)*(beta-1.) );
-            const real a4 = a3; // for 3D 
+            // // ONLY VALID FOR CARTESIAN : axis==0 
+            // const real a2 = dxs*( beta      ) + Sl*( .5*SQR(dxs)*beta      );
+            // const real a3 = dxs*( (beta-1.) ) + Sl*( .5*SQR(dxs)*(beta-1.) );
+            // const real a4 = a3; // for 3D 
+            real axx, ayy, azz;
+            if( axis==0 )
+            {
+              axx = (beta   )*( dxs + Sl*( .5*SQR(dxs) ) );
+              ayy = (beta-1.)*( dxs + Sl*( .5*SQR(dxs) ) );
+              azz = ayy; // for 3D 
+            }
+            else if( axis==1 )
+            {
+              ayy = (beta   )*( dxs + Sl*( .5*SQR(dxs) ) );
+              axx = (beta-1.)*( dxs + Sl*( .5*SQR(dxs) ) );
+              azz = axx; // for 3D       
+            }
+            assert( numberOfDimensions==2 );            
               
             i1m=i1-is1, i2m=i2-is2, i3m=i3-is3; //  ghost point is (i1m,i2m,i3m)
 
             if( false )
               printF(" FILL MATRIX BC FOR GHOST PT (i1m,i2m,i3m)=(%d,%d,%d) Sl=%g, dxs=%g, (heatFluxInterface)\n",i1m,i2m,i3m,Sl,dxs);
 
-            
+            // --- Coefficients from Sijia: 
+            #include "champ2InterfaceStencilRectangular.h"
+            //#include "champ2InterfaceStencil.C"
+            printF(" My coefficients: coefA =(%g,%g,%g,%g,%g,%g,%g,%g,%g)\n", coefA(-1,-1),coefA(0,-1),coefA(1,-1),coefA(-1,0),coefA(0,0),coefA(1,0),coefA(-1,1),coefA(0,1),coefA(1,1));
+           
             for( int e=eqnStart; e<=eqnEnd; e++ ) // equation eq1, eq2, ...
             {
-              int c=0; // component number 
+              const int c=0; // component number 
               ForStencil(m1,m2,m3)
               {
                 int m  = M123(m1,m2,m3);        // the single-component coeff-index
@@ -427,22 +646,52 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
                 
                 coeff(mm,i1m,i2m,i3m) =  a0*idCoeff(m,i1,i2,i3) 
                                        + a1*( normal(i1,i2,i3,0)*xCoeff(m,i1,i2,i3) + normal(i1,i2,i3,1)*yCoeff(m,i1,i2,i3) )
-                                        +a2*xxCoeff(m,i1,i2,i3) + a3*yyCoeff(m,i1,i2,i3); 
+                                        +axx*xxCoeff(m,i1,i2,i3) + ayy*yyCoeff(m,i1,i2,i3); 
+                
 
                 if( multiDomainProblem==0 )
                 { // debug info 
-                  printF("champBC: (i1,i2,i3)=(%d,%d,%d) (m1,m2,m3)=(%d,%d,%d) coeff = %e\n",i1,i2,i3,m1,m2,m3,coeff(mm,i1m,i2m,i3m));
-                }                                        
+                  printF("champBC: (i1,i2,i3)=(%3d,%3d,%3d) (m1,m2,m3)=(%3d,%3d,%3d) coeff=%10.3e,  coeff=%10.3e (new) diff=%9.2e\n",
+                       i1,i2,i3,m1,m2,m3,coeff(mm,i1m,i2m,i3m), coefA(m1,m2), coeff(mm,i1m,i2m,i3m)-coefA(m1,m2));
+                } 
+                if( true )
+                {
+                  // for testing compute any difference between Sijia and WDH
+                  maxDiff = max(maxDiff, fabs(coeff(mm,i1m,i2m,i3m)-coefA(m1,m2)));
+                }                                       
 
                 // coeff(mm,i1m,i2m,i3m) = 100; // **TEST ****
 
                 // Specify that the above coeff value is the coefficient of component c at the grid point (j1,j2,j3).
                 j1=i1+m1, j2=i2+m2, j3=i3+m3;   // the stencil is centred on the boundary pt (i1,i2,i3)
                 setEquationNumber(mm, e,i1m,i2m,i3m,  c,j1,j2,j3 );  // macro to set equationNumber
+
+                // Fill Ghost 2 -- extrapolation for now 
+                if( numGhost>1 )
+                {
+                  const int ghost=2;
+                  fillGhostExtrapolation(ghost); 
+                }
+
+             }
+             if( maxDiff > REAL_EPSILON/(SQR(dxs)) )
+             {
+               printF("\n **** champBC:ERROR: rectangular: There is a difference between coeff from Sijia and WDH, maxDiff=%9.2e *** \n",maxDiff);
+               ForStencil(m1,m2,m3)  
+               {
+                 int mm = M123CE(m1,m2,m3,c,e);  // the system coeff-index
+                
+                 printF("champBC: (i1,i2,i3)=(%3d,%3d,%3d) (m1,m2,m3)=(%3d,%3d,%3d) coeff=%10.3e (WDH),  coeff=%10.3e (Sijia) diff=%9.2e\n",
+                       i1,i2,i3,m1,m2,m3,coeff(mm,i1m,i2m,i3m), coefA(m1,m2), coeff(mm,i1m,i2m,i3m)-coefA(m1,m2));
+               }             
+               // OV_ABORT("Stop here for now");
              }
            }  // end for e
 
-          } // end FOR_3D
+          }   // end FOR_3D
+
+          if( true )
+            printF(">>>>>>> champBC::INFO max-diff in coeff between Sijia and WDH = %9.2e <<<<<<<<<\n",maxDiff);
 
         }
         else
@@ -450,57 +699,7 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
           // ---------------------- CURVILINEAR GRID --------------------------
 
           // ******* WE NEED THE METRICS FROM THE OPPOSITE SIDE *******
-
-
-          // For testing the solver on the opposite side is just the the same
-          DomainSolver *pSolver2 = this;
-          int domain2 = 0, grid2 = grid, side2=side, axis2=axis; 
-  
-          if( multiDomainProblem )
-          {
-           // --- GET THE SOLVER FOR THE OPPOSITE SIDE --- 
-            bool sameSide=false; 
-            GridFaceDescriptor & gfd = getInterfaceGridFaceDescriptor( grid, side, axis, parameters, sameSide );
-            domain2 = gfd.domain, grid2 = gfd.grid, side2=gfd.side, axis2=gfd.axis; 
-            // Here is the Cgmp object:
-            DomainSolver *pCgmp = parameters.dbase.get<DomainSolver*>("multiDomainSolver");
-            assert( pCgmp->domainSolver[domain2]!=NULL );
-            // Here is the solver in the other side: 
-            // DomainSolver & solver2 = *(pCgmp->domainSolver[domain2]);
-            pSolver2 = pCgmp->domainSolver[domain2]; 
-
-          }
-          DomainSolver & solver2 = *pSolver2;
-
-          const int current2 = solver2.current;   // index of grid function that holds the current solution 
-          printF("FILL CHAMP MATRIX: OPPOSITE SIDE: domain2=%d, grid2=%i, side2=%i, axis2=%i className=%s, name=%s current2=%d\n",
-               domain2,grid2,side2,axis2,(const char*)solver2.getClassName(),(const char*)solver2.getName(),current2);
-
-          // -- find the CompositeGrid and MappedGrid for the opposite side
-          GridFunction & gf2 = solver2.gf[current2];  
-          CompositeGrid & cg2 = gf2.cg; 
-          MappedGrid & mg2 = cg2[grid2];
-          getBoundaryIndex(mg2.gridIndexRange(),side2,axis2,Jb1,Jb2,Jb3);
-
-          printF(" THIS SIDE    : Ib1=[%d,%d] Ib2=[%d,%d] Ib3=[%d,%d]\n",Ib1.getBase(),Ib1.getBound(), Ib2.getBase(),Ib2.getBound(), Ib3.getBase(),Ib3.getBound());
-          printF(" OPPOSITE SIDE: Jb1=[%d,%d] Jb2=[%d,%d] Jb3=[%d,%d]\n",Jb1.getBase(),Jb1.getBound(), Jb2.getBase(),Jb2.getBound(), Jb3.getBase(),Jb3.getBound());
-
-          int axisp1  = (axis  +1 ) % numberOfDimensions;
-          int axis2p1 = (axis2 +1 ) % numberOfDimensions;
-          // For now we that both sides are indexed in a similiar way: Ib1 <-> Jb1 and Ib2 <-> Jb2
-          if(  !( Ibv[axis].getLength() == Jbv[axis2].getLength() && Ibv[axisp1] == Jbv[axis2p1] ) )
-          {
-            printF("CGAD:CHAMP:FILL MATRIX CURVILINEAR: ERROR: Indexes of interfaces do not match -- this is currently required\n");
-            printF(" THIS SIDE    : Ib1=[%d,%d] Ib2=[%d,%d] Ib3=[%d,%d]\n",Ib1.getBase(),Ib1.getBound(), Ib2.getBase(),Ib2.getBound(), Ib3.getBase(),Ib3.getBound());
-            printF(" OPPOSITE SIDE: Jb1=[%d,%d] Jb2=[%d,%d] Jb3=[%d,%d]\n",Jb1.getBase(),Jb1.getBound(), Jb2.getBase(),Jb2.getBound(), Jb3.getBase(),Jb3.getBound());
-
-            OV_ABORT("ERROR");
-          }
-
-          // --------- Operators on Opposite side -----------
-          CompositeGridOperators & cgop2 = *gf2.u.getOperators();
-          MappedGridOperators & mgop2 = cgop2[grid2]; 
-
+          // getOppositeSideDomainInfo(); 
 
           // Evaluate the (single component) Laplace operator for points on the boundary
           realSerialArray lapCoeff(M0,Ib1,Ib2,Ib3), xCoeff(M0,Ib1,Ib2,Ib3), yCoeff(M0,Ib1,Ib2,Ib3), idCoeff(M0,Ib1,Ib2,Ib3);
@@ -540,6 +739,7 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
           #define rxL(i1,i2,i3,m1,m2)  rxLeft(i1,i2,i3,(m1)+numberOfDimensions*(m2))          
           #define rxR(i1,i2,i3,m1,m2) rxRight(i1,i2,i3,(m1)+numberOfDimensions*(m2))          
             
+
           RealArray NCoeff(M0), LCoeff(M0); // Matrix representations of operators Nlr and Llr (see champ4/notes)
 
           // put grid spacings (dr) in c-arrays for convenience
@@ -583,7 +783,7 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
           // RealArray & cc = twilightZoneFlow ? myGFD.dbase.get<RealArray>("ccChamp") : NCoeff;
           RealArray & cc = *ccPointer;
 
-          
+          Real maxDiff=0., maxCoeff=0.; // for testing compute any difference between coeff from Sijia and WDH
 
           FOR_3IJD(i1,i2,i3,Ib1,Ib2,Ib3,j1,j2,j3,Jb1,Jb2,Jb3) // loop over points on BOTH SIDES of the interface 
           {
@@ -592,8 +792,10 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
 
             // ----- Evaluate variables in the champ conditions -----
             evalChampVariables(); 
+            //printF("SL=%g,\n", Sl);
 
             const Real hR = (1-2*side2)*drR[axis2]/b1R; // scaled grid spacing on right
+          
             if( Sl<0 )
             {
               // Define Sl from the first grid point encountered   *** Do this for now ***
@@ -606,24 +808,49 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
             const real a1 = 1. + hR*Sl;
             const real a2 = hR*(1.0 + .5*hR*Sl);
 
-            if( false )
+            if( false ) 
               printF(" FILL MATRIX BC FOR GHOST PT (i1m,i2m,i3m)=(%d,%d,%d) CURVILINEAR Sl=%g, hR=%g, (heatFluxInterface)\n",i1m,i2m,i3m,Sl,hR);
+
+            #Include "champ2InterfaceStencilCurvilinear.h"
+
+            printF("-------------------------------------------\n");
+            printF("    My coefficients: coefA =(%g,%g,%g,%g,%g,%g,%g,%g,%g)\n", coefA(-1,-1),coefA(0,-1),coefA(1,-1),coefA(-1,0),coefA(0,0),coefA(1,0),coefA(-1,1),coefA(0,1),coefA(1,1));
+
+            printF("===========================================\n");
+            
+            printF("Domain2= %i:  i1=%i, i2=%i, i3=%i, j1=%i, j2=%i, j3=%i \n",domain2,i1,i2,i3,j1,j2,j3);
+            printF("-------------------------------------------\n");
+            printF("    an1L=%g, an2L=%g \n",an1L,an2L);
+            printF("    b1L=%g, b2L=%g, c11L=%g, c12L=%g, c21L=%g, c22L=%g, c1L=%g, c2L=%g\n",
+                    b1L,b2L,c11L,c12L,c21L,c22L,c1L,c2L); 
+            printF("    b1R=%g, b2R=%g, c11R=%g, c12R=%g, c21R=%g, c22R=%g, c1R=%g, c2R=%g\n",
+                    b1R,b2R,c11R,c12R,c21R,c22R,c1R,c2R); 
+            printF("    b1Lr2=%g, b2Lr2=%g, b1Rr2=%g, b2Rr2=%g \n",b1Lr2,b2Lr2,b1Rr2,b2Rr2);
+            
+            printF("-------------------------------------------\n");
 
             ForStencil(m1,m2,m3)
             {
               const int m  = M123(m1,m2,m3);        // the single-component coeff-index
               // const int mm = M123CE(m1,m2,m3,c,e);  // the system coeff-index
 
-              // printF(" (i1,i2)=(%3d,%3d) (j1,j2)=(%3d,%3d) anl=(%g,%g) m=%d: xCoeff=%g yCoeff=%g r2Coeff=%g r2r2Coeff=%g \n",
+              //printF(" (i1,i2)=(%3d,%3d) (j1,j2)=(%3d,%3d) anl=(%g,%g) m=%d: xCoeff=%g yCoeff=%g r2Coeff=%g r2r2Coeff=%g \n",
               //        i1,i2,j1,j2,an1L,an2L,m,xCoeff(m,i1,i2,i3),yCoeff(m,i1,i2,i3),r2Coeff(m,j1,j2,j3),r2r2Coeff(m,j1,j2,j3));
-              // printF("    hR=%g, b1L=%g b2L=%g b1R=%g, b2R=%g (b1R*b1R/c11R)=%g c11R=%g, c12R=%g, c21R=%g, c22R=%g c1R=%g c2R=%g\n",
-              //        hR,b1L,b2L,b1R,b2R,(b1R*b1R/c11R),c11R,c12R,c21R,c22R,c1R,c2R); 
-              // printF("    b2Lb1Rr2=%g, b2Rb1Rr2=%g \n",b2Lb1Rr2,b2Rb1Rr2); 
-              //               // Nlr = theta*nL*grad_L - b2*D_s
-
-              NCoeff(m) = theta*( an1L*xCoeff(m,i1,i2,i3) + an2L*yCoeff(m,i1,i2,i3) ) - b2R*r2Coeff(m,j1,j2,j3); 
-
+              
+              //printF("    b1L=%g, b2L=%g, c11L=%g, c12L=%g, c21L=%g, c22L=%g c1L=%g c2L=%g\n",
+              //        b1L,b2L,c11L,c12L,c21L,c22L,c1L,c2L); 
+              //printF("    b1R=%g, b2R=%g, c11R=%g, c12R=%g, c21R=%g, c22R=%g c1R=%g c2R=%g\n",
+              //        b1R,b2R,c12R,c21R,c22R,c1R,c2R); 
+              //printF(" b1Lr2=%g, b2Lr2=%g, b1Rr2=%g, b2Rr2=%g \n",b1Lr2,b2Lr2,b1Rr2,b2Rr2);
+              
+              //printF("    b2Lb1Rr2=%g, b2Rb1Rr2=%g \n",b2Lb1Rr2,b2Rb1Rr2); 
+                             // Nlr = theta*nL*grad_L - b2*D_s
+              //printF("lapCoeff=%g \n",lapCoeff(m,i1,i2,i3));
+              
+              NCoeff(m) = theta*( an1L*xCoeff(m,i1,i2,i3) + an2L*yCoeff(m,i1,i2,i3) ) - b2R*r2Coeff(m,j1,j2,j3);
+              
               // NOTE: Here we assume the tangential r derivatives are the same on both sides! (see champ4/notes) 
+              
               LCoeff(m) = (b1R*b1R/c11R)*( beta*lapCoeff(m,i1,i2,i3) 
                                           - (c12R+c21R)*( theta*( (b1L/b1R)*r1r2Coeff(m,i1,i2,i3) + (b2L/b1R)*r2r2Coeff(m,j1,j2,j3) + b2Lb1Rr2*r2Coeff(m,j1,j2,j3) )
                                                           - b2Rb1Rr2*r2Coeff(m,j1,j2,j3) - (b2R/b1R)*r2r2Coeff(m,j1,j2,j3) )
@@ -633,6 +860,10 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
 
               // LCoeff(m) = (b1R*b1R/c11R)*( beta*( xxCoeff(m,i1,i2,i3)  + yyCoeff(m,i1,i2,i3) ) ); // TEST 
             }
+            //printF(" NCoeff=(%g,%g,%g,%g,%g,%g,%g,%g,%g)\n", NCoeff(0),NCoeff(1),NCoeff(2),NCoeff(3),NCoeff(4),NCoeff(5),NCoeff(6),NCoeff(7),NCoeff(8));
+            //printF(" LCoeff=(%g,%g,%g,%g,%g,%g,%g,%g,%g)\n", LCoeff(0),LCoeff(1),LCoeff(2),LCoeff(3),LCoeff(4),LCoeff(5),LCoeff(6),LCoeff(7),LCoeff(8));
+            
+            //printF(" a0=%g, a1=%g, a2=%g\n",a0,a1,a2);
 
             if( twilightZoneFlow )
             {
@@ -671,20 +902,54 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
 
                 // Matrix for the Champ condition: 
                 coeff(mm,i1m,i2m,i3m) =  a0*idCoeff(m,i1,i2,i3) + a1*NCoeff(mm) + a2*LCoeff(mm); 
-
+                //printF("idCoef: (i1,i2,i3)=(%d,%d,%d) (m1,m2,m3)=(%d,%d,%d) coeff = %e\n",i1,i2,i3,m1,m2,m3,idCoeff(m,i1,i2,i3));
+                
+                //printF("LapCoef: (i1,i2,i3)=(%d,%d,%d) (m1,m2,m3)=(%d,%d,%d) coeff = %e\n",i1,i2,i3,m1,m2,m3,lapCoeff(m,i1,i2,i3));
+                
                 if( multiDomainProblem==0 )
                 { // debug info 
-                  printF("champBC: (i1,i2,i3)=(%d,%d,%d) (m1,m2,m3)=(%d,%d,%d) coeff = %e\n",i1,i2,i3,m1,m2,m3,coeff(mm,i1m,i2m,i3m));
+                  printF("champBC: (i1,i2,i3)=(%3d,%3d,%d) (m1,m2,m3)=(%3d,%3d,%3d) coeff=%10.3e, coeff=%10.3e (new), diff=%9.2e\n",
+                       i1,i2,i3,m1,m2,m3,coeff(mm,i1m,i2m,i3m),coefA(m1,m2),coeff(mm,i1m,i2m,i3m)-coefA(m1,m2));
                 }
+                if( true )
+                {
+                  // for testing compute any difference between Sijia and WDH
+                  maxDiff = max(maxDiff, fabs(coeff(mm,i1m,i2m,i3m)-coefA(m1,m2)));
+                  maxCoeff = max( maxCoeff,abs(coeff(mm,i1m,i2m,i3m)) );
+                }                     
 
                 // Specify that the above coeff value is the coefficient of component c at the grid point (j1,j2,j3).
                 const int k1=i1+m1, k2=i2+m2, k3=i3+m3;   // the stencil is centred on the boundary pt (i1,i2,i3)
                 setEquationNumber(mm, e,i1m,i2m,i3m,  c,k1,k2,k3 );  // macro to set equationNumber
+
+                // Fill Ghost 2 -- extrapolation for now 
+                if( numGhost>1 )
+                {
+                  const int ghost=2;
+                  fillGhostExtrapolation(ghost); 
+                }                
              }
+
+
+             if( maxDiff > 100.*REAL_EPSILON*maxCoeff )
+             {
+               printF("\n **** champBC:ERROR: CURVILINEAR: There is a difference between coeff from Sijia and WDH, maxDiff=%9.2e *** \n",maxDiff);
+               ForStencil(m1,m2,m3)  
+               {
+                 int mm = M123CE(m1,m2,m3,c,e);  // the system coeff-index
+                
+                 printF("champBC: (i1,i2,i3)=(%3d,%3d,%3d) (m1,m2,m3)=(%3d,%3d,%3d) coeff=%10.3e (WDH),  coeff=%10.3e (Sijia) diff=%9.2e\n",
+                       i1,i2,i3,m1,m2,m3,coeff(mm,i1m,i2m,i3m), coefA(m1,m2), coeff(mm,i1m,i2m,i3m)-coefA(m1,m2));
+               }             
+               // OV_ABORT("Stop here for now");
+             }
+
            }  // end for e
 
           } // end FOR_3IJD
 
+          if( true )
+            printF(">>>>>>> champBC::INFO max-diff in coeff between Sijia and WDH = %9.2e <<<<<<<<<\n",maxDiff);
 
           // // -- Save a copy fo the CHAMP coefficient matrix for computing the residual in champResidualOpt.bf90 ---
           // sameSide=true; 
@@ -696,9 +961,9 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
           // coeffChamp = coeff(M,Ib1-is1,Ib2-is2,Ib3-is3);
 
 
-          if( true )
+          if( false ) // --> residual is now computed else-where
           {
-            // ---- DOUBLE CHECK THE CHAMP COEFFiCIENTS ------
+            // ---- DOUBLE CHECK THE CHAMP COEFFICIENTS ------
             // Compute the residual in using the matrix coefficients:
             //      A*u - ( difference stencil )
             // 
@@ -813,7 +1078,7 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
 
         if( !multiDomainProblem )
         {
-          OV_ABORT("chmapBoundaryConditions: TESTING ON SINGLE DOMAIN -- STOP HERE FOR NOW");
+          OV_ABORT("champBoundaryConditions: TESTING ON SINGLE DOMAIN -- STOP HERE FOR NOW");
 
         }
 
@@ -835,6 +1100,14 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
       ::displayCoeff(coeff,"coeff");
       
   } // end for grid 
+
+  if( orderOfAccuracy!=2 && orderOfAccuracy!=4 )
+  {
+    printf("champBoundaryConditions: orderOfAccuracy=%d. FINISH ME\n",orderOfAccuracy);
+    OV_ABORT("ERROR: FINISH ME");
+
+  }
+
 
   // OV_ABORT("champBoundaryConditions : END: STOP HERE FOR NOW");
   

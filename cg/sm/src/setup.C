@@ -10,6 +10,7 @@
 #include "UnstructuredMapping.h"
 #include "ParallelUtility.h"
 #include "GridStatistics.h"
+#include "Oges.h"
 
 #include "ULink.h"
 
@@ -584,6 +585,45 @@ setupGridFunctions()
   else
   {
     printF("Cgsm:: No negative volumes were found\n.");
+  }
+
+  if( compressibilityType==SmParameters::incompressibleSolid )
+  {
+    printF("\n >>>>>> Create the pressure solver <<<<<<< \n");
+    if( !parameters.dbase.has_key("pressureSolver") )
+    {
+      Oges & pressureSolver = parameters.dbase.put<Oges>("pressureSolver");
+    }
+    Oges & pressureSolver = parameters.dbase.get<Oges>("pressureSolver");
+
+    pressureSolver.updateToMatchGrid( cg );                     
+
+    pressureSolver.setOgesParameters(pressureSolverParameters);
+
+    // int solverType=OgesParameters::yale; 
+
+    // if( numberOfDimensions==3 )
+    // {
+    //    solverType=OgesParameters::PETSc;
+    //    // solverType=OgesParameters::PETScNew; // parallel
+    // }
+
+    // pressureSolver.set(OgesParameters::THEsolverType,solverType); 
+
+    // if( solverType==OgesParameters::PETSc )
+    //  pressureSolver.set(OgesParameters::THEsolverMethod,OgesParameters::biConjugateGradientStabilized);
+
+    // // pressureSolver.set(OgesParameters::THEparallelSolverMethod,OgesParameters::gmres);
+    // if( numberOfDimensions==3 )
+    // {
+    //   Real tol=1.e-5;  // ***** FIX ME ********************************************************************
+    //   int iluLevels=2; 
+    //    pressureSolver.set(OgesParameters::THErelativeTolerance,max(tol,REAL_EPSILON*10.));
+    //    pressureSolver.set(OgesParameters::THEmaximumNumberOfIterations,10000);
+    //    if( iluLevels>=0 )
+    //      pressureSolver.set(OgesParameters::THEnumberOfIncompleteLULevels,iluLevels);
+    //  }
+    
   }
 
 

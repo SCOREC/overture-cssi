@@ -1758,6 +1758,10 @@ defineBoundaryConditions(CompositeGrid & cg,
     sPrintF(textStrings[nt], "%i", dbase.get<int>("movingBodyPressureBC"));
     nt++; 
 
+    textCommands[nt] = "champ option";  textLabels[nt]=textCommands[nt];
+    sPrintF(textStrings[nt], "%i", dbase.get<int>("champOption"));
+    nt++;     
+
     // null strings terminal list
     textCommands[nt]="";   textLabels[nt]="";   textStrings[nt]="";  assert( nt<numberOfTextStrings );
     addPrefix(textCommands,prefix,cmd,maxCommands);
@@ -2138,7 +2142,11 @@ defineBoundaryConditions(CompositeGrid & cg,
     else if( dialog.getToggleValue(answer,"apply champ interface conditions",dbase.get<int>("applyChampInterfaceConditions")) )
     { 
       printF("applyChampInterfaceConditions=%d: 1=apply CHAMP conditions at temperature interfaces.\n",dbase.get<int>("applyChampInterfaceConditions"));
-    }        
+    }   
+    else if( dialog.getTextValue(answer,"champ option","%e",dbase.get<int>("champOption")) )
+    {
+      printF(" INFO: Setting champOption=%d. 0=use old implementation. 1=use new implementation from Sijia.\n",dbase.get<int>("champOption"));
+    }         
     else
     {
       if( executeCommand )

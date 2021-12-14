@@ -6,12 +6,64 @@ cgmp = $(CGBUILDPREFIX)/mp/bin/cgmp
 
 # double annulus grids
 doubleAnnulusGrids:
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleAnnulusGrid -order=2 -interp=e -factor=1
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleAnnulusGrid -order=2 -interp=e -factor=2
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleAnnulusGrid -order=2 -interp=e -factor=4
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleAnnulusGrid -order=2 -interp=e -factor=8
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleAnnulusGrid -order=2 -interp=e -factor=16
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleAnnulusGrid -order=2 -interp=e -factor=32
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleAnnulusGrid -order=4 -interp=e -factor=1
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleAnnulusGrid -order=4 -interp=e -factor=2
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleAnnulusGrid -order=4 -interp=e -factor=4
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleAnnulusGrid -order=4 -interp=e -factor=8
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleAnnulusGrid -order=4 -interp=e -factor=16
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleAnnulusGrid -order=4 -interp=e -factor=32	
+
+
+# double annulus, just a sector
+doubleEighthAnnulusGrids:
 	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleEighthAnnulusGrid -theta2=.125 -order=2 -interp=e -factor=1
 	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleEighthAnnulusGrid -theta2=.125 -order=2 -interp=e -factor=2
 	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleEighthAnnulusGrid -theta2=.125 -order=2 -interp=e -factor=4
 	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleEighthAnnulusGrid -theta2=.125 -order=2 -interp=e -factor=8
 	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleEighthAnnulusGrid -theta2=.125 -order=2 -interp=e -factor=16
 	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleEighthAnnulusGrid -theta2=.125 -order=2 -interp=e -factor=32
+
+# two squares or non-squares in a horizontal orientation
+twoSquaresInterface:
+	$(ogen) -noplot twoSquaresInterface  -interp=e -order=2 -factor=1 
+	$(ogen) -noplot twoSquaresInterface  -interp=e -order=2 -factor=2 
+	$(ogen) -noplot twoSquaresInterface  -interp=e -order=2 -factor=4
+	$(ogen) -noplot twoSquaresInterface  -interp=e -angle=0 -order=2 -factor=1 
+	$(ogen) -noplot twoSquaresInterface  -interp=e -angle=0 -order=2 -factor=2 
+	$(ogen) -noplot twoSquaresInterface  -interp=e -angle=0 -order=2 -factor=4
+	$(ogen) -noplot twoSquaresInterface  -interp=e -order=4 -factor=1 
+	$(ogen) -noplot twoSquaresInterface  -interp=e -order=4 -factor=2 
+	$(ogen) -noplot twoSquaresInterface  -interp=e -order=4 -factor=4
+	$(ogen) -noplot twoSquaresInterface  -interp=e -angle=0 -order=4 -factor=1 
+	$(ogen) -noplot twoSquaresInterface  -interp=e -angle=0 -order=4 -factor=2 
+	$(ogen) -noplot twoSquaresInterface  -interp=e -angle=0 -order=4 -factor=4	
+
+# two horizontal squares, right-side finer in dx
+twoHorizontalSquares:
+	$(ogen) -noplot twoSquaresInterface -prefix=twoHorizontalSquares -xFactorRight=2 -interp=e -order=2 -factor=1 
+	$(ogen) -noplot twoSquaresInterface -prefix=twoHorizontalSquares -xFactorRight=2 -interp=e -order=2 -factor=2 
+	$(ogen) -noplot twoSquaresInterface -prefix=twoHorizontalSquares -xFactorRight=2 -interp=e -order=2 -factor=4
+	$(ogen) -noplot twoSquaresInterface -prefix=twoHorizontalNonSquares -xFactorRight=2 -interp=e -angle=0.0 -order=2 -factor=1 
+	$(ogen) -noplot twoSquaresInterface -prefix=twoHorizontalNonSquares -xFactorRight=2 -interp=e -angle=0.0 -order=2 -factor=2 
+	$(ogen) -noplot twoSquaresInterface -prefix=twoHorizontalNonSquares -xFactorRight=2 -interp=e -angle=0.0 -order=2 -factor=4	
+
+# two squares or non-squares in a vertical orientation
+twoSquaresVertical:
+	$(ogen) -noplot twoSquaresInterface -prefix=twoVerticalSquares -interp=e -orientation=vertical -order=2 -factor=1 
+	$(ogen) -noplot twoSquaresInterface -prefix=twoVerticalSquares -interp=e -orientation=vertical -order=2 -factor=2 
+	$(ogen) -noplot twoSquaresInterface -prefix=twoVerticalSquares -interp=e -orientation=vertical -order=2 -factor=4
+	$(ogen) -noplot twoSquaresInterface -prefix=twoVerticalNonSquares -interp=e -orientation=vertical -angle=0.0 -order=2 -factor=1 
+	$(ogen) -noplot twoSquaresInterface -prefix=twoVerticalNonSquares -interp=e -orientation=vertical -angle=0.0 -order=2 -factor=2 
+	$(ogen) -noplot twoSquaresInterface -prefix=twoVerticalNonSquares -interp=e -orientation=vertical -angle=0.0 -order=2 -factor=4 
+
+
+
 
 
 # # ------- two flat plates in 2D ------

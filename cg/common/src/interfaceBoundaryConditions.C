@@ -2,6 +2,7 @@
 #include "DomainSolver.h"
 #include "Interface.h"
 #include "ParallelUtility.h"
+#include "ArrayEvolution.h"
 
 // ****** NOTE: this base class implementation assumes that interface BC is for the Temperature only *****
 
@@ -43,7 +44,7 @@ setInterfaceBoundaryCondition( GridFaceDescriptor & info )
     {
         printF("DomainSolver::setInterfaceBoundaryCondition:ERROR: invalid values: (side,axis,grid)=(%i,%i,%i)\n",
                       side,axis,grid);
-        Overture::abort("DomainSolver::setInterfaceBoundaryCondition:ERROR");
+        OV_ABORT("DomainSolver::setInterfaceBoundaryCondition:ERROR");
     }
 
     if( interfaceType(side,axis,grid)==Parameters::heatFluxInterface )
@@ -68,7 +69,7 @@ setInterfaceBoundaryCondition( GridFaceDescriptor & info )
         if( bcData.getLength(0)<3*numberOfComponents || bcData.getLength(1)!=2 )
         {
             bcData.display("error");
-            Overture::abort("error");
+            OV_ABORT("error");
         }
 
         const int tc = parameters.dbase.get<int >("tc");   
@@ -202,6 +203,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
   // gfIndex <0 means choose the grid function corresponding to time t
 
   // *** THIS NEXT CODE IS DUPLICATED IN interfaceRightHandSide in CGINS AND CGSM **FIX ME**
+    bool getValuesByTimeExtrapolation = false;
     if( gfIndex==-1 )
     {
     // Find the solution that matches time=t
@@ -240,12 +242,17 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
             {
         // ************** FIX ME ************
                 printP("interfaceRightHandSide:WARNING cannot find gfIndex to match t=%9.3e\n"
-                              "      currentGF=%i, gf[currentGF].t=%9.3e, nextGF=%i, gf[nextGF].t=%9.3e\n",
-                              t,currentGF,gf[currentGF].t,nextGF,gf[nextGF].t);
+                              "      currentGF=%i, gf[currentGF].t=%9.3e, nextGF=%i, gf[nextGF].t=%9.3e, saveTimeHistory=%d\n",
+                              t,currentGF,gf[currentGF].t,nextGF,gf[nextGF].t,(int)saveTimeHistory);
                 if( fabs(gf[currentGF].t-t) <  fabs(gf[nextGF].t-t) )
                     gfIndex=currentGF; 
                 else
                     gfIndex=nextGF; 
+
+                getValuesByTimeExtrapolation=true;
+                if( !gfd.dbase.has_key("heatFluxHistory") )
+                    getValuesByTimeExtrapolation=false;       // there is no time history yet
+
         // OV_ABORT("fix me");
             }
         }
@@ -419,147 +426,170 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
             }    
             if( getChampData )
             {
-          // --- get interface RHS for the CHAMP CHT conditions  -----
-        
-                    if( debug() & 2 )
-                        printF("DomainSolver::interfaceRightHandSide:CHAMP RHS: S = a[0]=%g,   a[1]=%g (= (+/-) 1 ?) \n",a[0],a[1]);
-                    const bool isRectangular=mg.isRectangular();
-          // --- CHAMP RHS is evaluated at a distance h off the boundary 
-          // First line inside: 
-                    Index K1,K2,K3;
-                    getGhostIndex(mg.gridIndexRange(),side,axis,K1,K2,K3,-1);
-          // printF(" axis=%d, side=%d : boundary (I1,I2)=[%d,%d][%d,%d], First-line inside (K1,K2)=[%d,%d][%d,%d]\n",
-          //           axis,side, I1.getBase(),I1.getBound(), I2.getBase(),I2.getBound(), K1.getBase(),K1.getBound(), K2.getBase(),K2.getBound() );
-                    if( isRectangular )
-                    {
-            // -------------------------- RECTANGULAR --------------
-                        real dx[3]={1.,1.,1.};
-                        mg.getDeltaX(dx);
-                        f(J1,J2,J3,tc) = a[0]*uLocal(K1,K2,K3,tc);
-                        if( a[1]!=0. )
-                        {
-              // add on a[1]*( nu*u.n ) on the boundary 
-              // **be careful** -- the normal changes sign on the two sides of the interface ---
-                            MappedGridOperators & op = *(u.getOperators());
-                            realSerialArray ux(K1,K2,K3,N), uy(K1,K2,K3,N);
-                            op.derivative(MappedGridOperators::xDerivative,uLocal,ux,K1,K2,K3,N);
-                            op.derivative(MappedGridOperators::yDerivative,uLocal,uy,K1,K2,K3,N);
-                            if( cg.numberOfDimensions()==2 )
-                            {
-                                f(J1,J2,J3,tc) += a[1]*( normal(I1,I2,I3,0)*ux + normal(I1,I2,I3,1)*uy );
-                            }
-                            else
-                            {
-                                realSerialArray uz(K1,K2,K3);
-                                op.derivative(MappedGridOperators::zDerivative,uLocal,uz,K1,K2,K3,N);
-                                f(J1,J2,J3,tc) += a[1]*( normal(I1,I2,I3,0)*ux + normal(I1,I2,I3,1)*uy + normal(I1,I2,I3,2)*uz );
-                            }
-                        }
+        // --- get interface RHS for the CHAMP CHT conditions  -----
+                if( getValuesByTimeExtrapolation )
+                {
+          // const int orderOfAccuracyInSpace = parameters.dbase.get<int>("orderOfAccuracyInSpace");
+                    ArrayEvolution & heatFluxHistory = gfd.dbase.get<ArrayEvolution>("heatFluxHistory");
+
+          // const int orderOfAccuracy = parameters.dbase.get<int>("orderOfAccuracy");
+                    const int orderOfTimeAccuracy = parameters.dbase.get<int >("orderOfTimeAccuracy");
+
+                    const int orderOfTimeExtrapolation = orderOfTimeAccuracy+1; // Use this many time-levels to extrapolate the time data
+                    const int numTimeLevelsInHistory = heatFluxHistory.getNumberOfTimeLevels();
+                    printP(" >>>> interfaceRightHandSide: EVAL CHAMP RHS USING TIME EXTRAPOLATION TO t=%9.3e, orderOfTimeExtrapolation=%d, orderOfTimeAccuracy=%d, numTimeLevelsInHistory=%d <<<<<\n\n",
+                                t,orderOfTimeExtrapolation,orderOfTimeAccuracy,numTimeLevelsInHistory);
+
+                    const int numberOfTimeDerivatives=0;
+                    heatFluxHistory.eval( t, f, numberOfTimeDerivatives, orderOfTimeExtrapolation );
+
+                    saveTimeHistory=false; // do NOT save this value in the time history  
+                }
+                else
+                {
                         if( debug() & 4 )
+                            printF("DomainSolver::interfaceRightHandSide:CHAMP RHS: S = a[0]=%g,   a[1]=%g (= (+/-) 1 ?) \n",a[0],a[1]);
+                        const bool isRectangular=mg.isRectangular();
+            // --- CHAMP RHS is evaluated at a distance h off the boundary 
+            // First line inside: 
+                        Index K1,K2,K3;
+                        getGhostIndex(mg.gridIndexRange(),side,axis,K1,K2,K3,-1);
+            // printF(" axis=%d, side=%d : boundary (I1,I2)=[%d,%d][%d,%d], First-line inside (K1,K2)=[%d,%d][%d,%d]\n",
+            //           axis,side, I1.getBase(),I1.getBound(), I2.getBase(),I2.getBound(), K1.getBase(),K1.getBound(), K2.getBase(),K2.getBound() );
+                        if( isRectangular )
                         {
-                                printP("interfaceRightHandSide:CHAMP-RHS (grid,side,axis) = (%d,%d,%d) \n"
-                                  "   I1=[%d,%d] I2=[%d,%d] I3=[%d,%d] : source (get) or source(set) \n" 
-                                  "   J1=[%d,%d] J2=[%d,%d] J3=[%d,%d] : target (get) or source (set) \n",
-                                  grid,side,axis,
-                                  I1.getBase(),I1.getBound(), I2.getBase(),I2.getBound(), I3.getBase(),I3.getBound(),
-                                  J1.getBase(),J1.getBound(), J2.getBase(),J2.getBound(), J3.getBase(),J3.getBound()
-                                  );
-                            ::display(f(J1,J2,J3,tc) ,sPrintF("interfaceRHS: CHAMP RHS(h):  %f*u + %f*( u.n ) (before TZ corrections)",a[0],a[1]));
-                        }
-                        if( twilightZoneFlow ) // turn this off for testing the case where the same TZ holds across all domains
-                        {
-              // ---add forcing for twilight-zone flow---
-              //   ue <- a[0]*ue + a1*n.grad( ue )
-                                OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
-                                const bool isRectangular = false; // ** do this for now ** mg.isRectangular();
-                                if( !isRectangular )
-                                    mg.update(MappedGrid::THEcenter);
-                                realArray & x= mg.center();
-                                #ifdef USE_PPP
-                                    realSerialArray xLocal; 
-                                    if( !isRectangular ) 
-                                        getLocalArrayWithGhostBoundaries(x,xLocal);
-                                #else
-                                    const realSerialArray & xLocal = x;
-                                #endif
-                                realSerialArray ue(K1,K2,K3,N);
-                                if( a[0]!=0. )
+              // -------------------------- RECTANGULAR --------------
+                            real dx[3]={1.,1.,1.};
+                            mg.getDeltaX(dx);
+                            f(J1,J2,J3,tc) = a[0]*uLocal(K1,K2,K3,tc);
+                            if( a[1]!=0. )
+                            {
+                // add on a[1]*( nu*u.n ) on the boundary 
+                // **be careful** -- the normal changes sign on the two sides of the interface ---
+                                MappedGridOperators & op = *(u.getOperators());
+                                realSerialArray ux(K1,K2,K3,N), uy(K1,K2,K3,N);
+                                op.derivative(MappedGridOperators::xDerivative,uLocal,ux,K1,K2,K3,N);
+                                op.derivative(MappedGridOperators::yDerivative,uLocal,uy,K1,K2,K3,N);
+                                if( cg.numberOfDimensions()==2 )
                                 {
-                                    e.gd( ue ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,K1,K2,K3,N,t);  // exact solution 
-                                    ue(K1,K2,K3,N) = a[0]*ue(K1,K2,K3,N);
+                                    f(J1,J2,J3,tc) += a[1]*( normal(I1,I2,I3,0)*ux + normal(I1,I2,I3,1)*uy );
                                 }
                                 else
                                 {
-                                    ue(K1,K2,K3,N) =0.;
+                                    realSerialArray uz(K1,K2,K3);
+                                    op.derivative(MappedGridOperators::zDerivative,uLocal,uz,K1,K2,K3,N);
+                                    f(J1,J2,J3,tc) += a[1]*( normal(I1,I2,I3,0)*ux + normal(I1,I2,I3,1)*uy + normal(I1,I2,I3,2)*uz );
                                 }
-                                if( a[1]!=0. )
-                                {
-                                    realSerialArray uex(K1,K2,K3,N), uey(K1,K2,K3,N);
-                                    e.gd( uex ,xLocal,numberOfDimensions,isRectangular,0,1,0,0,K1,K2,K3,N,t);
-                                    e.gd( uey ,xLocal,numberOfDimensions,isRectangular,0,0,1,0,K1,K2,K3,N,t);
-                                    if( numberOfDimensions==2 )
+                            }
+                            if( debug() & 4 )
+                            {
+                                    printP("interfaceRightHandSide:CHAMP-RHS (grid,side,axis) = (%d,%d,%d) \n"
+                                      "   I1=[%d,%d] I2=[%d,%d] I3=[%d,%d] : source (get) or source(set) \n" 
+                                      "   J1=[%d,%d] J2=[%d,%d] J3=[%d,%d] : target (get) or source (set) \n",
+                                      grid,side,axis,
+                                      I1.getBase(),I1.getBound(), I2.getBase(),I2.getBound(), I3.getBase(),I3.getBound(),
+                                      J1.getBase(),J1.getBound(), J2.getBase(),J2.getBound(), J3.getBase(),J3.getBound()
+                                      );
+                                ::display(f(J1,J2,J3,tc) ,sPrintF("interfaceRHS: CHAMP RHS(h):  %f*u + %f*( u.n ) (before TZ corrections)",a[0],a[1]));
+                            }
+                            if( twilightZoneFlow ) // turn this off for testing the case where the same TZ holds across all domains
+                            {
+                // ---add forcing for twilight-zone flow---
+                //   ue <- a[0]*ue + a1*n.grad( ue )
+                                    OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+                                    const bool isRectangular = false; // ** do this for now ** mg.isRectangular();
+                                    if( !isRectangular )
+                                        mg.update(MappedGrid::THEcenter);
+                                    realArray & x= mg.center();
+                                    #ifdef USE_PPP
+                                        realSerialArray xLocal; 
+                                        if( !isRectangular ) 
+                                            getLocalArrayWithGhostBoundaries(x,xLocal);
+                                    #else
+                                        const realSerialArray & xLocal = x;
+                                    #endif
+                                    realSerialArray ue(K1,K2,K3,N);
+                                    if( a[0]!=0. )
                                     {
-                                        ue(K1,K2,K3,N) += a[1]*( normal(I1,I2,I3,0)*uex + normal(I1,I2,I3,1)*uey );
+                                        e.gd( ue ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,K1,K2,K3,N,t);  // exact solution 
+                                        ue(K1,K2,K3,N) = a[0]*ue(K1,K2,K3,N);
                                     }
                                     else
                                     {
-                                        realSerialArray uez(K1,K2,K3,N);
-                                        e.gd( uez ,xLocal,numberOfDimensions,isRectangular,0,0,0,1,K1,K2,K3,N,t);
-                                        ue(K1,K2,K3,N) += a[1]*( normal(I1,I2,I3,0)*uex + normal(I1,I2,I3,1)*uey + normal(I1,I2,I3,2)*uez ); 
+                                        ue(K1,K2,K3,N) =0.;
                                     }
+                                    if( a[1]!=0. )
+                                    {
+                                        realSerialArray uex(K1,K2,K3,N), uey(K1,K2,K3,N);
+                                        e.gd( uex ,xLocal,numberOfDimensions,isRectangular,0,1,0,0,K1,K2,K3,N,t);
+                                        e.gd( uey ,xLocal,numberOfDimensions,isRectangular,0,0,1,0,K1,K2,K3,N,t);
+                                        if( numberOfDimensions==2 )
+                                        {
+                                            ue(K1,K2,K3,N) += a[1]*( normal(I1,I2,I3,0)*uex + normal(I1,I2,I3,1)*uey );
+                                        }
+                                        else
+                                        {
+                                            realSerialArray uez(K1,K2,K3,N);
+                                            e.gd( uez ,xLocal,numberOfDimensions,isRectangular,0,0,0,1,K1,K2,K3,N,t);
+                                            ue(K1,K2,K3,N) += a[1]*( normal(I1,I2,I3,0)*uex + normal(I1,I2,I3,1)*uey + normal(I1,I2,I3,2)*uez ); 
+                                        }
+                                    }
+                //   subtract off TZ flow:
+                //   f <- f - ( a[0]*ue + a[1]*( nu*ue.n ) )
+                                if( false )
+                                {
+                                    ::display(f(J1,J2,J3,tc) ," a[0]*u + a[1]*( k u.n )");
+                                    ::display(ue(K1,K2,K3,tc)," a[0]*ue + a[1]*( k ue.n )");
                                 }
-              //   subtract off TZ flow:
-              //   f <- f - ( a[0]*ue + a[1]*( nu*ue.n ) )
-                            if( false )
-                            {
-                                ::display(f(J1,J2,J3,tc) ," a[0]*u + a[1]*( k u.n )");
-                                ::display(ue(K1,K2,K3,tc)," a[0]*ue + a[1]*( k ue.n )");
-                            }
-                            f(J1,J2,J3,tc) -= ue(K1,K2,K3,N);
-                            if( true || debug() & 8  )
-                            {
-                                printP("RHS FOR CHAMP AFTER ADDING TZ CORRECTION, t=%9.3e\n",t);
-                                ::display(f(J1,J2,J3,tc) ," a[0]*u + a[1]*( k u.n ) - [a[0]*ue + a[1]*( k ue.n )]");
+                                f(J1,J2,J3,tc) -= ue(K1,K2,K3,N);
+                                if( debug() & 8  )
+                                {
+                                    printP("RHS FOR CHAMP AFTER ADDING TZ CORRECTION, t=%9.3e\n",t);
+                                    ::display(f(J1,J2,J3,tc) ," a[0]*u + a[1]*( k u.n ) - [a[0]*ue + a[1]*( k ue.n )]");
+                                    e.gd( ue ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,K1,K2,K3,N,t);  // exact solution 
+                                    ::display(ue(K1,K2,K3,tc) ," ue on the first line inside");
+                                    ::display(uLocal(K1,K2,K3,tc) ," uLocal on the first line inside");
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-             // ---------------- CURVILINEAR CASE --------------------
-             // CHAMP RHS: (see champ4/notes)
-             //   ( SL + b1^R * D_{ r_1 } ) Tr( (+/-)dr_1 )
-             // b1 = an1*rx + an2*ry + an3*rz 
-                        OV_GET_SERIAL_ARRAY( real,mg.inverseVertexDerivative(),rx );
-            // printF(" rx : [%d,%d,%d,%d]\n",rx.getLength(0),rx.getLength(1),rx.getLength(2),rx.getLength(3));
-            // The rx array is only 4d, here is a macro to make it look 5d 
-                        #define RX(i1,i2,i3,m1,m2) rx(i1,i2,i3,(m1)+numberOfDimensions*(m2))
-            // --- b1 is evaluated on the boundary ---
-                        RealArray b1(I1,I2,I3); 
-                        if( numberOfDimensions==2 )
-                            b1 = normal(I1,I2,I3,0)*RX(I1,I2,I3,axis,0) + normal(I1,I2,I3,1)*RX(I1,I2,I3,axis,1);
                         else
-                            b1 = normal(I1,I2,I3,0)*RX(I1,I2,I3,axis,0) + normal(I1,I2,I3,1)*RX(I1,I2,I3,axis,1) + normal(I1,I2,I3,2)*RX(I1,I2,I3,axis,2);
-            // Delta index in the axis direction: 
-                        int idv[3]={0,0,0}, &id1=idv[0], &id2=idv[1], &id3=idv[2];
-                        idv[axis]=1;  // NOTE: We always compute D0r 
-                        const Real dr = mg.gridSpacing(axis); 
-                        const Real factor = (a[1]/(2.*dr));   // DO include a[1] since we really want the normal from the other side
-            // const Real factor = (1./(2.*dr));   // Do not include the change of sign in a[1] for the curvilinear case
-            // Champ RHS is centered at the first grid line: 
-                        f(J1,J2,J3,tc) = a[0]*uLocal(K1,K2,K3,tc) + b1*( uLocal(K1+id1,K2+id2,K3+id3,tc) - uLocal(K1-id1,K2-id2,K3-id3,tc) )*factor;
-                        if( twilightZoneFlow ) 
                         {
-              // ---add forcing for twilight-zone flow---
-                            OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
-                            OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
-                            realSerialArray ue(K1,K2,K3,N), uep(K1+id1,K2+id2,K3+id3,N), uem(K1-id1,K2-id2,K3-id3,N);
-                            e.gd( uem ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,K1-id1,K2-id2,K3-id3,N,t);  //  T(0)   
-                            e.gd( ue  ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,K1,    K2,    K3,    N,t);  //  T(dr)
-                            e.gd( uep ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,K1+id1,K2+id2,K3+id3,N,t);  //  T(2*dr)
-                            f(J1,J2,J3,tc) -= a[0]*ue + b1*( uep - uem )*factor;
+               // ---------------- CURVILINEAR CASE --------------------
+               // CHAMP RHS: (see champ4/notes)
+               //   ( SL + b1^R * D_{ r_1 } ) Tr( (+/-)dr_1 )
+               // b1 = an1*rx + an2*ry + an3*rz 
+                            OV_GET_SERIAL_ARRAY( real,mg.inverseVertexDerivative(),rx );
+              // printF(" rx : [%d,%d,%d,%d]\n",rx.getLength(0),rx.getLength(1),rx.getLength(2),rx.getLength(3));
+              // The rx array is only 4d, here is a macro to make it look 5d 
+                            #define RX(i1,i2,i3,m1,m2) rx(i1,i2,i3,(m1)+numberOfDimensions*(m2))
+              // --- b1 is evaluated on the boundary ---
+                            RealArray b1(I1,I2,I3); 
+                            if( numberOfDimensions==2 )
+                                b1 = normal(I1,I2,I3,0)*RX(I1,I2,I3,axis,0) + normal(I1,I2,I3,1)*RX(I1,I2,I3,axis,1);
+                            else
+                                b1 = normal(I1,I2,I3,0)*RX(I1,I2,I3,axis,0) + normal(I1,I2,I3,1)*RX(I1,I2,I3,axis,1) + normal(I1,I2,I3,2)*RX(I1,I2,I3,axis,2);
+              // Delta index in the axis direction: 
+                            int idv[3]={0,0,0}, &id1=idv[0], &id2=idv[1], &id3=idv[2];
+                            idv[axis]=1;  // NOTE: We always compute D0r 
+                            const Real dr = mg.gridSpacing(axis); 
+                            const Real factor = (a[1]/(2.*dr));   // DO include a[1] since we really want the normal from the other side
+              // const Real factor = (1./(2.*dr));   // Do not include the change of sign in a[1] for the curvilinear case
+              // Champ RHS is centered at the first grid line: 
+                            f(J1,J2,J3,tc) = a[0]*uLocal(K1,K2,K3,tc) + b1*( uLocal(K1+id1,K2+id2,K3+id3,tc) - uLocal(K1-id1,K2-id2,K3-id3,tc) )*factor;
+                            if( twilightZoneFlow ) 
+                            {
+                // ---add forcing for twilight-zone flow---
+                                OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+                                OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
+                                realSerialArray ue(K1,K2,K3,N), uep(K1+id1,K2+id2,K3+id3,N), uem(K1-id1,K2-id2,K3-id3,N);
+                                e.gd( uem ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,K1-id1,K2-id2,K3-id3,N,t);  //  T(0)   
+                                e.gd( ue  ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,K1,    K2,    K3,    N,t);  //  T(dr)
+                                e.gd( uep ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,K1+id1,K2+id2,K3+id3,N,t);  //  T(2*dr)
+                                f(J1,J2,J3,tc) -= a[0]*ue + b1*( uep - uem )*factor;
+                            }
                         }
-                    }
-          // OV_ABORT("DomainSolver::interfaceRightHandSide: get RHS for CHAMP -- FINISH ME");  
+            // OV_ABORT("DomainSolver::interfaceRightHandSide: get RHS for CHAMP -- FINISH ME");  
+                }
 
             }
             else 
@@ -655,9 +685,27 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
         else
         {
             printF("DomainSolver::interfaceRightHandSide:ERROR: unknown option=%i\n",option);
-            Overture::abort("error");
+            OV_ABORT("error");
         }
 
+    // *wdh* Dec 11, 2021
+        if( saveTimeHistory )
+        {
+      // -- save a time history of the heat flux
+            if( !gfd.dbase.has_key("heatFluxHistory") )
+            {
+                gfd.dbase.put<ArrayEvolution>("heatFluxHistory");
+                printP("\n @@@@@@ --interfaceRightHandSide-- Create ArrayEvolution heatFluxTimeHistory at t=%9.3e (for time extrap of champ RHS data) @@@@@@@ \n",t);
+            }
+            ArrayEvolution & heatFluxHistory = gfd.dbase.get<ArrayEvolution>("heatFluxHistory");
+
+            heatFluxHistory.add( t, f );
+            printP("\n @@@@@@ --interfaceRightHandSide-- Save heat flux time history at t=%9.3e @@@@@@@ \n",t);
+        }
+
+
+
+        
     // This next block was split and moved up above *wdh* April 22, 2021
     // if( // false &&  // turn this off for testing the case where the same TZ holds across all domains
     //     twilightZoneFlow )
@@ -697,7 +745,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
     //   }
     //   else
     //   {
-    //     Overture::abort("error");
+    //     OV_ABORT("error");
     //   }
         
     // } // end if TZ 
@@ -785,7 +833,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                 #ifndef USE_PPP
                     f(J1,J2,J3,V)=traction(I1,I2,I3,D);
                 #else
-                    Overture::abort("ERROR: finish me for parallel");
+                    OV_ABORT("ERROR: finish me for parallel");
                 #endif
 
         // f(J1,J2,J3,V)=-traction(I1,I2,I3,D); // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -852,7 +900,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                           if( !parameters.dbase.has_key("u1c") )
                           {
                               printP("interfaceRightHandSide:ERROR: unable to find variable u1c in the data-base\n");
-                              Overture::abort("error");
+                              OV_ABORT("error");
                           }
                           const int u1c = parameters.dbase.get<int >("u1c");
                           assert( u1c>=0 );
@@ -874,7 +922,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
             else
             {
                 printP("ERROR: unknown className=[%s]\n",(const char*)getClassName());
-                Overture::abort("error");
+                OV_ABORT("error");
             }
             
                 
@@ -891,7 +939,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
     {
         printP("DomainSolver::interfaceRightHandSide:unexpected interfaceType=%i for (grid,side,axis)=(%d,%d,%d)\n",
                       interfaceType(side,axis,grid),grid,side,axis);
-        Overture::abort("error");
+        OV_ABORT("error");
     }
     
 

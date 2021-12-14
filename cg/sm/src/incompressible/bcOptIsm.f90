@@ -50,7 +50,6 @@
 
 
 
-
 ! *************************************************************************************
 !  Macro : adjust the gridIndexRange  to account for adjacent sides
 !    Precedence at corners:
@@ -149,6 +148,100 @@
 ! 
 ! FORCING equals noForcing or forcing
 ! ==========================================================================
+! #beginMacro tractionBCRectangular3dMacro(FORCING)
+! alpha=lambda/(lambda+2.*mu)
+! beta=1./(lambda+2.*mu)
+! if( axis.eq.0 )then
+!   ! u.x = -alpha*(v.y+w.z)
+!   ! v.x = -u.y  
+!   ! w.x = -u.z
+!  beginLoopsMask3d()
+!   vy=uy23r(i1,i2,i3,u2c)
+!   wz=uz23r(i1,i2,i3,u3c)
+!   uy=uy23r(i1,i2,i3,u1c)
+!   uz=uz23r(i1,i2,i3,u1c)
+!   #If #FORCING eq "forcing" 
+!    if( assignTwilightZone.eq.0 )then
+!     u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)+dx(0)*2.*(!                           is1*alpha*(vy+wz)+ beta*bcf(side,axis,i1,i2,i3,u1c) )
+!     u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)+dx(0)*2.*(!                           is1*uy+         (1./mu)*bcf(side,axis,i1,i2,i3,u2c) )
+!     u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)+dx(0)*2.*(!                           is1*uz+         (1./mu)*bcf(side,axis,i1,i2,i3,u3c) )
+!    else
+!     OGDERIV3D(0,1,0,0,i1,i2,i3,t,ux0,vx0,wx0)
+!     OGDERIV3D(0,0,1,0,i1,i2,i3,t,uy0,vy0,wy0)
+!     OGDERIV3D(0,0,0,1,i1,i2,i3,t,uz0,vz0,wz0)
+!     u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)-is1*dx(0)*2.*(-alpha*(vy+wz)+ux0+alpha*(vy0+wz0))
+!     u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)-is1*dx(0)*2.*(-uy           +vx0+uy0)
+!     u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)-is1*dx(0)*2.*(-uz           +wx0+uz0)
+!    end if
+!   #Else
+!    u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)-is1*dx(0)*2.*(-alpha*(vy+wz))
+!    u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)-is1*dx(0)*2.*(-uy)
+!    u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)-is1*dx(0)*2.*(-uz)
+!   #End
+
+!  endLoopsMask3d()
+
+! else if( axis.eq.1 )then
+! ! u.y = - v.x
+! ! v.y = -alpha*(u.x+w.z)
+! ! w.y = - v.z
+!  beginLoopsMask3d()
+!   vx=ux23r(i1,i2,i3,u2c)
+!   ux=ux23r(i1,i2,i3,u1c)
+!   wz=uz23r(i1,i2,i3,u3c)
+!   vz=uz23r(i1,i2,i3,u2c)
+!   #If #FORCING eq "forcing" 
+!    if( assignTwilightZone.eq.0 )then
+!     u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)+dx(1)*2.*(!                           is2*vx +         (1./mu)*bcf(side,axis,i1,i2,i3,u1c))
+!     u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)+dx(1)*2.*(!                           is2*alpha*(ux+wz) + beta*bcf(side,axis,i1,i2,i3,u2c))
+!     u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)+dx(1)*2.*(!                           is2*vz +         (1./mu)*bcf(side,axis,i1,i2,i3,u3c) )
+!    else
+!     OGDERIV3D(0,1,0,0,i1,i2,i3,t,ux0,vx0,wx0)
+!     OGDERIV3D(0,0,1,0,i1,i2,i3,t,uy0,vy0,wy0)
+!     OGDERIV3D(0,0,0,1,i1,i2,i3,t,uz0,vz0,wz0)
+!     u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)-is2*dx(1)*2.*(-vx            +uy0+vx0)
+!     u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)-is2*dx(1)*2.*(-alpha*(ux+wz) +vy0+alpha*(ux0+wz0))
+!     u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)-is2*dx(1)*2.*(-vz            +wy0+vz0)
+!    end if
+!   #Else
+!    u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)-is2*dx(1)*2.*(-vx)
+!    u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)-is2*dx(1)*2.*(-alpha*(ux+wz))
+!    u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)-is2*dx(1)*2.*(-vz)
+!   #End
+!  endLoopsMask3d()
+
+! else 
+
+! ! u.z = - w.x
+! ! v.z = - w.y
+! ! w.z = -alpha*(u.x+v.y)
+!  beginLoopsMask3d()
+!   wx=ux23r(i1,i2,i3,u3c)
+!   wy=uy23r(i1,i2,i3,u3c)
+!   ux=ux23r(i1,i2,i3,u1c)
+!   vy=uy23r(i1,i2,i3,u2c)
+!   #If #FORCING eq "forcing" 
+!    if( assignTwilightZone.eq.0 )then
+!     u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)+dx(2)*2.*( !                           is3*wx +         (1./mu)*bcf(side,axis,i1,i2,i3,u1c))
+!     u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)+dx(2)*2.*( !                           is3*wy +         (1./mu)*bcf(side,axis,i1,i2,i3,u2c))
+!     u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)+dx(2)*2.*(!                           is3*alpha*(ux+vy) + beta*bcf(side,axis,i1,i2,i3,u3c))
+!    else
+!     OGDERIV3D(0,1,0,0,i1,i2,i3,t,ux0,vx0,wx0)
+!     OGDERIV3D(0,0,1,0,i1,i2,i3,t,uy0,vy0,wy0)
+!     OGDERIV3D(0,0,0,1,i1,i2,i3,t,uz0,vz0,wz0)
+!     u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)-is3*dx(2)*2.*(-wx            +uz0+wx0)
+!     u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)-is3*dx(2)*2.*(-wy            +vz0+wy0)
+!     u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)-is3*dx(2)*2.*(-alpha*(ux+vy) +wz0+alpha*(ux0+vy0))
+!    end if
+!   #Else
+!    u(i1-is1,i2-is2,i3-is3,u1c)=u(i1+is1,i2+is2,i3+is3,u1c)-is3*dx(2)*2.*(-wx)
+!    u(i1-is1,i2-is2,i3-is3,u2c)=u(i1+is1,i2+is2,i3+is3,u2c)-is3*dx(2)*2.*(-wy)
+!    u(i1-is1,i2-is2,i3-is3,u3c)=u(i1+is1,i2+is2,i3+is3,u3c)-is3*dx(2)*2.*(-alpha*(ux+vy))
+!   #End
+!  endLoopsMask3d()
+
+! end if      
+! #endMacro
 
 
 

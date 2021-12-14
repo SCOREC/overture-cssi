@@ -1969,7 +1969,8 @@
           else if( boundaryCondition(side,axis).eq.tractionBC )then 
             ! ------ TRACTION BC ----
             !  if( addBoundaryForcing(side,axis).eq.0 .and. assignTwilightZone==0 )then   *** FIX ME ***
-            if( addBoundaryForcing(side,axis)==0 .and. twilightZone==0 )then
+            ! if( addBoundaryForcing(side,axis)==0 .and. twilightZone==0 )then   ! FOR NOW SKIP addBoundaryFORCING  *** FIX ME *****
+            if( twilightZone==0 )then   ! FOR NOW SKIP addBoundaryFORCING  *** FIX ME ***** addBoundaryForcing =1 for an exact solution 
                 fe(0)=0.; fe(1)=0.;  fe(2)=0.; fe(3)=0.;   ! holds forcing 
                 numberOfEquations=4;      ! number of ghost points we solve for   
                  do i3=n3a,n3b
@@ -2626,7 +2627,7 @@
                      end if
                      ! ************ assign corner points outside edges ***********************
                      if( bc1.gt.0 .and. bc2.gt.0 )then
-                       write(*,'(" assign edges: edgeDirection=",i2," sidea,sideb=",2i3)') edgeDirection,sidea,sideb
+                       ! write(*,'(" assign edges: edgeDirection=",i2," sidea,sideb=",2i3)') edgeDirection,sidea,sideb
                        do ghost1=1,numGhost
                        do ghost2=1,numGhost
                          ! shift to ghost point "(m1,m2)"
@@ -2738,7 +2739,7 @@
                      end if
                      ! ************ assign corner points outside edges ***********************
                      if( bc1.gt.0 .and. bc2.gt.0 )then
-                       write(*,'(" assign edges: edgeDirection=",i2," sidea,sideb=",2i3)') edgeDirection,sidea,sideb
+                       ! write(*,'(" assign edges: edgeDirection=",i2," sidea,sideb=",2i3)') edgeDirection,sidea,sideb
                        do ghost1=1,numGhost
                        do ghost2=1,numGhost
                          ! shift to ghost point "(m1,m2)"

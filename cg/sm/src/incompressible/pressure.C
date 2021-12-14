@@ -80,7 +80,7 @@ int Cgsm::solveForPressure( int current, Real t, Real dt )
     const int myid = max(0,Communication_Manager::My_Process_Number);
     const int np   = max(1,Communication_Manager::numberOfProcessors());
 
-    if( !parameters.dbase.has_key("pressureSolver") )
+    if( !parameters.dbase.get<int>("pressureSolverInitialized") )
     {
     // Oges::debug=63;
         formPressureEquation();
@@ -422,6 +422,8 @@ int Cgsm::formPressureEquation()
 {
     real cpu0=getCPU();
 
+    parameters.dbase.get<int>("pressureSolverInitialized")=true;
+
     const int & debug                  = parameters.dbase.get<int>("debug");
     const int & orderOfAccuracyInSpace = parameters.dbase.get<int>("orderOfAccuracy");
     const int & orderOfAccuracyInTime  = parameters.dbase.get<int>("orderOfTimeAccuracy");
@@ -436,28 +438,42 @@ int Cgsm::formPressureEquation()
     const int & numberOfComponentGrids = cg.numberOfComponentGrids(); 
     const int & numberOfDimensions     = cg.numberOfDimensions(); 
 
-    if( !parameters.dbase.has_key("pressureSolver") )
-    {
-        parameters.dbase.put<Oges>("pressureSolver");
-    }
+  // This is now done in setupGridFunctions: 
+
+  // if( !parameters.dbase.has_key("pressureSolver") )
+  // {
+  //   Oges & pressureSolver = parameters.dbase.put<Oges>("pressureSolver");
+  // }
+  // Oges & pressureSolver = parameters.dbase.get<Oges>("pressureSolver");
+  // pressureSolver.updateToMatchGrid( cg );                     
+
+  // pressureSolver.setOgesParameters(pressureSolverParameters);
+
     Oges & pressureSolver = parameters.dbase.get<Oges>("pressureSolver");
-    pressureSolver.updateToMatchGrid( cg );                     
+      
+  // int solverType=OgesParameters::yale; 
 
-    int solverType=OgesParameters::yale; 
+  // if( numberOfDimensions==3 )
+  // {
+  //    solverType=OgesParameters::PETSc;
+  //    // solverType=OgesParameters::PETScNew; // parallel
+  // }
 
-  // solverType=OgesParameters::PETSc;
-  // solverType=OgesParameters::PETScNew; // parallel
+  // pressureSolver.set(OgesParameters::THEsolverType,solverType); 
 
-    pressureSolver.set(OgesParameters::THEsolverType,solverType); 
+  // if( solverType==OgesParameters::PETSc )
+  //  pressureSolver.set(OgesParameters::THEsolverMethod,OgesParameters::biConjugateGradientStabilized);
 
-    if( solverType==OgesParameters::PETSc )
-      pressureSolver.set(OgesParameters::THEsolverMethod,OgesParameters::biConjugateGradientStabilized);
-
-  // pressureSolver.set(OgesParameters::THEparallelSolverMethod,OgesParameters::gmres);
-  // pressureSolver.set(OgesParameters::THErelativeTolerance,max(tol,REAL_EPSILON*10.));
-  // pressureSolver.set(OgesParameters::THEmaximumNumberOfIterations,10000);
-  // if( iluLevels>=0 )
-  //   pressureSolver.set(OgesParameters::THEnumberOfIncompleteLULevels,iluLevels);
+  // // pressureSolver.set(OgesParameters::THEparallelSolverMethod,OgesParameters::gmres);
+  // if( numberOfDimensions==3 )
+  // {
+  //   Real tol=1.e-5;  // ***** FIX ME ********************************************************************
+  //   int iluLevels=2; 
+  //    pressureSolver.set(OgesParameters::THErelativeTolerance,max(tol,REAL_EPSILON*10.));
+  //    pressureSolver.set(OgesParameters::THEmaximumNumberOfIterations,10000);
+  //    if( iluLevels>=0 )
+  //      pressureSolver.set(OgesParameters::THEnumberOfIncompleteLULevels,iluLevels);
+  //  }
 
 
     CompositeGridOperators & op = (*cgop);

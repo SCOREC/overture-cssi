@@ -109,7 +109,11 @@ determineErrors(realCompositeGridFunction & u,
     // realCompositeGridFunction v;  // **fix me for parallel**
     // v=u-uKnown;
 
-    // printF("determineErrors: Compute error in the known solution at time t=%9.3e\n",t);
+    if( false )
+    {
+      printF("##### determineErrors: Compute error in the known solution at time t=%9.3e ######\n",t);
+      // OV_ABORT("stop here for now");
+    }
 
     // realCompositeGridFunction v;  // **fix me for parallel**
     // v=u-uKnown;

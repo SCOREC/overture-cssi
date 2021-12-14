@@ -10,6 +10,7 @@
 #include "Ogshow.h"
 #include "ShowFileReader.h"
 #include "Oges.h"
+#include "OgmgParameters.h"
 #include "ParallelUtility.h"
 #include "GridFunctionFilter.h"
 
@@ -618,7 +619,7 @@ printMemoryUsage(FILE *file /* = stdout */)
 //   const int & maximumNumberOfTimings = Parameters::maximumNumberOfTimings;
 
 // //   if( poisson!=NULL )
-// //     poisson->printStatistics(logFile);
+// //     pressureSolver.printStatistics(logFile);
 
 // //  timing(SmParameters::timeForRadiationBC)=RadiationBoundaryCondition::cpuTime; 
 // //  timing(SmParameters::timeForRaditionKernel)=RadiationKernel::cpuTime;
@@ -1218,7 +1219,8 @@ buildGeneralOptionsDialog(DialogData & dialog )
   dialog.setPushButtons( pbCommands, pbLabels, numRows ); 
 
 
-  aString tbCommands[] = {"axisymmetric flow",
+  aString tbCommands[] = {"pressure solver options",
+                          "axisymmetric flow",
                           "iterative implicit interpolation",
                           "check for floating point errors",
                           "use interactive grid generator",
@@ -1294,6 +1296,10 @@ getGeneralOption(const aString & answer,
       else
         cg.rcData->interpolant->setImplicitInterpolationMethod(Interpolant::directSolve);
     }
+  }
+  else if( answer=="pressure solver options" )
+  {
+    pressureSolverParameters.update(gi,cg);
   }
   else if( dialog.getToggleValue(answer,"check for floating point errors",Parameters::checkForFloatingPointErrors ) ){}//
   else if( dialog.getToggleValue(answer,"use interactive grid generator",
@@ -2211,7 +2217,7 @@ writeParameterSummary( FILE * file )
   const int & projectLinearModeFrequency = parameters.dbase.get<int>("projectLinearModeFrequency");
   fPrintF(file," projectLinearMode=%d, projectLinearModeFrequency=%d (to project linear space/time mode for ILE)\n",
       projectLinearMode,projectLinearModeFrequency);
-  
+
   // fPrintF(file," order of accuracy: space=%i, time=%i\n",orderOfAccuracyInSpace,orderOfAccuracyInTime);
   fPrintF(file," artificial diffusion: coefficient=%8.2e, order=%i\n",artificialDissipation,
           orderOfArtificialDissipation);
@@ -2324,6 +2330,41 @@ writeParameterSummary( FILE * file )
     fPrintF(file," user defined forcing.\n");
   else
     fPrintF(file,"UNKNOWN! \n");
+
+  // --- output info about the pressure solver ----
+  if( parameters.dbase.has_key("pressureSolver") )
+  {
+    Oges & pressureSolver = parameters.dbase.get<Oges>("pressureSolver");
+
+    fPrintF(file,"\n pressure equation solver: solver=%s, \n",(const char*)pressureSolverParameters.getSolverName());
+    if(  pressureSolver.isSolverIterative() )
+    {
+      real rtol,atol;
+      int maximumNumberOfIterations;
+      if( pressureSolver.parameters.getSolverType()!=OgesParameters::multigrid )
+      {
+        pressureSolverParameters.get(OgesParameters::THErelativeTolerance,rtol);
+        pressureSolverParameters.get(OgesParameters::THEabsoluteTolerance,atol);
+        pressureSolverParameters.get(OgesParameters::THEmaximumNumberOfIterations,maximumNumberOfIterations);
+      }
+      else
+      {
+        OgmgParameters* ogmgPar = pressureSolver.parameters.getOgmgParameters();
+        assert( ogmgPar!=NULL );
+        ogmgPar->get(OgmgParameters::THEresidualTolerance,rtol);  // note: residual
+        ogmgPar->get(OgmgParameters::THEabsoluteTolerance,atol);
+        ogmgPar->get(OgmgParameters::THEmaximumNumberOfIterations,maximumNumberOfIterations);
+      }
+      fPrintF(file,"                         : rel-tol=%8.2e, abs-tol=%8.2e, max iterations=%i (0=choose default)\n",
+              rtol,atol,maximumNumberOfIterations);
+      if( pressureSolver.parameters.getSolverType()==OgesParameters::multigrid )
+      { // Here is the MG convergence criteria: 
+        fPrintF(file,"                         : convergence: max-defect < (rel-tol)*L2NormRHS + abs-tol.\n");
+      }
+      
+    }
+    fPrintF(file,"\n");
+  }
 
 //   const IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
 //   interfaceType.display("interfaceType");

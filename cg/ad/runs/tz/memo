@@ -1,3 +1,217 @@
+
+
+*********************************************************************************************
+******* Fri Dec 10, 2021
+
+BEGIN ORDER=4 and CHAMP 
+
+
+
+cgad -noplot tz -g=square4.order4 -useChamp=1 -bc1=champ -bc2=champ -bc3=champ -degreex=2 -degreet=2 -kappa=.1 -ts=bdf -bdfOrder=2 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+
+
+cgad -noplot tz -g=square4.order2 -useChamp=1 -bc1=champ -bc2=champ -bc3=champ -degreex=2 -degreet=2 -kappa=.1 -ts=bdf -bdfOrder=2 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+
+
+*********************************************************************************************
+******* Tues Dec 7, 2021
+
+
+RETURN TO TEST Sijia's new routines
+
+
+Left
+cgad -noplot tz -g=square4.order2 -useChamp=1 -bc1=champ -bc2=champ -bc3=champ -degreex=2 -degreet=2 -kappa=.1 -ts=bdf -bdfOrder=2 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+
+
+*********************************************************************************************
+******* Wed Dec 1, 2021
+
+
+TEST Sijia's new routines
+
+CURVILINEAR
+Bottom: ASSERT
+cgad -noplot tz -g=nonSquare4.order2 -useChamp=1 -bc1=d -bc2=d -bc3=champ -degreex=2 -degreet=2 -kappa=.1 -ts=bdf -bdfOrder=2 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+
+Right: OK 
+cgad -noplot tz -g=nonSquare4.order2 -useChamp=1 -bc1=d -bc2=champ -bc3=champ -degreex=2 -degreet=2 -kappa=.1 -ts=bdf -bdfOrder=2 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+
+
+Left : OK 
+cgad -noplot tz -g=nonSquare4.order2 -useChamp=1 -bc1=champ -bc2=champ -bc3=champ -degreex=2 -degreet=2 -kappa=.1 -ts=bdf -bdfOrder=2 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+
+
+
+RECTANGULAR
+
+Top: TROUBLE
+cgad -noplot tz -g=square4.order2 -useChamp=1 -bc1=d -bc2=d -bc3=d -bc4=champ -degreex=2 -degreet=2 -kappa=.1 -ts=bdf -bdfOrder=2 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+
+
+
+Bottom: TROUBLE
+cgad -noplot tz -g=square4.order2 -useChamp=1 -bc1=d -bc2=d -bc3=champ -degreex=2 -degreet=2 -kappa=.1 -ts=bdf -bdfOrder=2 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+
+
+Right : OK 
+cgad -noplot tz -g=square4.order2 -useChamp=1 -bc1=d -bc2=champ -bc3=champ -degreex=2 -degreet=2 -kappa=.1 -ts=bdf -bdfOrder=2 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+
+Left
+cgad -noplot tz -g=square4.order2 -useChamp=1 -bc1=champ -bc2=champ -bc3=champ -degreex=2 -degreet=2 -kappa=.1 -ts=bdf -bdfOrder=2 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+
+
++++++ CHAMP BC: FILL MATRIX BC FOR (grid,side,axis)=(0,0,0) (heatFluxInterface)
+***** fillChampBC: (side,axis,grid)=(0,0,0) : theta=Kleft/Kright=0.5, beta=Dleft/Dright=2 ****
+ Running Sijia's Cartesian script
+ Sl=4, xl=0.25, dyl=0.25, side1=0, axis1=0, axis2=1 theta=0.5, beta=2
+a00=4, a01=0, a02=0.375, a10=1, a11=0, a20=0.75,
+ My coefficients: coefA =(0,6,0,14,-32,10,0,6,0)
+champBC: (i1,i2,i3)=(  0,  0,  0) (m1,m2,m3)=( -1, -1,  0) coeff= 0.000e+00,  coeff= 0.000e+00 (new) diff= 0.00e+00
+champBC: (i1,i2,i3)=(  0,  0,  0) (m1,m2,m3)=(  0, -1,  0) coeff= 6.000e+00,  coeff= 6.000e+00 (new) diff= 0.00e+00
+champBC: (i1,i2,i3)=(  0,  0,  0) (m1,m2,m3)=(  1, -1,  0) coeff= 0.000e+00,  coeff= 0.000e+00 (new) diff= 0.00e+00
+champBC: (i1,i2,i3)=(  0,  0,  0) (m1,m2,m3)=( -1,  0,  0) coeff= 1.400e+01,  coeff= 1.400e+01 (new) diff= 0.00e+00
+champBC: (i1,i2,i3)=(  0,  0,  0) (m1,m2,m3)=(  0,  0,  0) coeff=-3.200e+01,  coeff=-3.200e+01 (new) diff= 0.00e+00
+champBC: (i1,i2,i3)=(  0,  0,  0) (m1,m2,m3)=(  1,  0,  0) coeff= 1.000e+01,  coeff= 1.000e+01 (new) diff= 0.00e+00
+champBC: (i1,i2,i3)=(  0,  0,  0) (m1,m2,m3)=( -1,  1,  0) coeff= 0.000e+00,  coeff= 0.000e+00 (new) diff= 0.00e+00
+champBC: (i1,i2,i3)=(  0,  0,  0) (m1,m2,m3)=(  0,  1,  0) coeff= 6.000e+00,  coeff= 6.000e+00 (new) diff= 0.00e+00
+champBC: (i1,i2,i3)=(  0,  0,  0) (m1,m2,m3)=(  1,  1,  0) coeff= 0.000e+00,  coeff= 0.000e+00 (new) diff= 0.00e+00
+
+
+
+*********************************************************************************************
+******* Mon/Tues Oct 11/12, 2021
+
+
+cgad -noplot tz -g=nonSquare4.order2 -useChamp=1 -bc1=champ -bc2=champ -bc3=champ -degreex=2 -degreet=2 -kappa=.1 -ts=bdf -bdfOrder=2 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+
+
+cgad -noplot tz -g=square4.order2 -useChamp=1 -bc1=champ -bc2=champ -bc3=champ -degreex=2 -degreet=2 -kappa=.1 -ts=bdf -bdfOrder=2 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+
+
+*********************************************************************************************
+******* Mon/Tues Oct 11/12, 2021
+
+return to champ 
+
+FIX TEST CASE FOR SIJIA CHANGE side2
+
+NONSQUARE:
+cgad -noplot tz -g=nonSquare4.order2 -useChamp=1 -bc1=champ -bc2=champ -bc3=champ -degreex=2 -degreet=2 -kappa=.1 -ts=bdf -bdfOrder=2 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+
+ -- CGAD-- champBoundaryConditions: multiDomainProblem=0,  kappa=0.1, thermalConductivity=0.1
++++++ CHAMP BC: FILL MATRIX BC FOR (grid,side,axis)=(0,0,0) (heatFluxInterface)
+***** fillChampBC: (side,axis,grid)=(0,0,0) : theta=Kleft/Kright=0.5, beta=Dleft/Dright=2 ****
+FILL CHAMP MATRIX: OPPOSITE SIDE: domain2=0, grid2=0, side2=1, axis2=0 className=Cgad, name=ad current2=0
+ THIS SIDE    : Ib1=[0,0] Ib2=[0,4] Ib3=[0,0]
+ OPPOSITE SIDE: Jb1=[4,4] Jb2=[0,4] Jb3=[0,0]
+Save some coefficients for TZ
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(-1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(0,-1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(-1,0,0) coeff = 1.400000e+01
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(0,0,0) coeff = -3.200000e+01
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(1,0,0) coeff = 1.000000e+01
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(-1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(0,1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(-1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(0,-1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(-1,0,0) coeff = 1.400000e+01
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(0,0,0) coeff = -3.200000e+01
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(1,0,0) coeff = 1.000000e+01
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(-1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(0,1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(-1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(0,-1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(-1,0,0) coeff = 1.400000e+01
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(0,0,0) coeff = -3.200000e+01
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(1,0,0) coeff = 1.000000e+01
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(-1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(0,1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(-1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(0,-1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(-1,0,0) coeff = 1.400000e+01
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(0,0,0) coeff = -3.200000e+01
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(1,0,0) coeff = 1.000000e+01
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(-1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(0,1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(-1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(0,-1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(-1,0,0) coeff = 1.400000e+01
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(0,0,0) coeff = -3.200000e+01
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(1,0,0) coeff = 1.000000e+01
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(-1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(0,1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(1,1,0) coeff = 0.000000e+00
+CHAMP-MATRIX: max-residual=0.00e+00
+Error occured in file src/champBoundaryConditions.C, function champBoundaryConditions, line 821.
+chmapBoundaryConditions: TESTING ON SINGLE DOMAIN -- STOP HERE FOR NOW
+
+
+
+cgad -noplot tz -g=square4.order2 -useChamp=1 -bc1=champ -bc2=champ -bc3=champ -degreex=2 -degreet=2 -kappa=.1 -ts=bdf -bdfOrder=2 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+
+ -- CGAD-- champBoundaryConditions: multiDomainProblem=0,  kappa=0.1, thermalConductivity=0.1
++++++ CHAMP BC: FILL MATRIX BC FOR (grid,side,axis)=(0,0,0) (heatFluxInterface)
+***** fillChampBC: (side,axis,grid)=(0,0,0) : theta=Kleft/Kright=0.5, beta=Dleft/Dright=2 ****
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(-1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(0,-1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(-1,0,0) coeff = 1.400000e+01
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(0,0,0) coeff = -3.200000e+01
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(1,0,0) coeff = 1.000000e+01
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(-1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(0,1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,0,0) (m1,m2,m3)=(1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(-1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(0,-1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(-1,0,0) coeff = 1.400000e+01
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(0,0,0) coeff = -3.200000e+01
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(1,0,0) coeff = 1.000000e+01
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(-1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(0,1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,1,0) (m1,m2,m3)=(1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(-1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(0,-1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(-1,0,0) coeff = 1.400000e+01
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(0,0,0) coeff = -3.200000e+01
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(1,0,0) coeff = 1.000000e+01
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(-1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(0,1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,2,0) (m1,m2,m3)=(1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(-1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(0,-1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(-1,0,0) coeff = 1.400000e+01
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(0,0,0) coeff = -3.200000e+01
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(1,0,0) coeff = 1.000000e+01
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(-1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(0,1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,3,0) (m1,m2,m3)=(1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(-1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(0,-1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(1,-1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(-1,0,0) coeff = 1.400000e+01
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(0,0,0) coeff = -3.200000e+01
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(1,0,0) coeff = 1.000000e+01
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(-1,1,0) coeff = 0.000000e+00
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(0,1,0) coeff = 6.000000e+00
+champBC: (i1,i2,i3)=(0,4,0) (m1,m2,m3)=(1,1,0) coeff = 0.000000e+00
+Error occured in file src/champBoundaryConditions.C, function champBoundaryConditions, line 821.
+chmapBoundaryConditions: TESTING ON SINGLE DOMAIN -- STOP HERE FOR NOW
+
+
+
 *********************************************************************************************
 ******* Mon/Tues Oct 11/12, 2021
 

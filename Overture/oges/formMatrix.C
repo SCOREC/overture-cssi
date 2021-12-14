@@ -238,7 +238,7 @@ initialize( )
     for (int grid=1;grid<=numberOfGrids;grid++) 
     {
       gridEquationBase(grid) = gridEquationBase(grid-1)+
-	numberOfComponents*arraySize(grid-1,axis1)*arraySize(grid-1,axis2)*arraySize(grid-1,axis3);
+        numberOfComponents*arraySize(grid-1,axis1)*arraySize(grid-1,axis2)*arraySize(grid-1,axis3);
     }
   }
   
@@ -248,7 +248,7 @@ initialize( )
 
     if( parameters.compatibilityConstraint ||
         parameters.userSuppliedEquations   ||   // *wdh* 2015/10/11
-	numberOfExtraEquations>0 )              // *wdh* 2015/10/11
+        numberOfExtraEquations>0 )              // *wdh* 2015/10/11
     {
       int userSuppliedConstraint = 0; // kkc 090903, check for a user defined constraints
       get(OgesParameters::THEuserSuppliedCompatibilityConstraint,userSuppliedConstraint);
@@ -265,18 +265,18 @@ initialize( )
       }
       
       if( Oges::debug & 2 ) 
-	printF("--OGES--initialize: compatibilityConstraint=%i userSuppliedEquations=%i userSuppliedConstraint=%i numberOfExtraEquations=%i\n",
-	       (int)parameters.compatibilityConstraint,(int)parameters.userSuppliedEquations,userSuppliedConstraint,numberOfExtraEquations );
+        printF("--OGES--initialize: compatibilityConstraint=%i userSuppliedEquations=%i userSuppliedConstraint=%i numberOfExtraEquations=%i\n",
+               (int)parameters.compatibilityConstraint,(int)parameters.userSuppliedEquations,userSuppliedConstraint,numberOfExtraEquations );
       
 
       findExtraEquations();
 
       if( parameters.solver!=OgesParameters::PETScNew )
       { // do not build a nullVector for the new PETSc interface
-	makeRightNullVector();
+        makeRightNullVector();
 
-	if ( !coefficientsOfDenseExtraEquations ) // kkc 080725, the coefficients might be set differently from the rightNullVector
-	  coefficientsOfDenseExtraEquations = &rightNullVector;
+        if ( !coefficientsOfDenseExtraEquations ) // kkc 080725, the coefficients might be set differently from the rightNullVector
+          coefficientsOfDenseExtraEquations = &rightNullVector;
       }
       
     }
@@ -295,35 +295,35 @@ initialize( )
     {
       // *wdh* 2017/02/24
       if( Oges::debug & 2 )
-	printF("\n _____ formMatrix: PETScNew: parameters.compatibilityConstraint=%i, numberOfExtraEquations=%i\n",
-	       (int)parameters.compatibilityConstraint,numberOfExtraEquations);
+        printF("\n _____ formMatrix: PETScNew: parameters.compatibilityConstraint=%i, numberOfExtraEquations=%i\n",
+               (int)parameters.compatibilityConstraint,numberOfExtraEquations);
 
       // ** In parallel the PETScSolver will generate the null vector directly ***
       // ** FIX ME if there are 
       if( parameters.userSuppliedEquations )
       {
-	OV_ABORT("Oges::finish me for parallel Bill!");
+        OV_ABORT("Oges::finish me for parallel Bill!");
       }
       
 
       if( parameters.compatibilityConstraint ||
-	  parameters.userSuppliedEquations   ||   // *wdh* 2015/10/11
-	  numberOfExtraEquations>0 )              // *wdh* 2015/10/11
+          parameters.userSuppliedEquations   ||   // *wdh* 2015/10/11
+          numberOfExtraEquations>0 )              // *wdh* 2015/10/11
       {
-	int userSuppliedConstraint = 0; // kkc 090903, check for a user defined constraints
-	get(OgesParameters::THEuserSuppliedCompatibilityConstraint,userSuppliedConstraint);
+        int userSuppliedConstraint = 0; // kkc 090903, check for a user defined constraints
+        get(OgesParameters::THEuserSuppliedCompatibilityConstraint,userSuppliedConstraint);
 
-	// kkc 090903 the following if statement checks to see if 
-	//   a) the number of extra equations has been defined (if not, assume one extra equation), and
-	//   b) if a user defined constraint has been set, if not one extra equation will be built
-	if( numberOfExtraEquations>0 && ( userSuppliedConstraint || parameters.userSuppliedEquations ) )
-	{
-	}
-	else
-	{
-	  numberOfExtraEquations = 1;
-	}
-	// PETScSolver also finds the location of the extra equation
+        // kkc 090903 the following if statement checks to see if 
+        //   a) the number of extra equations has been defined (if not, assume one extra equation), and
+        //   b) if a user defined constraint has been set, if not one extra equation will be built
+        if( numberOfExtraEquations>0 && ( userSuppliedConstraint || parameters.userSuppliedEquations ) )
+        {
+        }
+        else
+        {
+          numberOfExtraEquations = 1;
+        }
+        // PETScSolver also finds the location of the extra equation
 
       }
     }
@@ -379,41 +379,41 @@ formRhsAndSolutionVectors( realCompositeGridFunction & u,
       bool useOpt=true;
       if( useOpt ) // *wdh* 030820
       {
-	int I1Base=I1.getBase(), I2Base=I2.getBase(), I3Base=I3.getBase();
-	int I1Bound=I1.getBound(), I2Bound=I2.getBound(), I3Bound=I3.getBound();
-	int i1,i2,i3;
-	for( int n=0; n<numberOfComponents; n++ ) 
-	{
-	  FOR_3(i1,i2,i3,I1,I2,I3)
-	  {
-	    if( CLASSIFYX(i1,i2,i3,n)<=0 ) 
-	    {
-	      FF(i1,i2,i3,n+f3Base)=0.;  
-	    }
-	  }
-	}
+        int I1Base=I1.getBase(), I2Base=I2.getBase(), I3Base=I3.getBase();
+        int I1Bound=I1.getBound(), I2Bound=I2.getBound(), I3Bound=I3.getBound();
+        int i1,i2,i3;
+        for( int n=0; n<numberOfComponents; n++ ) 
+        {
+          FOR_3(i1,i2,i3,I1,I2,I3)
+          {
+            if( CLASSIFYX(i1,i2,i3,n)<=0 ) 
+            {
+              FF(i1,i2,i3,n+f3Base)=0.;  
+            }
+          }
+        }
       }
       else
       {
-	for (int n=0;n<numberOfComponents;n++) 
-	{
-	  if (parameters.solver==OgesParameters::SLAP) 
-	  {
-	    // for iterative solvers also zero out the solution???
-	    where (classifyX(I1,I2,I3,n)<=0) 
-	    {
-	      // u[grid](I1,I2,I3,n)=0.;   // ***** do this ??
-	      f[grid](I1,I2,I3,n)=0.;  
-	    }
-	  }
-	  else 
-	  {
-	    where (classifyX(I1,I2,I3,n)<=0) 
-	    {
-	      f[grid](I1,I2,I3,n)=0.;
-	    }
-	  }
-	}
+        for (int n=0;n<numberOfComponents;n++) 
+        {
+          if (parameters.solver==OgesParameters::SLAP) 
+          {
+            // for iterative solvers also zero out the solution???
+            where (classifyX(I1,I2,I3,n)<=0) 
+            {
+              // u[grid](I1,I2,I3,n)=0.;   // ***** do this ??
+              f[grid](I1,I2,I3,n)=0.;  
+            }
+          }
+          else 
+          {
+            where (classifyX(I1,I2,I3,n)<=0) 
+            {
+              f[grid](I1,I2,I3,n)=0.;
+            }
+          }
+        }
       }
       
     }
@@ -475,59 +475,59 @@ formRhsAndSolutionVectors( realCompositeGridFunction & u,
       if( useThisGrid(grid) && cg.numberOfInterpolationPoints(grid)>0 )
       {
         const int ni = cg.numberOfInterpolationPoints(grid);
-	realArray & ff = f[grid];
-	real *ffp = ff.Array_Descriptor.Array_View_Pointer3;
-	const int ffDim0=ff.getRawDataSize(0);
-	const int ffDim1=ff.getRawDataSize(1);
-	const int ffDim2=ff.getRawDataSize(2);
+        realArray & ff = f[grid];
+        real *ffp = ff.Array_Descriptor.Array_View_Pointer3;
+        const int ffDim0=ff.getRawDataSize(0);
+        const int ffDim1=ff.getRawDataSize(1);
+        const int ffDim2=ff.getRawDataSize(2);
         const int f3Base=f[grid].getBase(3);
 
-	realArray & uu = u[grid];
-	const real *uup = uu.Array_Descriptor.Array_View_Pointer3;
-	const int uuDim0=uu.getRawDataSize(0);
-	const int uuDim1=uu.getRawDataSize(1);
-	const int uuDim2=uu.getRawDataSize(2);
+        realArray & uu = u[grid];
+        const real *uup = uu.Array_Descriptor.Array_View_Pointer3;
+        const int uuDim0=uu.getRawDataSize(0);
+        const int uuDim1=uu.getRawDataSize(1);
+        const int uuDim2=uu.getRawDataSize(2);
         const int uBase3=u[grid].getBase(3);
 
-	const int *ipp = cg.interpolationPoint[grid].getDataPointer();
-	const int *igp = cg.interpoleeGrid[grid].getDataPointer();
+        const int *ipp = cg.interpolationPoint[grid].getDataPointer();
+        const int *igp = cg.interpoleeGrid[grid].getDataPointer();
 
         int i1,i2,i3=0;
-	if( cg.numberOfDimensions()==2 )
-	{
-	  for( int i=0; i<ni; i++ )
-	  {
-	    if( !useThis(IG(i)) ) // the interpolee grid is in-active
-	    {
-	      i1=IP(i,0);
-	      i2=IP(i,1);
+        if( cg.numberOfDimensions()==2 )
+        {
+          for( int i=0; i<ni; i++ )
+          {
+            if( !useThis(IG(i)) ) // the interpolee grid is in-active
+            {
+              i1=IP(i,0);
+              i2=IP(i,1);
 
               // printf("activeGrids: grid=%i: set RHS(%i,%i,%i) to -u=%8.2e (interpoleee=%i)\n",
               //      grid,i1,i2,i3,-UU(i1,i2,i3,0),IG(i));
-	      
-	      for( int n=0; n<numberOfComponents; n++ )
-		FF(i1,i2,i3,n+f3Base)=-UU(i1,i2,i3,n+uBase3);   // use -UU since the coeff. in the matrix is -1
-	    }
-	  }
-	}
-	else if( cg.numberOfDimensions()==3 )
-	{
-	  for( int i=0; i<ni; i++ )
-	  {
-	    if( !useThis(IG(i)) ) // the interpolee grid is in-active
-	    {
-	      i1=IP(i,0);
-	      i2=IP(i,1);
-	      i3=IP(i,2);
-	      for( int n=0; n<numberOfComponents; n++ )
-		FF(i1,i2,i3,n+f3Base)=-UU(i1,i2,i3,n+uBase3);
-	    }
-	  }
-	}
-	else
-	{
-	  Overture::abort("error, nd=1");
-	}
+              
+              for( int n=0; n<numberOfComponents; n++ )
+                FF(i1,i2,i3,n+f3Base)=-UU(i1,i2,i3,n+uBase3);   // use -UU since the coeff. in the matrix is -1
+            }
+          }
+        }
+        else if( cg.numberOfDimensions()==3 )
+        {
+          for( int i=0; i<ni; i++ )
+          {
+            if( !useThis(IG(i)) ) // the interpolee grid is in-active
+            {
+              i1=IP(i,0);
+              i2=IP(i,1);
+              i3=IP(i,2);
+              for( int n=0; n<numberOfComponents; n++ )
+                FF(i1,i2,i3,n+f3Base)=-UU(i1,i2,i3,n+uBase3);
+            }
+          }
+        }
+        else
+        {
+          Overture::abort("error, nd=1");
+        }
       }
     }
     
@@ -541,21 +541,21 @@ formRhsAndSolutionVectors( realCompositeGridFunction & u,
       size = fl[grid].elementCount();
       if (numberOfComponents==1) 
       {
-	Range Rg(0,size-1);
-	rhs(Rg+shift) = fl[grid](Rg);
+        Range Rg(0,size-1);
+        rhs(Rg+shift) = fl[grid](Rg);
       }
       else 
       {
-	// multiple components are interleaved first -- not the same as in the grid function where
-	// they are last 
-	assert(size%numberOfComponents==0);
-	int numPerComponent = size/numberOfComponents; // number of equations for each component
-	Range R0(0,numPerComponent-1);
-	Range R(0,size-numberOfComponents,numberOfComponents);          // **note** stride
-	for( int n=0; n<numberOfComponents; n++ ) 
-	{
-	  rhs(R+n+shift) = fl[grid](R0+n*numPerComponent);
-	}
+        // multiple components are interleaved first -- not the same as in the grid function where
+        // they are last 
+        assert(size%numberOfComponents==0);
+        int numPerComponent = size/numberOfComponents; // number of equations for each component
+        Range R0(0,numPerComponent-1);
+        Range R(0,size-numberOfComponents,numberOfComponents);          // **note** stride
+        for( int n=0; n<numberOfComponents; n++ ) 
+        {
+          rhs(R+n+shift) = fl[grid](R0+n*numPerComponent);
+        }
       }
       shift += size;
     }
@@ -572,38 +572,38 @@ formRhsAndSolutionVectors( realCompositeGridFunction & u,
       {
         RealArray & ug = ul[grid];
 
-	size = ul[grid].elementCount();
-	// Range Rg(0,size-1);
+        size = ul[grid].elementCount();
+        // Range Rg(0,size-1);
 
         real *psol= sol.Array_Descriptor.Array_View_Pointer0;
         #define SOL(i0) psol[i0]
         real *pug= ug.Array_Descriptor.Array_View_Pointer0;
         #define UG(i0) pug[i0]
 
-	if( numberOfComponents==1 ) 
-	{
-	  // sol(Rg+shift+sol.getBase(0)) = ug(Rg);
+        if( numberOfComponents==1 ) 
+        {
+          // sol(Rg+shift+sol.getBase(0)) = ug(Rg);
           const int ia=shift+sol.getBase(0);
           for( int i=0; i<size; i++ )
-	  {
+          {
             SOL(i+ia) = UG(i);
-	  }
-	  
-	}
-	else
-	{
-  	  assert(size%numberOfComponents==0);
-	  int numPerComponent = size/numberOfComponents; // number of equations for each component
+          }
+          
+        }
+        else
+        {
+          assert(size%numberOfComponents==0);
+          int numPerComponent = size/numberOfComponents; // number of equations for each component
 
-	  for( int n=0; n<numberOfComponents; n++ ) 
-	  {
-	    for( int i=0; i<numPerComponent; i++ )
-	    {
-	      SOL(CS(i,n)) = UG(CC(i,n));
-	    }
-	  }
-	}
-	shift += size;
+          for( int n=0; n<numberOfComponents; n++ ) 
+          {
+            for( int i=0; i<numPerComponent; i++ )
+            {
+              SOL(CS(i,n)) = UG(CC(i,n));
+            }
+          }
+        }
+        shift += size;
       }
       #undef SOL
       #undef UG
@@ -641,40 +641,40 @@ storeSolutionIntoGridFunction( )
 
       if (numberOfComponents==1) 
       {
-	// Range Rg(0,size-1);
-	// ug(Rg) = sol(Rg+shift);
+        // Range Rg(0,size-1);
+        // ug(Rg) = sol(Rg+shift);
         const int ia=shift+sol.getBase(0);
         for( int i=0; i<size; i++ )
-  	  UG(i) = SOL(i+ia);
+          UG(i) = SOL(i+ia);
       }
       else 
       {
-	// multiple components are interleaved first -- not the same as in the grid function where
-	// they are last 
-	assert(size%numberOfComponents==0);
-	int numPerComponent = size/numberOfComponents; // number of equations for each component
-	Range R0(0,numPerComponent-1);
-	Range R(0,size-numberOfComponents,numberOfComponents);          // **note** stride
-	if( false )
-	{
-	  for(int n=0;n<numberOfComponents;n++) 
-	  {
-	    ug(R0+n*numPerComponent) = sol(R+n+shift);
-	  }
-	}
-	else
-	{
-	  for( int n=0; n<numberOfComponents; n++ ) 
-	  {
-	    for( int i=0; i<numPerComponent; i++ )
-	    {
+        // multiple components are interleaved first -- not the same as in the grid function where
+        // they are last 
+        assert(size%numberOfComponents==0);
+        int numPerComponent = size/numberOfComponents; // number of equations for each component
+        Range R0(0,numPerComponent-1);
+        Range R(0,size-numberOfComponents,numberOfComponents);          // **note** stride
+        if( false )
+        {
+          for(int n=0;n<numberOfComponents;n++) 
+          {
+            ug(R0+n*numPerComponent) = sol(R+n+shift);
+          }
+        }
+        else
+        {
+          for( int n=0; n<numberOfComponents; n++ ) 
+          {
+            for( int i=0; i<numPerComponent; i++ )
+            {
               // printF("oges: store soln: (i,n)=(%i,%i) ug=%5.2f sol=%5.2f dif=%8.2e\n",i,n,ug(CC(i,n)),sol(CS(i,n)),
               //        fabs(ug(CC(i,n))-sol(CS(i,n))));
-	      UG(CC(i,n)) = SOL(CS(i,n));
-	    }
-	  }
-	}
-	
+              UG(CC(i,n)) = SOL(CS(i,n));
+            }
+          }
+        }
+        
       }
       #undef SOL
       #undef UG

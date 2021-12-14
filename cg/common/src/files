@@ -3,7 +3,7 @@ SRC_FILES += GridMaterialProperties.C bodyForcing.C defineVariableBoundaryValues
 SRC_FILES += boundaryConditionPredictor.C Parameters.C readFromAShowFile.C ProbeInfo.C Moving.C getBounds.C LineSolve.C
 SRC_FILES += ProjectVelocity.C ogf.C boundaryDistance.C SurfaceEquation.C initialConditionsFromAProfile.C 
 SRC_FILES += memory.C chemistryPhoneyFiles.C applyFilter.C ExternalBoundaryData.C outputProbes.C
-SRC_FILES += getInterfaceData.C CyclicIndex.C
+SRC_FILES += getInterfaceData.C CyclicIndex.C initializeInterfaceData.C
 
 SRC_FILES += FlowSolutions.C BoundaryLayerProfile.C
 
@@ -65,6 +65,8 @@ src/advanceStepsIM.C : src/advanceStepsIM.bC $(COMMON_SRC)/pcMacros.h; $(BPP) -q
 src/advanceStepsPC.C : src/advanceStepsPC.bC $(COMMON_SRC)/pcMacros.h; $(BPP) -quiet -clean $<
 src/advanceFactored.C : src/advanceFactored.bC $(COMMON_SRC)/pcMacros.h; $(BPP) -quiet -clean $<
 src/advanceStepsBDF.C : src/advanceStepsBDF.bC $(COMMON_SRC)/pcMacros.h; $(BPP) -quiet -clean $<
+
+src/initializeInterfaceData.C : src/initializeInterfaceData.bC $(COMMON_SRC)/pcMacros.h; $(BPP) -quiet -clean $<
 
 src/interfaceBoundaryConditions.C : src/interfaceBoundaryConditions.bC; $(BPP) -quiet -clean $<
 

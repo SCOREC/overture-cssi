@@ -3,7 +3,7 @@
 #
 # The following parameters should be set before including this file: 
 #   $domainName : name of the domain to assign
-#   $solverName : name given to the domain (e.g. "solid")
+#   $solverName : name given to the domain (e.g. solid)
 #   $tz, $degreeSpace, $degreeTime, $fx, $fy, $fz, $ft
 #   $ts : forward Euler, implicit, adams PC
 #   $kappa, 
@@ -13,6 +13,8 @@
 #   $bc     : specify boundary condition commands
 #   $debug  : 
 #   $implicitFactor : for implicit time-stepping: .5=CN, 1.=BE, 0.=FE
+#   $bdfOrder : order for BDF schemes
+#   $useNewTimeStep : use new advanceStep time-stepping schemes
 #   $commands : additional commands
 #   $axisymmetric : if non-null turn on the axisymmetric option
 #   $amr, $amrTol, $amrRatio, $amrLevels, $amrBufferZones, $showAmrError
@@ -22,10 +24,20 @@
 #   $pulseAmplitude $pulseExponent $pulsePower : TZ pulse parameters
 #   useChamp : 1=use CHAMP interface conditions
 #   $assignKnown : 1 = assign dirichlet BCs using known solution
+#   $useNewTimeSteppingStartup : =1 : This option should properly assign past tine values at startup
+# 
+if( $amr eq "" ){ $amr = "turn off adaptive grids"; }
+if( $amrTol eq "" ){ $amrTol=1.e-3; }
+if( $amrRatio eq "" ){ $amrRatio=2; }
+if( $amrLevels eq "" ){ $amrLevels=2; }
+if( $amrBufferZones eq "" ){ $amrBufferZones=2; }
+if( $assignKnown eq "" ){ $assignKnown=0; }
 #
 if( $tz eq "" ){ $tz="turn off twilight zone"; }
 #
 if( $dtMax eq "" ){ $dtMax=1.e20; }
+if( $bdfOrder eq "" ){ $bdfOrder=1; }
+if( $useNewTimeStep eq "" ){ $useNewTimeStep=0; }
 if( $fx eq "" ){ $fx=1.; }
 if( $fy eq "" ){ $fy=1.; }
 if( $fz eq "" ){ $fz=1.; }
@@ -35,11 +47,7 @@ if( $rtoli eq "" ){ $rtoli=1.e-5; }
 if( $atoli eq "" ){ $atoli=1.e-7; }
 if( $debugi eq "" ){ $debugi=0; }
 if( $T0 eq "" ){ $T0=0.; }
-if( $amr eq "" ){ $amr = "turn off adaptive grids"; }
-if( $amrTol eq "" ){ $amrTol=1.e-3; }
-if( $amrRatio eq "" ){ $amrRatio=2; }
-if( $amrLevels eq "" ){ $amrLevels=2; }
-if( $amrBufferZones eq "" ){ $amrBufferZones=2; }
+#
 if( $showAmrError eq "" ){ $showAmrError=0; }
 if( $xPulse eq "" ){ $xPulse=0.; }
 if( $yPulse eq "" ){ $yPulse=0.; }
@@ -51,7 +59,8 @@ if( $pulseAmplitude eq "" ){ $pulseAmplitude=1.; }
 if( $pulseExponent eq "" ){ $pulseExponent=40.; }
 if( $pulsePower eq "" ){ $pulsePower=1; }
 if( $useChamp eq "" ){ $useChamp=0; }
-if( $assignKnown eq "" ){ $assignKnown=0; }
+if( $useNewTimeSteppingStartup eq "" ){ $useNewTimeSteppingStartup=1; }  # added Dec 10, 2021
+#
 # ------- start new domain ----------
 #  Cgad solid
 setup $domainName
@@ -64,6 +73,11 @@ setup $domainName
 # 
   $ts
   implicit factor $implicitFactor 
+  if( $useNewStep eq 1 ){ $adcmd ="use new advanceSteps versions"; }else{ $adcmd="#"; }
+  $adcmd
+  BDF order $bdfOrder  
+# This option should properly assign past tine values at startup *wdh* Dec 10, 2021
+use new time-stepping startup $useNewTimeSteppingStartup    
 # 
   pde parameters
     kappa $kappa

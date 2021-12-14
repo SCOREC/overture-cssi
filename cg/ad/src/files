@@ -24,7 +24,7 @@ COMMON_SRC := ../common/src
 
 src/implicitTimeStep.C : src/implicitTimeStep.bC $(COMMON_SRC)/pcMacros.h; $(BPP) -quiet -clean $<
 
-src/champBoundaryConditions.C : src/champBoundaryConditions.bC; $(BPP) -quiet -clean $<	
+src/champBoundaryConditions.C : src/champBoundaryConditions.bC champ2InterfaceStencilRectangular.h champ2InterfaceStencilCurvilinear.h; $(BPP) -quiet -clean $<	
 src/getChampResidual.C : src/getChampResidual.bC champMacros.h; $(BPP) -quiet -clean $< 
 src/applyBoundaryConditions.C : src/applyBoundaryConditions.bC champMacros.h; $(BPP) -quiet -clean $< 
 

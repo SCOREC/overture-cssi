@@ -110,13 +110,13 @@ computeRate( const int & n, const RealArray & h, const RealArray & e, real & sig
       }
       else
       {
-	s=-1;
-	printF("++computeRate: WARNING: component n=%i, errors are not decreasing! Setting convergence rate to -1\n",n);
+        s=-1;
+        printF("++computeRate: WARNING: component n=%i, errors are not decreasing! Setting convergence rate to -1\n",n);
       }
       
 
       printF("++computeRate: there is a constant refinement factor r=%4.2f: e0=%8.2e, e1=%5.2e rate=%8.2e\n",
-	     r0,e(m0),e(m1),s);
+             r0,e(m0),e(m1),s);
     }
     else
     {
@@ -131,17 +131,17 @@ computeRate( const int & n, const RealArray & h, const RealArray & e, real & sig
       const int maxIterations=50;
       for( int it=0; it<=maxIterations; it++ )
       {
-	real rp = pow(r12,s0);
-	s = log( (rp-1.)*dRatio + rp )/logr;
-	ds=s-s0;
-	s0=s;
-	if( fabs(ds)<eps )
-	  break;
+        real rp = pow(r12,s0);
+        s = log( (rp-1.)*dRatio + rp )/logr;
+        ds=s-s0;
+        s0=s;
+        if( fabs(ds)<eps )
+          break;
       }
       if( fabs(ds)>eps )      
       {
-	printF("++computeRate:ERROR: no convergence in computing the convergence rate!\n");
-	s=-1.;
+        printF("++computeRate:ERROR: no convergence in computing the convergence rate!\n");
+        s=-1.;
       }
 
       printF("++computeRate: non-constant refinement factor, r0=%4.2f, r1=%4.2f:  rate=%8.2e\n",r0,r1,s);
@@ -214,12 +214,12 @@ computeRateOld( const int & n, const RealArray & h, const RealArray & e, real & 
 //    df=delta*( log(d1)*t1*(t0-1.)-(t1-1.)*log(d0)*t0 )/( (t0-1.)*(t0-1.) );
       ds = -f0/df;
       if( fabs(ds)>.1 )
-	ds=.1*ds/fabs(ds);
+        ds=.1*ds/fabs(ds);
       s+=ds;
       if( it>10 )
-	printF("computeRate: it=%i, delta=%e, f0=%e, df=%e, ds=%e, s=%e \n",it,delta,f0,df,ds,s);
+        printF("computeRate: it=%i, delta=%e, f0=%e, df=%e, ds=%e, s=%e \n",it,delta,f0,df,ds,s);
       if( fabs(ds)<eps )
-	break;
+        break;
     }
     if( fabs(ds)>eps )
     {
@@ -245,7 +245,7 @@ computeRateOld( const int & n, const RealArray & h, const RealArray & e, real & 
       real f= fabs( delta*log(d1)*pow(d1,s)-log(d0)*pow(d0,s) );
       if( f<fMin )
       {
-	sBest=s;
+        sBest=s;
         fMin=f;
       }
     }
@@ -264,13 +264,13 @@ computeRateOld( const int & n, const RealArray & h, const RealArray & e, real & 
 //==============================================================================
 int
 outputLatexTable( const std::vector<aString> gridName,
-		  const std::vector<aString> cName, 
-		  const RealArray & cErr, 
-		  const RealArray & cSigma,  
+                  const std::vector<aString> cName, 
+                  const RealArray & cErr, 
+                  const RealArray & cSigma,  
                   const RealArray & timeArray,
                   const aString & captionLabel,
                   const int norm=-1,
-		  FILE *file=stdout,
+                  FILE *file=stdout,
                   const bool assumeFineGridHoldsExactSolution=false )
 {
   if( norm==0 )
@@ -310,7 +310,7 @@ outputLatexTable( const std::vector<aString> gridName,
       //  fprintf(file,"& %2.1f{e%i} ",frac,exp);
       fprintf(file,"& \\num{%2.1f}{%i} ",frac,exp);
       if( grid>0 )
-	fprintf(file,"& %4.1f ",cErr(grid-1,c)/cErr(grid,c));
+        fprintf(file,"& %4.1f ",cErr(grid-1,c)/cErr(grid,c));
       else
         fprintf(file,"&      ");
     }
@@ -332,7 +332,7 @@ outputLatexTable( const std::vector<aString> gridName,
   delete tp;
     
   fprintf(file,"\\caption{%s. %s-norm self convergence results, t=%12.6e, %s. }\n",(const char*)captionLabel,
-	  (norm==0 ? "Max" : norm==1 ? "L2" : "L1"),timeArray(0),
+          (norm==0 ? "Max" : norm==1 ? "L2" : "L1"),timeArray(0),
           (const char*)dateString(0,dateString.length()-2) );   // caption
 
   fprintf(file,"\\end{center}\n");
@@ -346,14 +346,14 @@ outputLatexTable( const std::vector<aString> gridName,
 //==============================================================================
 int
 outputMatlabFile( const std::vector<aString> gridName,
-		  const std::vector<aString> cName, 
+                  const std::vector<aString> cName, 
                   const RealArray & h, 
-		  const RealArray & cErr, 
-		  const RealArray & cSigma,  
+                  const RealArray & cErr, 
+                  const RealArray & cSigma,  
                   const RealArray & timeArray,
                   const aString & captionLabel,
                   const int norm=-1,
-		  FILE *file=stdout,
+                  FILE *file=stdout,
                   const bool assumeFineGridHoldsExactSolution=false )
 {
   if( norm==0 )
@@ -453,7 +453,7 @@ int readSolutions( int numberOfFiles,
       int displayInfo=0; // do not print header info etc.
       showFileReader[i].open(fileName[i],displayInfo);
       if( i <= frameSeries.getBound(0) )
-	showFileReader[i].setCurrentFrameSeries(frameSeries(i));
+        showFileReader[i].setCurrentFrameSeries(frameSeries(i));
 
     }
     real timea=getCPU();
@@ -464,10 +464,10 @@ int readSolutions( int numberOfFiles,
       solutionNumber[i]=numberOfSolutions;
       printF("INFO: Setting solution=%i (last in file) since solutionNumber[i]<=0\n",solutionNumber[i]);
     }
-	  
+          
     showFileReader[i].getASolution(solutionNumber[i],cg[i],u[i]);        // read in a grid and solution
     timea=getCPU()-timea; timea=ParallelUtility::getMaxValue(timea);
-	
+        
     if( numComponentsPerFile.getLength(0)==numberOfFiles )
     {
       // User has specified a subset of components to use per file
@@ -477,39 +477,39 @@ int readSolutions( int numberOfFiles,
       realCompositeGridFunction v(cg[i],all,all,all,nc);
       for( int c=0; c<nc; c++ )
       {
-	int cc=componentsPerFile(i,c);
-	if( cc<u[i].getComponentBase(0) || cc>u[i].getComponentBound(0) )
-	{
-	  printF("ERROR: component chosen is out of bounds: file=%i component=%i valid=[%i,%i]\n"
-		 "  Changing component to %i\n",
-		 i,cc,u[i].getComponentBase(0),u[i].getComponentBound(0),u[i].getComponentBound(0));
-	  cc=u[i].getComponentBound(0);
-	  componentsPerFile(i,c)=cc;
-	}
-	printF(" Choosing component %i for file %i\n",cc,i);
-	v.setName(u[i].getName(cc),c);
+        int cc=componentsPerFile(i,c);
+        if( cc<u[i].getComponentBase(0) || cc>u[i].getComponentBound(0) )
+        {
+          printF("ERROR: component chosen is out of bounds: file=%i component=%i valid=[%i,%i]\n"
+                 "  Changing component to %i\n",
+                 i,cc,u[i].getComponentBase(0),u[i].getComponentBound(0),u[i].getComponentBound(0));
+          cc=u[i].getComponentBound(0);
+          componentsPerFile(i,c)=cc;
+        }
+        printF(" Choosing component %i for file %i\n",cc,i);
+        v.setName(u[i].getName(cc),c);
       }
-	  
+          
       for( int grid=0; grid<cg[i].numberOfComponentGrids(); grid++ )
       {
         OV_GET_SERIAL_ARRAY(real,v[grid],vLocal);
         OV_GET_SERIAL_ARRAY(real,u[i][grid],uLocal);
 
-	    
-	for( int c=0; c<nc; c++ )
-	{
-	  const int cc=componentsPerFile(i,c);
-	  assert( cc>=u[i].getComponentBase(0) && cc<=u[i].getComponentBound(0) );
-	  vLocal(all,all,all,c)=uLocal(all,all,all,cc);
+            
+        for( int c=0; c<nc; c++ )
+        {
+          const int cc=componentsPerFile(i,c);
+          assert( cc>=u[i].getComponentBase(0) && cc<=u[i].getComponentBound(0) );
+          vLocal(all,all,all,c)=uLocal(all,all,all,cc);
 
-	}
-	    
+        }
+            
       }
       u[i].destroy();
       u[i].reference(v);
           
     }
-	
+        
 
 
     HDF_DataBase & db = *(showFileReader[i].getFrame());
@@ -519,22 +519,22 @@ int readSolutions( int numberOfFiles,
     if( outFile==NULL )
     {
       if( myid==0 )
-	outFile=fopen((const char*)outputFileName,"w" );
+        outFile=fopen((const char*)outputFileName,"w" );
       printF("Output being saved in file %s\n",(const char*)outputFileName);
 
     }
-	
+        
 
     fPrintF(outFile,"Choosing solution %i, t=%9.3e,  from showFile=%s\n",solutionNumber[i],time(i),(const char*)fileName[i]);
-	
+        
 
     if( closeShowAfterUse )
       showFileReader[i].close();
 
     cg[i].update(MappedGrid::THEmask );
     // cg[i].update(MappedGrid::THEmask | MappedGrid::THEcenter | MappedGrid::THEvertex |
-    //	     MappedGrid::THEinverseVertexDerivative);
-	
+    //       MappedGrid::THEinverseVertexDerivative);
+        
   } // end for i<numberOfFiles
       
 
@@ -548,12 +548,12 @@ int readSolutions( int numberOfFiles,
       timesMatch=false;
 
       printF("***************ERROR: The times of the solutions do not match! ****************\n"
-	     "   times=");
+             "   times=");
       for( int ii=0; ii<numberOfFiles; ii++ )
       {
-	maxTimeDiff=max(maxTimeDiff,fabs(time(ii)-time(max(ii-1,0))));
-	    
-	printF("%12.6e, ",time(ii));
+        maxTimeDiff=max(maxTimeDiff,fabs(time(ii)-time(max(ii-1,0))));
+            
+        printF("%12.6e, ",time(ii));
       }
           
       printF("\n ***** Max difference in times = %8.2e ****\n",maxTimeDiff);
@@ -565,7 +565,7 @@ int readSolutions( int numberOfFiles,
   // -------------- end read solutions from all files --------
   return 0;
 }
-	
+        
 
 // ==================================================================================================
 /// \brief Compute the difference between the fine grid and coarse grid -- difference lives on the coarse grid.
@@ -612,13 +612,13 @@ int computeDifferences( int numberOfFiles,
 
       if( true )
       {
-	printF("INFO: File %i: Fine grid  : domainNumber=[",n);
-	for( int grid=0; grid<cg[n].numberOfComponentGrids(); grid++ ){ printF("%i,", cg[n].domainNumber(grid)); }
-	printF("]\n");
+        printF("INFO: File %i: Fine grid  : domainNumber=[",n);
+        for( int grid=0; grid<cg[n].numberOfComponentGrids(); grid++ ){ printF("%i,", cg[n].domainNumber(grid)); }
+        printF("]\n");
 
-	printF("INFO: File %i: Coarse grid: domainNumber=[",i);
-	for( int grid=0; grid<cg[i].numberOfComponentGrids(); grid++ ){ printF("%i,", cg[i].domainNumber(grid)); }
-	printF("]\n");
+        printF("INFO: File %i: Coarse grid: domainNumber=[",i);
+        for( int grid=0; grid<cg[i].numberOfComponentGrids(); grid++ ){ printF("%i,", cg[i].domainNumber(grid)); }
+        printF("]\n");
       }
       
       
@@ -633,78 +633,78 @@ int computeDifferences( int numberOfFiles,
       // ----------------------------------------------------------------
       for( int domain=0; domain<cg[i].numberOfDomains(); domain++ )
       {
-	CompositeGrid & cgFine   = cg[n].domain[domain];
-	CompositeGrid & cgCoarse = cg[i].domain[domain];
-	
-	// compute the master grid number for FINE grid: 
+        CompositeGrid & cgFine   = cg[n].domain[domain];
+        CompositeGrid & cgCoarse = cg[i].domain[domain];
+        
+        // compute the master grid number for FINE grid: 
         //   cg[n][masterGrid(grid)] = cgFine[grid]
-	IntegerArray masterGrid(cgFine.numberOfComponentGrids());
-	int k=0;
+        IntegerArray masterGrid(cgFine.numberOfComponentGrids());
+        int k=0;
         for( int grid=0; grid<cg[n].numberOfComponentGrids(); grid++ )
-	{
-	  if( cg[n].domainNumber(grid)==domain )
-	  {
+        {
+          if( cg[n].domainNumber(grid)==domain )
+          {
             masterGrid(k)=grid; k++;   // this grid in master collection is in the current domain
-	  }
-	}
+          }
+        }
         assert( k==cgFine.numberOfComponentGrids() );
 
         // printF("---domain=%i\n",domain);
-	// ::display(masterGrid,"masterGrid for cg[n] (fine)");
+        // ::display(masterGrid,"masterGrid for cg[n] (fine)");
 
-	// ::display(cgFine.domainNumber(),"cgFine.domainNumber()");
+        // ::display(cgFine.domainNumber(),"cgFine.domainNumber()");
         // ::display(cgFine.gridNumber(),"cgFine.gridNumber()");
         // ::display(cgFine.baseGridNumber(),"cgFine.baseGridNumber()");
         // ::display(cgFine.componentGridNumber(),"cgFine.componentGridNumber()");
 
         realCompositeGridFunction uFine(cgFine,all,all,all,C);     uFine=0.;
         realCompositeGridFunction uCoarse(cgCoarse,all,all,all,C); uCoarse=0.; 
-	
+        
         for( int grid=0; grid<cgFine.numberOfComponentGrids(); grid++ )
-	{
+        {
           uFine[grid]=vn[masterGrid(grid)];  // copy fine grid solution from master to domain
-	}
-	
+        }
+        
 
-	printF("\n +++++++++++ domain=[%s] InterpolatePointsOnAGrid, interpolationWidth=%i  +++++++++++++\n\n",
-	       (const char*)cg[n].getDomainName(domain),interpolationWidth );
-	InterpolatePointsOnAGrid interpolator;
-	interpolator.setInfoLevel( 1 );
-	interpolator.setInterpolationWidth(interpolationWidth);
-	// Set the number of valid ghost points that can be used when interpolating from a grid function: 
-	int numGhostToUse=1;
-	interpolator.setNumberOfValidGhostPoints( numGhostToUse );
+        printF("\n +++++++++++ domain=[%s] InterpolatePointsOnAGrid, interpolationWidth=%i  +++++++++++++\n\n",
+               (const char*)cg[n].getDomainName(domain),interpolationWidth );
+        InterpolatePointsOnAGrid interpolator;
+        interpolator.setInfoLevel( 1 );
+        interpolator.setInterpolationWidth(interpolationWidth);
+        // Set the number of valid ghost points that can be used when interpolating from a grid function: 
+        int numGhostToUse=1;
+        interpolator.setNumberOfValidGhostPoints( numGhostToUse );
       
-	// Assign all points, extrapolate pts if necessary:
-	interpolator.setAssignAllPoints(true);
+        // Assign all points, extrapolate pts if necessary:
+        interpolator.setAssignAllPoints(true);
 
-	int numGhost=0;  // no need to interpolate ghost points
+        int numGhost=0;  // no need to interpolate ghost points
 
-	real time0=getCPU();
-	int num=interpolator.interpolateAllPoints( uFine,uCoarse,C,C,numGhost);    // interpolate uCoarse from fine
-	real time=getCPU()-time0;
-	time=ParallelUtility::getMaxValue(time);
-	printF(" ... time to interpolate = %8.2e(s)\n",time);
+        real time0=getCPU();
+        int num=interpolator.interpolateAllPoints( uFine,uCoarse,C,C,numGhost);    // interpolate uCoarse from fine
+        real time=getCPU()-time0;
+        time=ParallelUtility::getMaxValue(time);
+        printF(" ... time to interpolate = %8.2e(s)\n",time);
 
-	// compute the master grid number for COARSE grid: 
+        // compute the master grid number for COARSE grid: 
         //   cg[i][masterGrid(grid)] = cgCoarse[grid]
         masterGrid.redim(cgCoarse.numberOfComponentGrids());
-	k=0;
+        k=0;
         for( int grid=0; grid<cg[i].numberOfComponentGrids(); grid++ )
-	{
-	  if( cg[i].domainNumber(grid)==domain )
-	  {
+        {
+          if( cg[i].domainNumber(grid)==domain )
+          {
             masterGrid(k)=grid; k++;   // this grid in master collection is in the current domain
-	  }
-	}
+          }
+        }
         assert( k==cgCoarse.numberOfComponentGrids() );
 
-	// ::display(masterGrid,"masterGrid for cg[i] (coarse)");
+        // ::display(masterGrid,"masterGrid for cg[i] (coarse)");
 
         for( int grid=0; grid<cgCoarse.numberOfComponentGrids(); grid++ )
-	{
+        {
           ud[i][masterGrid(grid)]=uCoarse[grid];  // copy interpolated values into ud[i] on master
-	}
+        }
 
 
       } // end fo domain
@@ -740,7 +740,7 @@ int computeDifferences( int numberOfFiles,
     {
       // *newer way* 091126 
       printF("\n +++++++++++ USE InterpolatePointsOnAGrid, interpolationWidth=%i  +++++++++++++\n\n",
-	     interpolationWidth );
+             interpolationWidth );
       InterpolatePointsOnAGrid interpolator;
       interpolator.setInfoLevel( 1 );
       interpolator.setInterpolationWidth(interpolationWidth);
@@ -760,8 +760,8 @@ int computeDifferences( int numberOfFiles,
       time=ParallelUtility::getMaxValue(time);
       printF(" ... time to interpolate = %8.2e(s)\n",time);
     }
-	
-	
+        
+        
     // ud[i] = u(coarse) - u(fine)
     // ud[i]-=v;
     for( int grid=0; grid<cg[i].numberOfComponentGrids(); grid++ )
@@ -772,7 +772,7 @@ int computeDifferences( int numberOfFiles,
       // uLocal-=vLocal;  // *wdh* 110729 - make ud = coarse - fine
       uLocal=vLocal-uLocal;
     }
-	
+        
     if( boundaryErrorOffset>0 )
     {
       // --- set the differences to zero near physical boundaries (Could be a PML layer)
@@ -783,31 +783,31 @@ int computeDifferences( int numberOfFiles,
       Index Ibv[3], &Ib1=Ibv[0], &Ib2=Ibv[1], &Ib3=Ibv[2];
       for( int grid=0; grid<cg[i].numberOfComponentGrids(); grid++ )
       {
-	MappedGrid & mg = cg[i][grid];
-	    
-	ForBoundary(side,axis)
-	{
-	  if( mg.boundaryCondition(side,axis)>0 )
-	  {
-	    mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter );
-	    OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
-	    OV_GET_SERIAL_ARRAY(real,ud[i][grid],uLocal);
-	    int is = 1-2*side;
+        MappedGrid & mg = cg[i][grid];
+            
+        ForBoundary(side,axis)
+        {
+          if( mg.boundaryCondition(side,axis)>0 )
+          {
+            mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter );
+            OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
+            OV_GET_SERIAL_ARRAY(real,ud[i][grid],uLocal);
+            int is = 1-2*side;
 
-	    getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+            getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
             int ia = Ibv[axis].getBase(), ib=Ibv[axis].getBase()+boundaryErrorOffset*is-1;
-	    
-	    Ibv[axis]=Range( min(ia,ib), max(ia,ib) );
+            
+            Ibv[axis]=Range( min(ia,ib), max(ia,ib) );
 
-	    bool ok = ParallelUtility::getLocalArrayBounds(mg.vertex(),xLocal,Ib1,Ib2,Ib3);
-	    Range all;
-	    if( ok ) 
-	    {
-	      uLocal(Ib1,Ib2,Ib3,all)=0.;
-	    }
-	  }
-	      
-	}
+            bool ok = ParallelUtility::getLocalArrayBounds(mg.vertex(),xLocal,Ib1,Ib2,Ib3);
+            Range all;
+            if( ok ) 
+            {
+              uLocal(Ib1,Ib2,Ib3,all)=0.;
+            }
+          }
+              
+        }
       } // end for grid
     }// end if boundaryErrorOffset>0
     
@@ -822,46 +822,46 @@ int computeDifferences( int numberOfFiles,
       Index Ibv[3], &Ib1=Ibv[0], &Ib2=Ibv[1], &Ib3=Ibv[2];
       for( int grid=0; grid<cg[i].numberOfComponentGrids(); grid++ )
       {
-	MappedGrid & mg = cg[i][grid];
+        MappedGrid & mg = cg[i][grid];
         real dx[3]={1.,1.,1.}; // 
-	if( mg.isRectangular() )
-	{
-          mg.getDeltaX(dx);	  
-	}
-	    
-	ForBoundary(side,axis)
-	{
-	  if( mg.boundaryCondition(side,axis)>0 )
-	  {
-	    // mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter );
-	    OV_GET_SERIAL_ARRAY(int,mg.mask(),maskLocal);
-	    OV_GET_SERIAL_ARRAY(real,ud[i][grid],uLocal);
-	    int is = 1-2*side;
+        if( mg.isRectangular() )
+        {
+          mg.getDeltaX(dx);       
+        }
+            
+        ForBoundary(side,axis)
+        {
+          if( mg.boundaryCondition(side,axis)>0 )
+          {
+            // mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter );
+            OV_GET_SERIAL_ARRAY(int,mg.mask(),maskLocal);
+            OV_GET_SERIAL_ARRAY(real,ud[i][grid],uLocal);
+            int is = 1-2*side;
 
-	    if( !mg.isRectangular() )
-	    {
-	      printF("\n +++++ comp:ERROR: absorbingLayerWidth not implemented for curvilinear grids -- **FIX ME** ++++++\n\n");
-	    }
-	    else
-	    {
-	      const int numberOfLines = int( absorbingLayerWidth/dx[axis]+.5 );
+            if( !mg.isRectangular() )
+            {
+              printF("\n +++++ comp:ERROR: absorbingLayerWidth not implemented for curvilinear grids -- **FIX ME** ++++++\n\n");
+            }
+            else
+            {
+              const int numberOfLines = int( absorbingLayerWidth/dx[axis]+.5 );
 
-	      getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-	      int ia = Ibv[axis].getBase(), ib=Ibv[axis].getBase()+numberOfLines*is-1;
-	    
-	      Ibv[axis]=Range( min(ia,ib), max(ia,ib) );
+              getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+              int ia = Ibv[axis].getBase(), ib=Ibv[axis].getBase()+numberOfLines*is-1;
+            
+              Ibv[axis]=Range( min(ia,ib), max(ia,ib) );
 
-	      bool ok = ParallelUtility::getLocalArrayBounds(mg.mask(),maskLocal,Ib1,Ib2,Ib3);
-	      Range all;
-	      if( ok ) 
-	      {
-		uLocal(Ib1,Ib2,Ib3,all)=0.;
-	      }
-	    }
-	  }
-	}
-	// end for boundary
-	  
+              bool ok = ParallelUtility::getLocalArrayBounds(mg.mask(),maskLocal,Ib1,Ib2,Ib3);
+              Range all;
+              if( ok ) 
+              {
+                uLocal(Ib1,Ib2,Ib3,all)=0.;
+              }
+            }
+          }
+        }
+        // end for boundary
+          
 
       } // end for grid
     }// end if absorbingLayerWidth>0
@@ -869,7 +869,7 @@ int computeDifferences( int numberOfFiles,
 
       
 
-	  
+          
   } // end for( int i=0; i<n; i++ )
   
   return 0;
@@ -930,15 +930,15 @@ main(int argc, char *argv[])
         useOldWay=true;
       else if( len=line.matches("-logFile" ) )
       {
-	logFileName=line(len,line.length()-1);
-	printF("Setting logFileName=[%s]\n",(const char*)logFileName);
+        logFileName=line(len,line.length()-1);
+        printF("Setting logFileName=[%s]\n",(const char*)logFileName);
       }
       else if( len=line.matches("-matlabFile" ) )
       {
-	matlabFileName=line(len,line.length()-1);
-	printF("Setting matlabFileName=[%s]\n",(const char*)matlabFileName);
+        matlabFileName=line(len,line.length()-1);
+        printF("Setting matlabFileName=[%s]\n",(const char*)matlabFileName);
       }
-	
+        
       else if( line=="-useNew" )
         useNewWay=true;
       else if( commandFileName=="" )
@@ -1038,14 +1038,14 @@ main(int argc, char *argv[])
   aString cmds[] = {"specify files",
                     "choose a solution",
                     "choose a solution for each file",
-		    "compute errors",
+                    "compute errors",
                     "plot solutions",
                     "plot differences",
                     "plot errors (max-norm rate)",
-		    "plot errors (l1-norm rate)",
-		    "plot errors (l2-norm rate)",
+                    "plot errors (l1-norm rate)",
+                    "plot errors (l2-norm rate)",
                     "save differences to show file",
-		    "" };
+                    "" };
   int numberOfPushButtons=0;  // number of entries in cmds
   while( cmds[numberOfPushButtons]!="" ){numberOfPushButtons++;}; // 
   int numRows=(numberOfPushButtons+1)/2;
@@ -1086,8 +1086,8 @@ main(int argc, char *argv[])
                     // "plot solutions",
                     // "plot differences",
                     // "plot errors (max-norm rate)",
-		    // "plot errors (l1-norm rate)",
-		    // "plot errors (l2-norm rate)",
+                    // "plot errors (l1-norm rate)",
+                    // "plot errors (l2-norm rate)",
                     // "save differences to show files",
                     "define a vector component",
                     "delete all vector components",
@@ -1100,7 +1100,7 @@ main(int argc, char *argv[])
                     // "do not check boundaries (toggle)",
                     // "output ascii files",
                     // "output binary files",
-		    "exit",
+                    "exit",
                     "" };
 
   dialog.buildPopup(menu);
@@ -1124,18 +1124,18 @@ main(int argc, char *argv[])
       printF("Specify names of show files (normally coarse grid to fine)\n");
       for( int i=0; i<maxNumberOfFiles; i++ )
       {
-	ps.inputString(fileName[numberOfFiles],"Enter the file name (`exit' to finish)");
-	if( fileName[numberOfFiles]=="" || fileName[numberOfFiles]=="exit" )
+        ps.inputString(fileName[numberOfFiles],"Enter the file name (`exit' to finish)");
+        if( fileName[numberOfFiles]=="" || fileName[numberOfFiles]=="exit" )
           break;
-	showFileReader[numberOfFiles].open(fileName[numberOfFiles]);
-	numberOfSolutions[numberOfFiles]=showFileReader[numberOfFiles].getNumberOfFrames();
-	maxSolution[numberOfFiles]=min(maxSolution[numberOfFiles],numberOfSolutions[numberOfFiles]);
+        showFileReader[numberOfFiles].open(fileName[numberOfFiles]);
+        numberOfSolutions[numberOfFiles]=showFileReader[numberOfFiles].getNumberOfFrames();
+        maxSolution[numberOfFiles]=min(maxSolution[numberOfFiles],numberOfSolutions[numberOfFiles]);
  
-	if( closeShowAfterUse )
-	  showFileReader[i].close();
+        if( closeShowAfterUse )
+          showFileReader[i].close();
 
 
-	numberOfFiles++;
+        numberOfFiles++;
       }
     }
     else if( dialog.getTextValue(answer,"caption label:","%s",captionLabel) )
@@ -1155,7 +1155,7 @@ main(int argc, char *argv[])
     else if( dialog.getTextValue(answer,"boundary error offset:","%i",boundaryErrorOffset) )
     {
       printF("Setting boundaryErrorOffset=%i: zero out errors %d lines from any physical boundary (e.g. for PML)\n",
-	     boundaryErrorOffset,boundaryErrorOffset);
+             boundaryErrorOffset,boundaryErrorOffset);
     }
     
     else if( dialog.getTextValue(answer,"absorbing layer width:","%e",absorbingLayerWidth) )
@@ -1169,11 +1169,11 @@ main(int argc, char *argv[])
     {
       if( assumeFineGridHoldsExactSolution )
       {
-	printF("Assume the fine grid holds the exact solution when computing convergence rates.\n");
+        printF("Assume the fine grid holds the exact solution when computing convergence rates.\n");
       }
       else
       {
-	printF("Do not assume the fine grid holds the exact solution when computing convergence rates.\n");
+        printF("Do not assume the fine grid holds the exact solution when computing convergence rates.\n");
       }
       
     }
@@ -1182,12 +1182,12 @@ main(int argc, char *argv[])
     {
       if( interpolateFromSameDomain )
       {
-	printF("interpolateFromSameDomain=true : For multi-domain problems only interpolate from grids"
+        printF("interpolateFromSameDomain=true : For multi-domain problems only interpolate from grids"
                " on the same domain.\n");
       }
       else
       {
-	printF("interpolateFromSameDomain=true : For multi-domain problems allow interpolation from all domains.\n");
+        printF("interpolateFromSameDomain=true : For multi-domain problems allow interpolation from all domains.\n");
       }
       
     }
@@ -1199,8 +1199,8 @@ main(int argc, char *argv[])
     {
       if( numberOfFiles<=0 )
       {
-	printF("You should choose files first.\n");
-	continue;
+        printF("You should choose files first.\n");
+        continue;
       }      
       aString line;
       frameSeries.redim(numberOfFiles);
@@ -1211,20 +1211,20 @@ main(int argc, char *argv[])
         int numberOfFrameSeries=max(1,showFileReader[i].getNumberOfFrameSeries());
         printF(" File: %i has %i frame series (domains):\n",i,numberOfFrameSeries);
         for( int fs=0; fs<numberOfFrameSeries; fs++ )
-	{
+        {
           printF(" frame series %i: %s\n",fs,(const char*)showFileReader[i].getFrameSeriesName(fs));
-	}
-	
-	ps.inputString(line,sPrintF(buff,"Enter the number of the frame series to use, (0,...,%i).",numberOfFrameSeries-1));
+        }
+        
+        ps.inputString(line,sPrintF(buff,"Enter the number of the frame series to use, (0,...,%i).",numberOfFrameSeries-1));
         int fs=-1;
-	sScanF(line,"%i",&fs);
-	if( fs<0 || fs>numberOfFrameSeries )
-	{
-	  printF("ERROR: frame series %i is NOT valid. Will use 0\n",fs);
-	  fs=0;
-	}
+        sScanF(line,"%i",&fs);
+        if( fs<0 || fs>numberOfFrameSeries )
+        {
+          printF("ERROR: frame series %i is NOT valid. Will use 0\n",fs);
+          fs=0;
+        }
         frameSeries(i)=fs;  // save
-	showFileReader[i].setCurrentFrameSeries(fs);
+        showFileReader[i].setCurrentFrameSeries(fs);
       }
       
     }
@@ -1232,8 +1232,8 @@ main(int argc, char *argv[])
     {
       if( numberOfFiles<=0 )
       {
-	printF("You should choose files first\n");
-	continue;
+        printF("You should choose files first\n");
+        continue;
       }
       
       numComponentsPerFile.redim(numberOfFiles);
@@ -1244,24 +1244,24 @@ main(int argc, char *argv[])
       {
         numComponentsPerFile(i)=0;
         int c[15];
-	for( int j=0; j<15; j++ ) c[j]=-1;
-	ps.inputString(line,sPrintF("Enter a list of components to use for file %i",i));
-	sScanF(line,"%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+        for( int j=0; j<15; j++ ) c[j]=-1;
+        ps.inputString(line,sPrintF("Enter a list of components to use for file %i",i));
+        sScanF(line,"%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
                &c[0],&c[1],&c[2],&c[3],&c[4],
                &c[5],&c[6],&c[7],&c[8],&c[9],
                &c[10],&c[11],&c[12],&c[13],&c[14]);
         for( int j=0; j<15; j++ )
-	{
-	  if( c[j]>=0 )
-	  {
+        {
+          if( c[j]>=0 )
+          {
             numComponentsPerFile(i)++;
             componentsPerFile(i,j)=c[j];
-	  }
-	  else
-	  {
-	    break;
-	  }
-	}
+          }
+          else
+          {
+            break;
+          }
+        }
       }
     }
     else if( answer=="choose a solution" ||
@@ -1273,17 +1273,17 @@ main(int argc, char *argv[])
       aString line;
       if( answer=="choose a solution" )
       {
-	ps.inputString(line,sPrintF(buff,"Enter the solution number to read, in [1,%i] (-1=choose last) \n",maxSolution[0]));
-	sScanF(line,"%i",&solutionNumber[0]);
+        ps.inputString(line,sPrintF(buff,"Enter the solution number to read, in [1,%i] (-1=choose last) \n",maxSolution[0]));
+        sScanF(line,"%i",&solutionNumber[0]);
         for( int i=1; i<maxNumberOfFiles; i++ ) solutionNumber[i]=solutionNumber[0];
       }
       else
       {
         for( int i=0; i<numberOfFiles; i++ ) 
           printF(" File %i has solutions [1,%i]\n",i,maxSolution[i]);
-	ps.inputString(line,"Enter separate solution number of each file\n");
-	assert( maxNumberOfFiles<15 );
-	sScanF(line,"%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+        ps.inputString(line,"Enter separate solution number of each file\n");
+        assert( maxNumberOfFiles<15 );
+        sScanF(line,"%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
                &solutionNumber[0],&solutionNumber[1],&solutionNumber[2],&solutionNumber[3],&solutionNumber[4],
                &solutionNumber[5],&solutionNumber[6],&solutionNumber[7],&solutionNumber[8],&solutionNumber[9],
                &solutionNumber[10],&solutionNumber[11],&solutionNumber[12],&solutionNumber[13],&solutionNumber[14]);
@@ -1292,8 +1292,8 @@ main(int argc, char *argv[])
 
       // -------------- read a solution from all files ---------------------
       readSolutions( numberOfFiles, cg, u, showFileReader, solutionNumber, frameSeries, fileName, time,
-		     numComponentsPerFile, componentsPerFile, closeShowAfterUse, outFile, outputFileName, 
-		     timesMatch, maxTimeDiff );
+                     numComponentsPerFile, componentsPerFile, closeShowAfterUse, outFile, outputFileName, 
+                     timesMatch, maxTimeDiff );
 
     }
     else if( answer=="assume fine grid holds exact solution" ||
@@ -1324,7 +1324,7 @@ main(int argc, char *argv[])
       int nvc=ps.getValues("Enter the component numbers (enter `done' when finished)",c,cmin);
       for( int i=0; i<nvc; i++ )
       {
-	v.component.push_back(c(i));
+        v.component.push_back(c(i));
       }
       componentVector.push_back(v);
       printF(" Vector %s is defined from components ",(const char*)v.name);
@@ -1344,61 +1344,61 @@ main(int argc, char *argv[])
       for( int i=0; i<numberOfFiles; i++ )
       {
         for( int solution=1; solution<=maxSolution[i]; solution++ )
-	{
-	  showFileReader[i].getASolution(solution,cg[i],u[i]);        // read in a grid and solution
-	  HDF_DataBase & db = *(showFileReader[i].getFrame());
-	  db.get(time(i),"time");   // *wdh* 091109 -- change "t" to "time"
-	  
+        {
+          showFileReader[i].getASolution(solution,cg[i],u[i]);        // read in a grid and solution
+          HDF_DataBase & db = *(showFileReader[i].getFrame());
+          db.get(time(i),"time");   // *wdh* 091109 -- change "t" to "time"
+          
 
-	  MappedGrid & mg = cg[i][0];
-	  realMappedGridFunction & v = u[i][0];
-	
-	  const IntegerArray & gridIndexRange = cg[i][0].gridIndexRange();
+          MappedGrid & mg = cg[i][0];
+          realMappedGridFunction & v = u[i][0];
+        
+          const IntegerArray & gridIndexRange = cg[i][0].gridIndexRange();
           if( solution==1 )
-	  {
-  	    int n=gridIndexRange(End,axis1)-gridIndexRange(Start,axis1);
-	    aString name;
-	    name=sPrintF(buff,"%s%i.dat",(const char*)outputFileName,n);
-	    printf("save file %s \n",(const char*)name);
-	    file = fopen((const char*)name,"w");
-	  }
-	  DisplayParameters dp;
-	  dp.set(file);
-	  dp.set(DisplayParameters::labelNoIndicies);
-	  Index I1,I2,I3;
-	  getIndex(cg[i][0].gridIndexRange(),I1,I2,I3);
-	  for( int c=v.getComponentBase(0); c<=v.getComponentBound(0); c++ )
-	  {
-	    cout << "component Name = [" << u[i].getName(c) << "]\n";
-	  
-	    fprintf(file,"%s\n",(const char*)u[i].getName(c));
+          {
+            int n=gridIndexRange(End,axis1)-gridIndexRange(Start,axis1);
+            aString name;
+            name=sPrintF(buff,"%s%i.dat",(const char*)outputFileName,n);
+            printf("save file %s \n",(const char*)name);
+            file = fopen((const char*)name,"w");
+          }
+          DisplayParameters dp;
+          dp.set(file);
+          dp.set(DisplayParameters::labelNoIndicies);
+          Index I1,I2,I3;
+          getIndex(cg[i][0].gridIndexRange(),I1,I2,I3);
+          for( int c=v.getComponentBase(0); c<=v.getComponentBound(0); c++ )
+          {
+            cout << "component Name = [" << u[i].getName(c) << "]\n";
+          
+            fprintf(file,"%s\n",(const char*)u[i].getName(c));
             fprintf(file,"%e (time)\n",time(i));
-	    fprintf(file,"%i %i %i\n",I1.getBound()-I1.getBase()+1,
-		    I2.getBound()-I2.getBase()+1,
-		    I3.getBound()-I3.getBase()+1);
-	    display(u[i][0](I1,I2,I3,c),NULL,dp);
-	  }
-	}
-	fclose(file);
+            fprintf(file,"%i %i %i\n",I1.getBound()-I1.getBase()+1,
+                    I2.getBound()-I2.getBase()+1,
+                    I3.getBound()-I3.getBase()+1);
+            display(u[i][0](I1,I2,I3,c),NULL,dp);
+          }
+        }
+        fclose(file);
       }
     }
     else if( answer=="compute errors" )
     {
       if( solutionNumber[0]<0 )
       {
-	printf(" You should `choose a solution' before computing errors\n");
-	continue;
+        printf(" You should `choose a solution' before computing errors\n");
+        continue;
       }
 
       if( assumeFineGridHoldsExactSolution )
-	printF("NOTE: Computing convergence rates assuming the fine grid holds the exact solution.\n");
+        printF("NOTE: Computing convergence rates assuming the fine grid holds the exact solution.\n");
 
       errorsComputed=true;
       
 
       FILE *matlabFile=NULL;
       if( myid==0 )
-	matlabFile=fopen((const char*)matlabFileName,"w" );
+        matlabFile=fopen((const char*)matlabFileName,"w" );
       // printF("Matlab output being saved in file %s\n",(const char*)matlabFileName);
 
 
@@ -1412,71 +1412,71 @@ main(int argc, char *argv[])
       for( int i=0; i<numberOfFiles; i++ )
       {
         MappedGrid & mg = cg[i][0];
-	if( mg.isRectangular() )
-	{
+        if( mg.isRectangular() )
+        {
           // Get dx   *wdh* Sept 23, 2019
           if( numberOfRectangular!=i )
-	  {
-	    printF("ERROR: not all composite grids have the first grid rectangular -- this is currently a fatal error\n");
-	    OV_ABORT("fix me Bill!");
-	  }
-	  numberOfRectangular++;
+          {
+            printF("ERROR: not all composite grids have the first grid rectangular -- this is currently a fatal error\n");
+            OV_ABORT("fix me Bill!");
+          }
+          numberOfRectangular++;
 
           real dx[3]={1.,1.,1.}; // 
-          mg.getDeltaX(dx);	  
-	  h(i)=dx[0];
-	  
-	}
-	else
-	{
+          mg.getDeltaX(dx);       
+          h(i)=dx[0];
+          
+        }
+        else
+        {
           // use dr 
-	  h(i)=cg[i][0].gridSpacing(axis1);    // grid spacing on grid 0
-	}
-	
-	if( cg[i].numberOfRefinementLevels()>1 )
-	{
-	  int nl=cg[i].numberOfRefinementLevels();
-	  int rf=cg[i].refinementLevel[nl-1].refinementFactor(0,0);
-	  // NOTE: rf is the refinement factor to the base grid.
-	  // printf(" numberOfLevels=%i refinementFactor=%i\n",nl,rf);
-	  h(i)/=rf;
-	}
+          h(i)=cg[i][0].gridSpacing(axis1);    // grid spacing on grid 0
+        }
+        
+        if( cg[i].numberOfRefinementLevels()>1 )
+        {
+          int nl=cg[i].numberOfRefinementLevels();
+          int rf=cg[i].refinementLevel[nl-1].refinementFactor(0,0);
+          // NOTE: rf is the refinement factor to the base grid.
+          // printf(" numberOfLevels=%i refinementFactor=%i\n",nl,rf);
+          h(i)/=rf;
+        }
       }
       
       for( int io=0; io<=1; io++ )
       {
-	FILE *file = io==0 ? stdout : outFile;
+        FILE *file = io==0 ? stdout : outFile;
         for( int i=0; i<numberOfFiles; i++ )
-	  fPrintF(file," File %i, solution=%i, t=%9.3e, grid 0: dr = %10.3e , ratio to fine grid = %8.4f\n",
-		  i,solutionNumber[i],time(i),h(i),h(i)/h(n));
+          fPrintF(file," File %i, solution=%i, t=%9.3e, grid 0: dr = %10.3e , ratio to fine grid = %8.4f\n",
+                  i,solutionNumber[i],time(i),h(i),h(i)/h(n));
       }
       fflush(outFile);
 
       // ----------------- Compute differences -------------
       //    du[i] = Interp(uFine) - uCoarse[i] 
       computeDifferences( numberOfFiles, cg, u, ud, interpolationWidth, useOldWay, useNewWay,interpolateFromSameDomain,
-			  boundaryErrorOffset,absorbingLayerWidth );
+                          boundaryErrorOffset,absorbingLayerWidth );
       
       for( int i=0; i<n; i++ )
       {
    
-      	const realCompositeGridFunction & v = u[i];  // here is the coarse grid solution
-	const int useAreaWeightedNorm=1;
+        const realCompositeGridFunction & v = u[i];  // here is the coarse grid solution
+        const int useAreaWeightedNorm=1;
         for( int c=v.getComponentBase(0); c<=v.getComponentBound(0); c++ )
-	{
-	  l2Diff(i,c) = lpNorm(2,ud[i],c,0,0,useAreaWeightedNorm);
-	  l1Diff(i,c) = lpNorm(1,ud[i],c,0,0,useAreaWeightedNorm);
-	  maxDiff(i,c)=maxNorm(ud[i],c,0,0);
-	}
-	for( int io=0; io<=1; io++ )
-	{
-	  FILE *file = io==0 ? stdout : outFile;
-	  fPrintF(file,"h(%i)=%e, h(%i)=%e: \n",i,h(i),i+1,h(i+1));
-	  for( int c=v.getComponentBase(0); c<=v.getComponentBound(0); c++ )
-	    fPrintF(file,"coarse=%i : ud = coarse -fine: component=%s : maxDiff(%i)=%e, l2Diff(%i)=%e , l1Diff(%i)=%e \n",
-		    i,(const char*)u[0].getName(c),c,maxDiff(i,c),c,l2Diff(i,c),c,l1Diff(i,c));
-	}
-	fflush(outFile);
+        {
+          l2Diff(i,c) = lpNorm(2,ud[i],c,0,0,useAreaWeightedNorm);
+          l1Diff(i,c) = lpNorm(1,ud[i],c,0,0,useAreaWeightedNorm);
+          maxDiff(i,c)=maxNorm(ud[i],c,0,0);
+        }
+        for( int io=0; io<=1; io++ )
+        {
+          FILE *file = io==0 ? stdout : outFile;
+          fPrintF(file,"h(%i)=%e, h(%i)=%e: \n",i,h(i),i+1,h(i+1));
+          for( int c=v.getComponentBase(0); c<=v.getComponentBound(0); c++ )
+            fPrintF(file,"coarse=%i : ud = coarse -fine: component=%s : maxDiff(%i)=%e, l2Diff(%i)=%e , l1Diff(%i)=%e \n",
+                    i,(const char*)u[0].getName(c),c,maxDiff(i,c),c,l2Diff(i,c),c,l1Diff(i,c));
+        }
+        fflush(outFile);
       } // end for i 
       
 
@@ -1491,7 +1491,7 @@ main(int argc, char *argv[])
       int ncu=u[0].getComponentBound(0)-u[0].getComponentBase(0)+1;
       // if there are vector components we do NOT save scalar components in the LaTeX file: (make an option)
       if( nvc > 0 )
-	ncu =0;      
+        ncu =0;      
       
       const int nc = ncu+nvc;
 
@@ -1499,187 +1499,187 @@ main(int argc, char *argv[])
       RealArray cSigma(nc); cSigma=0.;
       for( int i=0; i<numberOfFiles; i++ )
       {
-	if( i==n && assumeFineGridHoldsExactSolution )
-	  continue;  // do not include fine grid in table as the errors are zero in this case
-	gridName.push_back(fileName[i]);
+        if( i==n && assumeFineGridHoldsExactSolution )
+          continue;  // do not include fine grid in table as the errors are zero in this case
+        gridName.push_back(fileName[i]);
       }
       if( ncu>0 )
       {
-	for( int c=u[0].getComponentBase(0); c<=u[0].getComponentBound(0); c++ )
-	{
-	  aString componentName = u[0].getName(c);
-	  if( componentName=="" )
+        for( int c=u[0].getComponentBase(0); c<=u[0].getComponentBound(0); c++ )
+        {
+          aString componentName = u[0].getName(c);
+          if( componentName=="" )
             componentName=sPrintF("component%i",c);
-	  cName.push_back(componentName);
-	}
+          cName.push_back(componentName);
+        }
       }
       for( int c=0; c<componentVector.size(); c++ ) // c = vector 
       {
-	ComponentVector & v = componentVector[c];
-	cName.push_back(v.name);
+        ComponentVector & v = componentVector[c];
+        cName.push_back(v.name);
       }
-	    
+            
 
       // -- estimate convergence rates---
       if( n>=2 )
       {
-	for( int io=0; io<=1; io++ )
-	{
-	  FILE *file = io==0 ? stdout : outFile;
-	  fPrintF(file,"\n Solutions at times=");
-	  for( int i=0; i<numberOfFiles; i++ )
-	  {
-	    fPrintF(file,"%12.6e, ",time(i));
-	  }
-	  fPrintF(file,"\n");
-	}
-	
-	Range C(u[0].getComponentBase(0),u[0].getComponentBound(0));
-	const int numberOfNorms=3;
+        for( int io=0; io<=1; io++ )
+        {
+          FILE *file = io==0 ? stdout : outFile;
+          fPrintF(file,"\n Solutions at times=");
+          for( int i=0; i<numberOfFiles; i++ )
+          {
+            fPrintF(file,"%12.6e, ",time(i));
+          }
+          fPrintF(file,"\n");
+        }
+        
+        Range C(u[0].getComponentBase(0),u[0].getComponentBound(0));
+        const int numberOfNorms=3;
         sigmaRate.redim(C,numberOfNorms);
-	for( int norm=0; norm<numberOfNorms; norm++ )
-	{
-	  for( int io=0; io<=1; io++ )
-	  {
-	    FILE *file = io==0 ? stdout : outFile;
-	    if( norm==0 )
-	      fPrintF(file,"++++++++++++++ max norm results +++++++++++++\n");
-	    else if( norm==1 )
-	      fPrintF(file,"++++++++++++++ l2 norm results +++++++++++++\n");
-	    else 
-	      fPrintF(file,"++++++++++++++ l1 norm results +++++++++++++\n");
-	    fPrintF(file,"    ee = estimated error from C*h^{rate}     \n");
-	  }
-	
-	  const RealArray & diff = norm==0 ? maxDiff : norm==1 ? l2Diff : l1Diff;
-	  real sigma,cc;
-	  Range R(0,n);
-	  for( int c=u[0].getComponentBase(0); c<=u[0].getComponentBound(0); c++ )
-	  {
-	    computeRate(n,h,diff(R,c),sigma,cc, assumeFineGridHoldsExactSolution);
+        for( int norm=0; norm<numberOfNorms; norm++ )
+        {
+          for( int io=0; io<=1; io++ )
+          {
+            FILE *file = io==0 ? stdout : outFile;
+            if( norm==0 )
+              fPrintF(file,"++++++++++++++ max norm results +++++++++++++\n");
+            else if( norm==1 )
+              fPrintF(file,"++++++++++++++ l2 norm results +++++++++++++\n");
+            else 
+              fPrintF(file,"++++++++++++++ l1 norm results +++++++++++++\n");
+            fPrintF(file,"    ee = estimated error from C*h^{rate}     \n");
+          }
+        
+          const RealArray & diff = norm==0 ? maxDiff : norm==1 ? l2Diff : l1Diff;
+          real sigma,cc;
+          Range R(0,n);
+          for( int c=u[0].getComponentBase(0); c<=u[0].getComponentBound(0); c++ )
+          {
+            computeRate(n,h,diff(R,c),sigma,cc, assumeFineGridHoldsExactSolution);
 
             sigmaRate(c,norm)=sigma;  // save for plotting errors
 
-	    for( int io=0; io<=1; io++ )
-	    {
-	      FILE *file = io==0 ? stdout : outFile;
+            for( int io=0; io<=1; io++ )
+            {
+              FILE *file = io==0 ? stdout : outFile;
 
-	      fPrintF(file," component=%i, %11s, rate=%5.2f, ",c,(const char*)u[0].getName(c),sigma);
-	      for( int i=0; i<=n; i++ )
-	      {
+              fPrintF(file," component=%i, %11s, rate=%5.2f, ",c,(const char*)u[0].getName(c),sigma);
+              for( int i=0; i<=n; i++ )
+              {
                 // estimated errors:
                 if( i==n && assumeFineGridHoldsExactSolution )
                   continue;
-		fPrintF(file,"ee(%i) = %8.2e, ",i,cc*pow(h(i),sigma));
-		if( i>0 ) fPrintF(file,"[r=%5.2f], ",pow(h(i-1)/h(i),sigma));
+                fPrintF(file,"ee(%i) = %8.2e, ",i,cc*pow(h(i),sigma));
+                if( i>0 ) fPrintF(file,"[r=%5.2f], ",pow(h(i-1)/h(i),sigma));
 
                 if( ncu>0 ){ cErr(i,c)=cc*pow(h(i),sigma); cSigma(c)=sigma; }// save for latex
-	      }
-	      fPrintF(file,"\n");
-	    }
+              }
+              fPrintF(file,"\n");
+            }
 
-	  }
+          }
           // --- estimate errors in the vector components ---
-	  if( componentVector.size()>0 )
-	  {
-	    for( int c=0; c<componentVector.size(); c++ ) // c = vector 
-	    {
-	      ComponentVector & v = componentVector[c];
+          if( componentVector.size()>0 )
+          {
+            for( int c=0; c<componentVector.size(); c++ ) // c = vector 
+            {
+              ComponentVector & v = componentVector[c];
 
 
-	      RealArray vdiff(n); // holds diff's for the vector 
-	      vdiff=0.;
-	      for( int j=0; j<v.component.size(); j++ ) // loop over components of the vector 
-	      {
-		const int cv = v.component[j];  
-		if( cv<u[0].getComponentBase(0) || cv>u[0].getComponentBound(0) )
-		{
-		  printF("comp::ERROR: vector %i (%s) has an invalid component number = %i. Will ignore.\n",
+              RealArray vdiff(n); // holds diff's for the vector 
+              vdiff=0.;
+              for( int j=0; j<v.component.size(); j++ ) // loop over components of the vector 
+              {
+                const int cv = v.component[j];  
+                if( cv<u[0].getComponentBase(0) || cv>u[0].getComponentBound(0) )
+                {
+                  printF("comp::ERROR: vector %i (%s) has an invalid component number = %i. Will ignore.\n",
                           c,(const char*)v.name,cv);
-		  continue;
-		}
-		for( int i=0; i<n; i++ ) // i : solution number 
-		{
-		  if( norm==0 )
-		    vdiff(i) = max( vdiff(i), maxDiff(i,cv) );
-		  else if( norm==1 )
-		    vdiff(i) += SQR( l2Diff(i,cv) );
-		  else
-		    vdiff(i) += fabs( l1Diff(i,cv) );
-		}
-	      }
-	      if( norm==1 )
+                  continue;
+                }
+                for( int i=0; i<n; i++ ) // i : solution number 
+                {
+                  if( norm==0 )
+                    vdiff(i) = max( vdiff(i), maxDiff(i,cv) );
+                  else if( norm==1 )
+                    vdiff(i) += SQR( l2Diff(i,cv) );
+                  else
+                    vdiff(i) += fabs( l1Diff(i,cv) );
+                }
+              }
+              if( norm==1 )
                 vdiff=sqrt(vdiff); // l2 norm
-	      if( norm==1 || norm==2 )
+              if( norm==1 || norm==2 )
                 vdiff/= v.component.size();  // average l1 or l2 norm per component in the vector 
-	      
-	      computeRate(n,h,vdiff,sigma,cc, assumeFineGridHoldsExactSolution);
+              
+              computeRate(n,h,vdiff,sigma,cc, assumeFineGridHoldsExactSolution);
 
-	      for( int io=0; io<=1; io++ )
-	      {
-		FILE *file = io==0 ? stdout : outFile;
+              for( int io=0; io<=1; io++ )
+              {
+                FILE *file = io==0 ? stdout : outFile;
 
-		fPrintF(file," Vector %s is defined from components ",(const char*)v.name);
-		for( int i=0; i<v.component.size(); i++ ) fPrintF(file,"%i, ",v.component[i]);
-		fPrintF(file,"\n");
+                fPrintF(file," Vector %s is defined from components ",(const char*)v.name);
+                for( int i=0; i<v.component.size(); i++ ) fPrintF(file,"%i, ",v.component[i]);
+                fPrintF(file,"\n");
 
-		fPrintF(file," vector comp.  %11s, rate=%5.2f, ",(const char*)v.name,sigma);
-		for( int i=0; i<=n; i++ )
-		{ 
+                fPrintF(file," vector comp.  %11s, rate=%5.2f, ",(const char*)v.name,sigma);
+                for( int i=0; i<=n; i++ )
+                { 
                   // --- estimated errors ---
-		  if( i==n && assumeFineGridHoldsExactSolution )
-		    continue;
-		  fPrintF(file,"ee(%i) = %8.2e, ",i,cc*pow(h(i),sigma));
-		  if( i>0 ) fPrintF(file,"[r=%5.2f], ",pow(h(i-1)/h(i),sigma));
+                  if( i==n && assumeFineGridHoldsExactSolution )
+                    continue;
+                  fPrintF(file,"ee(%i) = %8.2e, ",i,cc*pow(h(i),sigma));
+                  if( i>0 ) fPrintF(file,"[r=%5.2f], ",pow(h(i-1)/h(i),sigma));
 
-		  cErr(i,c+ncu)=cc*pow(h(i),sigma); cSigma(c+ncu)=sigma; // save for latex
+                  cErr(i,c+ncu)=cc*pow(h(i),sigma); cSigma(c+ncu)=sigma; // save for latex
 
-		}
-		fPrintF(file,"\n");
-	      }
+                }
+                fPrintF(file,"\n");
+              }
 
 
-	    } // end for c
-	  }
-	  
+            } // end for c
+          }
+          
           // --- Now output results in the format of a LaTeX table ---
-	  for( int io=0; io<=1; io++ )
-	  {
-	    FILE *file = io==0 ? stdout : outFile;
-	    outputLatexTable( gridName, cName, cErr, cSigma, time, captionLabel, norm, file, assumeFineGridHoldsExactSolution );
+          for( int io=0; io<=1; io++ )
+          {
+            FILE *file = io==0 ? stdout : outFile;
+            outputLatexTable( gridName, cName, cErr, cSigma, time, captionLabel, norm, file, assumeFineGridHoldsExactSolution );
 
             // *new* Sept 20, 2019 *wdh*
             if( io==1 )
-	      outputMatlabFile( gridName, cName, h, cErr, cSigma, time, captionLabel, norm, matlabFile, assumeFineGridHoldsExactSolution );
-	  }
+              outputMatlabFile( gridName, cName, h, cErr, cSigma, time, captionLabel, norm, matlabFile, assumeFineGridHoldsExactSolution );
+          }
 
 
-	}  // end for norm 
-	fflush(outFile);
-	printF("Output written to file %s\n",(const char*)outputFileName);
+        }  // end for norm 
+        fflush(outFile);
+        printF("Output written to file %s\n",(const char*)outputFileName);
         fflush(matlabFile);
-	printF("Matlab output written to file %s\n",(const char*)matlabFileName);
+        printF("Matlab output written to file %s\n",(const char*)matlabFileName);
  
-	
+        
       }
       if( !timesMatch )
       {
-	for( int io=0; io<=1; io++ )
-	{
-	  FILE *file = io==0 ? stdout : outFile;
-	  fPrintF(file,"\n***************WARNING: The times of the solutions do not match! ****************\n"
-		 "   times=");
-	  for( int ii=0; ii<numberOfFiles; ii++ )
-	  {
-	    fPrintF(file,"%12.6e, ",time(ii));
-	  }
-	  fPrintF(file,"\n ***** Max difference in times = %8.2e ****\n",maxTimeDiff);
-	  fPrintF(file,"\n *********************************************************************************\n");
-	}
+        for( int io=0; io<=1; io++ )
+        {
+          FILE *file = io==0 ? stdout : outFile;
+          fPrintF(file,"\n***************WARNING: The times of the solutions do not match! ****************\n"
+                 "   times=");
+          for( int ii=0; ii<numberOfFiles; ii++ )
+          {
+            fPrintF(file,"%12.6e, ",time(ii));
+          }
+          fPrintF(file,"\n ***** Max difference in times = %8.2e ****\n",maxTimeDiff);
+          fPrintF(file,"\n *********************************************************************************\n");
+        }
       }
       
       if( myid==0 )
-	fclose(matlabFile);
+        fclose(matlabFile);
 
     }  // end compute errors 
     
@@ -1687,24 +1687,24 @@ main(int argc, char *argv[])
     {
       for( int i=0; i<numberOfFiles; i++ )
       {
-	psp.set(GI_TOP_LABEL,sPrintF(buff,"u[%i] t=%9.3e",i,time(i)));
+        psp.set(GI_TOP_LABEL,sPrintF(buff,"u[%i] t=%9.3e",i,time(i)));
         ps.erase();
-	PlotIt::contour(ps,u[i],psp);
+        PlotIt::contour(ps,u[i],psp);
       }
     }
     else if( answer=="plot differences" )
     {
       if( !errorsComputed )
       {
-	printF("You should compute the errors before you can plot the differences\n");
-	continue;
+        printF("You should compute the errors before you can plot the differences\n");
+        continue;
       }
 
       for( int i=0; i<numberOfFiles-1; i++ )
       {
-	psp.set(GI_TOP_LABEL,sPrintF(buff,"u[%i]-u[%i] t=%9.3e, %9.3e",i,numberOfFiles-1,time(i),time(numberOfFiles-1)));
+        psp.set(GI_TOP_LABEL,sPrintF(buff,"u[%i]-u[%i] t=%9.3e, %9.3e",i,numberOfFiles-1,time(i),time(numberOfFiles-1)));
         ps.erase();
-	PlotIt::contour(ps,ud[i],psp);
+        PlotIt::contour(ps,ud[i],psp);
       }
     }
     else if( answer=="plot errors (max-norm rate)" ||
@@ -1726,8 +1726,8 @@ main(int argc, char *argv[])
       //
       if( !errorsComputed )
       {
-	printF("You should compute the errors before you can plot the errors.\n");
-	continue;
+        printF("You should compute the errors before you can plot the errors.\n");
+        continue;
       }
 
       const int norm = answer=="plot errors (max-norm rate)" ? 0 : answer=="plot errors (l2-norm rate)" ? 1 : 2;
@@ -1748,42 +1748,42 @@ main(int argc, char *argv[])
       printF("Plotting the estimated error based on the %s rates: \n",(const char*)normName);
       for( int c=u[0].getComponentBase(0); c<=u[0].getComponentBound(0); c++ )
       {
-	printF(" Component %i (%s) : sigma=%8.2e\n",c,(const char*)u[0].getName(c),sigmaRate(c,norm));
+        printF(" Component %i (%s) : sigma=%8.2e\n",c,(const char*)u[0].getName(c),sigmaRate(c,norm));
       }
 
       // --- loop over files from coarse to fine ---
       for( int i=0; i<numberOfFiles; i++ )
       {
         const int n=numberOfFiles-1;  // fine grid 
-	if( i==n && assumeFineGridHoldsExactSolution ) 
+        if( i==n && assumeFineGridHoldsExactSolution ) 
           continue;   // errors would be zero on the fine grid
-	
+        
         realCompositeGridFunction estErr;
         const int ie = i<n ? i : i-1;
         estErr.updateToMatchGridFunction(ud[ie]);
-	Range all;
-	for( int grid=0; grid<cg[i].numberOfComponentGrids(); grid++ )
-	{
+        Range all;
+        for( int grid=0; grid<cg[i].numberOfComponentGrids(); grid++ )
+        {
           realSerialArray udLocal;     getLocalArrayWithGhostBoundaries(ud[ie][grid],udLocal);          
           realSerialArray estErrLocal; getLocalArrayWithGhostBoundaries(estErr[grid],estErrLocal);          
 
-	  for( int c=u[0].getComponentBase(0); c<=u[0].getComponentBound(0); c++ )
-	  {
-	    const real sigma = sigmaRate(c,norm);
-	    const real r = pow(h(ie)/h(n),sigma);
-	    real factor = i<n ? r/(r-1.) : 1./(r-1);
+          for( int c=u[0].getComponentBase(0); c<=u[0].getComponentBound(0); c++ )
+          {
+            const real sigma = sigmaRate(c,norm);
+            const real r = pow(h(ie)/h(n),sigma);
+            real factor = i<n ? r/(r-1.) : 1./(r-1);
             if( assumeFineGridHoldsExactSolution ) 
               factor=1.;  // if fine grid holds the exact solution then the error is just the difference
-	    //  estErr=ud[ie]*factor;
-	    estErrLocal(all,all,all,c)=udLocal(all,all,all,c)*factor;
-	  }
-	}
-	
-	psp.set(GI_TOP_LABEL,sPrintF(buff,"estErr[%i] (%s) t=%9.3e, %9.3e",i,
-				     (const char*)normName,time(i),time(numberOfFiles-1)));
-	
+            //  estErr=ud[ie]*factor;
+            estErrLocal(all,all,all,c)=udLocal(all,all,all,c)*factor;
+          }
+        }
+        
+        psp.set(GI_TOP_LABEL,sPrintF(buff,"estErr[%i] (%s) t=%9.3e, %9.3e",i,
+                                     (const char*)normName,time(i),time(numberOfFiles-1)));
+        
         ps.erase();
-	PlotIt::contour(ps,estErr,psp);
+        PlotIt::contour(ps,estErr,psp);
       }
       
     }
@@ -1809,39 +1809,39 @@ main(int argc, char *argv[])
       
         for( int i=0; i<maxNumberOfFiles; i++ ) solutionNumber[i]=solution;
 
-	// -------------- read a solution from all files ---------------------
-	printF("Read solution %i...\n",solution);
+        // -------------- read a solution from all files ---------------------
+        printF("Read solution %i...\n",solution);
 
-	readSolutions( numberOfFiles, cg, u, showFileReader, solutionNumber, frameSeries, fileName, time,
-		       numComponentsPerFile, componentsPerFile, closeShowAfterUse, outFile, outputFileName, 
-		       timesMatch, maxTimeDiff );
+        readSolutions( numberOfFiles, cg, u, showFileReader, solutionNumber, frameSeries, fileName, time,
+                       numComponentsPerFile, componentsPerFile, closeShowAfterUse, outFile, outputFileName, 
+                       timesMatch, maxTimeDiff );
 
-	// ----------------- Compute differences -------------
-	//    du[i] = Interp(uFine) - uCoarse[i] 
-	computeDifferences( numberOfFiles, cg, u, ud, interpolationWidth, useOldWay, useNewWay, interpolateFromSameDomain,
-   	                    boundaryErrorOffset,absorbingLayerWidth );
+        // ----------------- Compute differences -------------
+        //    du[i] = Interp(uFine) - uCoarse[i] 
+        computeDifferences( numberOfFiles, cg, u, ud, interpolationWidth, useOldWay, useNewWay, interpolateFromSameDomain,
+                            boundaryErrorOffset,absorbingLayerWidth );
 
 
         printF("Saving solution %i to show file: t=%16.10e\n",solution,time(0));
 
-	show.startFrame();                                         // start a new frame
+        show.startFrame();                                         // start a new frame
 
-	char buffer[80]; 
-	aString showFileTitle[5];
+        char buffer[80]; 
+        aString showFileTitle[5];
 
         nt=0;
-	showFileTitle[0]=sPrintF(buffer,"(diff) t=%9.3e",time(0)); nt++;
-	// showFileTitle[1]=sPrintF(buffer,"t=%4.3f, dt=%8.2e",t,dt);
-	showFileTitle[nt]="";  // marks end of titles
+        showFileTitle[0]=sPrintF(buffer,"(diff) t=%9.3e",time(0)); nt++;
+        // showFileTitle[1]=sPrintF(buffer,"t=%4.3f, dt=%8.2e",t,dt);
+        showFileTitle[nt]="";  // marks end of titles
 
-	for( int i=0; showFileTitle[i]!=""; i++ )
-	  show.saveComment(i,showFileTitle[i]);
+        for( int i=0; showFileTitle[i]!=""; i++ )
+          show.saveComment(i,showFileTitle[i]);
 
 
-	// show.saveComment(0,sPrintF("u[%i]-u[%i]",i,numberOfFiles-1));  
-	// show.saveComment(1,sPrintF(" t=%16.10e ",time(i)));               
+        // show.saveComment(0,sPrintF("u[%i]-u[%i]",i,numberOfFiles-1));  
+        // show.saveComment(1,sPrintF(" t=%16.10e ",time(i)));               
         int iSave=nFine-1;   // save difference between fine and next finest 
-	show.saveSolution( ud[iSave] ); 
+        show.saveSolution( ud[iSave] ); 
 
       }
       printF("...done saving to diff-show file [%s]\n",(const char*)outputShowFile);
@@ -1853,21 +1853,21 @@ main(int argc, char *argv[])
     {
       if( !errorsComputed )
       {
-	printF("You should compute the errors before you can save the differences\n");
-	continue;
+        printF("You should compute the errors before you can save the differences\n");
+        continue;
       }
 
       for( int i=0; i<numberOfFiles-1; i++ )
       {
         aString nameOfShowFile;
-	sPrintF(nameOfShowFile,"compDiff%i.show",i);
+        sPrintF(nameOfShowFile,"compDiff%i.show",i);
         printF("Saving show file: [%s] with u[%i]-u[%i], t=%16.10e\n",(const char*)nameOfShowFile,i,numberOfFiles-1,time(i));
         Ogshow show(nameOfShowFile);
-	show.saveGeneralComment("Difference computed with comp");
-	show.startFrame();                                         // start a new frame
-	show.saveComment(0,sPrintF("u[%i]-u[%i]",i,numberOfFiles-1));  
-	show.saveComment(1,sPrintF(" t=%16.10e ",time(i)));               
-	show.saveSolution( ud[i] ); 
+        show.saveGeneralComment("Difference computed with comp");
+        show.startFrame();                                         // start a new frame
+        show.saveComment(0,sPrintF("u[%i]-u[%i]",i,numberOfFiles-1));  
+        show.saveComment(1,sPrintF(" t=%16.10e ",time(i)));               
+        show.saveSolution( ud[i] ); 
 
       }
     }

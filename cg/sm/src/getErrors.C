@@ -35,7 +35,8 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
     const int & numberOfComponents = parameters.dbase.get<int >("numberOfComponents");
     Range C=numberOfComponents;
 
-    printF("getErrors: t=%9.3e, checkErrors=%i, numberOfComponents=%d, initialConditionOption=%i\n",t,checkErrors,numberOfComponents,initialConditionOption);
+    if( debug() & 4 )
+        printF("getErrors: t=%9.3e, checkErrors=%i, numberOfComponents=%d, initialConditionOption=%i\n",t,checkErrors,numberOfComponents,initialConditionOption);
 
     if( !checkErrors )
     {
@@ -59,7 +60,7 @@ getErrors( int current, real t, real dt, const aString & label /* =nullString */
             solutionNorm(c)=maxNorm(cgu,c,maskOption,parameters.dbase.get<int >("checkErrorsAtGhostPoints") );
       // printF("getErrors: solutionNorm(%d)=%e\n",c,solutionNorm(c));
         }
-        
+
 
     // for( int c=C.getBase(); c<=C.getBound(); c++ )
     // {

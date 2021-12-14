@@ -1,0 +1,124 @@
+# 
+# Compute eigenvalues for vibrations of a sphere
+#    === Vibrations of the second class ===
+#  See also res/maxwell/bessel.maple
+#
+# restart; read "sphere2.maple";
+#
+
+clear;
+
+Digits:=30: #
+
+n := 2:  # order
+
+rho := 1:
+lambda := 1:
+mu :=1:
+a:=1:
+
+# x= omega
+
+h := x*evalf( ( rho/(lambda+2*mu) )^(1/2) ):
+
+kappa := x*evalf( (rho/mu)^(1/2) ):
+
+kbh := simplify(kappa/h):
+
+
+ka := kappa*a: # kappa*a
+ha := h*a:
+
+# psi := x -> x^(-n-1/2)*BesselJ(n+1/2,x):
+# psinm1 := x -> x^(-(n-1)-1/2)*BesselJ((n-1)+1/2,x):
+
+g := sin(x)/x:
+psi1 := simplify( (1/x)*diff(g,x) ):
+psi2 := simplify( (1/x)*diff(psi1,x) ):
+
+psi := x -> -(sin(x)*x^2+3*cos(x)*x-3*sin(x))/x^5:
+psinm1 := x -> -(-cos(x)*x+sin(x))/x^3:
+
+# psip := diff(psi(x),x):
+psip := x-> -(-sin(x)*x+cos(x)*x^2)/x^5+5*(3*cos(x)*x-3*sin(x)+sin(x)*x^2)/x^6:
+
+
+an := 1/((2*n+1)*h^2)*( ka^2*psi(ha)+2*(n-1)*psinm1(ha) ):
+
+bn := -(1/(2*n+1))*( kbh^2*psi(ha) + (2*(n+2)/ha)*psip(ha) ):
+
+cn := ka^2*psi(ka)+2*(n-1)*psinm1(ka):
+
+dn := kappa^2*n/(n+1)*( psi(ka)+ (2*(n+2)/ka)*psip(ka) ):
+
+f := simplify(an*dn-bn*cn):
+
+# ---------- plot : ----------------
+plot(f,x=.5*Pi..4*Pi);
+
+# plot(f,x=7..12);
+
+# roots about 2.6 and 4.9 
+
+for m from 1 to 4 do
+
+  if m = 1 then
+    x0 := 2.6: # guess for first zero 
+   elif m=2 then
+    x0 := 4.9:
+   elif m=3 then
+    x0 := 8.3: 
+   else
+    x0 := 9.9:
+  end if;
+
+  xp := fsolve(f,x=x0,x0-1..x0+1);
+
+  kap := evalf(subs(x=xp,ka)):
+
+  printf(" n=%d : root m=%d  x=%22.16e, x/Pi = %22.16e, kappa*a/Pi=%22.16e \n",n,m,xp,xp/Pi,kap/Pi);
+  printf(" n=%d : root m=%d  kappa*a=%22.16e, C=%22.16e \n",n,m,kap*a,-(subs(x=xp,an)/subs(x=xp,cn))*kap^2);
+
+  printf(" an =%22.16e, cn=%22.16e, -an/cn=%22.16e \n",subs(x=xp,an),subs(x=xp,cn),-subs(x=xp,an)/subs(x=xp,cn));  
+  printf(" bn =%22.16e, dn=%22.16e, -bn/dn=%22.16e \n",subs(x=xp,bn),subs(x=xp,dn),-subs(x=xp,bn)/subs(x=xp,dn));
+  printf("\n"):
+od:
+
+
+#* 
+#* 
+#* 
+#* plot(subs(n=1,psip),x=0..10*Pi);
+#* 
+#* xp := fsolve(subs(n=1,psip),x=1.8*Pi,1.7*Pi..1.9*Pi):
+#* 
+#* printf(" n=%d : m=%d  x/Pi = %19.14e\n",1,1,xp/Pi);
+#* 
+#* xp := fsolve(subs(n=1,psip),x=2.8*Pi,2.7*Pi..2.9*Pi):
+#* 
+#* printf(" n=%d : m=%d  x/Pi = %19.14e\n",1,2,xp/Pi);
+#* 
+#* 
+#* #% printf(" Jn_x(xp)=0 : n=%d m=%d xp =%19.14e \n",n,m,xp):
+#* 
+#* # ------------  n>1 
+#* 
+#* f := (n-1)*psi + x*psip;
+#* 
+#* plot(subs(n=2,f),x=0..10*Pi);
+#* 
+#* # n=2: Zeros:
+#* #    2.5, 7.2, 10.5, 13.8, 17 
+#* nn:=2:
+#* m:=1: 
+#* x0:= 2.5: # guess for first zero 
+#* xp := fsolve(subs(n=2,f),x=x0,x0-1..x0+1);
+#* printf(" n=%d : m=%d  x/Pi = %19.14e\n",nn,m,xp/Pi):
+#* 
+#* m:=2:
+#* x0:= 7.2: # guess for zero 
+#* xp := fsolve(subs(n=2,f),x=x0,x0-1..x0+1):
+#* printf(" n=%d : m=%d  x/Pi = %19.14e\n",nn,m,xp/Pi);
+
+
+# --------------------------------------------------------------------------

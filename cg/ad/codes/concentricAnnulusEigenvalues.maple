@@ -75,7 +75,7 @@ if( 1=1 )then
   # n = Bessel order : Jn, Yn 
   for n from 0 by 1 to nm-1 do
     # NOTE: choose initial guess (lower bound) guess as lastr (see graph)
-    # NOTE: Note : Choose approcixate spacing between roots (see graph)
+    # NOTE: Note : Choose approximate spacing between roots (see graph)
     lastr:=1.5:  # first root, approx.
     rootSpacing := 1.5;  
     toavoid:={}:

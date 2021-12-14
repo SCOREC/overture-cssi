@@ -1,6 +1,6 @@
 #
 # make a grid for a nonBox
-# usage: ogen [noplot] nonBox -nx=<num> -order=[2/4/6/8] -bc=[d|p]
+# usage: ogen [noplot] nonBox -nx=<num> -order=[2/4/6/8] -periodic=[|ppp|npp|pnp|ppn|pnn|...]
 #   -bc : d=dirichlet, p=periodic boundary conditions
 # 
 # Examples:
@@ -16,8 +16,6 @@
 #     ogen noplot nonBox -order=2 -nx=16
 #     ogen noplot nonBox -order=2 -nx=32
 #     ogen noplot nonBox -order=2 -nx=64
-# 
-#     ogen noplot nonBox -order=2 -nx=32 -bc=pdd
 # 
 #     ogen noplot nonBox -order=2 -nx=10 
 #     ogen noplot nonBox -order=2 -nx=20 
@@ -39,11 +37,11 @@
 #     ogen noplot nonBox -order=4 -nx=256
 # 
 $order=2; $nx=10; # default values
-$orderOfAccuracy = "second order"; $ng=2; $bc="d"; 
+$orderOfAccuracy = "second order"; $ng=2; $periodic="";  
 $numGhost=-1;  # if this value is set, then use this number of ghost points
 # 
 # get command line arguments
-GetOptions( "order=i"=>\$order,"nx=i"=> \$nx,"bc=s"=> \$bc,"numGhost=i"=>\$numGhost);
+GetOptions( "order=i"=>\$order,"nx=i"=> \$nx,"bc=s"=> \$bc,"numGhost=i"=>\$numGhost,"periodic=s"=>\$periodic );
 $nx=$nx+1; 
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
@@ -52,7 +50,9 @@ elsif( $order eq 8 ){ $orderOfAccuracy="eighth order"; $ng=6; }
 # 
 $lines = $nx;
 $nge = $ng+1;
-$suffix = ".order$order"; 
+$suffix=""; 
+if( $periodic ne "" ){ $suffix .= $periodic; }
+$suffix .= ".order$order"; 
 if( $numGhost ne -1 ){ $suffix .= ".ng$numGhost"; } 
 if( $numGhost ne -1 ){ $ng = $numGhost; $nge=$ng; } # overide number of ghost
 if( $bc ne "d" ){ $suffix .= $bc; } # periodic
@@ -65,8 +65,18 @@ create mappings
     lines
       $lines $lines $lines
     boundary conditions
-      if( $bc eq "d" ){ $cmd = "1 2 3 4 5 6"; }elsif( $bc eq "pdd" ){ $cmd="-1 -1 3 4 5 6"; }else{ $cmd="-1 -1 -1 -1 -1 -1"; }
-      $cmd
+      if( $periodic eq "" ){ $bc = "1 2 3 4 5 6"; }\
+      elsif( $periodic eq "ppp" ){ $bc ="-1 -1 -1 -1 -1 -1"; }\
+      elsif( $periodic eq "npp" ){ $bc ="1 2 -1 -1 -1 -1"; }\
+      elsif( $periodic eq "pnp" ){ $bc ="-1 -1 3 4 -1 -1"; }\
+      elsif( $periodic eq "ppn" ){ $bc ="-1 -1 -1 -1 5 6"; }\
+      elsif( $periodic eq "pnn" ){ $bc ="-1 -1 3 4 5 6"; }\
+      elsif( $periodic eq "npn" ){ $bc ="1 2 -1 -1 5 6"; }\
+      elsif( $periodic eq "nnp" ){ $bc ="1 2 3 4 5 6"; }\
+      else{ $bc="1 2 3 4 5 6"; }   
+      $bc     
+      # if( $bc eq "d" ){ $cmd = "1 2 3 4 5 6"; }elsif( $bc eq "pdd" ){ $cmd="-1 -1 3 4 5 6"; }else{ $cmd="-1 -1 -1 -1 -1 -1"; }
+      # $cmd
     mappingName
       box-analytic
   exit

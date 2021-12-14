@@ -344,7 +344,7 @@ extern "C"
       if( debug & 4 )
         gf[next].u.display(sPrintF("Cgsm::advanceIncompressible: gf[next].u before interpolate, t=%8.2e",t+dt),debugFile,"%8.2e ");
 
-      // Note: interpolate performs a periodicUpdate and updateGhostBoundaries even if there is only one grid
+      // --- Note: interpolate performs a periodicUpdate and updateGhostBoundaries even if there is only one grid
 
       gf[next].u.interpolate();
  
@@ -358,7 +358,6 @@ extern "C"
 
       timing(parameters.dbase.get<int>("timeForInterpolate"))+=getCPU()-timei;
     }
-
 
 
     // ============= Boundary Conditions =============

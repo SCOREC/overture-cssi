@@ -3,7 +3,7 @@
 #
 #
 # usage: ogen [-noplot] cicArg -factor=<num> -order=[2/4/6/8] -interp=[e/i] -blf=<num> -ml=<>  -rgd=[fixed|var] ...
-#                             -xa=<> -xb=<> -ya=<> -yb=<> -cx=<> -cy=<> -numGhost=<i>
+#                             -xa=<> -xb=<> -ya=<> -yb=<> -cx=<> -cy=<> -numGhost=<i> -periodic=[|p|np|pn]
 # 
 #  -blf : boundary-layer-factor : blf>1 : make grid lines near boundary this many times smaller
 #  -ml = number of (extra) multigrid levels to support
@@ -133,7 +133,10 @@
 # srun -N 12 -n 96 -ppdebug $ogenp -noplot cicArg -order=2 -interp=e -factor=1000 (1.6B, 800M)
 # srun -N 12 -n 96 -ppdebug $ogenp -noplot cicArg -order=2 -interp=e -factor=1500 (all=3.6B, ave=1G, mx=2G ?, 83s)
 #
-$prefix="cic";  $rgd="var"; $bcSquare="d"; $dw=""; $iw=""; 
+$prefix="cic";  $rgd="var";
+ $bcSquare="d"; # old way
+ $periodic="";  # new way 
+ $dw=""; $iw=""; 
 $order=2; $factor=1; $interp="i"; $ml=0; # default values
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids";
 $name=""; $xa=-2.; $xb=2.; $ya=-2.; $yb=2.; 
@@ -146,7 +149,7 @@ $numGhost=-1;  # if this value is set, then use this number of ghost points
 GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,"xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb,\
             "interp=s"=> \$interp,"name=s"=> \$name,"ml=i"=>\$ml,"blf=f"=> \$blf, "prefix=s"=> \$prefix,\
             "cx=f"=>\$cx,"cy=f"=>\$cy,"rgd=s"=> \$rgd,"bcSquare=s"=>\$bcSquare,"numGhost=i"=>\$numGhost,\
-            "iw=i"=>\$iw,"dw=i"=>\$dw );
+            "iw=i"=>\$iw,"dw=i"=>\$dw,"periodic=s"=>\$periodic );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=3; }\
@@ -154,8 +157,12 @@ elsif( $order eq 8 ){ $orderOfAccuracy="eighth order"; $ng=4; }
 if( $interp eq "e" ){ $interpType = "explicit for all grids"; }
 # 
 if( $rgd eq "fixed" ){ $prefix = $prefix . "Fixed"; }
-if( $bcSquare eq "p" ){ $prefix = $prefix . "p"; }
-if( $iw eq "" ){ $suffix = ".order$order"; }else{ $suffix = ".Iw$iw" . "Dw$dw" . "$bc"; }
+# if( $bcSquare eq "p" ){ $prefix = $prefix . "p"; }
+$suffix=""; 
+if( $periodic eq "p" ){ $suffix = "p"; }
+if( $periodic eq "np" ){ $suffix = "np"; }
+if( $periodic eq "pn" ){ $suffix = "pn"; }
+if( $iw eq "" ){ $suffix .= ".order$order"; }else{ $suffix .= ".Iw$iw" . "Dw$dw" . "$bc"; }
 # $suffix = ".order$order"; 
 if( $numGhost ne -1 ){ $ng = $numGhost; } # overide number of ghost
 if( $numGhost ne -1 ){ $suffix .= ".ng$numGhost"; } 
@@ -191,9 +198,13 @@ rectangle
     $ny = intmg( ($yb-$ya)/$ds +1.5 ); 
     $nx $ny
   boundary conditions
-    $sbc="1 2 3 4";
-    if( $bcSquare eq "p" ){ $sbc = "-1 -1 3 4"; }
-    $sbc
+    # $sbc="1 2 3 4";
+    # if( $bcSquare eq "p" ){ $sbc = "-1 -1 3 4"; }
+    # $sbc
+    if( $periodic eq "p" ){ $bc ="-1 -1 -1 -1"; }\
+    elsif( $periodic eq "np" ){ $bc ="1 2 -1 -1"; }\
+    elsif( $periodic eq "pn" ){ $bc ="-1 -1 3 4"; }else{ $bc="1 2 3 4"; }   
+    $bc 
   mappingName
   square
 exit

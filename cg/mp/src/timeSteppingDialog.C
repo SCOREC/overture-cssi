@@ -14,10 +14,11 @@ buildTimeSteppingDialog(DialogData & dialog )
   aString *cmd = new aString [maxNumberOfTimeSteppingMethods];
 
   int nt=0;
-  cmd[nt]="forward Euler";            nt++;
-  cmd[nt]="implicit";                 nt++;
-  cmd[nt]="midpoint";                 nt++;
-  cmd[nt]="adams PC"; nt++;
+  cmd[nt]="forward Euler";      nt++;
+  cmd[nt]="implicit";           nt++;
+  cmd[nt]="midpoint";           nt++;
+  cmd[nt]="adams PC";           nt++;
+  cmd[nt]="BDF";                nt++;  // *new* Dec 10, 2021
 
   assert( nt<maxNumberOfTimeSteppingMethods );
   cmd[nt]="";
@@ -112,6 +113,19 @@ getTimeSteppingOption(const aString & answer,
     // by default we solve the de-coupled equations (by iteration) when we use implicit time stepping:
     parameters.dbase.get<bool>("solveCoupledInterfaceEquations")=false;
   }
+
+  else if( answer=="BDF" )
+  {
+    // --- BDF time-stepping --- *new* Dec 10, 2021
+    parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")=Parameters::implicit;
+    parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod")=Parameters::backwardDifferentiationFormula;
+    parameters.dbase.get<int>("numberOfPCcorrections")=0;
+    parameters.setGridIsImplicit();  // by default all grids are implicit for the implicit time stepping method
+
+    // by default we solve the de-coupled equations (by iteration) when we use implicit time stepping:
+    parameters.dbase.get<bool>("solveCoupledInterfaceEquations")=false;
+  }
+
   else if( answer=="implicit factor" )
   {
     gi.inputString(answer2,sPrintF(buff,"Enter the implicit factor .5=CN, 1=BE (default value=%e)",

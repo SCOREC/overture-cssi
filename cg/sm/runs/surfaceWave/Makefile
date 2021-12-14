@@ -47,3 +47,25 @@ stripTractionTractionGrid:
 	$(ogen) -noplot rectangleArg -prefix=stripTractionTractionGrid -xa=0 -xb=1 -ya=0 -yb=1.0 -periodic=np -order=4 -numGhost=3 -factor=16
 	$(ogen) -noplot rectangleArg -prefix=stripTractionTractionGrid -xa=0 -xb=1 -ya=0 -yb=1.0 -periodic=np -order=4 -numGhost=3 -factor=32	
 	$(ogen) -noplot rectangleArg -prefix=stripTractionTractionGrid -xa=0 -xb=1 -ya=0 -yb=1.0 -periodic=np -order=4 -numGhost=3 -factor=64
+
+stripTractionTractionGrid3d:
+	$(ogen) -noplot boxArg -prefix=stripTractionTractionGrid3d -xa=0 -xb=1 -ya=0 -yb=1.0 -za=0.0 -zb=1.0 -periodic=npp -order=2 -factor=2
+	$(ogen) -noplot boxArg -prefix=stripTractionTractionGrid3d -xa=0 -xb=1 -ya=0 -yb=1.0 -za=0.0 -zb=1.0 -periodic=npp -order=2 -factor=4	
+	$(ogen) -noplot boxArg -prefix=stripTractionTractionGrid3d -xa=0 -xb=1 -ya=0 -yb=1.0 -za=0.0 -zb=1.0 -periodic=npp -order=2 -factor=8	
+	$(ogen) -noplot boxArg -prefix=stripTractionTractionGrid3d -xa=0 -xb=1 -ya=0 -yb=1.0 -za=0.0 -zb=1.0 -periodic=npp -order=2 -factor=16	
+
+cylinderGrids:
+	$(ogen) -noplot cylinder -order=2 -periodic=p -za=-.5 -zb=.5 -factor=1
+	$(ogen) -noplot cylinder -order=2 -periodic=p -za=-.5 -zb=.5 -factor=2
+	$(ogen) -noplot cylinder -order=2 -periodic=p -za=-.5 -zb=.5 -factor=4
+	$(ogen) -noplot cylinder -order=2 -periodic=p -za=-.5 -zb=.5 -factor=8
+
+pipeGrids:
+	$(ogen) -noplot pipe -order=2 -interp=e -axial=z -per=1 -sa=0 -sb=1 -factor=2 
+	$(ogen) -noplot pipe -order=2 -interp=e -axial=z -per=1 -sa=0 -sb=1 -factor=4
+	$(ogen) -noplot pipe -order=2 -interp=e -axial=z -per=1 -sa=0 -sb=1 -factor=8
+
+
+
+
+

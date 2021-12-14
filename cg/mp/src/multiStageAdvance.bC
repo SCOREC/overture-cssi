@@ -173,6 +173,13 @@ multiStageAdvance( real &t, real & tFinal )
       domainSolver[d]->initializeTimeStepping( t,dt );
     }
 
+    ForDomainOrdered(d)
+    {
+      // Initialize interface data such as time histories of interface heat fluxes -- *wdh* Dec 12, 2021
+      // Used for testing exact solutions
+      domainSolver[d]->initializeInterfaceData(  t, dt );
+    }
+
     init=false;
   }
 

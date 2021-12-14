@@ -75,6 +75,10 @@ initializeTimeStepping( real & t0, real & dt0 )
         Overture::abort("error");
     }
 
+  // Moved to multiStageAdvance.bC
+  // // Initialize interface data such as time histories of interface heat fluxes -- *wdh* Dec 12, 2021
+  // initializeInterfaceData(  t0, dt0 );
+
     if( parameters.dbase.get<int>("multiDomainProblem") )
     { // for multi-domain problems we need to increment the timings
         RealArray & timing = parameters.dbase.get<RealArray>("timing");

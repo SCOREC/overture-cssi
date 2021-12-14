@@ -74,7 +74,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                         bool saveTimeHistory /* = false */ )
 {
   // Call base class version to get/set interface data
-  return DomainSolver::interfaceRightHandSide(option,interfaceDataOptions,info,gfd,gfIndex,t);
+  return DomainSolver::interfaceRightHandSide(option,interfaceDataOptions,info,gfd,gfIndex,t,saveTimeHistory );
 
   // bool getChampData=false;        
   // if( option==getInterfaceRightHandSide && info.dbase.has_key("getChampData") )  

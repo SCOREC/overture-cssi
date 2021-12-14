@@ -124,13 +124,13 @@ initialize( CompositeGrid & cg, DispersiveMaterialParameters & dmp1, DispersiveM
 //========================================================================================================
 int SurfaceWaveExactSolution::
 evalBA( DispersiveMaterialParameters & dmp1,
-      	DispersiveMaterialParameters & dmp2,
-      	Real t, CompositeGrid & cg, int grid, 
+                DispersiveMaterialParameters & dmp2,
+                Real t, CompositeGrid & cg, int grid, 
                 IntegerArray & matMask,
-      	realArray & ua, realArray & pv,
-      	const Index & I1a, const Index &I2a, const Index &I3a, 
-      	int numberOfTimeDerivatives /* = 0 */ ,
-      	int solveForAllFields /* = 1 */ )
+                realArray & ua, realArray & pv,
+                const Index & I1a, const Index &I2a, const Index &I3a, 
+                int numberOfTimeDerivatives /* = 0 */ ,
+                int solveForAllFields /* = 1 */ )
 {
 
   // domain number for this grid: 
@@ -192,7 +192,7 @@ evalBA( DispersiveMaterialParameters & dmp1,
         {
             iv0[dir]=mg.gridIndexRange(0,dir);
             if( mg.isAllCellCentered() )
-      	xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
+                xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
         }
     }
   // This macro defines the grid points for rectangular grids:
@@ -241,17 +241,17 @@ evalBA( DispersiveMaterialParameters & dmp1,
         {
             if( !isRectangular )
             {
-      	x= xLocal(i1,i2,i3,0)-x0[0];   // shift point to reference coordinates 
-      	y= xLocal(i1,i2,i3,1)-x0[1];
-      	if( numberOfDimensions==3 )
-        	  z= xLocal(i1,i2,i3,2)-x0[2];
+                x= xLocal(i1,i2,i3,0)-x0[0];   // shift point to reference coordinates 
+                y= xLocal(i1,i2,i3,1)-x0[1];
+                if( numberOfDimensions==3 )
+                    z= xLocal(i1,i2,i3,2)-x0[2];
             }
             else
             {
-      	x=XC(iv,0)-x0[0];
-      	y=XC(iv,1)-x0[1];
-      	if( numberOfDimensions==3 )
-        	  z=XC(iv,2)-x0[2];
+                x=XC(iv,0)-x0[0];
+                y=XC(iv,1)-x0[1];
+                if( numberOfDimensions==3 )
+                    z=XC(iv,2)-x0[2];
             }
 
       // Here are the statements to eval the solution: 
@@ -259,51 +259,51 @@ evalBA( DispersiveMaterialParameters & dmp1,
             if( mt==0 )  
             {
         // -- TOP ----
-      	for( int m=ex; m<=hz; m++ )
-      	{
+                for( int m=ex; m<=hz; m++ )
+                {
                   q(m) = amp*( exp( I*( kx*x + kvyt(0)*y ) + s*t )*qvt(m,0)  +
-                   	             +exp( I*( kx*x + kvyt(1)*y ) + s*t )*qvt(m,1)  );
+                                          +exp( I*( kx*x + kvyt(1)*y ) + s*t )*qvt(m,1)  );
 
-        	  uLocal(i1,i2,i3,m) = std::real( q(m) );
-      	}
+                    uLocal(i1,i2,i3,m) = std::real( q(m) );
+                }
             }
             else
             {
         // --- Bottom ---
-      	for( int m=ex; m<=hz; m++ )
-      	{
+                for( int m=ex; m<=hz; m++ )
+                {
                   q(m) = amp*( exp( I*( kx*x + kvyb(0)*y ) + s*t )*qvb(m,0)  +
-                   	             +exp( I*( kx*x + kvyb(1)*y ) + s*t )*qvb(m,1)  );
-        	  uLocal(i1,i2,i3,m) = std::real( q(m) );
-      	}
+                                          +exp( I*( kx*x + kvyb(1)*y ) + s*t )*qvb(m,1)  );
+                    uLocal(i1,i2,i3,m) = std::real( q(m) );
+                }
             }
       
             if( isDispersive )
             {
-      	const IntegerArray & NpBA = mt==0 ? NpBA1 : NpBA2;
-      	const RealArray & bianisotropicParameters = mt==0 ? bianisotropicParameters1 : bianisotropicParameters2;
-      	int m=0;
-      	for( int k1=0; k1<6; k1++ )
-      	{
-        	  for( int k2=0; k2<6; k2++ )
-        	  {
-          	    int ec=k2;  // *check me**
-          	    for( int n=0; n<NpBA(k1,k2); n++ )
-          	    {
-            	      LocalReal a0 = bianisotropicParameters(0,n,k1,k2);
-            	      LocalReal a1 = bianisotropicParameters(1,n,k1,k2);
-            	      LocalReal b0 = bianisotropicParameters(2,n,k1,k2);
-            	      LocalReal b1 = bianisotropicParameters(3,n,k1,k2);
+                const IntegerArray & NpBA = mt==0 ? NpBA1 : NpBA2;
+                const RealArray & bianisotropicParameters = mt==0 ? bianisotropicParameters1 : bianisotropicParameters2;
+                int m=0;
+                for( int k1=0; k1<6; k1++ )
+                {
+                    for( int k2=0; k2<6; k2++ )
+                    {
+                        int ec=k2;  // *check me**
+                        for( int n=0; n<NpBA(k1,k2); n++ )
+                        {
+                            LocalReal a0 = bianisotropicParameters(0,n,k1,k2);
+                            LocalReal a1 = bianisotropicParameters(1,n,k1,k2);
+                            LocalReal b0 = bianisotropicParameters(2,n,k1,k2);
+                            LocalReal b1 = bianisotropicParameters(3,n,k1,k2);
 
-            	      pijm = (a0+a1*s)/(b0+b1*s+s*s) * q(ec);
-            	      pLocal(i1,i2,i3,m) = std::real(pijm);   // Pijm 
-            	      m++;   
-            	      pLocal(i1,i2,i3,m) = std::real(s*pijm); // Q = dP/dt
-            	      m++;
+                            pijm = (a0+a1*s)/(b0+b1*s+s*s) * q(ec);
+                            pLocal(i1,i2,i3,m) = std::real(pijm);   // Pijm 
+                            m++;   
+                            pLocal(i1,i2,i3,m) = std::real(s*pijm); // Q = dP/dt
+                            m++;
 
-          	    }
-        	  }
-      	}
+                        }
+                    }
+                }
             }
 
         } // end FOR

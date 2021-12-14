@@ -74,9 +74,9 @@ extern "C"
 #define FOR_3D(i1,i2,i3,I1,I2,I3) \
 int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  \
 int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
-for(i3=I3Base; i3<=I3Bound; i3++) \
-for(i2=I2Base; i2<=I2Bound; i2++) \
-for(i1=I1Base; i1<=I1Bound; i1++)
+for(int i3=I3Base; i3<=I3Bound; i3++) \
+for(int i2=I2Base; i2<=I2Bound; i2++) \
+for(int i1=I1Base; i1<=I1Bound; i1++)
 
 // Macro to get the vertex array
 #define GET_VERTEX_ARRAY(x)                                     \
@@ -89,24 +89,67 @@ OV_GET_SERIAL_ARRAY_CONST(real,mg.vertex(),x);
 // --------------------------------------------------------------------------------
 #beginMacro assignIncompressibleAnnulusSolution()
   Real ur,vr,pr; 
-  int i1,i2,i3;
-  FOR_3D(i1,i2,i3,I1,I2,I3)
+  if( numberOfDimensions==2 )
   {
-    // Reference coordinates:
-    Real x = vertex(i1,i2,i3,0);
-    Real y = vertex(i1,i2,i3,1);
-    Real r = sqrt( x*x + y*y );
-    Real theta = atan2(y,x); 
-    Real cosTheta = x/r;
-    Real sinTheta = y/r;
-        
-    annulusMacro(r,theta,t,ur,vr,pr);
-    // (u1,u2) = ur*rHat + vr*thetaHat 
-    u(i1,i2,i3,u1c) = ur*cosTheta - vr*sinTheta;
-    u(i1,i2,i3,u2c) = ur*sinTheta + vr*cosTheta;
-    u(i1,i2,i3,pc ) = pr;
+    FOR_3D(i1,i2,i3,I1,I2,I3)
+    {
+      Real x = vertex(i1,i2,i3,0);
+      Real y = vertex(i1,i2,i3,1);
+      Real r = sqrt( x*x + y*y );
+      Real theta = atan2(y,x); 
+      Real cosTheta = x/r;
+      Real sinTheta = y/r;
+          
+      annulusMacro(r,theta,t,ur,vr,pr);
+      // (u1,u2) = ur*rHat + vr*thetaHat 
+      u(i1,i2,i3,u1c) = ur*cosTheta - vr*sinTheta;
+      u(i1,i2,i3,u2c) = ur*sinTheta + vr*cosTheta;
+      u(i1,i2,i3,pc ) = pr;
+    }
+  }
+  else
+  {
+    // ----- use 2D solution for now ----
+    FOR_3D(i1,i2,i3,I1,I2,I3)
+    {
+      Real x = vertex(i1,i2,i3,0);
+      Real y = vertex(i1,i2,i3,1);
+      Real z = vertex(i1,i2,i3,2);
+      Real r = sqrt( x*x + y*y );
+      Real theta = atan2(y,x); 
+      Real cosTheta = x/r;
+      Real sinTheta = y/r;
+          
+      annulusMacro(r,theta,t,ur,vr,pr);
+      // (u1,u2) = ur*rHat + vr*thetaHat 
+      u(i1,i2,i3,u1c) = ur*cosTheta - vr*sinTheta;
+      u(i1,i2,i3,u2c) = ur*sinTheta + vr*cosTheta;
+      u(i1,i2,i3,u3c) = 0.;
+      u(i1,i2,i3,pc ) = pr;
+    }
   }
 #endMacro 
+
+
+// ----------------------------------------------------------------
+// Evaluate the polar cooridinates from the cartesian coordinates 
+// ----------------------------------------------------------------
+#beginMacro getPolar(i1,i2,i3,cosTheta,sinTheta)
+  Real x = vertex(i1,i2,i3,0);
+  Real y = vertex(i1,i2,i3,1);
+  Real r = sqrt( x*x + y*y );
+
+  if( r < eps ) //  avoid division by zero
+  {
+    x=eps;           // avoid atan(0,0)
+    y=eps;
+    r=sqrt(2.)*eps;  // r=sqrt(x**2+y**2)
+  }   
+
+  Real theta = atan2(y,x); 
+  Real cosTheta = cos(theta);
+  Real sinTheta = sin(theta);
+#endMacro
 
 
 // --------------------------------------------------------------------------------
@@ -119,29 +162,61 @@ OV_GET_SERIAL_ARRAY_CONST(real,mg.vertex(),x);
   const Real eps=1.e-9;   // ********************************** FIX ME *********
   if( t<= dt )
     printF("\n *** WARNING *** need a better fix for disk solution at r=0 ******\n\n");
-  FOR_3D(i1,i2,i3,I1,I2,I3)
+  if( numberOfDimensions==2 )
   {
-    // Reference coordinates:
-    Real x = vertex(i1,i2,i3,0);
-    Real y = vertex(i1,i2,i3,1);
-    Real r = sqrt( x*x + y*y );
-
-    if( r < eps ) //  avoid division by zero
+    FOR_3D(i1,i2,i3,I1,I2,I3)
     {
-      x=eps;           // avoid atan(0,0)
-      y=eps;
-      r=sqrt(2.)*eps;  // r=sqrt(x**2+y**2)
-    }   
+      // Reference coordinates:
+      Real x = vertex(i1,i2,i3,0);
+      Real y = vertex(i1,i2,i3,1);
+      Real r = sqrt( x*x + y*y );
 
-    theta = atan2(y,x); 
-    Real cosTheta = cos(theta);
-    Real sinTheta = sin(theta);
-        
-    diskMacro(r,theta,t,ur,vr,pr);
-    // (u1,u2) = ur*rHat + vr*thetaHat 
-    u(i1,i2,i3,u1c) = ur*cosTheta - vr*sinTheta;
-    u(i1,i2,i3,u2c) = ur*sinTheta + vr*cosTheta;
-    u(i1,i2,i3,pc ) = pr;
+      if( r < eps ) //  avoid division by zero
+      {
+        x=eps;           // avoid atan(0,0)
+        y=eps;
+        r=sqrt(2.)*eps;  // r=sqrt(x**2+y**2)
+      }   
+
+      theta = atan2(y,x); 
+      Real cosTheta = cos(theta);
+      Real sinTheta = sin(theta);
+          
+      diskMacro(r,theta,t,ur,vr,pr);
+      // (u1,u2) = ur*rHat + vr*thetaHat 
+      u(i1,i2,i3,u1c) = ur*cosTheta - vr*sinTheta;
+      u(i1,i2,i3,u2c) = ur*sinTheta + vr*cosTheta;
+      u(i1,i2,i3,pc ) = pr;
+    }
+  }
+  else
+  {
+    // ** FOR NOW USE THE 2D SOLUTION ***
+    FOR_3D(i1,i2,i3,I1,I2,I3)
+    {
+      Real x = vertex(i1,i2,i3,0);
+      Real y = vertex(i1,i2,i3,1);
+      Real z = vertex(i1,i2,i3,2);
+      Real r = sqrt( x*x + y*y );
+
+      if( r < eps ) //  avoid division by zero
+      {
+        x=eps;           // avoid atan(0,0)
+        y=eps;
+        r=sqrt(2.)*eps;  // r=sqrt(x**2+y**2)
+      }   
+
+      theta = atan2(y,x); 
+      Real cosTheta = cos(theta);
+      Real sinTheta = sin(theta);
+          
+      diskMacro(r,theta,t,ur,vr,pr);
+      // (u1,u2) = ur*rHat + vr*thetaHat 
+      u(i1,i2,i3,u1c) = ur*cosTheta - vr*sinTheta;
+      u(i1,i2,i3,u2c) = ur*sinTheta + vr*cosTheta;
+      u(i1,i2,i3,u3c) = 0.;
+      u(i1,i2,i3,pc ) = pr; 
+    }   
   }
 #endMacro   
 
@@ -208,6 +283,178 @@ OV_GET_SERIAL_ARRAY_CONST(real,mg.vertex(),x);
 #endMacro
 
 
+// =======================================================================
+// Macro: INITIALIZE variables for the method of lines approach
+// This should only be done at the INITIAL TIME (identified by t<0)
+//      velocity
+//      acceleration
+//      pressure 
+// =======================================================================
+#beginMacro initializeMethodOfLinesVariablesAnnulus()
+
+  if( computeVelocity )
+  {
+    printF("\n $$$$$$$$$$ userDefinedKnownSolution: EVALUATE VELOCITY, ACCEL and PRESSURE AT PAST TIMES t=%9.3e dt=%16.6e $$$$$$$\n\n",t,dt);
+    assert( dt>0. );
+    assert( vgf!=NULL );
+    const int currentVelocity = dbase.get<int>("currentVelocity");
+    assert( currentVelocity>=0 && currentVelocity<numberOfVelocityFunctions );
+
+    // fill in t0=0 and some past time levels
+    for( int level=0; level<numberOfVelocityFunctions; level++ )
+    {
+      real tc = 0. - level*dt;
+      const int prevVelocity = (currentVelocity - level + numberOfVelocityFunctions) % numberOfVelocityFunctions;
+
+      OV_GET_SERIAL_ARRAY(real,vgf[prevVelocity][grid],vLocal);
+      OV_GET_SERIAL_ARRAY(real,vtgf[prevVelocity][grid],vtLocal);
+
+      FOR_3D(i1,i2,i3,I1,I2,I3)
+      {
+        Real x = vertex(i1,i2,i3,0);
+        Real y = vertex(i1,i2,i3,1);
+        Real r = sqrt( x*x + y*y );
+        Real theta = atan2(y,x); 
+        Real cosTheta = x/r;
+        Real sinTheta = y/r;
+            
+        annulusMacroVelocity(r,theta,tc,ur,vr);
+        // (u1,u2) = ur*rHat + vr*thetaHat 
+        vLocal(i1,i2,i3,u1c) = ur*cosTheta - vr*sinTheta;
+        vLocal(i1,i2,i3,u2c) = ur*sinTheta + vr*cosTheta;
+
+        annulusMacroAcceleration(r,theta,tc,ur,vr);
+        // (u1,u2) = ur*rHat + vr*thetaHat 
+        vtLocal(i1,i2,i3,u1c) = ur*cosTheta - vr*sinTheta;
+        vtLocal(i1,i2,i3,u2c) = ur*sinTheta + vr*cosTheta;        
+      }      
+
+      // FOR_3D(i1,i2,i3,I1,I2,I3)
+      // {
+      //   Real x = vertex(i1,i2,i3,0);
+      //   Real y = vertex(i1,i2,i3,1);
+
+      //   vLocal(i1,i2,i3,u1c)  = v1e(x,y,tc);
+      //   vLocal(i1,i2,i3,u2c)  = v2e(x,y,tc);
+
+      //   vtLocal(i1,i2,i3,u1c) = v1et(x,y,tc);
+      //   vtLocal(i1,i2,i3,u2c) = v2et(x,y,tc);        
+
+      // }         
+    }
+
+    // --- save pressure for time extrapolation ---
+    const int currentPressure = dbase.get<int>("currentPressure");
+    assert( currentPressure>=0 && currentPressure<max(1,numberOfPressureFunctions) );
+    for( int level=0; level<numberOfPressureFunctions; level++ )
+    {
+      real tc = 0. - (level+3)*dt;  // -- save pressure starting at t-3*dt 
+
+      const int prevPressure = (currentPressure - level + numberOfPressureFunctions) % numberOfPressureFunctions;
+      assert( pgf !=NULL );
+      OV_GET_SERIAL_ARRAY(real,pgf[prevPressure][grid],pLocal);
+
+      FOR_3D(i1,i2,i3,I1,I2,I3)
+      {
+        Real x = vertex(i1,i2,i3,0);
+        Real y = vertex(i1,i2,i3,1);
+        Real r = sqrt( x*x + y*y );
+        Real theta = atan2(y,x); 
+        Real cosTheta = x/r;
+        Real sinTheta = y/r;
+            
+        annulusMacro(r,theta,tc,ur,vr,pr);
+        pLocal(i1,i2,i3) = pr;
+      }
+
+    }
+  }
+#endMacro
+
+
+// =======================================================================
+// Macro: INITIALIZE variables for the method of lines approach
+// This should only be done at the INITIAL TIME (identified by t<0)
+//      velocity
+//      acceleration
+//      pressure 
+// =======================================================================
+#beginMacro initializeMethodOfLinesVariablesDisk()
+
+  if( computeVelocity )
+  {
+    printF("\n $$$$$$$$$$ userDefinedKnownSolution: EVALUATE VELOCITY, ACCEL and PRESSURE AT PAST TIMES t=%9.3e dt=%16.6e $$$$$$$\n\n",t,dt);
+    assert( dt>0. );
+    assert( vgf!=NULL );
+    const int currentVelocity = dbase.get<int>("currentVelocity");
+    assert( currentVelocity>=0 && currentVelocity<numberOfVelocityFunctions );
+
+    // fill in t0=0 and some past time levels
+    for( int level=0; level<numberOfVelocityFunctions; level++ )
+    {
+      real tc = 0. - level*dt;
+      const int prevVelocity = (currentVelocity - level + numberOfVelocityFunctions) % numberOfVelocityFunctions;
+
+      OV_GET_SERIAL_ARRAY(real,vgf[prevVelocity][grid],vLocal);
+      OV_GET_SERIAL_ARRAY(real,vtgf[prevVelocity][grid],vtLocal);
+
+      FOR_3D(i1,i2,i3,I1,I2,I3)
+      {
+        getPolar(i1,i2,i3,cosTheta,sinTheta);
+        // Real x = vertex(i1,i2,i3,0);
+        // Real y = vertex(i1,i2,i3,1);
+        // Real r = sqrt( x*x + y*y );
+        // Real theta = atan2(y,x); 
+        // Real cosTheta = x/r;
+        // Real sinTheta = y/r;
+            
+        diskMacroVelocity(r,theta,tc,ur,vr);
+        // (u1,u2) = ur*rHat + vr*thetaHat 
+        vLocal(i1,i2,i3,u1c) = ur*cosTheta - vr*sinTheta;
+        vLocal(i1,i2,i3,u2c) = ur*sinTheta + vr*cosTheta;
+
+        diskMacroAcceleration(r,theta,tc,ur,vr);
+        // (u1,u2) = ur*rHat + vr*thetaHat 
+        vtLocal(i1,i2,i3,u1c) = ur*cosTheta - vr*sinTheta;
+        vtLocal(i1,i2,i3,u2c) = ur*sinTheta + vr*cosTheta;        
+      }      
+
+     
+    }
+
+    // --- save pressure for time extrapolation ---
+    const int currentPressure = dbase.get<int>("currentPressure");
+    assert( currentPressure>=0 && currentPressure<max(1,numberOfPressureFunctions) );
+    for( int level=0; level<numberOfPressureFunctions; level++ )
+    {
+      real tc = 0. - (level+3)*dt;  // -- save pressure starting at t-3*dt 
+
+      const int prevPressure = (currentPressure - level + numberOfPressureFunctions) % numberOfPressureFunctions;
+      assert( pgf !=NULL );
+      OV_GET_SERIAL_ARRAY(real,pgf[prevPressure][grid],pLocal);
+
+      FOR_3D(i1,i2,i3,I1,I2,I3)
+      {
+        getPolar(i1,i2,i3,cosTheta,sinTheta);
+        // Real x = vertex(i1,i2,i3,0);
+        // Real y = vertex(i1,i2,i3,1);
+        // Real r = sqrt( x*x + y*y );
+        // Real theta = atan2(y,x); 
+        // Real cosTheta = x/r;
+        // Real sinTheta = y/r;
+            
+        diskMacro(r,theta,tc,ur,vr,pr);
+        pLocal(i1,i2,i3) = pr;
+      }
+
+    }
+  }
+#endMacro
+
+
+
+
+
 int SmParameters::
 getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua, 
                             const Index & I1, const Index &I2, const Index &I3, 
@@ -217,6 +464,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 // ==========================================================================================
 {
   MappedGrid & mg = cg[grid];
+  const int numberOfDimensions = cg.numberOfDimensions();
 
   if( ! dbase.get<DataBase >("modelData").has_key("userDefinedKnownSolutionData") )
   {
@@ -242,9 +490,11 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
   // Here are the comopnents for displacement velocity and stress
   const int v1c = dbase.get<int >("v1c");
   const int v2c = dbase.get<int >("v2c");
+  const int v3c = dbase.get<int >("v3c");
 
-  const int u1c = dbase.get<int >("uc");
-  const int u2c = dbase.get<int >("vc");
+  const int u1c = dbase.get<int >("u1c");
+  const int u2c = dbase.get<int >("u2c");
+  const int u3c = dbase.get<int >("u3c");
 
   const int s11c = dbase.get<int >("s11c");
   const int s12c = dbase.get<int >("s12c");
@@ -438,41 +688,163 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     Real D1 =1.; // defines the scale
     if( iswCase==1 )
     {
-      // #Include "incompressible/ismStripTractionDirichlet.h"
-      #Include "incompressible/ismStripTractionDisplacement.h"
-      int i1,i2,i3;
-      FOR_3D(i1,i2,i3,I1,I2,I3)
+
+      if( numberOfDimensions==2 )
       {
-        // Reference coordinates:
-        Real x = vertex(i1,i2,i3,0);
-        Real y = vertex(i1,i2,i3,1);
+        // #Include "incompressible/ismStripTractionDirichlet.h"
+        #Include "incompressible/ismStripTractionDisplacement.h"
+        int i1,i2,i3;
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
+          // Reference coordinates:
+          Real x = vertex(i1,i2,i3,0);
+          Real y = vertex(i1,i2,i3,1);
 
-        u(i1,i2,i3,u1c) = u1e(x,y,t);
-        u(i1,i2,i3,u2c) = u2e(x,y,t);
-        u(i1,i2,i3,pc ) = pe(x,y,t);
-      } 
+          u(i1,i2,i3,u1c) = u1e(x,y,t);
+          u(i1,i2,i3,u2c) = u2e(x,y,t);
+          u(i1,i2,i3,pc ) = pe(x,y,t);
+        } 
 
-      // At the initial time we initialize some MOL variables
-      initializeMethodOfLinesVariables(); 
+        // At the initial time we initialize some MOL variables
+        initializeMethodOfLinesVariables(); 
+      }
+      else
+      {
+        // 3D 
+        assert( u1c>=0 && u2c>=0 && u3c>=0 );
+
+        Real u1ex,u2ex,u3ex,pex, v1ex,v2ex,v3ex, a1ex,a2ex,a3ex;
+
+        #Include "incompressible/ismStrip3dTractionDisplacementRoot1.h"
+
+
+        int i1,i2,i3;
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
+          // Reference coordinates:
+          const Real x = vertex(i1,i2,i3,0);
+          const Real y = vertex(i1,i2,i3,1);
+          const Real z = vertex(i1,i2,i3,2);
+          evalSolution(x,y,z,t, u1ex,u2ex,u3ex,pex, v1ex,v2ex,v3ex, a1ex,a2ex,a3ex);
+
+          u(i1,i2,i3,u1c) = u1ex;
+          u(i1,i2,i3,u2c) = u2ex;
+          u(i1,i2,i3,u3c) = u3ex;
+          u(i1,i2,i3,pc ) = pex;
+        }        
+        if( computeVelocity )
+        {
+          OV_ABORT("UDKS: finish me -- computeVelocity");
+        }
+
+      }
     }
     else if( iswCase==2 )
     {
-      #Include "incompressible/ismStripTractionTractionCase2.h"
-      int i1,i2,i3;
-      FOR_3D(i1,i2,i3,I1,I2,I3)
+      if( numberOfDimensions==2 )
       {
-        // Reference coordinates:
-        Real x = vertex(i1,i2,i3,0);
-        Real y = vertex(i1,i2,i3,1);
+        #Include "incompressible/ismStripTractionTractionCase2.h"
+        int i1,i2,i3;
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
+          // Reference coordinates:
+          Real x = vertex(i1,i2,i3,0);
+          Real y = vertex(i1,i2,i3,1);
 
-        u(i1,i2,i3,u1c) = u1e(x,y,t);
-        u(i1,i2,i3,u2c) = u2e(x,y,t);
-        u(i1,i2,i3,pc ) = pe(x,y,t);
-      }  
+          u(i1,i2,i3,u1c) = u1e(x,y,t);
+          u(i1,i2,i3,u2c) = u2e(x,y,t);
+          u(i1,i2,i3,pc ) = pe(x,y,t);
+        }  
 
-      // At the initial time we initialize some MOL variables
-      initializeMethodOfLinesVariables();                
+        // At the initial time we initialize some MOL variables
+        initializeMethodOfLinesVariables();  
+      }
+      else
+      {
+        // 3D 
+        assert( u1c>=0 && u2c>=0 && u3c>=0 );
+
+        Real u1ex,u2ex,u3ex,pex, v1ex,v2ex,v3ex, a1ex,a2ex,a3ex;
+
+        #Include "incompressible/ismStrip3dTractionTractionRoot1.h"
+
+
+        int i1,i2,i3;
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
+          // Reference coordinates:
+          const Real x = vertex(i1,i2,i3,0);
+          const Real y = vertex(i1,i2,i3,1);
+          const Real z = vertex(i1,i2,i3,2);
+          evalSolution(x,y,z,t, u1ex,u2ex,u3ex,pex, v1ex,v2ex,v3ex, a1ex,a2ex,a3ex);
+
+          u(i1,i2,i3,u1c) = u1ex;
+          u(i1,i2,i3,u2c) = u2ex;
+          u(i1,i2,i3,u3c) = u3ex;
+          u(i1,i2,i3,pc ) = pex;
+        }          
+        if( computeVelocity )
+        {
+          OV_ABORT("UDKS: finish me -- computeVelocity");
+        }
+
+      }              
     }
+    else if( iswCase==3 )
+    {
+      // BC = DD
+      if( numberOfDimensions==2 )
+      {
+        OV_ABORT("UDKS: finish me : strip BC=DD, 2D");
+        // #Include "incompressible/ismStripDisplacementDisplacementCase3k2pi.h"
+        int i1,i2,i3;
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
+          // Reference coordinates:
+          Real x = vertex(i1,i2,i3,0);
+          Real y = vertex(i1,i2,i3,1);
+
+          u(i1,i2,i3,u1c) = u1e(x,y,t);
+          u(i1,i2,i3,u2c) = u2e(x,y,t);
+          u(i1,i2,i3,pc ) = pe(x,y,t);
+        }  
+
+        // At the initial time we initialize some MOL variables
+        initializeMethodOfLinesVariables();  
+      }
+      else
+      {
+        OV_ABORT("UDKS: finish me : strip BC=DD, 3D");
+
+        // // 3D 
+        // assert( u1c>=0 && u2c>=0 && u3c>=0 );
+
+        // Real u1ex,u2ex,u3ex,pex, v1ex,v2ex,v3ex, a1ex,a2ex,a3ex;
+
+        // #Include "incompressible/ismStrip3dTractionTractionRoot1.h"
+
+
+        // int i1,i2,i3;
+        // FOR_3D(i1,i2,i3,I1,I2,I3)
+        // {
+        //   // Reference coordinates:
+        //   const Real x = vertex(i1,i2,i3,0);
+        //   const Real y = vertex(i1,i2,i3,1);
+        //   const Real z = vertex(i1,i2,i3,2);
+        //   evalSolution(x,y,z,t, u1ex,u2ex,u3ex,pex, v1ex,v2ex,v3ex, a1ex,a2ex,a3ex);
+
+        //   u(i1,i2,i3,u1c) = u1ex;
+        //   u(i1,i2,i3,u2c) = u2ex;
+        //   u(i1,i2,i3,u3c) = u3ex;
+        //   u(i1,i2,i3,pc ) = pex;
+        // }          
+        // if( computeVelocity )
+        // {
+        //   OV_ABORT("UDKS: finish me -- computeVelocity");
+        // }
+
+      }              
+    }    
     else
     {
       OV_ABORT("finish me");
@@ -491,35 +863,91 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     OV_GET_SERIAL_ARRAY_CONST(real,mg.vertex(),vertex);
     RealArray & u = ua;
 
-    int & iswCase = db.get<int>("iswCase");
+    const int & iswCase = db.get<int>("iswCase");
+    const int n = ipar[0];
+    const int m = ipar[1];    
 
     if( t<3*dt )
-      printF("UDKS: evaluate the incompressible annulus solution: iswCase=%i, t=%9.3e\n",iswCase,t);
+      printF("UDKS: evaluate the incompressible annulus solution: iswCase=%i, n=%d, m=%d t=%9.3e ( Jn(lambda_nm r) \n",iswCase,n,m,t);
 
+    // if( computeVelocity )
+    // {
+    //   OV_ABORT("UDKS: finish me -- computeVelocity");
+    // }
 
     Real C4 =1.; // defines the scale
 
     if( iswCase==1 )
     {
-      // files generated from AMP/ism/maple/DiskAnnulusSolutionWDH.mw
-      C4 = 1./10.;  // Make |u|=.5, |p|=5
-      #Include "incompressible/ismAnnulusDisplacementDisplacementWDH.h"
+      // ---- Annulus : displacement-displacement ----
+      // printF("UDKS: EVAL NEW ANNULUS SOLUTION displacement-displacement\n");
+      // int n=1, m=2; 
+      Real c4=1./4.; 
+
+      #Include "incompressible/ismAnnulusDisplacementDisplacementRoots.h"
+      #Include "incompressible/ismAnnulusDisplacementDisplacement.h"
+
       assignIncompressibleAnnulusSolution();
+
+      initializeMethodOfLinesVariablesAnnulus();
+
     }
     else if( iswCase==2 )
     {
-      #Include "incompressible/ismAnnulusTractionDisplacementWDH.h"
+      // ---- Annulus : traction-displacement ----
+      // printF("UDKS: EVAL NEW ANNULUS SOLUTION\n");
+      // int n=1, m=2; 
+      Real c4=1./4.; 
+
+      #Include "incompressible/ismAnnulusTractionDisplacementRoots.h"
+      #Include "incompressible/ismAnnulusTractionDisplacement.h"
+
       assignIncompressibleAnnulusSolution();
+
+      initializeMethodOfLinesVariablesAnnulus();
+
+    }    
+    else if( iswCase==3 )
+    {
+      // ---- Annulus : traction-traction ----
+      // printF("UDKS: EVAL NEW ANNULUS SOLUTION\n");
+      // int n=1, m=2; 
+      Real c4=1./4.; 
+
+      #Include "incompressible/ismAnnulusTractionTractionRoots.h"
+      #Include "incompressible/ismAnnulusTractionTraction.h"
+
+      assignIncompressibleAnnulusSolution();
+
+      initializeMethodOfLinesVariablesAnnulus();
+
     }
     else
     {
-      C4 = 1./4.; // make u size 1
-      #Include "incompressible/ismAnnulusTractionTractionWDH.h"
-      assignIncompressibleAnnulusSolution();
+      OV_ABORT("error");
     }
 
+    // else if( iswCase==1 ) // ** OLD ***
+    // {
+    //   // files generated from AMP/ism/maple/DiskAnnulusSolutionWDH.mw
+    //   C4 = 1./10.;  // Make |u|=.5, |p|=5
+    //   #Include "incompressible/ismAnnulusDisplacementDisplacementWDH.h"
+    //   assignIncompressibleAnnulusSolution();
+    // }
+    // else if( iswCase==2 )
+    // {
+    //   #Include "incompressible/ismAnnulusTractionDisplacementWDH.h"
+    //   assignIncompressibleAnnulusSolution();
+    // }
+    // else
+    // {
+    //   C4 = 1./4.; // make u size 1
+    //   #Include "incompressible/ismAnnulusTractionTractionWDH.h"
+    //   assignIncompressibleAnnulusSolution();
+    // }
+
   }
-   else if( userKnownSolution=="incompressibleDiskSolution" )
+  else if( userKnownSolution=="incompressibleDiskSolution" )
   {
     // --- incompressible disk solution -----
     const int pc = dbase.get<int >("pc");
@@ -530,34 +958,136 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     OV_GET_SERIAL_ARRAY_CONST(real,mg.vertex(),vertex);
     RealArray & u = ua;
 
-    int & iswCase = db.get<int>("iswCase");
+    const int & iswCase = db.get<int>("iswCase");
+    const int n = ipar[0];
+    const int m = ipar[1];     
 
     if( t<3*dt )
-      printF("UDKS: evaluate the incompressible disk solution: iswCase=%i, t=%9.3e\n",iswCase,t);
+      printF("UDKS: evaluate the incompressible disk solution: iswCase=%i, n=%d, m=%d, t=%9.3e ( Jn(lambda_nm r) )\n",iswCase,n,m,t);
 
+    const Real eps=1.e-9;   // ********************************** FIX ME *********
 
-    Real C4 =1.; // defines the scale
-
+    // Real C4 =1.; // defines the scale
     if( iswCase==1 )
     {
-      // files generated from AMP/ism/maple/DiskAnnulusSolutionWDH.mw
-      // C4 = 1./50.;  // pressure was size 100 with C4=1
-      #Include "incompressible/ismDiskDisplacementWDH.h"
+      // ---- Disks : displacement ----
+      // printF("UDKS: EVAL NEW DISK SOLUTION displacement-displacement\n");
+
+      Real c3=1./4.; 
+
+      #Include "incompressible/ismDiskDisplacementRoots.h"
+      #Include "incompressible/ismDiskDisplacement.h"
+
       assignIncompressibleDiskSolution();
+
+      initializeMethodOfLinesVariablesDisk();
+
     }
     else if( iswCase==2 )
     {
-      #Include "incompressible/ismDiskTractionWDH.h"
+      // ---- Disk : traction ----
+      // printF("UDKS: EVAL NEW DISK SOLUTION\n");
+
+      Real c3=1./4.; 
+
+      #Include "incompressible/ismDiskTractionRoots.h"
+      #Include "incompressible/ismDiskTraction.h"
+
       assignIncompressibleDiskSolution();
-    }
+
+      initializeMethodOfLinesVariablesDisk();
+
+    }    
     else
     {
-      OV_ABORT("UDKS: unknown icase=");
+      OV_ABORT("error");
     }
+
+
+    // if( iswCase==1 )
+    // {
+    //   // files generated from AMP/ism/maple/DiskAnnulusSolutionWDH.mw
+    //   // C4 = 1./50.;  // pressure was size 100 with C4=1
+    //   #Include "incompressible/ismDiskDisplacementWDH.h"
+    //   assignIncompressibleDiskSolution();
+    // }
+    // else if( iswCase==2 )
+    // {
+    //   #Include "incompressible/ismDiskTractionWDH.h"
+    //   assignIncompressibleDiskSolution();
+    // }
+    // else
+    // {
+    //   OV_ABORT("UDKS: unknown icase=");
+    // }
 
   }
 
+  else if( userKnownSolution=="gaussianPlaneWave" )
+  {
+    // --- Gaussian plane wave : incompressible elasticity -----
+    const int pc = dbase.get<int >("pc");
+    assert( pc>=0 );
 
+    MappedGrid & mg = cg[grid];
+    mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
+    OV_GET_SERIAL_ARRAY_CONST(real,mg.vertex(),vertex);
+    RealArray & u = ua;
+
+           
+    const Real kx   = rpar[ 0];
+    const Real ky   = rpar[ 1];      
+    const Real kz   = rpar[ 2];      
+    const Real k0   = rpar[ 3];      
+    const Real beta = rpar[ 4];      
+    const Real ax   = rpar[ 5];      
+    const Real ay   = rpar[ 6];      
+    const Real az   = rpar[ 7]; 
+    const Real x0   = rpar[ 8];      
+    const Real y0   = rpar[ 9];      
+    const Real z0   = rpar[10];   
+
+    const Real kNorm = sqrt( kx*kx + ky*ky + kz*kz );
+    const Real omega = cs*kNorm;  
+        
+    if( t<3*dt )
+      printF("UDKS: evaluate the Gaussan Plane Wave kx=%g, ky=%g, kz=%g, k0=%g, beta=%g, (ax,ay,az)=(%g,%g,%g) cs=%g, t=%9.3e\n",kx,ky,kz,k0,beta,ax,ay,az,cs,t);
+
+    if( numberOfDimensions==2 )
+    {
+      FOR_3D(i1,i2,i3,I1,I2,I3)
+      {
+        const Real x = vertex(i1,i2,i3,0);
+        const Real y = vertex(i1,i2,i3,1);
+
+        const Real xi = kx*(x-x0) + ky*(y-y0) - omega*t; 
+        const Real expxi = exp( -beta*xi*xi )*cos(k0*xi); 
+
+        u(i1,i2,i3,u1c) = ax*expxi;
+        u(i1,i2,i3,u2c) = ay*expxi;
+        u(i1,i2,i3,pc ) = 0.;
+      }
+    }
+    else
+    {
+      FOR_3D(i1,i2,i3,I1,I2,I3)
+      {
+        const Real x = vertex(i1,i2,i3,0);
+        const Real y = vertex(i1,i2,i3,1);
+        const Real z = vertex(i1,i2,i3,2);
+
+        const Real xi = kx*(x-x0) + ky*(y-y0) + kz*(z-z0) - omega*t; 
+        const Real expxi = exp( -beta*xi*xi )*cos(k0*xi); 
+
+        u(i1,i2,i3,u1c) = ax*expxi;
+        u(i1,i2,i3,u2c) = ay*expxi;
+        u(i1,i2,i3,u3c) = az*expxi;
+        u(i1,i2,i3,pc ) = 0.;
+      }   
+
+    }       
+
+  }
   else if( userKnownSolution=="linearBeamExactSolution" )
   {
  
@@ -1335,6 +1865,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       "incompressible surface wave",
       "incompressible annulus solution",
       "incompressible disk solution",
+      "gaussian plane wave",
       "choose a common known solution",
       "done",
       ""
@@ -1442,9 +1973,9 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
              " This is an exact solution to the incompressible linear elastic equations.\n"
              " The solution is defined on a rectange and is periodic in y\n"
              " The are different cases defined:\n"
-             "     Case 1: traction-dispalcement BC: surface wave as speed cs=omega/k, region=[0,1]x[0,Ly] Ly is given.\n"
+             "     Case 1: traction-displacement BC: surface wave as speed cs=omega/k, region=[0,1]x[0,Ly] Ly is given.\n"
              "     Case 2: traction-traction BC\n"
-          //    "     Case 2: surface wave as speed different from cs, region=[0,1]x[0,1].\n"
+             "     Case 3: displacement-displacement BC.\n"
              );      
 
       if( !db.has_key("iswCase") )
@@ -1466,7 +1997,8 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       printF("--- Incompressible Annulus Solution ---\n"
              " This is an exact solution to the incompressible linear elastic equations.\n"
-             " The solution is defined on an Annulus\n"
+             " The solution is defined on an annulus and involves:\n"
+             "         Jn(lambda_mn r) : n = order of Bessel, m=1,2,3, root number\n"
              " The are different cases defined:\n"
              "     Case 1: displacement + displacement (BC on inner and outer boundaries)\n"
              "     Case 2: traction + displacement\n"
@@ -1478,8 +2010,15 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         db.put<int>("iswCase")=1;
       }
       int & iswCase = db.get<int>("iswCase");
-      gi.inputString(answer,"Enter iswCase");
-      sScanF(answer,"%i",&iswCase);
+      int n=1, m=1;
+      gi.inputString(answer,"Enter iswCase, n,m");
+      sScanF(answer,"%i %i %i",&iswCase,&n,&m);
+      printF("Setting iswCase=%d, n=%d, m=%d ( J_n(lamnda_mn r)\n",iswCase,n,m);
+      ipar[0]=n;
+      ipar[1]=m;
+
+
+
 
     }
 
@@ -1490,7 +2029,8 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       printF("--- Incompressible Disk Solution ---\n"
              " This is an exact solution to the incompressible linear elastic equations.\n"
-             " The solution is defined on the unit disk\n"
+             " The solution is defined on the unit disk and involves:\n"
+             "         Jn(lambda_mn r) : n = order of Bessel, m=1,2,3, root number\n"             
              " The are different cases defined:\n"
              "     Case 1: displacement BC\n"
              "     Case 2: traction BC\n"
@@ -1501,10 +2041,71 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         db.put<int>("iswCase")=1;
       }
       int & iswCase = db.get<int>("iswCase");
-      gi.inputString(answer,"Enter iswCase");
-      sScanF(answer,"%i",&iswCase);
+      int n=1, m=1;
+      gi.inputString(answer,"Enter iswCase, n,m");
+      sScanF(answer,"%i %i %i",&iswCase,&n,&m);
+      printF("Setting iswCase=%d, n=%d, m=%d ( J_n(lamnda_mn r)\n",iswCase,n,m);
+      ipar[0]=n;
+      ipar[1]=m;      
+
 
     }    
+    else if( answer=="gaussian plane wave" )
+    {
+      userKnownSolution="gaussianPlaneWave";
+      dbase.get<bool>("knownSolutionIsTimeDependent")=true;  // known solution IS time dependent
+
+      printF("--- Gaussian plane wave ---\n"
+             " This is an exact solution to the incompressible linear elastic equations.\n"
+             " The solution is \n"
+             "       uv = av exp( -beta * xi^2 ) cos( 2*pi*k0*xi )\n"
+             "    xi = kv.(xv-xv0) - omega*t \n"
+             "    kv = ( kx,ky,kz )\n"
+             "    xv0 = (x0,y0,z0)\n"
+             "    k0 = modulation frequency\n"
+             "    av = (ax,ay,az) if ax=ay=az=0 then av is computed automatically so that av.kv =0\n"
+             "    c = shear wave speed\n");
+
+      Real kx=1., ky=0, kz=0., k0=0., beta=10., ax=0., ay=1., az=0., x0=0., y0=0., z0=0.; 
+      gi.inputString(answer,"Enter kx,ky,kz,k0, beta, x0,y0,z0,ax,ay,az");
+      sScanF(answer,"%e %e %e %e %e %e %e %e %e %e %e",&kx, &ky, &kz, &k0, &beta, &x0,&y0,&z0, &ax, &ay, &az);
+
+      k0*=twoPi;
+
+      if( fabs(ax)+fabs(ay)+fabs(az) == 0. )
+      {
+        const real kNorm = sqrt(kx*kx+ky*ky+kz*kz);
+        // const real cs = sqrt(mu/rho);
+        // const real cc = cs*kNorm;
+        if( fabs(kx)+fabs(ky)>0. )
+        {
+          ax = -ky/kNorm;
+          ay =  kx/kNorm;
+          az =0.;
+        }
+        else
+        {
+          ay = -kz/kNorm;
+          az =  ky/kNorm;
+          ax =0.;
+        }
+      }      
+
+      printF("Setting (kx,ky,kz)=(%g,%g,%g), k0=%g, beta=%g, (x0,y0,z0)=(%g,%g,%g) (ax,ay,az)=(%g,%g,%g) \n",kx/twoPi,ky/twoPi,kz/twoPi,k0,beta,x0,y0,z0,ax,ay,az);
+      rpar[ 0]=kx;
+      rpar[ 1]=ky;      
+      rpar[ 2]=kz;      
+      rpar[ 3]=k0;      
+      rpar[ 4]=beta;      
+      rpar[ 5]=ax;      
+      rpar[ 6]=ay;      
+      rpar[ 7]=az;  
+      rpar[ 8]=x0;      
+      rpar[ 9]=y0;      
+      rpar[10]=z0;              
+
+
+    }        
 
     else
     {

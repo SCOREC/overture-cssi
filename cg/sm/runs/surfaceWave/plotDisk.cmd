@@ -3,13 +3,17 @@
 #  plotStuff plotDisk -show=diskTractionG8 -name=diskTractionG8 -solution=7
 #  plotStuff plotDisk -show=diskTractionG16 -name=diskTractionG16 -solution=7
 #
+# plotStuff plotDisk -show=diskDisplacementG4 -name=diskDisplacementG4 -solution=7 -dsf=.15
+# plotStuff plotDisk -show=diskDisplacementG8 -name=diskDisplacementG8 -solution=7
+# plotStuff plotDisk -show=diskDisplacementG16 -name=diskDisplacementG16 -solution=7
+#
 # -- annulus 
 #   plotStuff plotDisk -show=annulusTTG4 -name=annulusTTG4 -solution=7
 #   plotStuff plotDisk -show=annulusTTG8 -name=annulusTTG8 -solution=7
 #
-$show="diffract16.show"; $min=0.; $max=-1.; $grids=1;  $umin=0.; $umax=-1.; $solution=1; 
+$show="diffract16.show"; $min=0.; $max=-1.; $grids=1;  $umin=0.; $umax=-1.; $solution=1; $dsf=0.075; 
 GetOptions( "show=s"=>\$show, "name=s"=>\$name, "min=f"=>\$min,"max=f"=>\$max, "umin=f"=>\$umin,"umax=f"=>\$umax,\
-            "solution=i"=>\$solution );
+            "solution=i"=>\$solution,"dsf=f"=>\$dsf );
 #
 $show
 # 
@@ -17,7 +21,7 @@ solution: $solution
 derived types
 specify displacement components
   0 1 2 
-speed
+# speed
 # stressNorm
 displacementNorm
 exit
@@ -27,7 +31,7 @@ displacement
   # plot non-physical boundaries 1
   # colour boundaries by refinement level number
   # raise the grid by this amount (2D) 0.1
-  displacement scale factor 0.075
+  displacement scale factor $dsf 
   coarsening factor 1
   colour grid lines from chosen name  
   grid colour 0 NAVYBLUE
@@ -45,7 +49,7 @@ exit
 $plotName = $name . "DisplacementMesh.ps"; 
 hardcopy file name:0 $plotName
 hardcopy save:0
-
+erase
 #
 #   ------ CONTOURS -------------
 contour
@@ -66,7 +70,7 @@ hardcopy file name:0 $plotName
 hardcopy save:0
 pause
 #
-plot:uError
+plot:u1Error
 $plotName = $name . "u1Error.ps"; 
 hardcopy file name:0 $plotName
 hardcopy save:0
@@ -75,6 +79,8 @@ plot:pError
 $plotName = $name . "pError.ps"; 
 hardcopy file name:0 $plotName
 hardcopy save:0  
+
+
 
 # ---- displacement ----
 displacement

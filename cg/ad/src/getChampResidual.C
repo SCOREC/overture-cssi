@@ -90,6 +90,8 @@ real
 getChampResidual( realCompositeGridFunction & u, Parameters & parameters, Real t, Real dt )
 {
 
+
+
     CompositeGrid & cg = *u.getCompositeGrid();
     const int numberOfDimensions = cg.numberOfDimensions();
     int numberOfComponents = 1;
@@ -108,7 +110,8 @@ getChampResidual( realCompositeGridFunction & u, Parameters & parameters, Real t
     const int & orderOfAccuracy    = parameters.dbase.get<int>("orderOfAccuracy");
     assert( orderOfAccuracy==2 || orderOfAccuracy==4 );
 
-
+    if( debug & 1 )
+        printF("+++++ Entering getChampResidual t=%9.3e +++++\n",t);
 
     RealArray & champParameters = parameters.dbase.get<RealArray>("champParameters");
 
@@ -249,7 +252,7 @@ getChampResidual( realCompositeGridFunction & u, Parameters & parameters, Real t
                         const Real theta = champParameters(2,side,axis,grid);    // K1/K2
                         const Real beta  = champParameters(3,side,axis,grid);    // D1/D2    
                         const Real Sl    = champParameters(4,side,axis,grid);    // pl/dxs; 
-                        printF("**** ADD TZ Correction to results from getData for CHAMP:  Sl=%g, theta=%g, beta=%g *********************************\n",Sl,theta,beta);                  
+            // printF("**** ADD TZ Correction to results from getData for CHAMP:  Sl=%g, theta=%g, beta=%g *********************************\n",Sl,theta,beta);                  
                         OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal);
                         RealArray ue(Ib1,Ib2,Ib3,N), uex(Ib1,Ib2,Ib3,N), uey(Ib1,Ib2,Ib3,N), uexx(Ib1,Ib2,Ib3,N), ueyy(Ib1,Ib2,Ib3,N);
                         int rectangular=0;
@@ -260,17 +263,31 @@ getChampResidual( realCompositeGridFunction & u, Parameters & parameters, Real t
                         e.gd( ueyy,xLocal,mg.numberOfDimensions(),rectangular,0,0,2,0,Ib1,Ib2,Ib3,N,t);
                         if( isRectangular )
                         {
-              // ONLY VALID FOR CARTESIAN AND  axis==0 
-                            assert( axis==0 );
-                            const Real dxs = dx[axis]; 
+              // const Real dxs = dx[axis];   // *** FIX ME need dx[opposite-side]
+              // We use dx fro the opposite side
+                            const Real dxs = champParameters(5,side,axis,grid); // value saved in champBoundaryConditions.bC 
                             const real a0 = Sl;
                             const real a1 = theta + Sl*dxs*theta;
-                            const real a2 = dxs*( beta      ) + Sl*( .5*SQR(dxs)*beta      );
-                            const real a3 = dxs*( (beta-1.) ) + Sl*( .5*SQR(dxs)*(beta-1.) );
-                            const real a4 = a3; // for 3D 
+              // const real a2 = dxs*( beta      ) + Sl*( .5*SQR(dxs)*beta      );
+              // const real a3 = dxs*( (beta-1.) ) + Sl*( .5*SQR(dxs)*(beta-1.) );
+              // const real a4 = a3; // for 3D 
+                            real axx, ayy, azz;
+                            if( axis==0 )
+                            {
+                                axx = (beta   )*( dxs + Sl*( .5*SQR(dxs) ) );
+                                ayy = (beta-1.)*( dxs + Sl*( .5*SQR(dxs) ) );
+                                azz = ayy; // for 3D 
+                            }
+                            else if( axis==1 )
+                            {
+                                ayy = (beta   )*( dxs + Sl*( .5*SQR(dxs) ) );
+                                axx = (beta-1.)*( dxs + Sl*( .5*SQR(dxs) ) );
+                                azz = axx; // for 3D       
+                            }
+                            assert( numberOfDimensions==2 );
                             int n=0;
                             assert( N.getLength()==1 );
-                            interfaceData.u(Ib1,Ib2,Ib3,n) += a0*ue + a1*( normal(Ib1,Ib2,Ib3,0)*uex + normal(Ib1,Ib2,Ib3,1)*uey ) + a2*uexx + a3*ueyy;
+                            interfaceData.u(Ib1,Ib2,Ib3,n) += a0*ue + a1*( normal(Ib1,Ib2,Ib3,0)*uex + normal(Ib1,Ib2,Ib3,1)*uey ) + axx*uexx + ayy*ueyy;
                         }
                         else
                         {
@@ -281,7 +298,7 @@ getChampResidual( realCompositeGridFunction & u, Parameters & parameters, Real t
                             const real a2 = dxs*( beta      ) + Sl*( .5*SQR(dxs)*beta      );
                             const real a3 = dxs*( (beta-1.) ) + Sl*( .5*SQR(dxs)*(beta-1.) );
                             const real a4 = a3; // for 3D 
-                            printF("**** ADD TZ Correction to results from getData for CHAMP:  Sl=%g, theta=%g, beta=%g **************** FINISH ME *****************\n",Sl,theta,beta); 
+              //  printF("**** ADD TZ Correction to results from getData for CHAMP:  Sl=%g, theta=%g, beta=%g **************** FINISH ME *****************\n",Sl,theta,beta); 
               // NCoeff(m) = theta*( an1L*xCoeff(m,i1,i2,i3) + an2L*yCoeff(m,i1,i2,i3) ) - b2R*r2Coeff(m,j1,j2,j3); 
               // // NOTE: Here we assume the tangential r derivatives are the same on both sides! (see champ4/notes) 
               // LCoeff(m) = (b1R*b1R/c11R)*( beta*lapCoeff(m,i1,i2,i3) 

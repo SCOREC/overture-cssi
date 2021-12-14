@@ -15,7 +15,7 @@
 clear:
 interface(quiet=true,echo=0):
 
-writeMatlabFile := 1; # save eigenvalues to a Matlab file
+writeMatlabFile := 0; # save eigenvalues to a Matlab file
 
 Digits:=15;
 j:=BesselJ(m,rr):
@@ -60,8 +60,10 @@ for ibc from 1 by 1 to numBC do
     nr:=10: # first nr roots of f
     nm:=30; # 12: # first nm bessel functions
   else
-    nr:=4: # first nr roots of f
-    nm:=3: # first nm bessel functions 
+    # nr:=4: # first nr roots of f
+    # nm:=3: # first nm bessel functions 
+    nr:= 5: # first nr roots of f
+    nm:= 5; # 12: # first nm bessel functions    
   fi;
 
   # plot f(z) for different m

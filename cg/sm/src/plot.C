@@ -735,6 +735,7 @@ plot(int current, real t, real dt )
 
 //   const int & orderOfAccuracyInSpace = parameters.dbase.get<int>("orderOfAccuracy");
 //   const int & orderOfAccuracyInTime  = parameters.dbase.get<int>("orderOfTimeAccuracy");
+
     SmParameters::PDEVariation & pdeVariation = parameters.dbase.get<SmParameters::PDEVariation>("pdeVariation");
     const SmParameters::CompressibilityTypeEnum & compressibilityType = parameters.dbase.get<SmParameters::CompressibilityTypeEnum>("compressibilityType");
     RealArray & timing = parameters.dbase.get<RealArray >("timing");
@@ -743,14 +744,17 @@ plot(int current, real t, real dt )
 
     getMethodName( methodName );
     
-    real & mu = parameters.dbase.get<real>("mu");
-    real & lambda = parameters.dbase.get<real>("lambda");
+    const int & u1c      = parameters.dbase.get<int >("u1c");
+    const int & u2c      = parameters.dbase.get<int >("u2c");
+    const int & u3c      = parameters.dbase.get<int >("u3c");  
+    const real & mu      = parameters.dbase.get<real>("mu");
+    const real & lambda  = parameters.dbase.get<real>("lambda");
+    real & cfl           = parameters.dbase.get<real>("cfl");
+    real & tFinal        = parameters.dbase.get<real>("tFinal");
+    real & tPlot         = parameters.dbase.get<real>("tPrint");
+    int & debug          = parameters.dbase.get<int >("debug");
+    int stepNumber       = parameters.dbase.get<int >("globalStepNumber")+1; // note plus 1
 
-    real & cfl = parameters.dbase.get<real>("cfl");
-    real & tFinal = parameters.dbase.get<real>("tFinal");
-    real & tPlot = parameters.dbase.get<real>("tPrint");
-    int & debug = parameters.dbase.get<int >("debug");
-    const int stepNumber = parameters.dbase.get<int >("globalStepNumber")+1; // note plus 1
     const real cpu=getCPU()-parameters.dbase.get<real>("cpuInitial");
 
     if( compressibilityType==SmParameters::compressibleSolid )
@@ -1243,6 +1247,10 @@ plot(int current, real t, real dt )
                             break;
                         }
                     }
+          // --- check for old names for backward compatibility -----
+                    if( name=="u" ){ component = u1c; assert( u.getName(component)=="u1" ); }
+                    if( name=="v" ){ component = u2c; assert( u.getName(component)=="u2" ); }
+                    if( name=="w" ){ component = u3c; assert( u.getName(component)=="u3" ); }
                     if( component==-1 )
                     {
                         printF("ERROR: unknown component name =[%s]\n",(const char*)name);

@@ -2,7 +2,8 @@
 #
 #    Grid for an interface calculation between two squares
 #
-# usage: ogen [noplot] twoSquaresInterface -factor=<num> -order=[2/4/6/8] -interp=[e/i] -name= -bc=[d|p]
+# usage: ogen [-noplot] twoSquaresInterface -factor=<num> -order=[2/4/6/8] -interp=[e/i] -name= -bc=[d|p]
+#              -angle=<f> -prefix=<s> -orientation=[horizontal|vertical]
 # 
 #    factor : grid resolution factor 
 #    yFactor : if set, use this grid resolution factro in y 
@@ -50,10 +51,12 @@
 #    ogen -noplot twoSquaresInterface -factor=1 -yFactor=1 -refineLeft=1 -refineRight=1 -name="twoSquaresInterface1Refine.order2.hdf"
 # 
 #**************************************************************************
-$order=2;  $orderOfAccuracy = "second order"; $prefix="twoSquaresInterface"; 
+$order=2;  $orderOfAccuracy = "second order"; 
+$prefix="twoSquaresInterface"; 
 $interp="i"; $interpType = "implicit for all grids";
 $order=2; $interp="i"; $name=""; $bc="d";
 $xa=-1; $xb=1; # far left and far right
+$ya=-1; $yb=1; # top and bottom for orientation=vertical
 $ml=0;  # to-do: add MG levels
 $numGhost=-1; # if >0 use this many ghost 
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids";
@@ -62,13 +65,14 @@ $factor=1; $yFactor=-1;
 $xFactorRight=1;  # additional grid resolution factor for the right domain (for non-matching grid lines)
 $yFactorRight=1;  # additional grid resolution factor for the right domain (for non-matching grid lines)
 $refineLeft=0; $refineRight=0; 
+$orientation="horizontal"; # or vertical
 # 
 # get command line arguments
 GetOptions("order=i"=>\$order,"factor=f"=> \$factor,"yFactor=f"=> \$yFactor,"interp=s"=> \$interp,\
            "outerRad=f"=> \$outerRad,"xa=f"=> \$xa,"xb=f"=> \$xb,"bc=s"=>\$bc,"angle=f"=> \$angle,\
            "name=s"=>\$name,"xFactorRight=f"=> \$xFactorRight,"yFactorRight=f"=> \$yFactorRight,\
            "refineLeft=i"=>\$refineLeft,"refineRight=i"=>\$refineRight,"numGhost=i"=>\$numGhost,\
-           "prefix=s"=>\$prefix,"ml=i"=>\$ml );
+           "prefix=s"=>\$prefix,"ml=i"=>\$ml,"orientation=s"=>\$orientation );
 # 
 if( $yFactor eq -1 ){ $yFactor=$factor; }
 #
@@ -89,10 +93,16 @@ if( $name eq "" ){ $name = $prefix . "$interp$factor" . $suffix . ".hdf"; }
 # $bcLeft = "1 100  1  1"; 
 # $bcRight= "100 1  1  1"; 
 # *new* Sept. 17, 2016: 
-$bcLeft = "1 100  3  4"; 
-$bcRight= "100 6 7 8"; 
+if( $orientation eq "horizontal" ){\
+  $bcLeft = "1 100  3  4"; $bcRight= "100 6 7 8"; }\
+else{\
+  $bcLeft = "1 2 3 100"; $bcRight= "5 6 100 8"; }\
 # 
-if( $bc eq "p" ){ $bcLeft ="1 100 -1 -1"; $bcRight="100 6 -1 -1"; }
+if( $orientation eq "horizontal" ){\
+  if( $bc eq "p" ){ $bcLeft ="1 100 -1 -1"; $bcRight="100 6 -1 -1"; $shareLeft="0 100 0 0"; $shareRight="100 0 0 0"; }\
+}else{\
+  if( $bc eq "p" ){ $bcLeft ="-1 -1 1 100"; $bcRight="-1 -1 100 6"; $shareLeft="0 0 0 100"; $shareRight="0 0 100 0";}\
+    }
 #
 #**************************************************************************
 #
@@ -109,8 +119,9 @@ if( $angle eq "0" ){ $rightSquareBase="rightSquare"; $rightSquareRotated="rightS
 #  here is the left grid
 #
   rectangle
-    $xar=$xa;   $xbr=0.0; 
-    $yar= 0.;   $ybr=1.; 
+    if( $orientation eq "horizontal" ){\
+         $xar=$xa; $xbr=0.0; $yar= 0.; $ybr=1.; }else{\
+         $xar=0.;  $xbr=1.0; $yar=$ya; $ybr=0.; }
     set corners
      $xar $xbr $yar $ybr 
     lines
@@ -120,8 +131,8 @@ if( $angle eq "0" ){ $rightSquareBase="rightSquare"; $rightSquareRotated="rightS
     boundary conditions
       $bcLeft
     share
- # for now interfaces are marked with share>=100 
-      0 100 0 0
+      # for now interfaces are marked with share>=100 
+      $shareLeft
     mappingName
      $leftSquareBase 
      #  leftSquare0
@@ -131,8 +142,11 @@ if( $angle eq "0" ){ $rightSquareBase="rightSquare"; $rightSquareRotated="rightS
 # -- right grid ----
 #
   rectangle
-    $xar= 0.0;  $xbr=$xb;
-    $yar= 0.;   $ybr=1.; 
+    if( $orientation eq "horizontal" ){\
+         $xar=0.; $xbr=$xb; $yar= 0.; $ybr=1.; }else{\
+         $xar=0.; $xbr=1.0; $yar=0.0; $ybr=$yb; }  
+    # $xar= 0.0;  $xbr=$xb;
+    # $yar= 0.;   $ybr=1.; 
     set corners
      $xar $xbr $yar $ybr 
     lines
@@ -144,8 +158,8 @@ if( $angle eq "0" ){ $rightSquareBase="rightSquare"; $rightSquareRotated="rightS
     boundary conditions
       $bcRight
     share
- # for now interfaces are marked with share>=100 
-      100 0 0 0
+      # for now interfaces are marked with share>=100 
+      $shareRight
     mappingName
       $rightSquareBase
       # rightSquare0
@@ -183,7 +197,7 @@ if( $angle eq "0" ){ $rightSquareBase="rightSquare"; $rightSquareRotated="rightS
       $nxr = $nx;  $nyr=$ny; 
       $nxr $nyr
     boundary conditions
-     0 100 0 0 
+     $shareLeft
     mappingName
       refinedLeftSquare
     exit
@@ -202,7 +216,7 @@ if( $angle eq "0" ){ $rightSquareBase="rightSquare"; $rightSquareRotated="rightS
       $nxr = $nx;  $nyr=$ny; 
       $nxr $nyr
     boundary conditions
-     100 0 0 0 
+     $shareRight
     mappingName
       refinedRightSquare
     exit

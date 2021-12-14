@@ -493,7 +493,7 @@ advanceIncompressible( int current, real t, real dt,
                     real timei=getCPU();
                     if( debug & 4 )
                         gf[next].u.display(sPrintF("Cgsm::advanceIncompressible: gf[next].u before interpolate, t=%8.2e",t+dt),debugFile,"%8.2e ");
-          // Note: interpolate performs a periodicUpdate and updateGhostBoundaries even if there is only one grid
+          // --- Note: interpolate performs a periodicUpdate and updateGhostBoundaries even if there is only one grid
                     gf[next].u.interpolate();
                     if( debug & 4 )
                         gf[next].u.display(sPrintF("Cgsm::advanceIncompressible: gf[next].u after interpolate, t=%8.2e",t+dt),debugFile,"%8.2e ");
@@ -766,7 +766,7 @@ advanceIncompressible( int current, real t, real dt,
                         real timei=getCPU();
                         if( debug & 4 )
                             gf[next].u.display(sPrintF("Cgsm::advanceIncompressible: gf[next].u before interpolate, t=%8.2e",t+dt),debugFile,"%8.2e ");
-            // Note: interpolate performs a periodicUpdate and updateGhostBoundaries even if there is only one grid
+            // --- Note: interpolate performs a periodicUpdate and updateGhostBoundaries even if there is only one grid
                         gf[next].u.interpolate();
                         if( debug & 4 )
                             gf[next].u.display(sPrintF("Cgsm::advanceIncompressible: gf[next].u after interpolate, t=%8.2e",t+dt),debugFile,"%8.2e ");
@@ -812,7 +812,7 @@ advanceIncompressible( int current, real t, real dt,
                             real timei=getCPU();
                             if( debug & 4 )
                                 gf[next].u.display(sPrintF("Cgsm::advanceIncompressible: gf[next].u before interpolate, t=%8.2e",t+dt),debugFile,"%8.2e ");
-              // Note: interpolate performs a periodicUpdate and updateGhostBoundaries even if there is only one grid
+              // --- Note: interpolate performs a periodicUpdate and updateGhostBoundaries even if there is only one grid
                             gf[next].u.interpolate();
                             if( debug & 4 )
                                 gf[next].u.display(sPrintF("Cgsm::advanceIncompressible: gf[next].u after interpolate, t=%8.2e",t+dt),debugFile,"%8.2e ");
@@ -1546,7 +1546,7 @@ advanceIncompressibleMethodOfLines( int current, real t, real dt,
                     real timei=getCPU();
                     if( debug & 4 )
                         gf[next].u.display(sPrintF("Cgsm::advanceIncompressible: gf[next].u before interpolate, t=%8.2e",t+dt),debugFile,"%8.2e ");
-          // Note: interpolate performs a periodicUpdate and updateGhostBoundaries even if there is only one grid
+          // --- Note: interpolate performs a periodicUpdate and updateGhostBoundaries even if there is only one grid
                     gf[next].u.interpolate();
                     if( debug & 4 )
                         gf[next].u.display(sPrintF("Cgsm::advanceIncompressible: gf[next].u after interpolate, t=%8.2e",t+dt),debugFile,"%8.2e ");
@@ -1804,7 +1804,7 @@ advanceIncompressibleMethodOfLines( int current, real t, real dt,
                         real timei=getCPU();
                         if( debug & 4 )
                             gf[next].u.display(sPrintF("Cgsm::advanceIncompressible: gf[next].u before interpolate, t=%8.2e",t+dt),debugFile,"%8.2e ");
-            // Note: interpolate performs a periodicUpdate and updateGhostBoundaries even if there is only one grid
+            // --- Note: interpolate performs a periodicUpdate and updateGhostBoundaries even if there is only one grid
                         gf[next].u.interpolate();
                         if( debug & 4 )
                             gf[next].u.display(sPrintF("Cgsm::advanceIncompressible: gf[next].u after interpolate, t=%8.2e",t+dt),debugFile,"%8.2e ");
@@ -1849,7 +1849,7 @@ advanceIncompressibleMethodOfLines( int current, real t, real dt,
                             real timei=getCPU();
                             if( debug & 4 )
                                 gf[next].u.display(sPrintF("Cgsm::advanceIncompressible: gf[next].u before interpolate, t=%8.2e",t+dt),debugFile,"%8.2e ");
-              // Note: interpolate performs a periodicUpdate and updateGhostBoundaries even if there is only one grid
+              // --- Note: interpolate performs a periodicUpdate and updateGhostBoundaries even if there is only one grid
                             gf[next].u.interpolate();
                             if( debug & 4 )
                                 gf[next].u.display(sPrintF("Cgsm::advanceIncompressible: gf[next].u after interpolate, t=%8.2e",t+dt),debugFile,"%8.2e ");

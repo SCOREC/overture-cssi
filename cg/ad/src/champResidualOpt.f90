@@ -173,23 +173,24 @@ subroutine champResidualOpt( nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,md1a,md1
   integer option,side,axis,grid,tc,debug,myid,orderOfAccuracy,gridType
   integer n1a,n1b,n2a,n2b,n3a,n3b
   integer i1,i2,i3,m1,m2,m3,m
+  integer width,hw,numGhost
   real res,maxRes,l2Res,count
 
   integer rectangular,curvilinear
   parameter( rectangular=0, curvilinear=1 )
 
-  write(*,*) 'Inside champResidualOpt... '
+  ! write(*,*) 'Inside champResidualOpt... '
 
-   option             = ipar( 0)
-   side               = ipar( 1)
-   axis               = ipar( 2)
-   grid               = ipar( 3)
-   gridType           = ipar( 4)
-   orderOfAccuracy    = ipar( 5)
-   ! twilightZone       = ipar( 6)
-   tc                 = ipar( 7)
-   debug              = ipar( 8)
-   myid               = ipar( 9)
+  option             = ipar( 0)
+  side               = ipar( 1)
+  axis               = ipar( 2)
+  grid               = ipar( 3)
+  gridType           = ipar( 4)
+  orderOfAccuracy    = ipar( 5)
+  ! twilightZone       = ipar( 6)
+  tc                 = ipar( 7)
+  debug              = ipar( 8)
+  myid               = ipar( 9)
 
   maxRes   = rpar(13)  ! ... returned
   l2Res    = rpar(14)  ! ... returned
@@ -212,24 +213,28 @@ subroutine champResidualOpt( nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,md1a,md1
     n3b=gridIndexRange(side,axis)
   end if
    
+  width = orderOfAccuracy+1 ! stencil width 
+  hw = orderOfAccuracy/2  ! stencil half-width
+  numGhost = hw
+
   ! ---------------- START LOOP OVER FACE -----------------------
-  ! if( .true. )then
   ! -- compute the residual using the stencil in the coefficient matrix ---
   maxRes=0.
   l2Res=0.
   count=0.
-  if( nd.eq.2 .and. orderOfAccuracy.eq.2 )then
-    !  ------------ 2D ORDER=2 ----------------
+  if( nd.eq.2  )then
 
+    !  ------------ 2D ----------------
+    ! FINISH ME: Check residual in ghost 2 for order 4 ? could be extrapolation
       do i3=n3a,n3b
       do i2=n2a,n2b
       do i1=n1a,n1b
         if( mask(i1,i2,i3).gt.0 )then
 
       res = -f(i1,i2,i3,0)
-      do m2=-1,1
-        do m1=-1,1
-          m = (m1+1)+3*(m2+1)
+      do m2=-hw,hw
+        do m1=-hw,hw
+          m = (m1+hw)+width*(m2+hw)
           res = res + coeff(m,i1,i2,i3)*u(i1+m1,i2+m2,i3,tc)
         end do 
       end do
@@ -243,7 +248,9 @@ subroutine champResidualOpt( nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,md1a,md1
       end do
       end do
       end do
+
   else
+    write(*,'("champResidualOpt: finish me for nd=",i3)') nd
     stop 9876
   end if
 

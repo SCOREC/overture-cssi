@@ -578,6 +578,8 @@ Parameters(const int & numberOfDimensions0) : pdeName("unknown"), numberOfBCName
 
   // applyChampInterfaceConditions: use CHAMP interface conditions at CHT interfaces
   if( !dbase.has_key("applyChampInterfaceConditions") ) dbase.put<int>("applyChampInterfaceConditions",0);
+  // champOption: 0=use old implementation, 1=use new from Sijia.
+  if( !dbase.has_key("champ option") ){ dbase.put<int>("champOption")=0; }   //
 
   // Apply a projection to the interface values
   if (!dbase.has_key("projectInterface")) dbase.put<bool>("projectInterface",false);
@@ -2316,7 +2318,7 @@ setParameters(const int & numberOfDimensions0 /* =2 */ ,
   dbase.get<int >("numberOfDimensions")=numberOfDimensions0;
 
   dbase.get<int >("rc")= dbase.get<int >("uc")= dbase.get<int >("vc")= dbase.get<int >("wc")= dbase.get<int >("pc")= 
-   dbase.get<int >("tc")= dbase.get<int >("sc")= dbase.get<int >("kc")= dbase.get<int >("epsc")= dbase.get<int >("sec")=-1;
+  dbase.get<int >("tc")= dbase.get<int >("sc")= dbase.get<int >("kc")= dbase.get<int >("epsc")= dbase.get<int >("sec")=-1;
   
    dbase.get<aString >("reactionName")=reactionName;
   if(  dbase.get<aString >("reactionName")!=nullString &&  dbase.get<aString >("reactionName")!="" )
@@ -2327,9 +2329,9 @@ setParameters(const int & numberOfDimensions0 /* =2 */ ,
   }
   else
   {
-     dbase.get<bool >("computeReactions")=false;
-     dbase.get<Reactions* >("reactions")=NULL;
-     dbase.get<int >("numberOfSpecies")=0;
+    dbase.get<bool >("computeReactions")=false;
+    dbase.get<Reactions* >("reactions")=NULL;
+    dbase.get<int >("numberOfSpecies")=0;
     
   }
 
@@ -2698,7 +2700,9 @@ addPrefix(const aString label[], const aString & prefix, aString cmd[], const in
     
   int i;
   for( i=0; i<maxCommands && label[i]!=""; i++ )
+  {
     cmd[i]=prefix+label[i];
+  }
   if( i<maxCommands )
     cmd[i]="";
   else

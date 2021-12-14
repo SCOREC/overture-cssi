@@ -218,7 +218,8 @@ initializeTimeSteppingIM( real & t0, real & dt0 )
     const int numberOfPastTimeDerivatives=orderOfTimeAccuracy-1;  // PC needs u_t(t-dt), u_t(t-2*dt), ...
     const int orderOfPredictorCorrector = parameters.dbase.get<int >("orderOfPredictorCorrector");
     const int orderOfTimeExtrapolationForPressure = parameters.dbase.get<int >("orderOfTimeExtrapolationForPressure");
-    printF("--implicitPC-- initializePredictorCorrector: mCur=%i, mOld=%i gf[mCur].t=%9.2e\n",mCur,mOld,gf[mCur].t);
+    printP("--implicitPC-- initializePredictorCorrector: numberOfPastTimes=%i, numberOfPastTimeDerivatives=%i\n",numberOfPastTimes,numberOfPastTimeDerivatives);
+    printP("--implicitPC-- initializePredictorCorrector: mCur=%i, mOld=%i gf[mCur].t=%9.2e\n",mCur,mOld,gf[mCur].t);
     fPrintF(debugFile,"--implicitPC-- initializePredictorCorrector: mCur=%i, mOld=%i gf[mCur].t=%9.2e\n",mCur,mOld,gf[mCur].t);
     if( movingGridProblem() )
     { 
@@ -452,6 +453,8 @@ initializeTimeSteppingIM( real & t0, real & dt0 )
         else
             gf[mOld].t=t0-dt0; 
     // assign u(t-dt) with the TZ solution: 
+        if( debug() & 1 )
+            printP("--implicitPC-- initializePredictorCorrector: get past solution mOld=%d, t0-dt0=%9.3e\n",mOld,t0-dt0);
         e.assignGridFunction( gf[mOld].u,t0-dt0 );
         updateStateVariables(gf[mOld]); // *wdh* 080204 
         if( parameters.useConservativeVariables() )

@@ -2,7 +2,7 @@
 #  Grid for the region outside a sphere (using 3 patches) and inside a box
 #
 # usage: ogen [noplot] sphereInABox -factor=<num> -order=[2/4/6/8] -interp=[e/i] -nrExtra=<> -rgd=[fixed|var] -ml=<> ...
-#                                   -stretchFactor=<> -box=<>
+#                                   -stretchFactor=<> -box=<>  -periodic=[|ppp|npp|pnp|ppn|pnn|...]
 #
 #  nrExtra: extra lines to add in the radial direction on the sphere grids 
 #  rgd : var=variable : decrease radial grid distance as grids are refined. fixed=fix radial grid distance
@@ -72,6 +72,7 @@
 $xa=-3.; $xb=3.; $ya=-3.; $yb=3.; $za=-3.; $zb=3.; $nrMin=5; $nrExtra=4; $rgd="var"; $name=""; 
 $box=0.; # if non zero on input then set -xa=xb=-ya=yb=-za=zb=box
 $order=2; $factor=1; $interp="i"; $ml=0; # default values
+$periodic="";  
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids"; $dse=0.; 
 $stretchFactor=4.; # stretch grid lines by this factor at the sphere boundary
 $deltaRadius0=.25; # do not make larger than .3 or troubles with cgmx
@@ -84,7 +85,7 @@ GetOptions( "order=i"=>\$order,"factor=i"=> \$factor,"nrExtra=i"=>\$nrExtra,"nrM
             "interp=s"=> \$interp,"rgd=s"=> \$rgd,"deltaRadius0=f"=>\$deltaRadius0,"name=s"=>\$name,\
             "xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb,"za=f"=>\$za,"zb=f"=>\$zb,"ml=i"=>\$ml,\
             "stretchFactor=f"=>\$stretchFactor,"box=f"=>\$box,"suffix=s"=>\$suffix,"numGhost=i"=>\$numGhost,\
-            "prefix=s"=> \$prefix );
+            "prefix=s"=> \$prefix,"periodic=s"=>\$periodic );
 # 
 if( $box ne 0 ){ $xa=-$box; $xb=$box; $ya=-$box; $yb=$box; $za=-$box; $zb=$box; }
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
@@ -93,6 +94,8 @@ elsif( $order eq 8 ){ $orderOfAccuracy="eighth order"; $ng=6; }
 if( $interp eq "e" ){ $interpType = "explicit for all grids"; $dse=1.; }
 # 
 if( $rgd eq "fixed" ){ $prefix = $prefix . "Fixed"; $sphereWidth=$deltaRadius0; }else{ $sphereWidth=-1.; }
+$suffix=""; 
+if( $periodic ne "" ){ $suffix .= $periodic; }
 $suffix .= ".order$order"; 
 if( $numGhost ne -1 ){ $ng = $numGhost; } # overide number of ghost
 if( $numGhost ne -1 ){ $suffix .= ".ng$numGhost"; } 
@@ -141,7 +144,7 @@ $sphereBC=7;
 $sphereShare=1;   # reset this so the inner sphere has the same corresponding share values
 $phiStart=.15; $phiEnd=1. - $phiStart;  # note phiStart=.2 was too big for explicit interp (with moving sphere)
 # 
-include sphereThreePatch.h
+include $ENV{Overture}/sampleGrids/sphereThreePatch.h
 #
 #  -- stretch grid lines in the normal direction to the sphere patches --
 #
@@ -188,7 +191,16 @@ Box
     $nz = intmg( ($zb-$za)/$ds +1.5);
     $nx $ny $nz
   boundary conditions
-    1 2 3 4 5 6
+    if( $periodic eq "" ){ $bc = "1 2 3 4 5 6"; }\
+    elsif( $periodic eq "ppp" ){ $bc ="-1 -1 -1 -1 -1 -1"; }\
+    elsif( $periodic eq "npp" ){ $bc ="1 2 -1 -1 -1 -1"; }\
+    elsif( $periodic eq "pnp" ){ $bc ="-1 -1 3 4 -1 -1"; }\
+    elsif( $periodic eq "ppn" ){ $bc ="-1 -1 -1 -1 5 6"; }\
+    elsif( $periodic eq "pnn" ){ $bc ="-1 -1 3 4 5 6"; }\
+    elsif( $periodic eq "npn" ){ $bc ="1 2 -1 -1 5 6"; }\
+    elsif( $periodic eq "nnp" ){ $bc ="1 2 3 4 5 6"; }\
+    else{ $bc="1 2 3 4 5 6"; }   
+    $bc   
   mappingName
     backGround
   exit

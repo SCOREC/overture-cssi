@@ -460,7 +460,8 @@ getUserDefinedKnownSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua
 
       Real jumpFlux = K1*u1r - K2*u2r; 
 
-      printF(" concentricCylinders:  **CHECK JUMPS** [T]=%8.2e, [K T_r]=%8.2e\n", abs(u1-u2), abs(jumpFlux));
+      if( false )
+        printF(" concentricCylinders:ExactSolution:  **CHECK JUMPS** [T]=%8.2e, [K T_r]=%8.2e\n", abs(u1-u2), abs(jumpFlux));
 
       // OV_ABORT("stop here for now");
 
@@ -676,6 +677,9 @@ updateUserDefinedKnownSolution( GenericGraphicsInterface & gi, CompositeGrid & c
 ///
 // ==========================================================================================
 {
+
+  // KnownSolutionsEnum & knownSolution = dbase.get<Parameters::KnownSolutionsEnum>("knownSolution");
+
   // Make  dbase.get<Real >("a") sub-directory in the data-base to store variables used here
   if( ! dbase.get<DataBase >("modelData").has_key("userDefinedKnownSolutionData") )
      dbase.get<DataBase >("modelData").put<DataBase>("userDefinedKnownSolutionData");
@@ -914,5 +918,9 @@ updateUserDefinedKnownSolution( GenericGraphicsInterface & gi, CompositeGrid & c
 
   gi.unAppendTheDefaultPrompt();
   bool knownSolutionChosen = userKnownSolution!="unknownSolution";
+
+  // if( knownSolutionChosen )
+  //   knownSolution = Parameters::userDefinedKnownSolution;  // added Nov 27, 2021 so cgmp will plot errors
+
   return knownSolutionChosen;
 }
