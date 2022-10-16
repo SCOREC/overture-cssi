@@ -33,7 +33,7 @@
 int addToMappingList(Mapping & map);
 #endif
 
-#include <regex>
+// #include <regex>
 
 int ogen(MappingInformation & mappingInfo, GenericGraphicsInterface & ps, const aString & commandFileName, CompositeGrid *cgp=0 );
 
