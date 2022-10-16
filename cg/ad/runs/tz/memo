@@ -1,6 +1,35 @@
 
 
 *********************************************************************************************
+******* Sun May 8, 2022
+
+TEST radial/angular velocity
+
+++++ radial advection +++++
+
+TS=BDF: --> Looks ok: 
+cgad -noplot tz -g=annulus2.order2  -degreex=2 -degreet=2 -varCoeff=radial -kappa=.1 -vr=1.5 -vTheta=1.2 -ts=bdf -bdfOrder=2 -tf=1 -tp=.01 -bc=d -go=og
+
+---- adjust time step to reach tprint: timeInterval=1.000000e-02, numberOfSubSteps=1, dtNew=1.0000e-02
+getAdvectionCoefficients: coefficients are up to date
+     t    err(T)    uMax     dt       cpu    mem (Mb) (5 steps)
+   0.050 1.15e-04 3.67e+00 1.00e-02 1.61e+01        0
+
+
+
+TS=PC2: --> looks ok 
+cgad -noplot tz -g=annulus2.order2  -degreex=2 -degreet=2 -varCoeff=radial -kappa=.1 -vr=1.5 -vTheta=1.2 -ts=pc2 -tf=1 -tp=.01 -bc=d -go=og
+
+     t    err(T)    uMax     dt       cpu    mem (Mb) (24 steps)
+   0.050 1.27e-04 3.67e+00 2.00e-03 3.01e+01        0
+
+
+constant advection:
+cgad -noplot tz -g=square16.order2  -degreex=2 -degreet=2 -kappa=.1 -a=1 -b=.5 -ts=pc2 -tf=1 -tp=.01 -bc=d -go=og
+
+
+
+*********************************************************************************************
 ******* Fri Dec 10, 2021
 
 BEGIN ORDER=4 and CHAMP 

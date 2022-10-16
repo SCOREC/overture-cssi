@@ -244,14 +244,14 @@ $upwindSOS=0;      # set to 1 for upwind dissipation for second-order systems
 $bc1=""; $bc2=""; $bc3=""; $bc4=""; $bc5=""; $bc6=""; $bc7=""; 
 $godunovType=0; $useCurlCurl=1;
 $cdv=.5;           # divergence damping 
-$numberOfCorrections=1; $skipLastPressureSolve=0; $psolver="yale"; 
+$numberOfCorrections=1; $skipLastPressureSolve=0; $psolver="yale"; $rtolp=1.e-5; $atolp=1.e-6; 
 #
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet,"diss=f"=>\$diss,\
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"varMat=f"=>\$varMat,\
   "mu=f"=>\$mu,"lambda=f"=>\$lambda,"rho=f"=>\$rho,"godunovType=i"=>\$godunovType,\
-  "dtMax=f"=>\$dtMax, "cons=i"=>\$cons,"pv=s"=>\$pv,"psolver=s"=>\$psolver,\
+  "dtMax=f"=>\$dtMax, "cons=i"=>\$cons,"pv=s"=>\$pv,"psolver=s"=>\$psolver,"rtolp=f"=>\$rtolp,"atolp=f"=>\$atolp,\
   "godunovOrder=f"=>\$godunovOrder,"ts=s"=>\$ts,"en=s"=>\$en,"fx=f"=>\$fx,"fy=f"=>\$fy,"fz=f"=>\$fz,"ft=f"=>\$ft,\
   "dissOrder=i"=>\$dissOrder,"filter=i"=>\$filter,"filterOrder=i"=>\$filterOrder,"filterStages=i"=>\$filterStages,\
   "filterFrequency=i"=>\$filterFrequency,"filterIterations=i"=>\$filterIterations,"checkGhostErr=i"=>\$checkGhostErr,\

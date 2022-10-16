@@ -32,14 +32,14 @@ extern "C"
 
 int MappedGridOperators::
 getVelocityComponents(int & n1,
-		      int & n2,
-		      int & n3,
-		      int & m1,
-		      int & m2,
-		      int & m3, 
-		      realMappedGridFunction & u,
-		      const BoundaryConditionParameters & bcParameters,
-		      const aString & bcName, const IntegerArray & uC, const IntegerArray & fC )
+                      int & n2,
+                      int & n3,
+                      int & m1,
+                      int & m2,
+                      int & m3, 
+                      realMappedGridFunction & u,
+                      const BoundaryConditionParameters & bcParameters,
+                      const aString & bcName, const IntegerArray & uC, const IntegerArray & fC )
 // 
 // This is a utility routine for applyBoundaryCondition
 //   n1,n2,n3 (output) : components of velocity for certain boundary conditions, extracted from uC
@@ -65,8 +65,8 @@ getVelocityComponents(int & n1,
     printf("There is an invalid component, component0=%i, component1=%i",n1,n2);
     if( mappedGrid.numberOfDimensions()==3 )
       printf(", component2=%i ",n3);
-    printf("\nu.getComponentBase(0) = %i, u.getComponentBound(0)=%i \n",	    
-	   u.getComponentBase(0),u.getComponentBound(0));
+    printf("\nu.getComponentBase(0) = %i, u.getComponentBound(0)=%i \n",            
+           u.getComponentBase(0),u.getComponentBound(0));
     bcParameters.uComponents.display("Here is bcParameters.uComponents");
     bcParameters.fComponents.display("Here is bcParameters.fComponents");
     uC.display("Here is uC");
@@ -80,14 +80,14 @@ getVelocityComponents(int & n1,
 //\begin{>>MappedGridOperatorsInclude.tex}{\subsubsection{applyBoundaryCondition}}  
 void MappedGridOperators::
 applyBoundaryCondition(realMappedGridFunction & u, 
-		       const Index & Components,
-		       const BCTypes::BCNames & bcType,  /* = BCTypes::dirichlet */
-		       const int & bc,                   /* = BCTypes::allBoundaries */
-		       const real & forcing,             /* =0. */
-		       const real & time,                /* =0. */
-		       const BoundaryConditionParameters & 
-		       bcParameters /* = Overture::defaultBoundaryConditionParameters() */,
-		       const int & grid /* =0 */ )
+                       const Index & Components,
+                       const BCTypes::BCNames & bcType,  /* = BCTypes::dirichlet */
+                       const int & bc,                   /* = BCTypes::allBoundaries */
+                       const real & forcing,             /* =0. */
+                       const real & time,                /* =0. */
+                       const BoundaryConditionParameters & 
+                       bcParameters /* = Overture::defaultBoundaryConditionParameters() */,
+                       const int & grid /* =0 */ )
 //=======================================================================================
 //\end{MappedGridOperatorsInclude.tex}
 //=======================================================================================
@@ -101,14 +101,14 @@ applyBoundaryCondition(realMappedGridFunction & u,
 //\begin{>>MappedGridOperatorsInclude.tex}{}
 void MappedGridOperators::
 applyBoundaryCondition(realMappedGridFunction & u, 
-		       const Index & Components,
-		       const BCTypes::BCNames & bcType, 
-		       const int & bc,                  
-		       const RealArray & forcing,
-		       const real & time,              /* =0. */
-		       const BoundaryConditionParameters & 
-		       bcParameters /* = Overture::defaultBoundaryConditionParameters() */,
-		       const int & grid /* =0 */)
+                       const Index & Components,
+                       const BCTypes::BCNames & bcType, 
+                       const int & bc,                  
+                       const RealArray & forcing,
+                       const real & time,              /* =0. */
+                       const BoundaryConditionParameters & 
+                       bcParameters /* = Overture::defaultBoundaryConditionParameters() */,
+                       const int & grid /* =0 */)
 //=======================================================================================
 //\end{MappedGridOperatorsInclude.tex}
 //=======================================================================================
@@ -130,15 +130,15 @@ applyBoundaryCondition(realMappedGridFunction & u,
   {
     // array forcing must be explicitly specified:
     applyBoundaryCondition(u,Components,bcType,bc,forcing1,Overture::nullRealArray(),forcing,forcinga,
-			   Overture::nullRealMappedGridFunction(),time, bcParameters,arrayForcing,grid);
+                           Overture::nullRealMappedGridFunction(),time, bcParameters,arrayForcing,grid);
   }
   else
   {
     // vector forcing:
     // *** we first need to go through all BC's and add the vector forcing option ****
     applyBoundaryCondition(u,Components,bcType,bc,forcing1,forcing,Overture::nullRealArray(),forcinga,
-			   Overture::nullRealMappedGridFunction(),time, bcParameters,arrayForcing,grid);
-    // *******	   Overture::nullRealMappedGridFunction(),time, bcParameters,vectorForcing,grid);
+                           Overture::nullRealMappedGridFunction(),time, bcParameters,arrayForcing,grid);
+    // *******     Overture::nullRealMappedGridFunction(),time, bcParameters,vectorForcing,grid);
   }
 
 #else
@@ -153,15 +153,15 @@ applyBoundaryCondition(realMappedGridFunction & u,
 //\begin{>>MappedGridOperatorsInclude.tex}{}
 void MappedGridOperators::
 applyBoundaryCondition(realMappedGridFunction & u, 
-		       const Index & Components,
-		       const BCTypes::BCNames & bcType, 
-		       const int & bc,                  
-		       const RealArray & forcing,
-		       RealArray *forcinga[2][3],
-		       const real & time,              /* =0. */
-		       const BoundaryConditionParameters & 
-		       bcParameters /* = Overture::defaultBoundaryConditionParameters() */,
-		       const int & grid /* =0 */)
+                       const Index & Components,
+                       const BCTypes::BCNames & bcType, 
+                       const int & bc,                  
+                       const RealArray & forcing,
+                       RealArray *forcinga[2][3],
+                       const real & time,              /* =0. */
+                       const BoundaryConditionParameters & 
+                       bcParameters /* = Overture::defaultBoundaryConditionParameters() */,
+                       const int & grid /* =0 */)
 //=======================================================================================
 // /Description:
 //  If forcinga[side][axis] !=NULL then use this array, otherwise use forcing.
@@ -178,14 +178,14 @@ applyBoundaryCondition(realMappedGridFunction & u,
 #ifdef USE_PPP
 // void MappedGridOperators::
 // applyBoundaryCondition(realMappedGridFunction & u, 
-// 		       const Index & Components,
-// 		       const BCTypes::BCNames & bcType, 
-// 		       const int & bc,                  
-// 		       const RealArray & forcing,
-// 		       const real & time,              /* =0. */
-// 		       const BoundaryConditionParameters & 
-// 		       bcParameters /* = Overture::defaultBoundaryConditionParameters() */,
-// 		       const int & grid /* =0 */)
+//                     const Index & Components,
+//                     const BCTypes::BCNames & bcType, 
+//                     const int & bc,                  
+//                     const RealArray & forcing,
+//                     const real & time,              /* =0. */
+//                     const BoundaryConditionParameters & 
+//                     bcParameters /* = Overture::defaultBoundaryConditionParameters() */,
+//                     const int & grid /* =0 */)
 // //=======================================================================================
 // // /Description:
 // //   This version takes a distributed array as forcing (only used in parallel).
@@ -202,14 +202,14 @@ applyBoundaryCondition(realMappedGridFunction & u,
 //\begin{>>MappedGridOperatorsInclude.tex}{}
 void MappedGridOperators::
 applyBoundaryCondition(realMappedGridFunction & u, 
-		       const Index & Components,
-		       const BCTypes::BCNames & bcType,
-		       const int & bc,                        
-		       const realMappedGridFunction & forcing,
-		       const real & time,                      /* =0. */
-		       const BoundaryConditionParameters & 
-		       bcParameters /* = Overture::defaultBoundaryConditionParameters() */,
-		       const int & grid /* =0 */)
+                       const Index & Components,
+                       const BCTypes::BCNames & bcType,
+                       const int & bc,                        
+                       const realMappedGridFunction & forcing,
+                       const real & time,                      /* =0. */
+                       const BoundaryConditionParameters & 
+                       bcParameters /* = Overture::defaultBoundaryConditionParameters() */,
+                       const int & grid /* =0 */)
 //=======================================================================================
 // /Description:
 //  Apply a boundary condition to a grid function.
@@ -256,18 +256,18 @@ applyBoundaryCondition(realMappedGridFunction & u,
 // Private BC routine
 void MappedGridOperators::
 applyBoundaryCondition(realMappedGridFunction & u, 
-		       const Index & C0,
-		       const BCTypes::BCNames & bcType,
-		       const int & bc,
-		       const real & scalarData,
-		       const RealArray & arrayData,
-		       const RealArray & arrayDataD_,
+                       const Index & C0,
+                       const BCTypes::BCNames & bcType,
+                       const int & bc,
+                       const real & scalarData,
+                       const RealArray & arrayData,
+                       const RealArray & arrayDataD_,
                        RealArray *forcinga[2][3],
-		       const realMappedGridFunction & gfData,
-		       const real & t,
-		       const BoundaryConditionParameters & bcParameters,
-		       const BoundaryConditionOption bcOption,
-		       const int & grid /* =0 */  )
+                       const realMappedGridFunction & gfData,
+                       const real & t,
+                       const BoundaryConditionParameters & bcParameters,
+                       const BoundaryConditionOption bcOption,
+                       const int & grid /* =0 */  )
 // =============================================================================================
 // This is the main BC routine that farms out the work to difference BC routines
 // =============================================================================================
@@ -376,19 +376,19 @@ applyBoundaryCondition(realMappedGridFunction & u,
       UnstructuredOperators uop(mappedGrid);
       int bcop = int(bcOption);
       uop.applyBoundaryCondition(u, 
-				 CC,
-				 bcType,
-				 bc,
-				 scalarData,
-				 arrayData,
-				 arrayDataD_,
-				 forcinga,
-				 gfData,
-				 t,
-				 uC, fC, mask,
-				 bcParameters,
-				 bcop, // BoundaryConditionOption is protected for now
-				 grid  );
+                                 CC,
+                                 bcType,
+                                 bc,
+                                 scalarData,
+                                 arrayData,
+                                 arrayDataD_,
+                                 forcinga,
+                                 gfData,
+                                 t,
+                                 uC, fC, mask,
+                                 bcParameters,
+                                 bcop, // BoundaryConditionOption is protected for now
+                                 grid  );
       return;
     }
 
@@ -428,13 +428,13 @@ applyBoundaryCondition(realMappedGridFunction & u,
       if( !extrapolateInterpolationNeighboursIsInitialized )
       {
 
-	findInterpolationNeighbours();
+        findInterpolationNeighbours();
 
-	if( errorStatus==errorInFindInterpolationNeighbours )
-	{
-	  printf("MappedGridOperators::applyBoundaryCondition:ERROR: error return from findInterpolationNeighbours\n");
-	  return;
-	}
+        if( errorStatus==errorInFindInterpolationNeighbours )
+        {
+          printf("MappedGridOperators::applyBoundaryCondition:ERROR: error return from findInterpolationNeighbours\n");
+          return;
+        }
       
       }
     
@@ -442,156 +442,156 @@ applyBoundaryCondition(realMappedGridFunction & u,
       bool useOpt=true;
       if( useOpt )
       {
-	if( numberOfInterpolationNeighboursNew>0 )
-	{
-	  const IntegerArray & ia = *extrapolateInterpolationNeighbourPoints;
-	  const IntegerArray & id = *extrapolateInterpolationNeighboursDirection;
-	  const int *pia=getDataPointer(ia);
-	  bool useVariableExtrapolationWidth=extrapolateInterpolationNeighboursVariableWidth!=NULL;
-	  const int *pvew = useVariableExtrapolationWidth ? 
-	    getDataPointer(*extrapolateInterpolationNeighboursVariableWidth) : pia;
-	
+        if( numberOfInterpolationNeighboursNew>0 )
+        {
+          const IntegerArray & ia = *extrapolateInterpolationNeighbourPoints;
+          const IntegerArray & id = *extrapolateInterpolationNeighboursDirection;
+          const int *pia=getDataPointer(ia);
+          bool useVariableExtrapolationWidth=extrapolateInterpolationNeighboursVariableWidth!=NULL;
+          const int *pvew = useVariableExtrapolationWidth ? 
+            getDataPointer(*extrapolateInterpolationNeighboursVariableWidth) : pia;
+        
 #ifdef USE_PPP
-  	  realSerialArray uLocal; ::getLocalArrayWithGhostBoundaries(uA,uLocal);
+          realSerialArray uLocal; ::getLocalArrayWithGhostBoundaries(uA,uLocal);
 #else
-  	  const realSerialArray & uLocal = uA;
+          const realSerialArray & uLocal = uA;
 #endif
 
-	  int extrapOrder=bcParameters.orderOfExtrapolation;
-	  if( extrapOrder > maximumWidthToExtrapolationInterpolationNeighbours-1 )
-	  {
-	    extrapOrder=maximumWidthToExtrapolationInterpolationNeighbours-1;
-	    printF("MGOP:extrapInterpNeighbours:INFO: reducing order of extrapolation to %i\n",extrapOrder);
-	  }
-	  int ipar[]={maximumWidthToExtrapolationInterpolationNeighbours,
-		      extrapOrder, 
-		      (int)bcParameters.extrapolationOption,
-		      (int)useVariableExtrapolationWidth
-	  };//
-	  const real uEps=1000.*REAL_MIN; // for limited extrapolation
-	  real rpar[]={bcParameters.extrapolateWithLimiterParameters[0],
-		       bcParameters.extrapolateWithLimiterParameters[1],
-		       uEps}; //
+          int extrapOrder=bcParameters.orderOfExtrapolation;
+          if( extrapOrder > maximumWidthToExtrapolationInterpolationNeighbours-1 )
+          {
+            extrapOrder=maximumWidthToExtrapolationInterpolationNeighbours-1;
+            printF("MGOP:extrapInterpNeighbours:INFO: reducing order of extrapolation to %i\n",extrapOrder);
+          }
+          int ipar[]={maximumWidthToExtrapolationInterpolationNeighbours,
+                      extrapOrder, 
+                      (int)bcParameters.extrapolationOption,
+                      (int)useVariableExtrapolationWidth
+          };//
+          const real uEps=1000.*REAL_MIN; // for limited extrapolation
+          real rpar[]={bcParameters.extrapolateWithLimiterParameters[0],
+                       bcParameters.extrapolateWithLimiterParameters[1],
+                       uEps}; //
 
-	  extrapInterpNeighboursOpt(c.numberOfDimensions(), 
-				    uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
-				    uLocal.getBase(2),uLocal.getBound(2),uLocal.getBase(3),uLocal.getBound(3),
-				    ia.getBase(0),ia.getBound(0),id.getBase(0),id.getBound(0),
-				    *pia,*getDataPointer(id),*pvew, *getDataPointer(uLocal),
-				    CC.getBase(),CC.getBound(),ipar[0],rpar[0] );
-	}
+          extrapInterpNeighboursOpt(c.numberOfDimensions(), 
+                                    uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
+                                    uLocal.getBase(2),uLocal.getBound(2),uLocal.getBase(3),uLocal.getBound(3),
+                                    ia.getBase(0),ia.getBound(0),id.getBase(0),id.getBound(0),
+                                    *pia,*getDataPointer(id),*pvew, *getDataPointer(uLocal),
+                                    CC.getBase(),CC.getBound(),ipar[0],rpar[0] );
+        }
       }
       else
       {
-	// *** old way ****
+        // *** old way ****
 
-	if( numberOfInterpolationNeighboursNew>0 )
-	{
-	  const IntegerArray & ia = *extrapolateInterpolationNeighbourPoints;
-	  const IntegerArray & id = *extrapolateInterpolationNeighboursDirection;
+        if( numberOfInterpolationNeighboursNew>0 )
+        {
+          const IntegerArray & ia = *extrapolateInterpolationNeighbourPoints;
+          const IntegerArray & id = *extrapolateInterpolationNeighboursDirection;
 
-	  // *** new way ***
-	  // printf("extrapolateInterpolationNeighbours: *NEW* extrap to order %i. numberOfInterpolationNeighboursNew=%i\n",
-	  //      bcParameters.orderOfExtrapolation,numberOfInterpolationNeighboursNew );
-	  if( false )
-	  {
-	    printf("extrapolateInterpolationNeighbourPoints : grid=%i \n",grid);
-	    display(ia,"extrapolateInterpolationNeighbourPoints","%3i");
-	    display(id,"extrapolateInterpolationNeighboursDirection","%3i");
-	  }
+          // *** new way ***
+          // printf("extrapolateInterpolationNeighbours: *NEW* extrap to order %i. numberOfInterpolationNeighboursNew=%i\n",
+          //      bcParameters.orderOfExtrapolation,numberOfInterpolationNeighboursNew );
+          if( false )
+          {
+            printf("extrapolateInterpolationNeighbourPoints : grid=%i \n",grid);
+            display(ia,"extrapolateInterpolationNeighbourPoints","%3i");
+            display(id,"extrapolateInterpolationNeighboursDirection","%3i");
+          }
       
 
-	  Range I=ia.dimension(0);
-	  int i2=c.dimension(Start,axis2),i3=c.dimension(Start,axis3);
+          Range I=ia.dimension(0);
+          int i2=c.dimension(Start,axis2),i3=c.dimension(Start,axis3);
 
-	  if( bcParameters.orderOfExtrapolation==3 || bcParameters.orderOfExtrapolation<=0 )
-	  {
-	    if( c.numberOfDimensions()==2 )
-	    {
+          if( bcParameters.orderOfExtrapolation==3 || bcParameters.orderOfExtrapolation<=0 )
+          {
+            if( c.numberOfDimensions()==2 )
+            {
 //           for( int i=0; i<numberOfInterpolationNeighboursNew; i++ )
-// 	  {
-// 	    if( ia(i,0)+3*id(i,0) < c.dimension(0,0) )
-// 	    {
-// 	      printf("ERROR: i=%i, ia=(%i,%i) id=(%i,%i) \n",i,ia(i,0),ia(i,1), id(i,0),id(i,1));
-// 	    }
-// 	  }
-	      for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
-		uA(ia(I,0),ia(I,1),i3,c0)=(3.*uA(ia(I,0)+  id(I,0),ia(I,1)+  id(I,1),i3,c0)-
-					   3.*uA(ia(I,0)+2*id(I,0),ia(I,1)+2*id(I,1),i3,c0)+
-					   uA(ia(I,0)+3*id(I,0),ia(I,1)+3*id(I,1),i3,c0));
-	    }
-	    else if( c.numberOfDimensions()==3 )
-	    {
+//        {
+//          if( ia(i,0)+3*id(i,0) < c.dimension(0,0) )
+//          {
+//            printf("ERROR: i=%i, ia=(%i,%i) id=(%i,%i) \n",i,ia(i,0),ia(i,1), id(i,0),id(i,1));
+//          }
+//        }
+              for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
+                uA(ia(I,0),ia(I,1),i3,c0)=(3.*uA(ia(I,0)+  id(I,0),ia(I,1)+  id(I,1),i3,c0)-
+                                           3.*uA(ia(I,0)+2*id(I,0),ia(I,1)+2*id(I,1),i3,c0)+
+                                           uA(ia(I,0)+3*id(I,0),ia(I,1)+3*id(I,1),i3,c0));
+            }
+            else if( c.numberOfDimensions()==3 )
+            {
 //           for( int i=0; i<numberOfInterpolationNeighboursNew; i++ )
-// 	  {
-// 	    if( ia(i,0)+3*id(i,0) < c.dimension(0,0) )
-// 	    {
-// 	      printf("ERROR: i=%i, ia=(%i,%i,%i) id=(%i,%i,%i) \n",i,ia(i,0),ia(i,1),ia(i,2),
-// 		     id(i,0),id(i,1),id(i,2));
-// 	    }
-// 	  }
-	      for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
-		uA(ia(I,0),ia(I,1),ia(I,2),c0)=(3.*uA(ia(I,0)+  id(I,0),ia(I,1)+  id(I,1),ia(I,2)+  id(I,2),c0)-
-						3.*uA(ia(I,0)+2*id(I,0),ia(I,1)+2*id(I,1),ia(I,2)+2*id(I,2),c0)+
-						uA(ia(I,0)+3*id(I,0),ia(I,1)+3*id(I,1),ia(I,2)+3*id(I,2),c0));
-	    }
-	    else
-	    {
-	      for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
-		uA(ia(I,0),i2,i3,c0)=(3.*uA(ia(I,0)+  id(I,0),i2,i3,c0)-
-				      3.*uA(ia(I,0)+2*id(I,0),i2,i3,c0)+
-				      uA(ia(I,0)+3*id(I,0),i2,i3,c0));
-	    }
-	  }
-	  else if( bcParameters.orderOfExtrapolation==2 )
-	  {
-	    if( c.numberOfDimensions()==2 )
-	    {
-	      for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
-		uA(ia(I,0),ia(I,1),i3,c0)=(2.*uA(ia(I,0)+  id(I,0),ia(I,1)+  id(I,1),i3,c0)-
-					   uA(ia(I,0)+2*id(I,0),ia(I,1)+2*id(I,1),i3,c0));
-	    }
-	    else if( c.numberOfDimensions()==3 )
-	    {
-	      for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
-		uA(ia(I,0),ia(I,1),ia(I,2),c0)=(2.*uA(ia(I,0)+  id(I,0),ia(I,1)+  id(I,1),ia(I,2)+  id(I,2),c0)-
-						uA(ia(I,0)+2*id(I,0),ia(I,1)+2*id(I,1),ia(I,2)+2*id(I,2,c0)));
+//        {
+//          if( ia(i,0)+3*id(i,0) < c.dimension(0,0) )
+//          {
+//            printf("ERROR: i=%i, ia=(%i,%i,%i) id=(%i,%i,%i) \n",i,ia(i,0),ia(i,1),ia(i,2),
+//                   id(i,0),id(i,1),id(i,2));
+//          }
+//        }
+              for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
+                uA(ia(I,0),ia(I,1),ia(I,2),c0)=(3.*uA(ia(I,0)+  id(I,0),ia(I,1)+  id(I,1),ia(I,2)+  id(I,2),c0)-
+                                                3.*uA(ia(I,0)+2*id(I,0),ia(I,1)+2*id(I,1),ia(I,2)+2*id(I,2),c0)+
+                                                uA(ia(I,0)+3*id(I,0),ia(I,1)+3*id(I,1),ia(I,2)+3*id(I,2),c0));
+            }
+            else
+            {
+              for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
+                uA(ia(I,0),i2,i3,c0)=(3.*uA(ia(I,0)+  id(I,0),i2,i3,c0)-
+                                      3.*uA(ia(I,0)+2*id(I,0),i2,i3,c0)+
+                                      uA(ia(I,0)+3*id(I,0),i2,i3,c0));
+            }
+          }
+          else if( bcParameters.orderOfExtrapolation==2 )
+          {
+            if( c.numberOfDimensions()==2 )
+            {
+              for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
+                uA(ia(I,0),ia(I,1),i3,c0)=(2.*uA(ia(I,0)+  id(I,0),ia(I,1)+  id(I,1),i3,c0)-
+                                           uA(ia(I,0)+2*id(I,0),ia(I,1)+2*id(I,1),i3,c0));
+            }
+            else if( c.numberOfDimensions()==3 )
+            {
+              for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
+                uA(ia(I,0),ia(I,1),ia(I,2),c0)=(2.*uA(ia(I,0)+  id(I,0),ia(I,1)+  id(I,1),ia(I,2)+  id(I,2),c0)-
+                                                uA(ia(I,0)+2*id(I,0),ia(I,1)+2*id(I,1),ia(I,2)+2*id(I,2,c0)));
 
-	    }
-	    else
-	    {
-	      for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
-		uA(ia(I,0),i2,i3,c0)=(2.*uA(ia(I,0)+  id(I,0),i2,i3,c0)-
-				      uA(ia(I,0)+2*id(I,0),i2,i3,c0));
+            }
+            else
+            {
+              for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
+                uA(ia(I,0),i2,i3,c0)=(2.*uA(ia(I,0)+  id(I,0),i2,i3,c0)-
+                                      uA(ia(I,0)+2*id(I,0),i2,i3,c0));
 
-	    }
-	  }
-	  else if( bcParameters.orderOfExtrapolation==1 )
-	  {
-	    if( c.numberOfDimensions()==2 )
-	    {
-	      for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
-		uA(ia(I,0),ia(I,1),i3,c0)=uA(ia(I,0)+  id(I,0),ia(I,1)+  id(I,1),i3,c0);
-	    }
-	    else if( c.numberOfDimensions()==3 )
-	    {
-	      for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
-		uA(ia(I,0),ia(I,1),ia(I,2),c0)=uA(ia(I,0)+  id(I,0),ia(I,1)+  id(I,1),ia(I,2)+  id(I,2),c0);
-	    }
-	    else
-	    {
-	      for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
-		uA(ia(I,0),i2,i3,c0)=uA(ia(I,0)+  id(I,0),i2,i3,c0);
-	    }
-	  }
-	  else
-	  {
-	    printf("extrapolateInterpolationNeighbours:ERROR: un-implemented order of extrapolation=%i\n"
-		   " only orders 1,2,3 are available\n",bcParameters.orderOfExtrapolation==1 );
-	    Overture::abort("error");
-	  }
-	
-	}
+            }
+          }
+          else if( bcParameters.orderOfExtrapolation==1 )
+          {
+            if( c.numberOfDimensions()==2 )
+            {
+              for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
+                uA(ia(I,0),ia(I,1),i3,c0)=uA(ia(I,0)+  id(I,0),ia(I,1)+  id(I,1),i3,c0);
+            }
+            else if( c.numberOfDimensions()==3 )
+            {
+              for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
+                uA(ia(I,0),ia(I,1),ia(I,2),c0)=uA(ia(I,0)+  id(I,0),ia(I,1)+  id(I,1),ia(I,2)+  id(I,2),c0);
+            }
+            else
+            {
+              for( int c0=CC.getBase(); c0<=CC.getBound(); c0++ )
+                uA(ia(I,0),i2,i3,c0)=uA(ia(I,0)+  id(I,0),i2,i3,c0);
+            }
+          }
+          else
+          {
+            printf("extrapolateInterpolationNeighbours:ERROR: un-implemented order of extrapolation=%i\n"
+                   " only orders 1,2,3 are available\n",bcParameters.orderOfExtrapolation==1 );
+            Overture::abort("error");
+          }
+        
+        }
       
       }
     } // end old way 
@@ -618,16 +618,16 @@ applyBoundaryCondition(realMappedGridFunction & u,
 
       for( axis=0; axis<c.numberOfDimensions(); axis++ )
       {
-	for( side=0; side<=1; side++ )
-	{
-	  if( c.boundaryCondition(side,axis)==0 )
-	  {
-	    // printf(" applyBC: grid=%i, (refinement grid) extrapolate 2nd ghost line of (side,axis)=(%i,%i)\n",
+        for( side=0; side<=1; side++ )
+        {
+          if( c.boundaryCondition(side,axis)==0 )
+          {
+            // printf(" applyBC: grid=%i, (refinement grid) extrapolate 2nd ghost line of (side,axis)=(%i,%i)\n",
             //     grid,side,axis);
             applyBCextrapolate(u, side,axis,CC,BCTypes::extrapolate,bc,scalarData,arrayData,arrayDataD_,gfData,t,
-				uC,fC,mask,extrapParams,bcOption,grid);
-	  }
-	}
+                                uC,fC,mask,extrapParams,bcOption,grid);
+          }
+        }
       }
       
       // fix up corners -- we need to temporarily turn interpolation boundaries (bc==0) into physical boundaries.
@@ -672,16 +672,16 @@ applyBoundaryCondition(realMappedGridFunction & u,
 
       for( axis=0; axis<c.numberOfDimensions(); axis++ )
       {
-	for( side=0; side<=1; side++ )
-	{
-	  if( c.boundaryCondition(side,axis)==0 )
-	  {
-	    // printf(" applyBC: grid=%i, (refinement grid) extrapolate 2nd ghost line of (side,axis)=(%i,%i)\n",
+        for( side=0; side<=1; side++ )
+        {
+          if( c.boundaryCondition(side,axis)==0 )
+          {
+            // printf(" applyBC: grid=%i, (refinement grid) extrapolate 2nd ghost line of (side,axis)=(%i,%i)\n",
             //     grid,side,axis);
             applyBCextrapolate(u, side,axis,CC,BCTypes::extrapolate,bc,scalarData,arrayData,arrayDataD_,gfData,t,
-			       uC,fC,mask,extrapParams,bcOption,grid);
-	  }
-	}
+                               uC,fC,mask,extrapParams,bcOption,grid);
+          }
+        }
       }
       extrapParams.ghostLineToAssign=ghostLineToAssignSave; // reset
     }
@@ -726,53 +726,53 @@ applyBoundaryCondition(realMappedGridFunction & u,
       // copy that includes the effect of both.
       if( bcParameters.getUseMask() || ( useWhereMaskOnBoundary[axis][side] && bcParameters.useMixedBoundaryMask) )
       {
-	Index Jv[3], &J1=Jv[0], &J2=Jv[1], &J3=Jv[2]; // mask is evaluated at these points.
-	switch ( bcType )
-	{
-	case dirichlet: 
-	case normalComponent:
-	case tangentialComponent0:
-	case tangentialComponent1:
-	case tangentialComponent:
-	case aDotU:  
-	  // *** J1=I1; J2=I2; J3=I3;  // take mask from boundary
+        Index Jv[3], &J1=Jv[0], &J2=Jv[1], &J3=Jv[2]; // mask is evaluated at these points.
+        switch ( bcType )
+        {
+        case dirichlet: 
+        case normalComponent:
+        case tangentialComponent0:
+        case tangentialComponent1:
+        case tangentialComponent:
+        case aDotU:  
+          // *** J1=I1; J2=I2; J3=I3;  // take mask from boundary
           J1=I1m; J2=I2m; J3=I3m;  // take mask from first ghost line
-	  break;
-	case normalDotScalarGrad:
-	case neumann:
-	case mixed:
-	case aDotGradU:
-	case normalDerivativeOfNormalComponent:
-	case normalDerivativeOfTangentialComponent0:
-	case normalDerivativeOfTangentialComponent1:
-	case evenSymmetry:
-	case oddSymmetry:
-	case vectorSymmetry:
-	case generalMixedDerivative:  
-	case generalizedDivergence:           
-	  J1=I1m; J2=I2m; J3=I3m;  // take mask from first ghost line
-	  break;
-	case extrapolate:
-	case extrapolateNormalComponent:
-	case extrapolateTangentialComponent0:
-	case extrapolateTangentialComponent1:
-	  // *wdh* 000310 getGhostIndex( c.indexRange(),side,axis,J1,J2,J3,bcParameters.ghostLineToAssign);
-	  getGhostIndex( c.extendedIndexRange(),side,axis,J1,J2,J3,bcParameters.ghostLineToAssign,bcParameters.extraInTangentialDirections);
+          break;
+        case normalDotScalarGrad:
+        case neumann:
+        case mixed:
+        case aDotGradU:
+        case normalDerivativeOfNormalComponent:
+        case normalDerivativeOfTangentialComponent0:
+        case normalDerivativeOfTangentialComponent1:
+        case evenSymmetry:
+        case oddSymmetry:
+        case vectorSymmetry:
+        case generalMixedDerivative:  
+        case generalizedDivergence:           
+          J1=I1m; J2=I2m; J3=I3m;  // take mask from first ghost line
+          break;
+        case extrapolate:
+        case extrapolateNormalComponent:
+        case extrapolateTangentialComponent0:
+        case extrapolateTangentialComponent1:
+          // *wdh* 000310 getGhostIndex( c.indexRange(),side,axis,J1,J2,J3,bcParameters.ghostLineToAssign);
+          getGhostIndex( c.extendedIndexRange(),side,axis,J1,J2,J3,bcParameters.ghostLineToAssign,bcParameters.extraInTangentialDirections);
           // *wdh* 091123: make sure that J1,J2,J3 are not too large in the tangential directions
           if( bcParameters.extraInTangentialDirections>0 )
-	  {
+          {
             for( int dir=0; dir<c.numberOfDimensions(); dir++ )
-	    {
+            {
               if( dir!=axis )
-		Jv[dir]=Range(max(c.dimension(0,dir),Jv[dir].getBase()),min(c.dimension(1,dir),Jv[dir].getBound()));
-	    }
-	  }
-	  
-	  break;
-	default:
-	  printF("applyBoundaryCondition: unknown or un-implemented boundary condition = %i\n",(int)bcType);
-	  Overture::abort("MappedGridOperators::applyBoundaryCondition: fatal error! \n");
-	}
+                Jv[dir]=Range(max(c.dimension(0,dir),Jv[dir].getBase()),min(c.dimension(1,dir),Jv[dir].getBound()));
+            }
+          }
+          
+          break;
+        default:
+          printF("applyBoundaryCondition: unknown or un-implemented boundary condition = %i\n",(int)bcType);
+          Overture::abort("MappedGridOperators::applyBoundaryCondition: fatal error! \n");
+        }
 
         const IntegerDistributedArray & cmask = c.mask();
         const IntegerDistributedArray & bmask = ((BoundaryConditionParameters&)bcParameters).mask();
@@ -781,36 +781,36 @@ applyBoundaryCondition(realMappedGridFunction & u,
         #else
           // in parallel we build a full mask array so the mask local arrays match with the solution
           if( mask.elementCount()==0 )
-	  {
-	    mask.partition(c.getPartition());
-	    mask.redim(c.mask());
-	  }
-	#endif
+          {
+            mask.partition(c.getPartition());
+            mask.redim(c.mask());
+          }
+        #endif
 
-	// *** fix me for parallel -- use maskLocal 
+        // *** fix me for parallel -- use maskLocal 
 
-	if( !bcParameters.getUseMask() )
-	{
+        if( !bcParameters.getUseMask() )
+        {
           // we should NOT apply a BC at interpolation points or interiorBoundaryPoint
-	  // mask=cmask(J1,J2,J3)>0 ||
-  	  //     cmask(J1,J2,J3)< (MappedGrid::ISinterpolationPoint | MappedGrid::ISinteriorBoundaryPoint);
+          // mask=cmask(J1,J2,J3)>0 ||
+          //     cmask(J1,J2,J3)< (MappedGrid::ISinterpolationPoint | MappedGrid::ISinteriorBoundaryPoint);
           // *wdh* 990915 : use bit ops
-	  mask(J1,J2,J3)=cmask(J1,J2,J3)>0 && 
+          mask(J1,J2,J3)=cmask(J1,J2,J3)>0 && 
             !( cmask(J1,J2,J3) & (MappedGrid::ISinterpolationPoint | MappedGrid::ISinteriorBoundaryPoint));
-	}
-	else if( !(useWhereMaskOnBoundary[axis][side] && bcParameters.useMixedBoundaryMask) )
-	  mask(J1,J2,J3)=bmask(J1,J2,J3);
-	else
-	{
+        }
+        else if( !(useWhereMaskOnBoundary[axis][side] && bcParameters.useMixedBoundaryMask) )
+          mask(J1,J2,J3)=bmask(J1,J2,J3);
+        else
+        {
           // we should NOT apply a BC at interpolation points or interiorBoundaryPoint
-	  // mask=(cmask(J1,J2,J3)>0 ||
-	  // cmask(J1,J2,J3)< (MappedGrid::ISinterpolationPoint | MappedGrid::ISinteriorBoundaryPoint) ) &&
-	  //   ((BoundaryConditionParameters&)bcParameters).mask()(J1,J2,J3);
+          // mask=(cmask(J1,J2,J3)>0 ||
+          // cmask(J1,J2,J3)< (MappedGrid::ISinterpolationPoint | MappedGrid::ISinteriorBoundaryPoint) ) &&
+          //   ((BoundaryConditionParameters&)bcParameters).mask()(J1,J2,J3);
           // *wdh* 990915 : use bit ops
           mask(J1,J2,J3)=cmask(J1,J2,J3)>0 &&
             !( cmask(J1,J2,J3) & (MappedGrid::ISinterpolationPoint | MappedGrid::ISinteriorBoundaryPoint)) && 
-	     bmask(J1,J2,J3);
-	}
+             bmask(J1,J2,J3);
+        }
         // display(mask,"applyBoundaryCondition: useMask on boundary","%2i");
       }
 
@@ -819,86 +819,86 @@ applyBoundaryCondition(realMappedGridFunction & u,
       case dirichlet: 
         applyBCdirichlet(u, side,axis,C0,bcType,bc,scalarData,arrayData,arrayDataD,gfData,t,
                          uC,fC,mask,bcParameters,bcOption,grid);
-	break;
+        break;
       case normalDotScalarGrad:
         applyBCnormalDotScalarGrad(u, side,axis,C0,bcType,bc,scalarData,arrayData,arrayDataD,gfData,t,uC,fC,mask,bcParameters,bcOption,grid);
-	break;
+        break;
       case neumann:
       case mixed:
-	// 
-	// Apply a Neumann BC or mixed boundary condition, (b0 + b1 n.grad) u = g
+        // 
+        // Apply a Neumann BC or mixed boundary condition, (b0 + b1 n.grad) u = g
         applyBCneumann(u, side,axis,C0,bcType,bc,scalarData,arrayData,arrayDataD,gfData,t,uC,fC,mask,bcParameters,bcOption,grid);
-	break;
+        break;
 
       case normalDerivativeOfNormalComponent:
       case normalDerivativeOfTangentialComponent0:
       case normalDerivativeOfTangentialComponent1:
         applyBCnormalDerivative(u, side,axis,C0,bcType,bc,scalarData,arrayData,arrayDataD,gfData,t,uC,fC,mask,bcParameters,bcOption,grid);
-	break;
+        break;
 
       case extrapolate:
       case extrapolateNormalComponent:
       case extrapolateTangentialComponent0:
       case extrapolateTangentialComponent1:
         applyBCextrapolate(u, side,axis,C0,bcType,bc,scalarData,arrayData,arrayDataD,gfData,t,uC,fC,mask,bcParameters,bcOption,grid);
-	break;
+        break;
 
       case normalComponent:
-	//
-	// to set the normal component to g:
-	//       u <- u + (g-(n.u)) n
-	//
+        //
+        // to set the normal component to g:
+        //       u <- u + (g-(n.u)) n
+        //
         applyBCnormalComponent(u, side,axis,C0,bcType,bc,scalarData,arrayData,arrayDataD,gfData,t,uC,fC,mask,bcParameters,bcOption,grid);
-	break;
+        break;
 
       case tangentialComponent0:
       case tangentialComponent1:
       case tangentialComponent:
         applyBCtangentialComponent(u, side,axis,C0,bcType,bc,scalarData,arrayData,arrayDataD,gfData,t,uC,fC,mask,bcParameters,bcOption,grid);
-	break;
+        break;
 
       case evenSymmetry:
-	//
-	// Apply an even symmetry condition to a scalar, u(-) = u(+)
-	//
+        //
+        // Apply an even symmetry condition to a scalar, u(-) = u(+)
+        //
       case oddSymmetry:
-	//
-	// Apply an odd symmetry condition to a scalar, u(-) = -u(+)
-	//
+        //
+        // Apply an odd symmetry condition to a scalar, u(-) = -u(+)
+        //
       case vectorSymmetry:
-	//
-	// Apply a symmetry condition to a vector u=(u1,u2,u3)
-	//    n.u is odd
-	//    t.u is even
-	applyBCsymmetry(u, side,axis,C0,bcType,bc,scalarData,arrayData,arrayDataD,gfData,t,uC,fC,mask,bcParameters,bcOption,grid);
-	break;
-	
+        //
+        // Apply a symmetry condition to a vector u=(u1,u2,u3)
+        //    n.u is odd
+        //    t.u is even
+        applyBCsymmetry(u, side,axis,C0,bcType,bc,scalarData,arrayData,arrayDataD,gfData,t,uC,fC,mask,bcParameters,bcOption,grid);
+        break;
+        
       case aDotU:  
-	//
-	// to set the component along a to g:
-	//       u <- u + (g-(a.u)) a/<a,a>
-	//
+        //
+        // to set the component along a to g:
+        //       u <- u + (g-(a.u)) a/<a,a>
+        //
         applyBCaDotU(u, side,axis,C0,bcType,bc,scalarData,arrayData,arrayDataD,gfData,t,uC,fC,mask,bcParameters,bcOption,grid);
-	break;
+        break;
 
       case generalMixedDerivative:  // give b(0)*u + b(1)*u.x + b(2)*u.y = g
         applyBCgeneralMixedDerivative(u, side,axis,C0,bcType,bc,scalarData,arrayData,arrayDataD,gfData,t,uC,fC,mask,bcParameters,bcOption,grid);
-	break;
+        break;
 
       case generalizedDivergence:           
-	//
-	// --- div( a::u ) ---
-	//
-	applyBCGenDiv(u,side,axis,scalarData,arrayData,arrayDataD,gfData,t,uC,fC,mask,bcParameters,bcOption,grid);
+        //
+        // --- div( a::u ) ---
+        //
+        applyBCGenDiv(u,side,axis,scalarData,arrayData,arrayDataD,gfData,t,uC,fC,mask,bcParameters,bcOption,grid);
         break;
 
       case aDotGradU:  
         applyBCaDotGradU(u, side,axis,scalarData,arrayData,arrayDataD,gfData,t,uC,fC,mask,bcParameters,bcOption,grid);
-	break;
+        break;
 
       default:
-	printF("applyBoundaryCondition: unknown or un-implemented boundary condition = %i\n",(int)bcType);
-	Overture::abort("MappedGridOperators::applyBoundaryCondition: fatal error! \n");
+        printF("applyBoundaryCondition: unknown or un-implemented boundary condition = %i\n",(int)bcType);
+        Overture::abort("MappedGridOperators::applyBoundaryCondition: fatal error! \n");
       }
     }
   }
@@ -909,17 +909,17 @@ applyBoundaryCondition(realMappedGridFunction & u,
 
 // void MappedGridOperators:: 
 // applyBCaDotGradU(realMappedGridFunction & u, 
-// 		 const int side,
-// 		 const int axis,
-// 		 const real & scalarData,
-// 		 const RealArray & arrayData,
-// 		 const RealArray & arrayDataD,
-// 		 const realMappedGridFunction & gfData,
-// 		 const real & t,
+//               const int side,
+//               const int axis,
+//               const real & scalarData,
+//               const RealArray & arrayData,
+//               const RealArray & arrayDataD,
+//               const realMappedGridFunction & gfData,
+//               const real & t,
 //                  const IntegerArray & uC, const IntegerArray & fC, const IntegerDistributedArray & mask,
-// 		 const BoundaryConditionParameters & bcParameters,
-// 		 const BoundaryConditionOption bcOption,
-// 		 const int & grid  )
+//               const BoundaryConditionParameters & bcParameters,
+//               const BoundaryConditionOption bcOption,
+//               const int & grid  )
 // {
 //   Overture::abort("MappedGridOperators::applyBCaDotGradU:ERROR: This BC not implemented yet");
 // }

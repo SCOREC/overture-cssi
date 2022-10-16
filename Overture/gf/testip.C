@@ -172,7 +172,7 @@ plotResults( PlotStuff & ps, realCompositeGridFunction & u, realCompositeGridFun
 
 int 
 computeTheError( CompositeGrid & cg, realCompositeGridFunction & u,
-		 realCompositeGridFunction & err, OGFunction & exact, real & error ) 
+                 realCompositeGridFunction & err, OGFunction & exact, real & error ) 
 // ================================================================================================
 //
 //  Compute the error in the solution.
@@ -222,7 +222,7 @@ computeTheError( CompositeGrid & cg, realCompositeGridFunction & u,
     if( ok )
     {
       where( maskLocal(I1,I2,I3)!=0 )
-	errLocal(I1,I2,I3)=abs(uLocal(I1,I2,I3)-ue);
+        errLocal(I1,I2,I3)=abs(uLocal(I1,I2,I3)-ue);
 
       gridErrWithGhost=max(errLocal(I1,I2,I3))/ueMax;
 
@@ -231,24 +231,24 @@ computeTheError( CompositeGrid & cg, realCompositeGridFunction & u,
       if( !ok ) continue; // there are no points on this processor.
 
       where( maskLocal(I1,I2,I3)!=0 )
-	errLocal(I1,I2,I3)=abs(uLocal(I1,I2,I3)-ue(I1,I2,I3));
+        errLocal(I1,I2,I3)=abs(uLocal(I1,I2,I3)-ue(I1,I2,I3));
 
       gridErr=max(errLocal(I1,I2,I3))/ueMax;
 
       if( true )
       {
         int i1,i2,i3;
-	FOR_3D(i1,i2,i3,I1,I2,I3) 
-	{
-	  if( errLocal(i1,i2,i3)>.1 )
-	  {
-	    printF(" *** grid=%i (%s) i=(%i,%i,%i) x=(%9.3e,%9.3e,%9.3e) u=%9.3e true=%9.3e err=%e  \n",
+        FOR_3D(i1,i2,i3,I1,I2,I3) 
+        {
+          if( errLocal(i1,i2,i3)>.1 )
+          {
+            printF(" *** grid=%i (%s) i=(%i,%i,%i) x=(%9.3e,%9.3e,%9.3e) u=%9.3e true=%9.3e err=%e  \n",
                    grid,(const char*)cg[grid].getName(),
-		   i1,i2,i3,xLocal(i1,i2,i3,0),xLocal(i1,i2,i3,1),
+                   i1,i2,i3,xLocal(i1,i2,i3,0),xLocal(i1,i2,i3,1),
                       (numberOfDimensions==2 ? 0. : xLocal(i1,i2,i3,2)),
                    uLocal(i1,i2,i3),ue(i1,i2,i3),errLocal(i1,i2,i3));
-	  }
-	}
+          }
+        }
       }
 
     }
@@ -259,7 +259,7 @@ computeTheError( CompositeGrid & cg, realCompositeGridFunction & u,
     errorWithGhostPoints=max(errorWithGhostPoints, gridErrWithGhost);
 
     printF(" grid=%i (%s) max. rel. err=%e (%e with ghost)\n",grid,(const char*)cg[grid].getName(),
-	   gridErr,gridErrWithGhost);
+           gridErr,gridErrWithGhost);
 
    
 
@@ -294,7 +294,7 @@ main(int argc, char *argv[])
 
   printF("Usage: testip -noplot -in=file1 -out=file2 -surf -tz=[poly|trig] -iw=<num> -degree=<> -debug=<> \n"
          "             -testNew=[0|1] -testOld=[0|1] -infoLevel=<> -numGhost=<> -numGhostToUse=<> \n"
-	 "      -surf : interpolate a surface CompositeGrid\n");
+         "      -surf : interpolate a surface CompositeGrid\n");
 
   int twilightZoneOption=0;
   int degreeOfSpacePolynomial = 2;
@@ -358,9 +358,9 @@ main(int argc, char *argv[])
       sScanF(line(len,line.length()-1),"%i",&testFindNearest);
       if( testFindNearest )
       {
-	testOld=0;
-	testNew=0;
-	testParallel=0;
+        testOld=0;
+        testNew=0;
+        testParallel=0;
       }
     }
     else if( len=line.matches("-testPoints=") )
@@ -443,7 +443,7 @@ main(int argc, char *argv[])
       int degreeOfTimePolynomial = 1;
       int numberOfComponents = cg.numberOfDimensions();
       exactPointer = new OGPolyFunction(degreeOfSpacePolynomial,cg.numberOfDimensions(),numberOfComponents,
-					degreeOfTimePolynomial);
+                                        degreeOfTimePolynomial);
     
       
     }
@@ -475,27 +475,27 @@ main(int argc, char *argv[])
       const real bogusValue=-9999.;
       for( int grid=0; grid<cg.numberOfComponentGrids(); grid++)
       {
-	MappedGrid & mg = cg[grid];
+        MappedGrid & mg = cg[grid];
 #ifdef USE_PPP
-	realSerialArray uLocal; getLocalArrayWithGhostBoundaries(u[grid],uLocal);
-	intSerialArray maskLocal; getLocalArrayWithGhostBoundaries(cg[grid].mask(),maskLocal);
+        realSerialArray uLocal; getLocalArrayWithGhostBoundaries(u[grid],uLocal);
+        intSerialArray maskLocal; getLocalArrayWithGhostBoundaries(cg[grid].mask(),maskLocal);
 #else
-	realSerialArray & uLocal = u[grid]; 
-	const intSerialArray & maskLocal = cg[grid].mask();
+        realSerialArray & uLocal = u[grid]; 
+        const intSerialArray & maskLocal = cg[grid].mask();
 #endif
 
-	// getIndex(mg.dimension(),I1,I2,I3);
-	getIndex(mg.gridIndexRange(),I1,I2,I3);
-	int includeGhost=1; // include parallel ghost pts in uLocal
-	bool ok = ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1,I2,I3,includeGhost);
+        // getIndex(mg.dimension(),I1,I2,I3);
+        getIndex(mg.gridIndexRange(),I1,I2,I3);
+        int includeGhost=1; // include parallel ghost pts in uLocal
+        bool ok = ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1,I2,I3,includeGhost);
 
-	if( ok )
-	{
-	  where( maskLocal(I1,I2,I3)==0 )
-	  {
-	    uLocal(I1,I2,I3,R)=bogusValue;
-	  }
-	}
+        if( ok )
+        {
+          where( maskLocal(I1,I2,I3)==0 )
+          {
+            uLocal(I1,I2,I3,R)=bogusValue;
+          }
+        }
       }
     }
     
@@ -543,13 +543,13 @@ main(int argc, char *argv[])
   
       if( false ) // fix me -- we need an optimised version of interpolateAllPoints with a setup phase
       {
-	v=-1.;
-	time0=getCPU();
-	num=interpolator.interpolateAllPoints(u,v,R,R,numGhost);    // interpolate v from u
-	time=getCPU()-time0;
+        v=-1.;
+        time0=getCPU();
+        num=interpolator.interpolateAllPoints(u,v,R,R,numGhost);    // interpolate v from u
+        time=getCPU()-time0;
 
-	printf("*     : Time to interpolate again:    %8.2e \n",time);
-	
+        printf("*     : Time to interpolate again:    %8.2e \n",time);
+        
       }
       
       // u.display("Here is u (holds x and y):");
@@ -568,17 +568,17 @@ main(int argc, char *argv[])
       real xa[3]={.25,.25,.25}, xb[3]={.75,.75,.75}; 
       for( int i=0; i<   numPoints; i++ )
       {
-	for( int axis=0; axis<numberOfDimensions; axis++ )
-  	  xi(i,axis)=xa[axis]+(i-1)*(xb[axis]-xa[axis])/(numPoints-1.);
+        for( int axis=0; axis<numberOfDimensions; axis++ )
+          xi(i,axis)=xa[axis]+(i-1)*(xb[axis]-xa[axis])/(numPoints-1.);
       }
 
       interpolator.interpolatePoints(xi,u,ui);
       real t=0.;
       for( int i=0; i<numPoints; i++ )
       {
-	real uTrue = exact(xi(i,0),xi(i,1),xi(i,2),0,t);
-	real err = fabs( uTrue-ui(i,0) );
-	printF(" Point %i : xi=(%8.2e,%8.2e,%8.2e), ui=%8.2e, uTrue=%8.2e err=%8.2e\n",
+        real uTrue = exact(xi(i,0),xi(i,1),xi(i,2),0,t);
+        real err = fabs( uTrue-ui(i,0) );
+        printF(" Point %i : xi=(%8.2e,%8.2e,%8.2e), ui=%8.2e, uTrue=%8.2e err=%8.2e\n",
                i,xi(i,0),xi(i,1),xi(i,2),ui(i,0),uTrue,err);
       }
     }
@@ -590,6 +590,15 @@ main(int argc, char *argv[])
       InterpolatePointsOnAGrid interpolator;
       interpolator.setInfoLevel( infoLevel );
       interpolator.setInterpolationWidth(interpolationWidth);
+
+      // if( interpolationWidth>5 )
+      // {
+      //   printF("\n +++++++ SETTING setExplicitInterpolationStorageOption to precomputeAllCoefficients +++++\n"
+      //            " +++++++ SINCE sparse interpolation is not available yet for interpolationWidth>5    +++++ \n\n");
+      //   // interpolator.setExplicitInterpolationStorageOption(InterpolatePointsOnAGrid::precomputeSomeCoefficients);
+      //   interpolator.setExplicitInterpolationStorageOption(InterpolatePointsOnAGrid::precomputeAllCoefficients);
+      // }
+
       // Set the number of valid ghost points that can be used when interpolating from a grid function: 
       interpolator.setNumberOfValidGhostPoints( numGhostToUse );
       
@@ -601,71 +610,71 @@ main(int argc, char *argv[])
 
       if( testPoints )
       {
-	// Interpolate a few points:
+        // Interpolate a few points:
 
         RealArray xi;
 
         int numPoints = 3+myid;
         xi.redim(numPoints,3); xi=0.;
-	
+        
         real ds = 1./numPoints;
-	for( int i=0; i<numPoints; i++ )
-	{
+        for( int i=0; i<numPoints; i++ )
+        {
           int j=i+myid;
-	  xi(i,0) = j*.6*ds +.1;
-	  xi(i,1) = j*.4*ds + .05;
-	  if( cg.numberOfDimensions()==3 )
-	    xi(i,2) = j*.2*ds + .15;
-	}
+          xi(i,0) = j*.6*ds +.1;
+          xi(i,1) = j*.4*ds + .05;
+          if( cg.numberOfDimensions()==3 )
+            xi(i,2) = j*.2*ds + .15;
+        }
 
-	if( false )
-	{
-	  // *** grid=1 (stopper) i=(66,0,0) x=(5.782e-01,6.718e-01,0.000e+00) u=-2.692e+03 true=3.036e+00 err=2.695326e+03
+        if( false )
+        {
+          // *** grid=1 (stopper) i=(66,0,0) x=(5.782e-01,6.718e-01,0.000e+00) u=-2.692e+03 true=3.036e+00 err=2.695326e+03
           int i=0;
           //xi(i,0)=5.782e-01;
-	  //xi(i,1)=6.718e-01;
+          //xi(i,1)=6.718e-01;
           xi(i,0)=5.783e-01;
-	  xi(i,1)=6.719e-01;
+          xi(i,1)=6.719e-01;
           // 5.744e-01,6.681e-01
           xi(i,0)=5.744e-01;
-	  xi(i,1)=6.681e-01;
+          xi(i,1)=6.681e-01;
 
           xi(i,0)=2.;
-	  xi(i,1)=3.;
+          xi(i,1)=3.;
 
-	}
+        }
 
-	if( cg.numberOfDimensions()==3 )
-	{
-	  // sibe1.order2
-	  numPoints =2;
-	  xi.redim(numPoints,3); xi=0.;
-	  
+        if( cg.numberOfDimensions()==3 )
+        {
+          // sibe1.order2
+          numPoints =2;
+          xi.redim(numPoints,3); xi=0.;
+          
           // *** grid=1 (north-pole) i=(2,9,4) x=(-7.518e-01,-2.734e-01,7.719e-03) u=2.520e+00 true=6.225e-01 err=1.897463e+00  
           //  *** grid=1 (north-pole) i=(3,9,4) x=(-7.396e-01,-2.958e-01,7.406e-02) u=2.550e+00 true=6.786e-01 err=1.871365e+00  
-	  int i=0;
+          int i=0;
           xi(i,0)=-7.518e-01; xi(i,1)=-2.734e-01; xi(i,2)=7.719e-03;
           i=1;
           xi(i,0)=-7.396e-01; xi(i,1)=-2.958e-01; xi(i,2)=7.406e-02;
-	  
+          
 
         }
-	
+        
 
-	int rt=interpolator.buildInterpolationInfo(xi,cg);
+        int rt=interpolator.buildInterpolationInfo(xi,cg);
         const IntegerArray & status = interpolator.getStatus();
         if( rt!=0 )
-	{
-	  int num=abs(rt);
-	  printF("testip: Error return from InterpolatePointsOnAGrid::buildInterpolationInfo could not interpolate \n"
+        {
+          int num=abs(rt);
+          printF("testip: Error return from InterpolatePointsOnAGrid::buildInterpolationInfo could not interpolate \n"
                  "%i points.\n",num);
-	  for( int i=0; i<numPoints; i++ )
-	  {
-	    printF(" pt %i : x=(%8.2e,%8.2e,%8.2e) status=%i (0=unable to interp)\n",i,xi(i,0),xi(i,1),xi(i,2),status(i));
-	  }
-	  OV_ABORT("ERROR");
-	}
-	
+          for( int i=0; i<numPoints; i++ )
+          {
+            printF(" pt %i : x=(%8.2e,%8.2e,%8.2e) status=%i (0=unable to interp)\n",i,xi(i,0),xi(i,1),xi(i,2),status(i));
+          }
+          OV_ABORT("ERROR");
+        }
+        
 
         RealArray ui(numPoints);
         ui=-999.;
@@ -674,52 +683,52 @@ main(int argc, char *argv[])
 
         // check the errors
         real t=0.;
-	for( int i=0; i<numPoints; i++ )
-	{
-	  real uTrue = exact(xi(i,0),xi(i,1),xi(i,2),0,t);
-	  real err = fabs( uTrue-ui(i,0) );
-	  printf("myid=%i :  Point %i : xi=(%8.2e,%8.2e,%8.2e), ui=%8.2e, uTrue=%8.2e err=%8.2e (status=%i)\n",
-		 myid,i,xi(i,0),xi(i,1),xi(i,2),ui(i,0),uTrue,err,status(i));
-	}
+        for( int i=0; i<numPoints; i++ )
+        {
+          real uTrue = exact(xi(i,0),xi(i,1),xi(i,2),0,t);
+          real err = fabs( uTrue-ui(i,0) );
+          printf("myid=%i :  Point %i : xi=(%8.2e,%8.2e,%8.2e), ui=%8.2e, uTrue=%8.2e err=%8.2e (status=%i)\n",
+                 myid,i,xi(i,0),xi(i,1),xi(i,2),ui(i,0),uTrue,err,status(i));
+        }
 
       }
       else
       {
 
-	v=-1.;
-	real time0=getCPU();
-	int num=interpolator.interpolateAllPoints(u,v,R,R,numGhost);    // interpolate v from u
-	real time=getCPU()-time0;
+        v=-1.;
+        real time0=getCPU();
+        int num=interpolator.interpolateAllPoints(u,v,R,R,numGhost);    // interpolate v from u
+        real time=getCPU()-time0;
 
         int numNotAssigned=interpolator.getNumberUnassigned();
         numNotAssigned=ParallelUtility::getSum(numNotAssigned);
         int numExtrapolated=interpolator.getNumberExtrapolated();
-	numExtrapolated=ParallelUtility::getSum(numExtrapolated);
+        numExtrapolated=ParallelUtility::getSum(numExtrapolated);
 
-	printF("\n***testip InterpolatePointsOnAGrid: np=%i, Time to interpolateAllPoints : cpu=%8.2e(s) \n",np,time);
-	printF(" After interpolating a grid function: (number of extrapolated points =%i)\n",numExtrapolated);
-	if( numNotAssigned>0 )
-	{
+        printF("\n***testip InterpolatePointsOnAGrid: np=%i, Time to interpolateAllPoints : cpu=%8.2e(s) \n",np,time);
+        printF(" After interpolating a grid function: (number of extrapolated points =%i)\n",numExtrapolated);
+        if( numNotAssigned>0 )
+        {
           printF(" **** testip:WARNING %i pts NOT assigned ****\n",numNotAssigned);
-	}
-	
+        }
+        
   
-	if( true ) 
-	{
-	  v=-1.;
-	  time0=getCPU();
-	  num=interpolator.interpolateAllPoints(u,v,R,R,numGhost);    // interpolate v from u
-	  time=getCPU()-time0;
+        if( true ) 
+        {
+          v=-1.;
+          time0=getCPU();
+          num=interpolator.interpolateAllPoints(u,v,R,R,numGhost);    // interpolate v from u
+          time=getCPU()-time0;
 
-	  printF("*     : Time to interpolate again:    %8.2e (s)\n",time);
-	
-	}
+          printF("*     : Time to interpolate again:    %8.2e (s)\n",time);
+        
+        }
       
-	// u.display("Here is u (holds x and y):");
-	// v.display("Here is v:");
-	// computeError(cg,cg2,v,err);
-	real error=0.;
-	computeTheError(cg2,v,err,exact,error);
+        // u.display("Here is u (holds x and y):");
+        // v.display("Here is v:");
+        // computeError(cg,cg2,v,err);
+        real error=0.;
+        computeTheError(cg2,v,err,exact,error);
       }
       
       
@@ -741,40 +750,40 @@ main(int argc, char *argv[])
       for( ;; )
       {
 
-	gi.inputString(line,"Enter a point x,y,z (to find the nearest grid point to, `done' to finish)) \n");
-	if( line=="done" ) break;
-	
-	sScanF(line,"%e %e %e",&x(0,0),&x(0,1),&x(0,2));
-	if( numberOfDimensions==2 ) x(0,2)=0.;
-	
-	int rt = findNearestValidGridPoint( cg, x, il, ci );
-	
+        gi.inputString(line,"Enter a point x,y,z (to find the nearest grid point to, `done' to finish)) \n");
+        if( line=="done" ) break;
+        
+        sScanF(line,"%e %e %e",&x(0,0),&x(0,1),&x(0,2));
+        if( numberOfDimensions==2 ) x(0,2)=0.;
+        
+        int rt = findNearestValidGridPoint( cg, x, il, ci );
+        
         // plot results
         int donor=il(0,numberOfDimensions);
-	assert( donor>=0 && donor<cg.numberOfComponentGrids() );
-	
-	RealArray rc(1,3),xc(1,3);
-	rc=0.;
-	for( int axis=0; axis<numberOfDimensions; axis++ )
-	  rc(0,axis)=ci(0,axis);
+        assert( donor>=0 && donor<cg.numberOfComponentGrids() );
+        
+        RealArray rc(1,3),xc(1,3);
+        rc=0.;
+        for( int axis=0; axis<numberOfDimensions; axis++ )
+          rc(0,axis)=ci(0,axis);
 
-	MappedGrid & mg = cg[donor];
-	Mapping & map = mg.mapping().getMapping();
+        MappedGrid & mg = cg[donor];
+        Mapping & map = mg.mapping().getMapping();
 
-	map.mapS(rc,xc);
+        map.mapS(rc,xc);
 
         RealArray points(2,3); points=0.;
-	for( int axis=0; axis<numberOfDimensions; axis++ )
-	{
-	  points(0,axis)=x(0,axis);
-	  points(1,axis)=xc(0,axis);
-	}
-	
+        for( int axis=0; axis<numberOfDimensions; axis++ )
+        {
+          points(0,axis)=x(0,axis);
+          points(1,axis)=xc(0,axis);
+        }
+        
 
         gi.erase();
 
         int ptSize=5;
-	gip.set(GI_POINT_SIZE,ptSize*gi.getLineWidthScaleFactor());
+        gip.set(GI_POINT_SIZE,ptSize*gi.getLineWidthScaleFactor());
         gi.plotPoints(points,gip);
         PlotIt::plot(gi, cg, gip );
 
@@ -854,11 +863,11 @@ main(int argc, char *argv[])
     // stitcher.stitchSurfaceCompositeGrid(interactiveStitcher);
 
     // cg.setSurfaceStitching( stitcher.getUnstructuredGrid() );
-	
+        
 //     UnstructuredMapping &umap = *stitcher.getUnstructuredGrid();
 //     int numberOfTriangles=umap.size(UnstructuredMapping::Face);
 //     printF("computeStitchedSurfaceWeights: Number of triangles on the unstructured stitcher grid = %i\n",
-// 	   numberOfTriangles);
+//         numberOfTriangles);
     
 //     numberOfTriangles=min(2,numberOfTriangles); // *************************
 
@@ -872,10 +881,10 @@ main(int argc, char *argv[])
 //     {
 //       for ( int a=0; a<3; a++ )
 //       {
-// 	v0[a] = verts(tris(e,0),a);
-// 	v1[a] = verts(tris(e,1),a);
-// 	v2[a] = verts(tris(e,2),a);
-// 	tCenters(e,a) = (v0[a] + v1[a] + v2[a])/3;
+//      v0[a] = verts(tris(e,0),a);
+//      v1[a] = verts(tris(e,1),a);
+//      v2[a] = verts(tris(e,2),a);
+//      tCenters(e,a) = (v0[a] + v1[a] + v2[a])/3;
 //       }
 //     }
 
@@ -927,11 +936,11 @@ main(int argc, char *argv[])
     for( int i=0; i<numPoints; i++ )
     {
       printF(" i=%i xp=(%g,%g,%g) uInterpolated=(%g,%g,%g) err=(%8.2e,%8.2e,%8.2e)\n",
-	     xp(i,0),xp(i,1),xp(i,1),
-	     uInterpolated(i,0),uInterpolated(i,1),uInterpolated(i,1),
-	     fabs(xp(i,0)-uInterpolated(i,0)),
-	     fabs(xp(i,1)-uInterpolated(i,1)),
-	     fabs(xp(i,2)-uInterpolated(i,2)));
+             xp(i,0),xp(i,1),xp(i,1),
+             uInterpolated(i,0),uInterpolated(i,1),uInterpolated(i,1),
+             fabs(xp(i,0)-uInterpolated(i,0)),
+             fabs(xp(i,1)-uInterpolated(i,1)),
+             fabs(xp(i,2)-uInterpolated(i,2)));
     }
 
 

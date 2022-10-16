@@ -16,13 +16,17 @@
 #include "display.h"
 
 #include "incompressible/SmCylinderExactSolution.h"
+#include "incompressible/SmSphereExactSolution.h"
+#include "incompressible/SmRectangleExactSolution.h"
+
 #include "ParallelUtility.h"
 #include "Oges.h"
 #include "CgSolverUtil.h"
 
 #include "gridFunctionNorms.h"
 
-
+#define ForBoundary(side,axis)   for( int axis=0; axis<mg.numberOfDimensions(); axis++ ) \
+                                 for( int side=0; side<=1; side++ )
 int 
 getLineFromFile( FILE *file, char s[], int lim);
 
@@ -51,7 +55,13 @@ main(int argc, char *argv[])
   bool reportMemory=false;
   bool loadBalance=false;
   int numberOfParallelGhost=2;
+
+  aString caseName = "hollowCylinderDD"; // 
+  // aString caseName = "hollowCylinderTT";
+
   
+  int mx=2, my=1, mz=1; // mode numbers for rectangle
+
   aString commandFileName="";
   if( argc > 1 )
   { // look at arguments for "noplot" or some other name
@@ -85,6 +95,26 @@ main(int argc, char *argv[])
         }
         printF("Setting numberOfParallelGhost=%i\n",numberOfParallelGhost);
       }
+      else if( len=line.matches("-mx=") )
+      {
+        sScanF(line(len,line.length()-1),"%i",&mx);
+        printF("Setting mx=%i\n",mx);   
+      } 
+      else if( len=line.matches("-my=") )
+      {
+        sScanF(line(len,line.length()-1),"%i",&my);
+        printF("Setting my=%i\n",my);   
+      } 
+      else if( len=line.matches("-mz=") )
+      {
+        sScanF(line(len,line.length()-1),"%i",&mz);
+        printF("Setting mz=%i\n",mz);   
+      }               
+      else if( len=line.matches("-caseName=") )
+      {
+        caseName = line(len,line.length()-1);
+        printF("Setting caseName=[%s]\n",(const char*)caseName);
+      }      
       else if( line=="release" )
       {
         smartRelease=true;
@@ -103,7 +133,7 @@ main(int argc, char *argv[])
     printF("Usage: `testExact [options][file.cmd]' \n"
             "     options:                            \n" 
             "          -noplot:   run without graphics \n" 
-            "          -nopause: do not pause \n" 
+            "          -caseName: defines the exact solution \n" 
             "          -abortOnEnd: abort if command file ends \n" 
             "          -numberOfParallelGhost=<num> : number of parallel ghost lines \n" 
             "          memory:   run with A++ memory tracking\n" 
@@ -136,26 +166,60 @@ main(int argc, char *argv[])
   // Interpolant & interpolant = *new Interpolant(cg); interpolant.incrementReferenceCount();
   // interpolant.setImplicitInterpolationMethod(Interpolant::iterateToInterpolate);
 
+  const bool evalCylinder = caseName=="hollowCylinderDD" || 
+                            caseName=="hollowCylinderDD" ||
+                            caseName=="solidCylinderD"   ||
+                            caseName=="solidCylinderT";
+
+  const bool evalSphere = caseName=="hollowSphereDD" || 
+                          caseName=="hollowSphereDD" ||
+                          caseName=="solidSphereD"   ||
+                          caseName=="solidSphereT";
+
+  const bool evalRectangle = caseName=="rectangleDD" || 
+                             caseName=="rectangleTD" ||
+                             caseName=="rectangleTT";
+
+  printF("&&&& evalCylinder=%d, evalSphere=%d, evalRectangle=%d,\n",(int)evalCylinder,(int)evalSphere,(int)evalRectangle);
+
+  assert( evalCylinder || evalSphere || evalRectangle );
+
 
   SmCylinderExactSolution cylExact;
-  aString caseName = "cylinder";
-  cylExact.initialize( cg, caseName );
+  if( evalCylinder )
+  {
+    cylExact.initialize( cg, caseName );
+  }
 
-  Real omega;
-  cylExact.getParameter( "omega",omega );
-  printF(">>>>> omega=%12.4e for the exact solution\n",omega);
+  SmSphereExactSolution sphereExact;
+  if( evalSphere )
+  {
+    sphereExact.initialize( cg, caseName );  
+  }
 
+  SmRectangleExactSolution rectangleExact;
+  if( evalRectangle )
+  {
+    rectangleExact.initialize( cg, caseName );  
+    rectangleExact.setParameter( "mx",mx );
+    rectangleExact.setParameter( "my",my );
+    rectangleExact.setParameter( "mz",mz );    
+  }  
 
-  int numberOfComponents=4;
+  const int numberOfDimensions = cg.numberOfDimensions();
+  int numberOfComponents= numberOfDimensions+1;
   Range all;
   realCompositeGridFunction u(cg,all,all,all,numberOfComponents);
-  u.setName("u1",0);
-  u.setName("u2",1);
-  u.setName("u3",2);
-  u.setName("p",3);
+  int mc=0; 
+  u.setName("u1",mc); mc++; 
+  u.setName("u2",mc); mc++; 
+  if( numberOfDimensions>2 ){ u.setName("u3",mc); mc++; }
+  u.setName("p", mc); mc++;
+
   u=0.;
 
   Index I1,I2,I3;
+  Index Ib1,Ib2,Ib3;
   real t=0.;
   int numberOfTimeDerivatives = 0;
   for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
@@ -163,9 +227,30 @@ main(int argc, char *argv[])
      MappedGrid & mg = cg[grid];
      getIndex( mg.dimension(),I1,I2,I3);
 
-     cylExact.evalSolution( t, cg, grid, u[grid], I1,I2,I3, numberOfTimeDerivatives );
+     if( evalCylinder )
+       cylExact.evalSolution( t, cg, grid, u[grid], I1,I2,I3, numberOfTimeDerivatives );
+     else if( evalSphere )
+       sphereExact.evalSolution( t, cg, grid, u[grid], I1,I2,I3, numberOfTimeDerivatives );
+     else
+       rectangleExact.evalSolution( t, cg, grid, u[grid], I1,I2,I3, numberOfTimeDerivatives );
 
   }
+
+  Real omega;
+  if( evalCylinder )
+  {
+    cylExact.getParameter( "omega",omega );
+  }
+  if( evalSphere )
+  {
+    sphereExact.getParameter( "omega",omega );
+  } 
+  if( evalRectangle )
+  {
+    rectangleExact.getParameter( "omega",omega );
+  }   
+
+  printF(">>>>> omega=%12.4e for the exact solution\n",omega);
 
   PlotStuffParameters psp;
   psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
@@ -174,7 +259,6 @@ main(int argc, char *argv[])
 
   CompositeGridOperators cgop(cg);
 
-  const int numberOfDimensions = cg.numberOfDimensions();
   const int u1c=0; 
   const int u2c=1; 
   const int u3c=2; 
@@ -187,52 +271,92 @@ main(int argc, char *argv[])
 
   // Put the residual here:
   realCompositeGridFunction res(cg,all,all,all,numberOfComponents+1);
-  res.setName("u1",0);
-  res.setName("u2",1);
-  res.setName("u3",2);
-  res.setName("p",3);
-  res.setName("div",4);
-  const int nDiv=4; // position of div in res
+  mc=0; 
+  res.setName("u1",mc); mc++; 
+  res.setName("u2",mc); mc++; 
+  if( numberOfDimensions>2 ){ res.setName("u3",mc); mc++; }
+  res.setName("p", mc); mc++;
+  res.setName("div",mc);
+  const int nDiv=mc; // position of div in res
 
   for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
   {
-     MappedGrid & mg = cg[grid];
-     MappedGridOperators & op = cgop[grid];
+    MappedGrid & mg = cg[grid];
+    MappedGridOperators & op = cgop[grid];
 
-     OV_GET_SERIAL_ARRAY(real,u[grid],uLocal);
-     OV_GET_SERIAL_ARRAY(real,res[grid],resLocal);
+    mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter | MappedGrid::THEinverseVertexDerivative );
 
-     resLocal = 0.;
+    OV_GET_SERIAL_ARRAY(real,u[grid],uLocal);
+    OV_GET_SERIAL_ARRAY(real,res[grid],resLocal);
 
-     int extra=-1; // skip boundaries -- *fix* me for traction
-     getIndex( mg.gridIndexRange(),I1,I2,I3,extra ); 
+    resLocal = 0.;
+
+    int extra=-1; // skip boundaries -- *fix* me for traction
+    getIndex( mg.gridIndexRange(),I1,I2,I3,extra ); 
      
-     RealArray uLap(I1,I2,I3,C);
-     op.derivative( MappedGridOperators::laplacianOperator,uLocal, uLap,I1,I2,I3,C );
+    RealArray uLap(I1,I2,I3,C);
+    op.derivative( MappedGridOperators::laplacianOperator,uLocal, uLap,I1,I2,I3,C );
 
-     RealArray px(I1,I2,I3), py(I1,I2,I3), pz(I1,I2,I3);
-     op.derivative(MappedGridOperators::xDerivative,uLocal,px  ,I1,I2,I3,pc);
-     op.derivative(MappedGridOperators::yDerivative,uLocal,py  ,I1,I2,I3,pc);
+    RealArray px(I1,I2,I3), py(I1,I2,I3), pz(I1,I2,I3);
+    op.derivative(MappedGridOperators::xDerivative,uLocal,px  ,I1,I2,I3,pc);
+    op.derivative(MappedGridOperators::yDerivative,uLocal,py  ,I1,I2,I3,pc);
 
-     resLocal(I1,I2,I3,u1c) = SQR(omega)*uLocal(I1,I2,I3,u1c) + mu*uLap(I1,I2,I3,u1c) - px(I1,I2,I3); 
-     resLocal(I1,I2,I3,u2c) = SQR(omega)*uLocal(I1,I2,I3,u2c) + mu*uLap(I1,I2,I3,u2c) - py(I1,I2,I3); 
-     if( numberOfDimensions==3 )
-     {
-       op.derivative(MappedGridOperators::zDerivative,uLocal,pz  ,I1,I2,I3,pc);
-       resLocal(I1,I2,I3,u3c) = SQR(omega)*uLocal(I1,I2,I3,u3c) + mu*uLap(I1,I2,I3,u3c) - pz(I1,I2,I3); 
-     }
+    resLocal(I1,I2,I3,u1c) = SQR(omega)*uLocal(I1,I2,I3,u1c) + mu*uLap(I1,I2,I3,u1c) - px(I1,I2,I3); 
+    resLocal(I1,I2,I3,u2c) = SQR(omega)*uLocal(I1,I2,I3,u2c) + mu*uLap(I1,I2,I3,u2c) - py(I1,I2,I3); 
+    if( numberOfDimensions==3 )
+    {
+      op.derivative(MappedGridOperators::zDerivative,uLocal,pz  ,I1,I2,I3,pc);
+      resLocal(I1,I2,I3,u3c) = SQR(omega)*uLocal(I1,I2,I3,u3c) + mu*uLap(I1,I2,I3,u3c) - pz(I1,I2,I3); 
+    }
 
-     resLocal(I1,I2,I3,pc) = uLap(I1,I2,I3,pc); 
+    resLocal(I1,I2,I3,pc) = uLap(I1,I2,I3,pc); 
 
-     RealArray u1x(I1,I2,I3), u2y(I1,I2,I3), u3z(I1,I2,I3);
-     op.derivative( MappedGridOperators::xDerivative,uLocal, u1x,I1,I2,I3,u1c );
-     op.derivative( MappedGridOperators::yDerivative,uLocal, u2y,I1,I2,I3,u2c );
-     op.derivative( MappedGridOperators::zDerivative,uLocal, u3z,I1,I2,I3,u3c );
+    RealArray u1x(I1,I2,I3), u2y(I1,I2,I3), u3z(I1,I2,I3);
+    op.derivative( MappedGridOperators::xDerivative,uLocal, u1x,I1,I2,I3,u1c );
+    op.derivative( MappedGridOperators::yDerivative,uLocal, u2y,I1,I2,I3,u2c );
+    if( numberOfDimensions==2 )
+    {
+      resLocal(I1,I2,I3,nDiv) = u1x + u2y;
+    }
+    else
+    {
+      op.derivative( MappedGridOperators::zDerivative,uLocal, u3z,I1,I2,I3,u3c );
+      resLocal(I1,I2,I3,nDiv) = u1x + u2y + u3z;
+    }
 
-     resLocal(I1,I2,I3,nDiv) = u1x + u2y + u3z;
+    printF("============= Check boundary conditions =============\n");
+    ForBoundary(side,axis) 
+    {
+      if( mg.boundaryCondition(side,axis)>0 )
+      {
+        getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+        OV_GET_SERIAL_ARRAY(real,u[grid],uLocal);
+
+        if( caseName == "hollowCylinderDD" || 
+            caseName == "solidCylinderD"   ||
+            caseName == "hollowSphereDD"   ||
+            caseName == "solidSphereD"     ||
+            caseName == "rectangleDD"      ||
+           (caseName == "rectangleTD" && axis==0 && side==1 )
+          )
+        {
+          // check displacement BCs
+
+          Real u1Err = max(fabs(uLocal(Ib1,Ib2,Ib3,u1c)));
+          Real u2Err = max(fabs(uLocal(Ib1,Ib2,Ib3,u2c)));
+          Real u3Err=0;
+          if( numberOfDimensions==3 ) 
+            u3Err = max(fabs(uLocal(Ib1,Ib2,Ib3,u3c)));
+          Real dispErr = max(fabs(uLocal(Ib1,Ib2,Ib3,Uc)));
+          printF(" grid=%d, (side,axis)=(%d,%d), error in u=0 BC: u1=%8.2e, u2=%8.2e, u3=%8.2e, max=%8.2e\n",
+               grid,side,axis,u1Err,u2Err,u3Err,dispErr);
+        }
+      }
+    }
   }
 
   // compute the residual norms
+  printF("============= caseName = %s, grid=%s =============\n",(const char*)caseName,(const char*)nameOfGridFile);
   printF("============= residual norms: omega=%12.6e =============\n",omega);
   for( int m=0; m<=numberOfComponents; m++ )
   {
@@ -251,6 +375,35 @@ main(int argc, char *argv[])
   PlotIt::contour( ps,res,psp );
 
 
+  int movieMode=1;
+  if( movieMode )
+  {
+    Real dt=.1; 
+    int numSteps=100;
+    for( int n=0; n<numSteps; n++ )
+    {
+      real t= n*dt;
+
+      int numberOfTimeDerivatives = 0;
+      for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+      {
+         MappedGrid & mg = cg[grid];
+         getIndex( mg.dimension(),I1,I2,I3);
+
+         if( evalCylinder )
+           cylExact.evalSolution( t, cg, grid, u[grid], I1,I2,I3, numberOfTimeDerivatives );
+         else if( evalSphere )
+           sphereExact.evalSolution( t, cg, grid, u[grid], I1,I2,I3, numberOfTimeDerivatives );
+         else
+           rectangleExact.evalSolution( t, cg, grid, u[grid], I1,I2,I3, numberOfTimeDerivatives );
+      } 
+
+      psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
+      psp.set(GI_TOP_LABEL,sPrintF("Solution: t=%5.2f",t));
+      ps.erase();
+      PlotIt::contour( ps,u,psp );
+    }
+  }
 
   Overture::finish();          
   return 0;

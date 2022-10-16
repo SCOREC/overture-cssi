@@ -247,8 +247,10 @@ multiStageAdvance( real &t, real & tFinal )
         }
 
         
-        if( !requestInterfaceInfo && !parameters.isAdaptiveGridProblem()
-                && ( alwaysSetBoundaryData || !solveCoupledInterfaceEquations) ) // -- this is not right with AMR
+        if(  (  !requestInterfaceInfo && !parameters.isAdaptiveGridProblem()              // -- this is not right with AMR
+                                  && ( alwaysSetBoundaryData || !solveCoupledInterfaceEquations) 
+                  )  
+            ) 
         {
       // Check how well the interface equations are satisfied at the start of the step
 
@@ -368,12 +370,20 @@ multiStageAdvance( real &t, real & tFinal )
             
         } // end correct 
         
+        if( hasHeatFluxInterfaces )
+        {
+      // -- project the Temperature at heat flux interfaces ----
+            projectInterface( t+dt, dt, gfIndex );
+        }
+
         ForDomainOrdered(d)
         {
             real td=t; //  endTimeStep will increment the time. Do not increment t here. 
             domainSolver[d]->endTimeStep( td,dt,advanceOptions[d] );
         }
         
+
+
         t+=dt;      
         numberOfStepsTaken++; 
         current=next;

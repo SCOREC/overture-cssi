@@ -5,7 +5,7 @@
 #   
 #  cgad [-noplot] tz -g=<name> -tz=[poly|trig|pulse] -degreex=<> -degreet=<> -tf=<tFinal> -tp=<tPlot> ...
 #         -go=<go/halt/og> -kappa=<value> -solver=<yale/best> -order=<2/4> -ts=[adams2|euler|implicit|midPoint|bdf] ...
-#         -a=<val> -b=<val> -bc=<d|m|n> -amr=[0|1] -useNewStep=[0|1] -varCoeff=[poly] ...
+#         -a=<val> -b=<val> -bc=<d|m|n> -amr=[0|1] -useNewStep=[0|1] -varCoeff=[poly|radial] ...
 #         -bc1=[d|m|n|champ] -bc2=[d|m|n|champ]
 #
 #  bc : d=dirichlet, m=mixed boundary condition
@@ -55,6 +55,7 @@ $tz = "poly"; $degreex=2; $degreet=2; $fx=1.; $fy=1.; $fz=1.; $ft=1.; $bc="d"; $
 $order = 2; $useNewStep=0; $varCoeff=""; $bdfOrder=2; $implicitAdvection=0; 
 $amr=0; $ratio=2; $levels=2; $bufferZones=2; $amrTol=1.e-2; 
 $xPulse=.5; $yPulse=.5; $zPulse=0.;
+$vr=.7; $vTheta=.4; # for radial advection
 # 
 $solver="yale"; $ogesDebug=0; $ksp="bcgs"; $pc="bjacobi"; $subksp="preonly"; $subpc="ilu"; $iluLevels=3;
 # $ksp="gmres"; 
@@ -66,12 +67,15 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>
  "bc=s"=>\$bc, "amrTol=f"=>\$amrTol, "useNewStep=i"=>\$useNewStep,"levels=i"=>\$levels,"varCoeff=s"=>\$varCoeff,\
  "bdfOrder=i"=>\$bdfOrder,"implicitAdvection=i"=>\$implicitAdvection,"fx=f"=>\$fx,"fy=f"=>\$fy,"fz=f"=>\$fz,\
  "ft=f"=>\$ft,"useChamp=i"=>\$useChamp, "bc1=s"=>\$bc1, "bc2=s"=>\$bc2, "bc3=s"=>\$bc3, "bc4=s"=>\$bc4,\
- "orderInTime=i"=>\$orderInTime );
+ "orderInTime=i"=>\$orderInTime,"vr=f"=>\$vr,"vTheta=f"=>\$vTheta );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $tz eq "poly" ){ $tz="turn on polynomial"; }elsif( $tz eq "trig" ){ $tz="turn on trigonometric"; }\
                else{ $tz="OBTZ:pulse"; }
 if( $order eq "2" ){ $order = "second order accurate"; }else{ $order = "fourth order accurate"; }
+#
+if( $ts eq "bdf" || $ts eq "BDF" ){ $implicitAdvection=1; }
+#
 if( $ts eq "adams2" || $ts eq "pc2" ){ $ts = "adams PC"; }
 if( $ts eq "pc4" || ( $ts eq "pc" && $orderInTime==4) ){ $ts="adams PC order 4"; $orderInTime=4; } 
 if( $ts eq "euler" ){ $ts = "forward Euler"; }
@@ -81,7 +85,7 @@ if( $amr eq "0" ){ $amr="turn off adaptive grids"; }else{ $amr="turn on adaptive
 if( $go eq "go" ){ $go = "movie mode\n finish"; }
 if( $go eq "halt" ){ $go = "*"; }
 if( $go eq "og" ){ $go = "open graphics"; }
-#
+# 
 # 
 $grid
 # 
@@ -135,6 +139,7 @@ $cmd
 #
     $cmd="#"; $dct=0; $dcx=2; 
     if( $varCoeff eq "poly" ){ $cmd="OBPDE:user defined coefficients\n polynomial coefficients\n $dct $dcx\n done"; }
+    if( $varCoeff eq "radial" ){ $cmd="OBPDE:user defined coefficients\n radial advection\n $vr $vTheta\n done"; }
     $cmd 
     treat advection implicitly $implicitAdvection
     thermal conductivity $kThermal 

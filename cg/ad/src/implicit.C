@@ -128,6 +128,10 @@ formMatrixForImplicitSolve(const real & dt0,
     CompositeGrid & cg = cgf1.cg;
     CompositeGridOperators & op =  *cgf1.u.getOperators();
 
+    // const int orderOfAccuracy = parameters.dbase.get<int>("orderOfAccuracy");
+    // if( orderOfAccuracy==4 )
+    //   op.useConservativeApproximations( false );   // *wdh* April 27, 2022
+
     std::vector<real> & kappa = parameters.dbase.get<std::vector<real> >("kappa");
 
     const bool variableDiffusivity = parameters.dbase.get<bool >("variableDiffusivity");
@@ -278,8 +282,29 @@ formMatrixForImplicitSolve(const real & dt0,
         }
 
         OgesParameters::EquationEnum equation = OgesParameters::advectionDiffusionEquationOperator;
-        implicitSolver[imp].setEquationAndBoundaryConditions(equation,op,boundaryConditions, boundaryConditionData,
-                                                             equationCoefficients,&varCoeff,&advectionCoeff );
+        if( variableDiffusivity )
+        {
+          // --- variable diffusivity ---
+          implicitSolver[imp].setEquationAndBoundaryConditions(equation,op,boundaryConditions, boundaryConditionData,
+                                                               equationCoefficients,&varCoeff,&advectionCoeff );
+        }
+        else
+        {
+          // ---constant diffusivity ---
+          const Real kappaDt = implicitFactor*kappa[imp]*dt0;
+          equationCoefficients(0,G)= 1.;  // for heat equation solve I - alpha*nu*dt* Delta
+          for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ ) // *wdh* 040910 
+          {
+            if( parameters.getGridIsImplicit(grid) )
+              equationCoefficients(1,grid)= -kappaDt;
+            else
+              equationCoefficients(1,grid)=0.;
+          }
+
+          implicitSolver[imp].setEquationAndBoundaryConditions(equation,op,boundaryConditions, boundaryConditionData,
+                                                               equationCoefficients,NULL,&advectionCoeff );          
+        }
+
       }
       else if( variableDiffusivity )
       {
@@ -624,6 +649,7 @@ implicitSolve(const real & dt0,
   const int applyChampInterfaceConditions = parameters.dbase.get<int>("applyChampInterfaceConditions");
   if( (true || debug() & 4 ) && multiDomainProblem && applyChampInterfaceConditions )
   {
+    printP("CGAD:After implicit solve at t=%9.3e, call getChampResidual...e\n",cgf1.t);
     real maxRes = getChampResidual( cgf1.u, parameters,cgf1.t,dt0 );
     printP("CGAD: After implicit solve at t=%9.3e: Max residual in champ interface conditions = %8.2e\n",cgf1.t,maxRes);
 

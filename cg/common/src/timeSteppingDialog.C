@@ -123,6 +123,10 @@ buildTimeSteppingDialog(DialogData & dialog )
   tbState[ntb]=parameters.dbase.get<bool>("projectInterface");
   ntb++;
 
+  tbCommands[ntb]="project interface temperature";
+  tbState[ntb]=parameters.dbase.get<bool>("projectInterfaceTemperature");
+  ntb++;  
+
   tbCommands[ntb]="project rigid body interface";
   tbState[ntb]=parameters.dbase.get<bool>("projectRigidBodyInterface");
   ntb++;
@@ -603,7 +607,9 @@ getTimeSteppingOption(const aString & answer,
 
 
   else if( dialog.getToggleValue(answer,"use local time stepping",parameters.dbase.get<int >("useLocalTimeStepping")) ){ }
+  else if( dialog.getToggleValue(answer,"project interface temperature",parameters.dbase.get<bool>("projectInterfaceTemperature")) ){ }
   else if( dialog.getToggleValue(answer,"project interface",parameters.dbase.get<bool>("projectInterface")) ){ }
+
   else if( dialog.getToggleValue(answer,"project rigid body interface",parameters.dbase.get<bool>("projectRigidBodyInterface")) ){ }
   else if( dialog.getToggleValue(answer,"adjust dt for moving bodies",
                                                 parameters.dbase.get<bool >("adjustTimeStepForMovingBodies")) ){}//

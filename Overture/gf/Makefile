@@ -1,5 +1,5 @@
-# include ../config/Makefile.$(VENDOR)
-include ../config/Makefile.intel
+include ../config/Makefile.$(VENDOR)
+# include ../config/Makefile.intel
 
 FFLAGSO = $(FFLAGSG)
 

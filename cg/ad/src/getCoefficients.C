@@ -8,6 +8,13 @@
 #include "PlotStuff.h"
 #include "ParallelUtility.h"
 
+#define FOR_3D(i1,i2,i3,I1,I2,I3)                                       \
+int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase(); \
+int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
+for(i3=I3Base; i3<=I3Bound; i3++)                                       \
+  for(i2=I2Base; i2<=I2Bound; i2++)                                     \
+    for(i1=I1Base; i1<=I1Bound; i1++)
+
 // ===========================================================================================================
 /// \brief Assign the variable advection coefficients
 // ===========================================================================================================
@@ -49,8 +56,13 @@ getAdvectionCoefficients( GridFunction & cgf )
   {
     Range all;
     pAdvectVar = new realCompositeGridFunction(cg,all,all,all,numberOfDimensions); // WHO WILL DELETE ME ?
+    *(pAdvectVar)=0.;
   }
   realCompositeGridFunction & advectVar = *pAdvectVar;
+  advectVar.setName("a",0);
+  advectVar.setName("b",1);
+  if( numberOfDimensions==3 )
+    advectVar.setName("c",2);
 
   Index I1,I2,I3;
   for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
@@ -78,17 +90,50 @@ getAdvectionCoefficients( GridFunction & cgf )
       for( int axis=0; axis<numberOfDimensions; axis++ )
       {
         printF("axis=%i: act=%g,%g,%g,  acx=%g,%g,%g,%g,%g,%g\n",axis,act(axis,0),act(axis,1),act(axis,2), acx(axis,0,0,0),
-	       acx(axis,1,0,0),acx(axis,1,1,0), acx(axis,2,0,0), acx(axis,0,1,0),acx(axis,0,2,0));
-	
+               acx(axis,1,0,0),acx(axis,1,1,0), acx(axis,2,0,0), acx(axis,0,1,0),acx(axis,0,2,0));
+        
         real timeFunction = act(axis,0)+t*(act(axis,1)+t*act(axis,2));
-	advectVarLocal(I1,I2,I3,axis)=( 
-	  acx(axis,0,0,0) 
-	  + xLocal(I1,I2,I3,0)*( acx(axis,1,0,0) + acx(axis,1,1,0)*xLocal(I1,I2,I3,1) + acx(axis,2,0,0)*xLocal(I1,I2,I3,0))
-	  + xLocal(I1,I2,I3,1)*( acx(axis,0,1,0) + acx(axis,0,2,0)*xLocal(I1,I2,I3,1))
-	  )*timeFunction;
+        advectVarLocal(I1,I2,I3,axis)=( 
+          acx(axis,0,0,0) 
+          + xLocal(I1,I2,I3,0)*( acx(axis,1,0,0) + acx(axis,1,1,0)*xLocal(I1,I2,I3,1) + acx(axis,2,0,0)*xLocal(I1,I2,I3,0))
+          + xLocal(I1,I2,I3,1)*( acx(axis,0,1,0) + acx(axis,0,2,0)*xLocal(I1,I2,I3,1))
+          )*timeFunction;
 
-	
+        
       }
+    }
+    else if( userCoefficientsOption=="radialAdvection" )
+    {
+      // --- specify the radial and angular velocity ---
+
+      const Real ur = rpar[0], uTheta = rpar[1];
+      printF("Assigning variable advection coefficients: radialAdvection: ur=%g, uTheta=%g\n",ur,uTheta);
+
+      const Real eps = 1.e-9; // **FIX ME**
+      int i1,i2,i3;
+      FOR_3D(i1,i2,i3,I1,I2,I3)  
+      {
+        Real x = xLocal(i1,i2,i3,0);
+        Real y = xLocal(i1,i2,i3,1);
+        Real r = sqrt( SQR(x) + SQR(y) );
+        if( r < eps ) //  avoid division by zero
+        {
+          x=eps;           // avoid atan(0,0)
+          y=eps;
+          r=sqrt(2.)*eps;  // r=sqrt(x**2+y**2)
+        }  
+
+        // rHat     = [ cos(theta), sin(theta)]
+        // thetaHat = [-sin(theta), cos(theta)]
+        //  uv = ur*rHat + uTheta*thetaHat
+
+        const Real cosTheta = x/r, sinTheta=y/r;   
+        advectVarLocal(i1,i2,i3,0) = ur*cosTheta - uTheta*sinTheta;
+        advectVarLocal(i1,i2,i3,1) = ur*sinTheta + uTheta*cosTheta;
+        if( numberOfDimensions==3 )
+          advectVarLocal(i1,i2,i3,2)=0.;
+      }
+      //   ::display(advectVarLocal,"advectVarLocal","%5.2f ");
     }
     else
     {
@@ -174,17 +219,17 @@ getDiffusionCoefficients( GridFunction & cgf )
       for( int n=0; n<numberOfComponents; n++ )
       {
         printF("n=%i: pct=%g,%g,%g,  pcx=%g,%g,%g,%g,%g,%g, kappa=%g\n",n,pct(0,n),pct(1,n),pct(2,n), pcx(0,0,0,n),
-	       pcx(1,0,0,n),pcx(1,1,0,n), pcx(2,0,0,n), pcx(0,1,0,n),pcx(0,2,0,n), kappa[n]);
-	
+               pcx(1,0,0,n),pcx(1,1,0,n), pcx(2,0,0,n), pcx(0,1,0,n),pcx(0,2,0,n), kappa[n]);
+        
         real timeFunction = pct(0,n)+t*(pct(1,n)+t*pct(2,n));
-	kappaVarLocal(I1,I2,I3,n)=( 
-	  pcx(0,0,0,n) 
-	  + xLocal(I1,I2,I3,0)*( pcx(1,0,0,n) + pcx(1,1,0,n)*xLocal(I1,I2,I3,1) + pcx(2,0,0,n)*xLocal(I1,I2,I3,0))
-	  + xLocal(I1,I2,I3,1)*( pcx(0,1,0,n) + pcx(0,2,0,n)*xLocal(I1,I2,I3,1))
-	  )*timeFunction;
+        kappaVarLocal(I1,I2,I3,n)=( 
+          pcx(0,0,0,n) 
+          + xLocal(I1,I2,I3,0)*( pcx(1,0,0,n) + pcx(1,1,0,n)*xLocal(I1,I2,I3,1) + pcx(2,0,0,n)*xLocal(I1,I2,I3,0))
+          + xLocal(I1,I2,I3,1)*( pcx(0,1,0,n) + pcx(0,2,0,n)*xLocal(I1,I2,I3,1))
+          )*timeFunction;
 
-	// kappaVarLocal(I1,I2,I3,n)=kappa[n]; // pcx(0,0,0,n);
-	
+        // kappaVarLocal(I1,I2,I3,n)=kappa[n]; // pcx(0,0,0,n);
+        
       }
     }
     else
@@ -254,6 +299,7 @@ updateUserDefinedCoefficients(GenericGraphicsInterface & gi)
     {
       "no user coefficients",
       "polynomial coefficients",
+      "radial advection",
       "done",
       ""
     }; 
@@ -306,17 +352,17 @@ updateUserDefinedCoefficients(GenericGraphicsInterface & gi)
       for( int n=0; n<numberOfComponents; n++ )
       {
         // choose default coefficients so kappa remains positive 
-	pct(0,n)=1.;
-	if( degreeInTime>=2 )
-	  pct(2,n)=.05;
-	 
+        pct(0,n)=1.;
+        if( degreeInTime>=2 )
+          pct(2,n)=.05;
+         
         // space = kappa[n]*( 1 + .1*x^2 + .15*y^2 )
         pcx(0,0,0,n)=kappa[n];
-	if( degreeInSpace>=2 )
-	{
-	  pcx(2,0,0,n)=.1*kappa[n];
-	  pcx(0,2,0,n)=.15*kappa[n];
-	}
+        if( degreeInSpace>=2 )
+        {
+          pcx(2,0,0,n)=.1*kappa[n];
+          pcx(0,2,0,n)=.15*kappa[n];
+        }
       }
       
       // For now the advection coefficients do not depend on the component number
@@ -326,31 +372,46 @@ updateUserDefinedCoefficients(GenericGraphicsInterface & gi)
       acx.redim(3,maxDegree+1,maxDegree+1,maxDegree+1); acx=0.;
       for( int axis=0; axis<numberOfDimensions; axis++ )
       {
-	act(axis,0)=1.;
-	if( degreeInTime>=1  )
-	  act(axis,1)=.2*(axis+1);
-	if( degreeInTime>=2  )
-	  act(axis,2)=.1*(axis+1);
-	 
+        act(axis,0)=1.;
+        if( degreeInTime>=1  )
+          act(axis,1)=.2*(axis+1);
+        if( degreeInTime>=2  )
+          act(axis,2)=.1*(axis+1);
+         
         // space: 
         acx(axis,0,0,0)=1.;
-	if( degreeInSpace>=1 )
-	{
-	  acx(axis,1,0,0)= .2/(1.+axis);
-	  acx(axis,0,1,0)=.25/(1.+axis);
-	  acx(axis,0,0,1)=-.2/(1.+axis);
-	}
-	if( degreeInSpace>=2 )
-	{
-	  acx(axis,2,0,0)= .1/(1.+axis);
-	  acx(axis,0,2,0)=.15/(1.+axis);
-	  acx(axis,0,0,2)=-.1/(1.+axis);
-	}
+        if( degreeInSpace>=1 )
+        {
+          acx(axis,1,0,0)= .2/(1.+axis);
+          acx(axis,0,1,0)=.25/(1.+axis);
+          acx(axis,0,0,1)=-.2/(1.+axis);
+        }
+        if( degreeInSpace>=2 )
+        {
+          acx(axis,2,0,0)= .1/(1.+axis);
+          acx(axis,0,2,0)=.15/(1.+axis);
+          acx(axis,0,0,2)=-.1/(1.+axis);
+        }
       }
       
       diffusivityIsTimeDependent=degreeInTime!=0;
       advectionIsTimeDependent=degreeInTime!=0;
     }
+
+    else if( answer=="radial advection" )
+    {
+      userCoefficientsOption="radialAdvection";
+      variableDiffusivity = false;
+      variableAdvection   = true;
+      
+      printF("Specify radial and angular advection velocities.\n");
+
+      gi.inputString(answer,"Enter vr and vTheta (radial and angular velocity)");
+      Real & vr=rpar[0], &vTheta=rpar[1];
+      sScanF(answer,"%e %e",&vr,&vTheta);
+      printf("Setting vr=%g, vTheta=%g\n",vr,vTheta);
+    }
+
     else
     {
       printF("unknown response=[%s]\n",(const char*)answer);

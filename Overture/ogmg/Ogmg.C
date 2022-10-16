@@ -25,10 +25,10 @@
   for( int i2=I2Base; i2<=I2Bound; i2++ )  \
   for( int i1=I1Base; i1<=I1Bound; i1++ )
 
-#define adjustSizeMacro(x,n)			\
-    while( x.getLength() < n )			\
-      x.addElement();				\
-    while( x.getLength() > n )			\
+#define adjustSizeMacro(x,n)                    \
+    while( x.getLength() < n )                  \
+      x.addElement();                           \
+    while( x.getLength() > n )                  \
       x.deleteElement()
 
 static bool applyFinishBoundaryConditions=false;
@@ -101,6 +101,15 @@ init()
 // /Description: Initialize variables -- this is a common routine for all constructors
 // =================================================================================================
 {  
+  // Save initial memory usage
+  Real mem=Overture::getCurrentMemoryUsage();
+  Real totalMem=ParallelUtility::getSum(mem);  // min over all processors
+
+  if( !parameters.dbase.has_key("") )
+    parameters.dbase.put<Real>("totalMemInit");
+
+  parameters.dbase.get<Real>("totalMemInit")=totalMem;
+
   ps=NULL;
 
   myid=max(0,Communication_Manager::My_Process_Number);
@@ -144,6 +153,7 @@ init()
     sPrintF(name,"ogmg%i",numberOfInstances);
   }
   
+
 
   char buff[180];
   debugFile = NULL;
@@ -204,10 +214,10 @@ Ogmg::
     {
       for( int grid=0; grid<mgcg.multigridLevel[level].numberOfComponentGrids(); grid++ )
       {
-	for( int dir=0; dir<3; dir++ )
-	  delete tridiagonalSolver[level][grid][dir];
+        for( int dir=0; dir<3; dir++ )
+          delete tridiagonalSolver[level][grid][dir];
       
-	delete [] tridiagonalSolver[level][grid];
+        delete [] tridiagonalSolver[level][grid];
       }
     
       delete [] tridiagonalSolver[level];
@@ -215,7 +225,7 @@ Ogmg::
       // *wdh* 091230 -- the grid collections also keep references to the Interpolant so we should be
       // careful about deleting them
       if( interpolant!=NULL && interpolant[level]->decrementReferenceCount()==0 )
-	delete interpolant[level];  
+        delete interpolant[level];  
     }
     delete [] tridiagonalSolver;
 
@@ -402,17 +412,17 @@ updateToMatchGrid( CompositeGrid & mg_ )
     
       if( parameters.loadBalancer==NULL )
       {
-	if( mg_->pLoadBalancer!=NULL )
-	{
-	  printF("Ogmg::INFO: using loadBalancer from input CompositeGrid\n");
-	  parameters.loadBalancer=mg_->pLoadBalancer;
-	}
-	else
-	{
-	  parameters.loadBalancer = new LoadBalancer;
-	  // NOTE: when there is only 1 grid then the default load-balancer will always use all-to-all
-	  parameters.loadBalancer->setLoadBalancer(LoadBalancer::KernighanLin);
-	}
+        if( mg_->pLoadBalancer!=NULL )
+        {
+          printF("Ogmg::INFO: using loadBalancer from input CompositeGrid\n");
+          parameters.loadBalancer=mg_->pLoadBalancer;
+        }
+        else
+        {
+          parameters.loadBalancer = new LoadBalancer;
+          // NOTE: when there is only 1 grid then the default load-balancer will always use all-to-all
+          parameters.loadBalancer->setLoadBalancer(LoadBalancer::KernighanLin);
+        }
       }
 
       LoadBalancer & loadBalancer = *parameters.loadBalancer;
@@ -429,13 +439,13 @@ updateToMatchGrid( CompositeGrid & mg_ )
       const int numberOfComponentGrids =mgcg.numberOfComponentGrids();
       for( int l=0; l<mgcg.numberOfMultigridLevels(); l++ )
       {
-	CompositeGrid & cgl = mgcg.multigridLevel[l];
-	fPrintF(debugFile,"\n **level=%i : cgl interp data state=%i**\n",l,(int)cgl->localInterpolationDataState);
-	::display(cgl.numberOfInterpolationPoints,"cgl.numberOfInterpolationPoints",debugFile);
-	for( int grid=0; grid<numberOfComponentGrids; grid++ )
-	{
-	  ::display(cgl.interpoleeGrid[grid],sPrintF("l=%i, grid=%i, cgl.interpoleeGrid",l,grid),debugFile);
-	}
+        CompositeGrid & cgl = mgcg.multigridLevel[l];
+        fPrintF(debugFile,"\n **level=%i : cgl interp data state=%i**\n",l,(int)cgl->localInterpolationDataState);
+        ::display(cgl.numberOfInterpolationPoints,"cgl.numberOfInterpolationPoints",debugFile);
+        for( int grid=0; grid<numberOfComponentGrids; grid++ )
+        {
+          ::display(cgl.interpoleeGrid[grid],sPrintF("l=%i, grid=%i, cgl.interpoleeGrid",l,grid),debugFile);
+        }
       }
     }
     
@@ -473,7 +483,7 @@ updateToMatchGrid( CompositeGrid & mg_ )
       printF("After REFERENCING to MASTER: mgcg.numberOfMultigridLevels=%i\n",mgcg.numberOfMultigridLevels());
       if( Communication_Manager::Number_Of_Processors >1 )
       { // display the parallel distribution
-	mgcg.displayDistribution("Ogmg: read MG with levels: mgcg",stdout);
+        mgcg.displayDistribution("Ogmg: read MG with levels: mgcg",stdout);
       }
     }
     
@@ -492,19 +502,19 @@ updateToMatchGrid( CompositeGrid & mg_ )
 
       if( l==0 )
       {
-	// --- is this needed ?
+        // --- is this needed ?
 
-	mgcg->localInterpolationDataState=CompositeGridData::localInterpolationDataForAll;
+        mgcg->localInterpolationDataState=CompositeGridData::localInterpolationDataForAll;
 
         // total number of grids over all levels
-	const int numGridsAllLevels = numberOfComponentGrids*mgcg.numberOfMultigridLevels();  
-	adjustSizeMacro(mgcg->interpolationPointLocal,numGridsAllLevels);
-	adjustSizeMacro(mgcg->interpoleeGridLocal,numGridsAllLevels);
-	adjustSizeMacro(mgcg->variableInterpolationWidthLocal,numGridsAllLevels);
-	adjustSizeMacro(mgcg->interpoleeLocationLocal,numGridsAllLevels);
-	adjustSizeMacro(mgcg->interpolationCoordinatesLocal,numGridsAllLevels);
+        const int numGridsAllLevels = numberOfComponentGrids*mgcg.numberOfMultigridLevels();  
+        adjustSizeMacro(mgcg->interpolationPointLocal,numGridsAllLevels);
+        adjustSizeMacro(mgcg->interpoleeGridLocal,numGridsAllLevels);
+        adjustSizeMacro(mgcg->variableInterpolationWidthLocal,numGridsAllLevels);
+        adjustSizeMacro(mgcg->interpoleeLocationLocal,numGridsAllLevels);
+        adjustSizeMacro(mgcg->interpolationCoordinatesLocal,numGridsAllLevels);
 
-	mgcg->numberOfInterpolationPointsLocal.redim(numGridsAllLevels);
+        mgcg->numberOfInterpolationPointsLocal.redim(numGridsAllLevels);
       }
 
       cgl->localInterpolationDataState=CompositeGridData::localInterpolationDataForAll;
@@ -529,14 +539,14 @@ updateToMatchGrid( CompositeGrid & mg_ )
 
       if( false )
       {
-	for( int grid=0; grid<cgl.numberOfComponentGrids(); grid++ )
-	{
-	  fprintf(pDebugFile,"\n -- level=%i, grid=%i, nig=%i\n",l,grid,cgl->numberOfInterpolationPointsLocal(grid));
-	  ::display(cgl->interpoleeGridLocal[grid],"cgl->interpoleeGridLocal",pDebugFile);
-	  ::display(cgl->interpolationPointLocal[grid],"cgl->interpolationPointLocal",pDebugFile);
+        for( int grid=0; grid<cgl.numberOfComponentGrids(); grid++ )
+        {
+          fprintf(pDebugFile,"\n -- level=%i, grid=%i, nig=%i\n",l,grid,cgl->numberOfInterpolationPointsLocal(grid));
+          ::display(cgl->interpoleeGridLocal[grid],"cgl->interpoleeGridLocal",pDebugFile);
+          ::display(cgl->interpolationPointLocal[grid],"cgl->interpolationPointLocal",pDebugFile);
           fflush(pDebugFile);
-	}
-	
+        }
+        
       }
 
       // sort the local interp. arrays and build the interpolationStartEndIndex array: 
@@ -555,113 +565,113 @@ updateToMatchGrid( CompositeGrid & mg_ )
     {
       if( !multigridCompositeGrid.isGridUpToDate() ) // check if the multigrid hierachy needs to be built
       {
-	// *******************************************
-	// ***** Automatically build extra levels ****
-	// *******************************************
+        // *******************************************
+        // ***** Automatically build extra levels ****
+        // *******************************************
 
         const int numberOfPossibleMultigridLevels = mg_.numberOfPossibleMultigridLevels();
 
         numberOfBuildExtraLevelsMessages++;
-	if( numberOfBuildExtraLevelsMessages<5 )
-	{
-	  printF("\n MMMMMMMMMMMMMMMM  Ogmg: call buildExtraLevels: max MG levels = %i (1=no coarser levels) MMMMMMMMMMMMMMMMMMMMMMM\n",
-		 numberOfPossibleMultigridLevels );
-	}
-	else if( numberOfBuildExtraLevelsMessages==5 )
-	{
-	  printF(" MMMMMMMMMMMMMMMM Ogmg: Too many  Ogmg: call buildExtraLevels ... I will not print anymore\n");
-	}
-	
-	numberOfExtraLevels=1;
-	buildExtraLevels(mg_);  // This builds the CompositeGrid mgcg
+        if( numberOfBuildExtraLevelsMessages<5 )
+        {
+          printF("\n MMMMMMMMMMMMMMMM  Ogmg: call buildExtraLevels: max MG levels = %i (1=no coarser levels) MMMMMMMMMMMMMMMMMMMMMMM\n",
+                 numberOfPossibleMultigridLevels );
+        }
+        else if( numberOfBuildExtraLevelsMessages==5 )
+        {
+          printF(" MMMMMMMMMMMMMMMM Ogmg: Too many  Ogmg: call buildExtraLevels ... I will not print anymore\n");
+        }
+        
+        numberOfExtraLevels=1;
+        buildExtraLevels(mg_);  // This builds the CompositeGrid mgcg
 
         multigridCompositeGrid.setGridIsUpToDate(true);  // multigrid hierachy is now up to date.
       }
       else
       {
         // The multigridCompositeGrid is already up to date. Just use the one that is there.
-	numberOfDoNotBuildExtraLevelsMessages++;
-	if( numberOfDoNotBuildExtraLevelsMessages<5 )
-	{
-	  printF("\n MMMMMMMMMMMMMMMM  Ogmg: do NOT call buildExtraLevels (grid is up to date) MMMMMMMMMMMMMMMMMM\n");
-	}
-	else if( numberOfDoNotBuildExtraLevelsMessages==5 )
-	{
+        numberOfDoNotBuildExtraLevelsMessages++;
+        if( numberOfDoNotBuildExtraLevelsMessages<5 )
+        {
+          printF("\n MMMMMMMMMMMMMMMM  Ogmg: do NOT call buildExtraLevels (grid is up to date) MMMMMMMMMMMMMMMMMM\n");
+        }
+        else if( numberOfDoNotBuildExtraLevelsMessages==5 )
+        {
           printF(" MMMMMMMMMMMMMMMM Ogmg: Too many do NOT call buildExtraLevels ... I will not print anymore\n");
-	}
-	
+        }
+        
         numberOfExtraLevels=mgcg.numberOfMultigridLevels()-1;
       }
       
 
       if( true && parameters.readMultigridCompositeGrid )
       {
-	// read the grid with extra levels from a file
-	printF("Reading the multigrid composite grid with extra levels from file=%s\n",
-	       (const char*)parameters.nameOfMultigridCompositeGrid);
+        // read the grid with extra levels from a file
+        printF("Reading the multigrid composite grid with extra levels from file=%s\n",
+               (const char*)parameters.nameOfMultigridCompositeGrid);
 
         CompositeGrid mgcg2;
-	getFromADataBase(mgcg2,parameters.nameOfMultigridCompositeGrid);
-	printF("After reading: mgcg2.numberOfMultigridLevels=%i\n",mgcg2.numberOfMultigridLevels());
-	mgcg2.update(MappedGrid::THEmask);
+        getFromADataBase(mgcg2,parameters.nameOfMultigridCompositeGrid);
+        printF("After reading: mgcg2.numberOfMultigridLevels=%i\n",mgcg2.numberOfMultigridLevels());
+        mgcg2.update(MappedGrid::THEmask);
 
         assert( mgcg.numberOfGrids()==mgcg2.numberOfGrids() );
-	assert( mgcg.numberOfMultigridLevels()==mgcg2.numberOfMultigridLevels() );
+        assert( mgcg.numberOfMultigridLevels()==mgcg2.numberOfMultigridLevels() );
 
-	assert( max(abs(mgcg.numberOfInterpolationPoints()-mgcg2.numberOfInterpolationPoints()))==0 );
-	assert( max(abs(mgcg.interpolationStartEndIndex-mgcg2.interpolationStartEndIndex))==0 );
-	display(mgcg.interpolationStartEndIndex,"mgcg.interpolationStartEndIndex");
-	display(mgcg2.interpolationStartEndIndex,"mgcg2.interpolationStartEndIndex");
-	
-	assert( max(abs(mgcg.multigridCoarseningRatio-mgcg2.multigridCoarseningRatio))==0 );
-	
+        assert( max(abs(mgcg.numberOfInterpolationPoints()-mgcg2.numberOfInterpolationPoints()))==0 );
+        assert( max(abs(mgcg.interpolationStartEndIndex-mgcg2.interpolationStartEndIndex))==0 );
+        display(mgcg.interpolationStartEndIndex,"mgcg.interpolationStartEndIndex");
+        display(mgcg2.interpolationStartEndIndex,"mgcg2.interpolationStartEndIndex");
+        
+        assert( max(abs(mgcg.multigridCoarseningRatio-mgcg2.multigridCoarseningRatio))==0 );
+        
         // mgcg2=mgcg;
 
-	for( int l=0; l<mgcg.numberOfMultigridLevels(); l++ )
-	{
+        for( int l=0; l<mgcg.numberOfMultigridLevels(); l++ )
+        {
           printF(" *** Check level=%i\n",l);
-	  CompositeGrid & cg1 = mgcg.multigridLevel[l];
-	  CompositeGrid & cg2 = mgcg2.multigridLevel[l];
-	  
+          CompositeGrid & cg1 = mgcg.multigridLevel[l];
+          CompositeGrid & cg2 = mgcg2.multigridLevel[l];
+          
           assert( cg1.numberOfGrids()==cg2.numberOfGrids() );
           assert( cg1.numberOfBaseGrids()==cg2.numberOfBaseGrids() );
-	  assert( max(abs(cg1.interpolationWidth()-cg2.interpolationWidth()))==0 );
-	  assert( max(abs(cg1.interpolationIsImplicit()-cg2.interpolationIsImplicit()))==0 );
-	  assert( abs(cg1.interpolationIsAllExplicit()-cg2.interpolationIsAllExplicit())==0 );
-	  assert( abs(cg1.interpolationIsAllImplicit()-cg2.interpolationIsAllImplicit())==0 );
+          assert( max(abs(cg1.interpolationWidth()-cg2.interpolationWidth()))==0 );
+          assert( max(abs(cg1.interpolationIsImplicit()-cg2.interpolationIsImplicit()))==0 );
+          assert( abs(cg1.interpolationIsAllExplicit()-cg2.interpolationIsAllExplicit())==0 );
+          assert( abs(cg1.interpolationIsAllImplicit()-cg2.interpolationIsAllImplicit())==0 );
           display(cg1.interpolationStartEndIndex,"cg1.interpolationStartEndIndex");
           display(cg2.interpolationStartEndIndex,"cg2.interpolationStartEndIndex");
-	  
-	  assert( max(abs(cg1.interpolationStartEndIndex-cg2.interpolationStartEndIndex))==0 );
+          
+          assert( max(abs(cg1.interpolationStartEndIndex-cg2.interpolationStartEndIndex))==0 );
           // cg2.interpolationStartEndIndex=cg1.interpolationStartEndIndex;
-	  
+          
           assert( max(abs(cg1.numberOfInterpolationPoints()-cg2.numberOfInterpolationPoints()))==0 );
           ::display(cg1.numberOfInterpolationPoints(),"cg1.numberOfInterpolationPoints()");
-	  ::display(cg2.numberOfInterpolationPoints(),"cg2.numberOfInterpolationPoints()");
+          ::display(cg2.numberOfInterpolationPoints(),"cg2.numberOfInterpolationPoints()");
 
           ::display(cg1.numberOfImplicitInterpolationPoints(),"cg1.numberOfImplicitInterpolationPoints()");
-	  ::display(cg2.numberOfImplicitInterpolationPoints(),"cg2.numberOfImplicitInterpolationPoints()");
+          ::display(cg2.numberOfImplicitInterpolationPoints(),"cg2.numberOfImplicitInterpolationPoints()");
           // assert( max(abs(cg1.numberOfImplicitInterpolationPoints()-cg2.numberOfImplicitInterpolationPoints()))==0 );
 
-	  for( int grid=0; grid<cg1.numberOfComponentGrids(); grid++ )
-	  {
-	    ::display(cg1.interpolationCoordinates[grid],"cg1.interpolationCoordinates[grid]","%4.1f ");
-	    ::display(cg1.interpolationCoordinates[grid],"cg2.interpolationCoordinates[grid]","%4.1f ");
-	    
-	    if( cg1.numberOfInterpolationPoints(grid)>0 )
-	    {
-	      assert( max(abs(cg1[grid].discretizationWidth()-cg2[grid].discretizationWidth()))==0 );
-	      assert( max(abs(cg1.interpolationPoint[grid]-cg2.interpolationPoint[grid]))==0 );
-	      assert( max(abs(cg1.interpoleeGrid[grid]-cg2.interpoleeGrid[grid]))==0 );
-	      assert( max(abs(cg1.variableInterpolationWidth[grid]-cg2.variableInterpolationWidth[grid]))==0 );
-	      assert( max(fabs(cg1.interpolationCoordinates[grid]-cg2.interpolationCoordinates[grid]))==0 );
-	      assert( max(abs(cg1[grid].mask()-cg2[grid].mask()))==0 );
-	    }
-	    
-	  }
-	}
+          for( int grid=0; grid<cg1.numberOfComponentGrids(); grid++ )
+          {
+            ::display(cg1.interpolationCoordinates[grid],"cg1.interpolationCoordinates[grid]","%4.1f ");
+            ::display(cg1.interpolationCoordinates[grid],"cg2.interpolationCoordinates[grid]","%4.1f ");
+            
+            if( cg1.numberOfInterpolationPoints(grid)>0 )
+            {
+              assert( max(abs(cg1[grid].discretizationWidth()-cg2[grid].discretizationWidth()))==0 );
+              assert( max(abs(cg1.interpolationPoint[grid]-cg2.interpolationPoint[grid]))==0 );
+              assert( max(abs(cg1.interpoleeGrid[grid]-cg2.interpoleeGrid[grid]))==0 );
+              assert( max(abs(cg1.variableInterpolationWidth[grid]-cg2.variableInterpolationWidth[grid]))==0 );
+              assert( max(fabs(cg1.interpolationCoordinates[grid]-cg2.interpolationCoordinates[grid]))==0 );
+              assert( max(abs(cg1[grid].mask()-cg2[grid].mask()))==0 );
+            }
+            
+          }
+        }
 
-	// if( true ) Overture::abort("done");
+        // if( true ) Overture::abort("done");
         mgcg=mgcg2;
 
       }
@@ -687,7 +697,7 @@ updateToMatchGrid( CompositeGrid & mg_ )
     if( false )
     {
       printF("Ogmg::After saving: mgcg.numberOfMultigridLevels=%i, numberOfGrids=%i\n",mgcg.numberOfMultigridLevels(),
-	     mgcg.numberOfGrids());
+             mgcg.numberOfGrids());
 
       mgcg->gridDistributionList.display("Ogmg::After saving");
     }
@@ -703,12 +713,12 @@ updateToMatchGrid( CompositeGrid & mg_ )
     {
       for( int grid=0; grid<mgcg.numberOfGrids(); grid++ )
       {
-	::display(mgcg.interpolationPoint[grid],sPrintF("mgcg.interpolationPoint[%i]",grid));        
+        ::display(mgcg.interpolationPoint[grid],sPrintF("mgcg.interpolationPoint[%i]",grid));        
       }
 
       CompositeGrid mgcg2;
       printF("\nReading the multigrid composite grid with extra levels from file=%s\n",
-	     (const char*)parameters.nameOfMultigridCompositeGrid);
+             (const char*)parameters.nameOfMultigridCompositeGrid);
 
       getFromADataBase(mgcg2,parameters.nameOfMultigridCompositeGrid);
       
@@ -716,13 +726,13 @@ updateToMatchGrid( CompositeGrid & mg_ )
       mgcg2.update(MappedGrid::THEmask);
       mgcg2.updateReferences();
       printF("<<< mgcg2.numberOfGrids()=%i, mgcg2.numberOfComponentGrids()=%i, "
-	     "mgcg2.interpolationPoint.getLength=%i\n",
-	     mgcg.numberOfGrids(),mgcg.numberOfComponentGrids(),mgcg.interpolationPoint.getLength());
+             "mgcg2.interpolationPoint.getLength=%i\n",
+             mgcg.numberOfGrids(),mgcg.numberOfComponentGrids(),mgcg.interpolationPoint.getLength());
 
       
       for( int grid=0; grid<mgcg2.numberOfGrids(); grid++ )
       {
-//	::display(mgcg2.interpolationPoint[grid],sPrintF("mgcg2.interpolationPoint[%i]",grid));        
+//      ::display(mgcg2.interpolationPoint[grid],sPrintF("mgcg2.interpolationPoint[%i]",grid));        
       } 
 
       ::display(mgcg.interpolationStartEndIndex(),"mgcg.interpolationStartEndIndex()");
@@ -730,25 +740,25 @@ updateToMatchGrid( CompositeGrid & mg_ )
 
       for( int l=0; l<mgcg2.numberOfMultigridLevels(); l++ )
       {
-	CompositeGrid & cgl = mgcg2.multigridLevel[l];
+        CompositeGrid & cgl = mgcg2.multigridLevel[l];
         // cgl.updateReferences();
 
-	printF("*****level=%i cgl.numberOfComponentGrids()=%i, "
-	       "cgl.interpolationPoint.getLength=%i\n",
-	       l,cgl.numberOfComponentGrids(),cgl.interpolationPoint.getLength());
+        printF("*****level=%i cgl.numberOfComponentGrids()=%i, "
+               "cgl.interpolationPoint.getLength=%i\n",
+               l,cgl.numberOfComponentGrids(),cgl.interpolationPoint.getLength());
 
         ::display(mgcg.multigridLevel[l].interpolationStartEndIndex(),"mgcg[l].interpolationStartEndIndex()");
         ::display(cgl.interpolationStartEndIndex(),"cgl.interpolationStartEndIndex()");
 
-	::display(cgl.numberOfInterpolationPoints(),"cgl.numberOfInterpolationPoints()");
-	for( int grid=0; grid<cgl.numberOfComponentGrids(); grid++ )
-	{
-// 	  ::display(cgl.interpoleeGrid[grid],"cgl.interpoleeGrid[grid]");
-// 	  ::display(cgl.variableInterpolationWidth[grid],"cgl.variableInterpolationWidth[grid]");
-//	  ::display(cgl.interpolationPoint[grid],"cgl.interpolationPoint[grid]");        
-// 	  ::display(cgl.interpoleeLocation[grid],"cgl.interpoleeLocation[grid]");        
-// 	  ::display(cgl.interpolationCoordinates[grid],"cgl.interpolationCoordinates[grid]");  
-	}
+        ::display(cgl.numberOfInterpolationPoints(),"cgl.numberOfInterpolationPoints()");
+        for( int grid=0; grid<cgl.numberOfComponentGrids(); grid++ )
+        {
+//        ::display(cgl.interpoleeGrid[grid],"cgl.interpoleeGrid[grid]");
+//        ::display(cgl.variableInterpolationWidth[grid],"cgl.variableInterpolationWidth[grid]");
+//        ::display(cgl.interpolationPoint[grid],"cgl.interpolationPoint[grid]");        
+//        ::display(cgl.interpoleeLocation[grid],"cgl.interpoleeLocation[grid]");        
+//        ::display(cgl.interpolationCoordinates[grid],"cgl.interpolationCoordinates[grid]");  
+        }
       }
       
     }
@@ -767,7 +777,7 @@ updateToMatchGrid( CompositeGrid & mg_ )
   {
     printF("Ogmg::updateToMatchGrid:ERROR: after update parameters -- parameters are NOT consistent with mgcg\n");
     printF(" parameters.numberOfMultigridLevels()=%i, mgcg.numberOfMultigridLevels()=%i\n",
-	   parameters.numberOfMultigridLevels(),mgcg.numberOfMultigridLevels());
+           parameters.numberOfMultigridLevels(),mgcg.numberOfMultigridLevels());
     
     OV_ABORT("error");
   }
@@ -818,7 +828,7 @@ updateToMatchGrid( CompositeGrid & mg_ )
       tridiagonalSolver[level] = new TRIPP[mgcg.numberOfComponentGrids()];
       for( int grid=0; grid<mgcg.numberOfComponentGrids(); grid++ )
       {
-	tridiagonalSolver[level][grid]= new TRIP[3];
+        tridiagonalSolver[level][grid]= new TRIP[3];
         for( int dir=0; dir<3; dir++ )
           tridiagonalSolver[level][grid][dir]=NULL;
       }
@@ -857,7 +867,7 @@ updateToMatchGrid( CompositeGrid & mg_ )
     {
       interpolant = new Interpolant* [mgLevels];
       for( int level=0; level<mgLevels; level++ )
-	interpolant[level]=NULL;
+        interpolant[level]=NULL;
     }
     else if( mgcg.numberOfMultigridLevels() > numberOfMultigridLevelsOld )
     {
@@ -866,17 +876,17 @@ updateToMatchGrid( CompositeGrid & mg_ )
       Interpolant **temp = new Interpolant* [mgLevels];
 
       for( int level=0; level<mgLevels; level++ )
-	temp[level]=NULL;
+        temp[level]=NULL;
 
       for( int level=0; level<numberOfMultigridLevelsOld; level++ )
-	temp[level]=interpolant[level];
+        temp[level]=interpolant[level];
 
       // for( int level=mgLevels; level<numberOfMultigridLevelsOld; level++ )
       // { // delete extra interpolants : *WARNING there may be a problem in parallel in deleting POGI objects *wdh* 100331
       //   assert( interpolant[level]!=NULL );
       //   if( interpolant[level]->decrementReferenceCount()==0 )
       //   {
-      // 	delete interpolant[level]; interpolant[level]=NULL;
+      //        delete interpolant[level]; interpolant[level]=NULL;
       //   }
       // }
       delete [] interpolant;  // delete old array of pointers
@@ -886,32 +896,32 @@ updateToMatchGrid( CompositeGrid & mg_ )
     {
       if( interpolant[level]==NULL )
       {
-	if( level==0 && mg_->interpolant!=NULL )
-	{ // The input CompositeGrid already has an Interpolant we can use 
-	  interpolant[level]=mg_->interpolant;
-	  interpolant[level]->incrementReferenceCount();
-	  // We can probably get rid of this next array since we reference count Interpolants: ************
-	  interpolantWasCreated(level)=false;    // this means the Interpolant was NOT created by Ogmg
-	}
-	else
-	{
-	  // create a new interpolant for this level
-	  // assert( mgcg.multigridLevel[level]->interpolant==NULL );  // this must be true I think 
-	  if( mgcg.multigridLevel[level]->interpolant!=NULL )
-	  {
-	    printF("Ogmg:updateToMatchGrid:WARNING:mgcg.multigridLevel[level]->interpolant!=NULL --"
+        if( level==0 && mg_->interpolant!=NULL )
+        { // The input CompositeGrid already has an Interpolant we can use 
+          interpolant[level]=mg_->interpolant;
+          interpolant[level]->incrementReferenceCount();
+          // We can probably get rid of this next array since we reference count Interpolants: ************
+          interpolantWasCreated(level)=false;    // this means the Interpolant was NOT created by Ogmg
+        }
+        else
+        {
+          // create a new interpolant for this level
+          // assert( mgcg.multigridLevel[level]->interpolant==NULL );  // this must be true I think 
+          if( mgcg.multigridLevel[level]->interpolant!=NULL )
+          {
+            printF("Ogmg:updateToMatchGrid:WARNING:mgcg.multigridLevel[level]->interpolant!=NULL --"
                    "this should only happen when testing\n");
-	  }
-	  interpolant[level]= new Interpolant;             
-	  interpolant[level]->incrementReferenceCount();
-	  interpolantWasCreated(level)=true;  // this means the Interpolant WAS created by Ogmg
-	}
+          }
+          interpolant[level]= new Interpolant;             
+          interpolant[level]->incrementReferenceCount();
+          interpolantWasCreated(level)=true;  // this means the Interpolant WAS created by Ogmg
+        }
       
       }
       // Now update the Interpolant *NOTE* This is not needed if only the coefficients change!! *fix me*
       if( true || mgcg.multigridLevel[level]->interpolant==NULL || level>0 )  // ** for testing do this *****************************************
       {
-	interpolant[level]->updateToMatchGrid(mgcg.multigridLevel[level]); 
+        interpolant[level]->updateToMatchGrid(mgcg.multigridLevel[level]); 
 //       if( level==0 )
 //       {
 //         mgcg->interpolant=interpolant[level];
@@ -925,8 +935,8 @@ updateToMatchGrid( CompositeGrid & mg_ )
       interpolant[level]->setImplicitInterpolationMethod(Interpolant::iterateToInterpolate);
       if( false )
       {
-	::display(mgcg.multigridLevel[level].numberOfInterpolationPoints(),
-		  sPrintF("Ogmg:updateTMG: level=%i cg.numberOfInterpolationPoints()",level));
+        ::display(mgcg.multigridLevel[level].numberOfInterpolationPoints(),
+                  sPrintF("Ogmg:updateTMG: level=%i cg.numberOfInterpolationPoints()",level));
       }
     
 
@@ -943,15 +953,15 @@ updateToMatchGrid( CompositeGrid & mg_ )
 //     {
 //       if( interpolantWasCreated(level) )
 //       {
-// 	if( interpolant[level]->decrementReferenceCount()==0 )
-// 	{
-// 	  delete interpolant[level]; interpolant[level]=NULL;
-// 	}
-// 	if( mgcg.multigridLevel[level]->interpolant!=NULL && mgcg.multigridLevel[level]->interpolant->decrementReferenceCount()==0 )
-// 	{
-// 	  delete mgcg.multigridLevel[level]->interpolant;
-// 	  mgcg.multigridLevel[level]->interpolant=NULL;
-// 	}
+//      if( interpolant[level]->decrementReferenceCount()==0 )
+//      {
+//        delete interpolant[level]; interpolant[level]=NULL;
+//      }
+//      if( mgcg.multigridLevel[level]->interpolant!=NULL && mgcg.multigridLevel[level]->interpolant->decrementReferenceCount()==0 )
+//      {
+//        delete mgcg.multigridLevel[level]->interpolant;
+//        mgcg.multigridLevel[level]->interpolant=NULL;
+//      }
 //       }
 //     }
 //     delete [] interpolant;
@@ -1033,7 +1043,7 @@ updateToMatchGrid( CompositeGrid & mg_ )
   
   if( debug & 4 )
     printF("Ogmg:updateToMatchGrid:INFO: subSmoothReferenceGrid=%i (gridMax=%i, gridMaxCartesian=%i)\n",
-	   subSmoothReferenceGrid,gridMax,gridMaxCartesian);
+           subSmoothReferenceGrid,gridMax,gridMaxCartesian);
 
 
   if( mgcg.numberOfMultigridLevels()==1 && !parameters.useDirectSolverForOneLevel )
@@ -1138,8 +1148,8 @@ setup(CompositeGrid & mg )
       relativeTolerance=1.e-3;  // reduce residual by this amount.
       
       if( debug & 1 )
-	printF("Ogmg::setup: coarse grid solver: choose THEbestIterativeSolver with relativeTolerance=%e\n",
-	       relativeTolerance);
+        printF("Ogmg::setup: coarse grid solver: choose THEbestIterativeSolver with relativeTolerance=%e\n",
+               relativeTolerance);
     
       parameters.ogesParameters.set(OgesParameters::THEbestIterativeSolver);
 
@@ -1267,7 +1277,7 @@ sizeOf( FILE *file /* =NULL */ ) const
       real sizeOfReference=0.;
       for( int grid=0; grid<mgcg.numberOfComponentGrids(); grid++ )
       {
-	sizeOfReference+=mgcg[grid].sizeOf();
+        sizeOfReference+=mgcg[grid].sizeOf();
       }
       mgcgSize=mgcg.sizeOf()-sizeOfReference;  // subtract off the duplicate space
       size+=mgcgSize;  // mask, center, jacobian =    2*7N or 2*13N  // don't count finest level if we can share
@@ -1277,16 +1287,16 @@ sizeOf( FILE *file /* =NULL */ ) const
     for( level=0; level<mgcg.numberOfMultigridLevels(); level++ )
     {
       if( interpolantWasCreated(level) )
-	interpolantSize=interpolant[level]->sizeOf(); 
+        interpolantSize=interpolant[level]->sizeOf(); 
       size+=interpolantSize;
       tridSize=0.;
       for( int grid=0; grid<mgcg.numberOfComponentGrids(); grid++ )
       {
-	for( int axis=0; axis<mgcg.numberOfDimensions(); axis++ )
-	{
-	  if( lineSmoothIsInitialized(axis,grid,level) && tridiagonalSolver[level][grid][axis]!=NULL ) 
-	    tridSize+=tridiagonalSolver[level][grid][axis]->sizeOf();
-	}
+        for( int axis=0; axis<mgcg.numberOfDimensions(); axis++ )
+        {
+          if( lineSmoothIsInitialized(axis,grid,level) && tridiagonalSolver[level][grid][axis]!=NULL ) 
+            tridSize+=tridiagonalSolver[level][grid][axis]->sizeOf();
+        }
       }
       size+=tridSize;
     }
@@ -1300,7 +1310,7 @@ sizeOf( FILE *file /* =NULL */ ) const
     if( ipn!=NULL )
     {
       for( int i=0; i<numberOfIBSArrays; i++ )
-	sizeIBS+=ndipn[i];
+        sizeIBS+=ndipn[i];
       sizeIBS*=mgcg.numberOfDimensions()*sizeof(int);
 
       size+=sizeIBS;
@@ -1311,11 +1321,11 @@ sizeOf( FILE *file /* =NULL */ ) const
   {
     const real meg=1024.*1024.; // 1e6;
     fPrintF(file," Ogmg::sizeOf: uMG=%6.1f M, fMG=%6.1f M, cMG=%6.1f M, defectMG=%6.1f M, uOld=%6.1f M, mgcg=%6.1f M, \n"
-	    "                    operators=%6.1f M, interpolant=%6.1f M, trid=%6.1f M, direct=%6.1f M, IBS=%6.1f M\n"
-	    "                 ** total = %6.1f M \n",
-	    uMGSize/meg,fMGSize/meg,cMGSize/meg,defectMGSize/meg,uOldSize/meg,mgcgSize/meg,
-	    operatorsSize/meg,interpolantSize/meg,
-	    tridSize/meg,directSize/meg,sizeIBS/meg,
+            "                    operators=%6.1f M, interpolant=%6.1f M, trid=%6.1f M, direct=%6.1f M, IBS=%6.1f M\n"
+            "                 ** total = %6.1f M \n",
+            uMGSize/meg,fMGSize/meg,cMGSize/meg,defectMGSize/meg,uOldSize/meg,mgcgSize/meg,
+            operatorsSize/meg,interpolantSize/meg,
+            tridSize/meg,directSize/meg,sizeIBS/meg,
             size/meg);
   }
   
@@ -1494,8 +1504,24 @@ solve( realCompositeGridFunction & u, realCompositeGridFunction & f)
   
   assert(parameters.gridDependentParametersInitialized);
 
-  
   directSolver.setOgesParameters(parameters.ogesParameters);  // why is this done here ? do only once?
+
+  // if( false )
+  // {
+  //   printF("Ogmg::solve: *** TEMP *** SET HYPRE PARAMS\n");
+
+  //   directSolver.set(OgesParameters::THEparallelSolverMethod,OgesParameters::gmres);
+  //   directSolver.set(OgesParameters::THEparallelPreconditioner,OgesParameters::hyprePreconditioner);
+  //   directSolver.set(OgesParameters::THEpreconditioner,OgesParameters::hyprePreconditioner);
+  //   directSolver.set(OgesParameters::THEparallelExternalSolver,OgesParameters::hypre);
+  //   directSolver.parameters.setPetscOption("-ksp_type","gmres");
+  //   directSolver.parameters.setPetscOption("-pc_type","hypre");
+  //   directSolver.parameters.setPetscOption("-pc_hypre_type","boomeramg");
+  //   directSolver.parameters.setPetscOption("-pc_hypre_boomeramg_strong_threshold",".5");
+  //   directSolver.parameters.setPetscOption("-pc_hypre_boomeramg_max_levels","20");
+  //   directSolver.parameters.setPetscOption("-pc_hypre_boomeramg_coarsen_type","Falgout");    
+  // }
+
 
   CompositeGrid & m = *u.getCompositeGrid();
 //   if( true )
@@ -1605,20 +1631,20 @@ solve( realCompositeGridFunction & u, realCompositeGridFunction & f)
 
       if( v==NULL )
       {
-	// v is used to project the singular problem -- it should approximately satisfy Lv = - r
-	CompositeGrid & cg = *u.getCompositeGrid();
+        // v is used to project the singular problem -- it should approximately satisfy Lv = - r
+        CompositeGrid & cg = *u.getCompositeGrid();
       
-	v = new realCompositeGridFunction(cg);
-	realCompositeGridFunction & vv=*v;
-	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	{
-	  realArray & x = cg[grid].center();
+        v = new realCompositeGridFunction(cg);
+        realCompositeGridFunction & vv=*v;
+        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+        {
+          realArray & x = cg[grid].center();
 
-	  // this is v for a square: Delta v = -1
-	  Range all;
-	  vv[grid]= .25*( x(all,all,all,0)*(1.-x(all,all,all,0)) + x(all,all,all,1)*(1.-x(all,all,all,1)) );
-	
-	}
+          // this is v for a square: Delta v = -1
+          Range all;
+          vv[grid]= .25*( x(all,all,all,0)*(1.-x(all,all,all,0)) + x(all,all,all,1)*(1.-x(all,all,all,1)) );
+        
+        }
       }
     }
     
@@ -1689,9 +1715,12 @@ solve( realCompositeGridFunction & u, realCompositeGridFunction & f)
     parameters.get(OgmgParameters::THEresidualTolerance,tol);
     if( tol<=0. ) tol=1.e-8; // what should this be?
     directSolver.set(OgesParameters::THErelativeTolerance,tol);
-    directSolver.set(OgesParameters::THEmaximumNumberOfIterations,1000);    
+
+    int & maxIterationsCoarseGrid = parameters.dbase.get<int>( "maxIterationsCoarseGrid");
+    directSolver.set(OgesParameters::THEmaximumNumberOfIterations,maxIterationsCoarseGrid); 
+
     printF("Ogmg:WARNING: There is only one multigrid level on this grid! Using the direct solver instead"
-           " with tol=%8.2e\n",tol);
+           " with tol=%8.2e (maxIterationsCoarseGrid=%d)\n",tol,maxIterationsCoarseGrid);
   }
   
 
@@ -1742,9 +1771,9 @@ solve( realCompositeGridFunction & u, realCompositeGridFunction & f)
     if( parameters.convergenceCriteria==OgmgParameters::errorEstimateConverged )
     {
       if( iteration>0 )
-	errorConvergenceRate=error(iteration)/max(error(iteration-1), errorScale);
+        errorConvergenceRate=error(iteration)/max(error(iteration-1), errorScale);
       else
-	errorConvergenceRate=.9;  // this is a guess. Could do better here.
+        errorConvergenceRate=.9;  // this is a guess. Could do better here.
       errorEstimate=error(iteration)*errorConvergenceRate/(1.-errorConvergenceRate);
     }
     else
@@ -1754,27 +1783,27 @@ solve( realCompositeGridFunction & u, realCompositeGridFunction & f)
     
     if( iteration>0 )
     {
-	
+        
       defectConvergenceRate=maximumDefect/maximumDefectOld;
       if( Ogmg::debug & 4 )
       {
         timeI=getCPU()-timeI;  // cpu time for this iteration.
-	
+        
         printF("Ogmg:solve: e%i=%7.1e, e%i/e%i=%5.3f, err est=%7.1e, "
                " d%i=%7.1e, d%i/d%i=%6.4f, ECR=%5.2f ***\n",
-	       iteration,error(iteration),iteration,iteration-1,errorConvergenceRate,errorEstimate,
-	       // -timeI/log(max(DBL_MIN,defectConvergenceRate)),
-	       iteration,maximumDefect,iteration,iteration-1,defectConvergenceRate,
-	       pow(defectConvergenceRate,1./(max(1.,workUnits(0)))));
+               iteration,error(iteration),iteration,iteration-1,errorConvergenceRate,errorEstimate,
+               // -timeI/log(max(DBL_MIN,defectConvergenceRate)),
+               iteration,maximumDefect,iteration,iteration-1,defectConvergenceRate,
+               pow(defectConvergenceRate,1./(max(1.,workUnits(0)))));
       }
     }
     else
     {
       if( Ogmg::debug & 4)
       {
-	printF("Ogmg:solve: iteration=%i, maxDefect=%8.2e (tol=%8.2e), errorEstimate=%8.2e (tol=%8.2e)\n",
-	       iteration,maximumDefect,parameters.residualTolerance*numberOfGridPoints,
-	       fabs(errorEstimate),parameters.errorTolerance);
+        printF("Ogmg:solve: iteration=%i, maxDefect=%8.2e (tol=%8.2e), errorEstimate=%8.2e (tol=%8.2e)\n",
+               iteration,maximumDefect,parameters.residualTolerance*numberOfGridPoints,
+               fabs(errorEstimate),parameters.errorTolerance);
       }
     }
     
@@ -1793,9 +1822,9 @@ solve( realCompositeGridFunction & u, realCompositeGridFunction & f)
       const real resTol = parameters.residualTolerance*l2NormRightHandSide + parameters.absoluteTolerance;
 
       if( debug & 2 ) 
-	printF("   ->solve: (level=0) it=%i, l2NormResidual=%8.2e <? %8.2e = resTol*l2Norm(f) + aTol"
-	       "=(%7.1e)*(%7.1e) + %7.1e \n",
-	       iteration+1, l2NormResidual, resTol, parameters.residualTolerance,l2NormRightHandSide,parameters.absoluteTolerance);
+        printF("   ->solve: (level=0) it=%i, l2NormResidual=%8.2e <? %8.2e = resTol*l2Norm(f) + aTol"
+               "=(%7.1e)*(%7.1e) + %7.1e \n",
+               iteration+1, l2NormResidual, resTol, parameters.residualTolerance,l2NormRightHandSide,parameters.absoluteTolerance);
 
       if( l2NormResidual < resTol )
       {
@@ -1808,13 +1837,13 @@ solve( realCompositeGridFunction & u, realCompositeGridFunction & f)
     {
 
       if( debug & 2 ) 
-	printF("   ->solve: (level=0) it=%i, maxDefect=%8.2e, max(u-uOld)=%8.2e, errorEstimate=%8.2e <? errTol=%8.2e\n",
-	       iteration+1, maximumDefect, error(iteration), fabs(errorEstimate), parameters.errorTolerance);
+        printF("   ->solve: (level=0) it=%i, maxDefect=%8.2e, max(u-uOld)=%8.2e, errorEstimate=%8.2e <? errTol=%8.2e\n",
+               iteration+1, maximumDefect, error(iteration), fabs(errorEstimate), parameters.errorTolerance);
       
       if( fabs(errorEstimate) < parameters.errorTolerance )
       {
         hasConverged=true;
-	break;  // we have converged based on the error estimate
+        break;  // we have converged based on the error estimate
       }
       
     }
@@ -1823,16 +1852,16 @@ solve( realCompositeGridFunction & u, realCompositeGridFunction & f)
       // *** OLD WAY to check for convergence ***
 
       if( debug & 2 ) 
-	printF("   ->solve: (level=0) it=%i, maxDefect=%8.2e <? resTol*pts"
-	       "=(%7.1e)*(%i)=%7.1e diff=%7.1e err est=%7.1e <? %7.1e\n",
-	       iteration+1, maximumDefect, parameters.residualTolerance,numberOfGridPoints,
-	       parameters.residualTolerance*numberOfGridPoints,error(iteration),fabs(errorEstimate),parameters.errorTolerance);
+        printF("   ->solve: (level=0) it=%i, maxDefect=%8.2e <? resTol*pts"
+               "=(%7.1e)*(%i)=%7.1e diff=%7.1e err est=%7.1e <? %7.1e\n",
+               iteration+1, maximumDefect, parameters.residualTolerance,numberOfGridPoints,
+               parameters.residualTolerance*numberOfGridPoints,error(iteration),fabs(errorEstimate),parameters.errorTolerance);
 
       if( maximumDefect < parameters.residualTolerance*numberOfGridPoints && 
-	  ( fabs(errorEstimate) < parameters.errorTolerance || iteration==0 ) )
+          ( fabs(errorEstimate) < parameters.errorTolerance || iteration==0 ) )
       {
         hasConverged=true;
-	break;
+        break;
       }
     }
     else
@@ -1848,7 +1877,7 @@ solve( realCompositeGridFunction & u, realCompositeGridFunction & f)
   if( !hasConverged )
   {
     printF("****Ogmg::solve:WARNING: No convergence in %i iterations defect=%8.2e ****\n",
-	   parameters.maximumNumberOfIterations,maximumDefect);
+           parameters.maximumNumberOfIterations,maximumDefect);
   }
 
   removeAdjustmentForSingularProblem(0,0);
@@ -1934,9 +1963,9 @@ cycle(const int & level, const int & iteration, real & maximumDefect, const int 
 
       if( ps!=0 && (debug & 8 ) && ps->isGraphicsWindowOpen() )
       {
-	psp.set(GI_TOP_LABEL,sPrintF(buff,"cycle: it=%i, level=%i, after initial smooth.",iteration,level)); 
-	ps->erase();
-	PlotIt::contour(*ps,uMG.multigridLevel[level],psp);
+        psp.set(GI_TOP_LABEL,sPrintF(buff,"cycle: it=%i, level=%i, after initial smooth.",iteration,level)); 
+        ps->erase();
+        PlotIt::contour(*ps,uMG.multigridLevel[level],psp);
       }
     }
     
@@ -2006,8 +2035,8 @@ cycle(const int & level, const int & iteration, real & maximumDefect, const int 
     {
       if( debug & 4 )
       {
-	printF("%*.1s  ***direct solve on level %i, iteration=%i\n",level*4," ",level,iteration);
-	fPrintF(debugFile,"%*.1s  ***direct solve on level %i, iteration=%i\n",level*4," ",level,iteration);
+        printF("%*.1s  ***direct solve on level %i, iteration=%i\n",level*4," ",level,iteration);
+        fPrintF(debugFile,"%*.1s  ***direct solve on level %i, iteration=%i\n",level*4," ",level,iteration);
       }
       
 //    if( directSolver.isSolverIterative() ) 
@@ -2024,8 +2053,8 @@ cycle(const int & level, const int & iteration, real & maximumDefect, const int 
       if( false &&  // values at extra equations are set to zero by default
           parameters.problemIsSingular )
       { // Added: *wdh* 100605 
-	real value=0.; // what should this be ?
-	directSolver.setExtraEquationValues( fMG.multigridLevel[level],&value ); 
+        real value=0.; // what should this be ?
+        directSolver.setExtraEquationValues( fMG.multigridLevel[level],&value ); 
       }
       
       directSolver.solve( uMG.multigridLevel[level],fMG.multigridLevel[level] );
@@ -2033,19 +2062,19 @@ cycle(const int & level, const int & iteration, real & maximumDefect, const int 
 
       if( directSolver.isSolverIterative() )
       {
-	int numIt=directSolver.getNumberOfIterations();
-	totalNumberOfCoarseGridIterations+= numIt;
-	if( debug & 4 )
-	{
-	  printF("%*.1s Level=%i, cycle=%i : number of iterations to solve coarse grid equations=%i.\n",
-		 level*4," ",level,numberOfCycles,numIt);
-	  fPrintF(debugFile,"%*.1s Level=%i, cycle=%i : number of iterations to solve coarse grid equations=%i.\n",
-		 level*4," ",level,numberOfCycles,numIt);
-	}
+        int numIt=directSolver.getNumberOfIterations();
+        totalNumberOfCoarseGridIterations+= numIt;
+        if( debug & 4 )
+        {
+          printF("%*.1s Level=%i, cycle=%i : number of iterations to solve coarse grid equations=%i.\n",
+                 level*4," ",level,numberOfCycles,numIt);
+          fPrintF(debugFile,"%*.1s Level=%i, cycle=%i : number of iterations to solve coarse grid equations=%i.\n",
+                 level*4," ",level,numberOfCycles,numIt);
+        }
       }
       
       if( debug & 8 )
-	uMG.multigridLevel[level].display(sPrintF("u after coarse grid solve, level=%i",level),debugFile,"%8.1e ");
+        uMG.multigridLevel[level].display(sPrintF("u after coarse grid solve, level=%i",level),debugFile,"%8.1e ");
     }
     else
     {
@@ -2053,7 +2082,7 @@ cycle(const int & level, const int & iteration, real & maximumDefect, const int 
                                       parameters.numberOfSmooths(0,level)+parameters.numberOfSmooths(1,level));
       totalNumberOfCoarseGridIterations+=numberOfSmoothingSteps;
       if( debug & 4 )
-	printF(" ***iterate to solve coarse grid problem on level %i. Perform %i smooths\n",
+        printF(" ***iterate to solve coarse grid problem on level %i. Perform %i smooths\n",
                level,numberOfSmoothingSteps);
 
       smooth(level,numberOfSmoothingSteps,iteration);
@@ -2160,25 +2189,25 @@ checkParameters()
         parameters.lowerLevelDirichletSecondGhostLineBC=OgmgParameters::useExtrapolation;
 
         // This is the old way of specifying -- this will be removed eventually 
-	parameters.fourthOrderBoundaryConditionOption=0;
+        parameters.fourthOrderBoundaryConditionOption=0;
         parameters.useEquationForDirichletOnLowerLevels=0;
 
       }
 
       if( parameters.neumannSecondGhostLineBC==OgmgParameters::useEquationToSecondOrder )
       {
-	printF("Ogmg:INFO: Setting additional Neumann BC to extrapolation (l=0), eqn2 (l>0) since equationToSolve!=OgesParameters::laplaceEquation\n");
-	parameters.neumannSecondGhostLineBC          =OgmgParameters::useExtrapolation;
-	// parameters.lowerLevelNeumannSecondGhostLineBC=OgmgParameters::useExtrapolation;
-	parameters.lowerLevelNeumannSecondGhostLineBC=OgmgParameters::useEquationToSecondOrder;
-	
-	// This is the old way of specifying -- this will be removed eventually
+        printF("Ogmg:INFO: Setting additional Neumann BC to extrapolation (l=0), eqn2 (l>0) since equationToSolve!=OgesParameters::laplaceEquation\n");
+        parameters.neumannSecondGhostLineBC          =OgmgParameters::useExtrapolation;
+        // parameters.lowerLevelNeumannSecondGhostLineBC=OgmgParameters::useExtrapolation;
+        parameters.lowerLevelNeumannSecondGhostLineBC=OgmgParameters::useEquationToSecondOrder;
+        
+        // This is the old way of specifying -- this will be removed eventually
         parameters.useSymmetryForNeumannOnLowerLevels=false;
 
       }
       else if( parameters.lowerLevelNeumannSecondGhostLineBC==OgmgParameters::useEquationToSecondOrder )
       {
-	parameters.lowerLevelNeumannSecondGhostLineBC=OgmgParameters::useExtrapolation;
+        parameters.lowerLevelNeumannSecondGhostLineBC=OgmgParameters::useExtrapolation;
       }
 
     }    
@@ -2212,9 +2241,9 @@ outputResults(const int & level, const int & iteration, real & maximumDefect, re
     if( iteration>0 )
     {
       printF("%*.1s Ogmg::cycle:level=%i, it=%i, WU=%5.2f, defect=%7.2e, defect/defectOld=%6.3f,"
-	     "  ECR%i=%8.3f %s\n",level*4," ",level,iteration,workUnits(level),defectNew,defectRatio,
-	     level,pow(defectRatio,1./(max(1.,workUnits(level)))),
-	     (level==0 ? "***" : " "));
+             "  ECR%i=%8.3f %s\n",level*4," ",level,iteration,workUnits(level),defectNew,defectRatio,
+             level,pow(defectRatio,1./(max(1.,workUnits(level)))),
+             (level==0 ? "***" : " "));
     }
     else
     {
@@ -2245,20 +2274,20 @@ outputResults(const int & level, const int & iteration, real & maximumDefect, re
       // printF(" outputResults: iteration=%i defectNew=%8.2e, defectOld=%8.2e\n",iteration,defectNew,defectOld);
     
       if( defectOld<0. ) 
-	defectOld=defectNew*5.;  // do this as an approximation
+        defectOld=defectNew*5.;  // do this as an approximation
 
       if( iteration==0 )
       {
-	totalWorkUnits=0.;
-	totalResidualReduction=1.;
-	numberOfCycles=0;
-	totalWorkUnits=0.;
-	workUnits=0.;  
+        totalWorkUnits=0.;
+        totalResidualReduction=1.;
+        numberOfCycles=0;
+        totalWorkUnits=0.;
+        workUnits=0.;  
       }
       else
       {
-	totalWorkUnits+=workUnits(level);
-	totalResidualReduction*=defectNew/defectOld;
+        totalWorkUnits+=workUnits(level);
+        totalResidualReduction*=defectNew/defectOld;
       }
     }
     
@@ -2293,22 +2322,22 @@ outputResults(const int & level, const int & iteration, real & maximumDefect, re
     if( iteration==0 )
     {
       fPrintF(infoFile,
-	      "\\begin{table}[hbt]\n"
-	      "\\begin{center}\n"
-	      "\\begin{tabular}{|c|c|c|c|c|} \\hline \n"
+              "\\begin{table}[hbt]\n"
+              "\\begin{center}\n"
+              "\\begin{tabular}{|c|c|c|c|c|} \\hline \n"
               " $i$   & $\\vert\\vert\\mbox{res}\\vert\\vert_\\infty$  &  CR     &  WU    & ECR  \\\\   \\hline \n");
       if( parameters.showSmoothingRates )
       {
         // output the residual on each grid if smoothing rates are being displayed
-	fPrintF(infoFile,"\\begin{tabular}{");
+        fPrintF(infoFile,"\\begin{tabular}{");
         int grid;
-	for( grid=0; grid<mgcg.multigridLevel[level].numberOfComponentGrids(); grid++ )
+        for( grid=0; grid<mgcg.multigridLevel[level].numberOfComponentGrids(); grid++ )
           fPrintF(infoFile,"|c");
-	fPrintF(infoFile,"|} \\hline \n"
-        		 " $i$  &");
-	for( grid=0; grid<mgcg.multigridLevel[level].numberOfComponentGrids(); grid++ )
-	  fPrintF(infoFile," r_%i(i)   &",grid+1);
-        fPrintF(infoFile,"	\\\\   \\hline \n");
+        fPrintF(infoFile,"|} \\hline \n"
+                         " $i$  &");
+        for( grid=0; grid<mgcg.multigridLevel[level].numberOfComponentGrids(); grid++ )
+          fPrintF(infoFile," r_%i(i)   &",grid+1);
+        fPrintF(infoFile,"      \\\\   \\hline \n");
 
         // fPrintF(infoFile,"e=[\n  for matlab\n");  
       }
@@ -2317,36 +2346,36 @@ outputResults(const int & level, const int & iteration, real & maximumDefect, re
     {
       if( defectNew/defectOld>1.e-3 )
       {
-	fPrintF(infoFile," $%2i$  & $%8.1e$ & $%5.3f$ & $%4.1f$ & $%4.2f$ \\\\ \n",iteration,
-		defectNew,defectNew/defectOld,workUnits(level),
-		pow(defectNew/defectOld , 1./(max(1.,workUnits(level)))));
-	
+        fPrintF(infoFile," $%2i$  & $%8.1e$ & $%5.3f$ & $%4.1f$ & $%4.2f$ \\\\ \n",iteration,
+                defectNew,defectNew/defectOld,workUnits(level),
+                pow(defectNew/defectOld , 1./(max(1.,workUnits(level)))));
+        
       }
       else
       {
-	fPrintF(infoFile," $%2i$  & $%8.1e$ & $%6.5f$ & $%4.1f$ & $%4.2f$ \\\\ \n",iteration,
-		defectNew,defectNew/defectOld,workUnits(level),
-		pow(defectNew/defectOld , 1./(max(1.,workUnits(level)))));
+        fPrintF(infoFile," $%2i$  & $%8.1e$ & $%6.5f$ & $%4.1f$ & $%4.2f$ \\\\ \n",iteration,
+                defectNew,defectNew/defectOld,workUnits(level),
+                pow(defectNew/defectOld , 1./(max(1.,workUnits(level)))));
       }
       
 
       if( parameters.showSmoothingRates )
       {
-	// output the maximum defect on each grid
-	fPrintF(infoFile," $%2i$  &",iteration);
+        // output the maximum defect on each grid
+        fPrintF(infoFile," $%2i$  &",iteration);
         int grid;
-	for( grid=0; grid<mgcg.multigridLevel[level].numberOfComponentGrids(); grid++ )
-	{
-	  fPrintF(infoFile," $%8.1e$ &",maxDefect(grid));
-	}
-	fPrintF(infoFile," \\\\ %% max defects per grid\n");
+        for( grid=0; grid<mgcg.multigridLevel[level].numberOfComponentGrids(); grid++ )
+        {
+          fPrintF(infoFile," $%8.1e$ &",maxDefect(grid));
+        }
+        fPrintF(infoFile," \\\\ %% max defects per grid\n");
 
-	fPrintF(infoFile," $%2i$  &",iteration);
-	for( grid=0; grid<mgcg.multigridLevel[level].numberOfComponentGrids(); grid++ )
-	{
-	  fPrintF(infoFile," $%8.1e$ ($n_s=%i$) &",l2Defect(grid),parameters.numberOfSubSmooths(grid,0));
-	}
-	fPrintF(infoFile," \\\\ %% L2 defects per grid\n");
+        fPrintF(infoFile," $%2i$  &",iteration);
+        for( grid=0; grid<mgcg.multigridLevel[level].numberOfComponentGrids(); grid++ )
+        {
+          fPrintF(infoFile," $%8.1e$ ($n_s=%i$) &",l2Defect(grid),parameters.numberOfSubSmooths(grid,0));
+        }
+        fPrintF(infoFile," \\\\ %% L2 defects per grid\n");
       }
     }
     
@@ -2367,15 +2396,15 @@ outputResults(const int & level, const int & iteration, real & maximumDefect, re
       // fPrintF(checkFile," iteration  res      CR     WU   ECR\n");
     }
     // fPrintF(checkFile,"   %3i   %8.1e  %5.3f  %4.1f   %4.2f  \n",iteration,
-    // 	    defectNew,defectNew/defectOld,workUnits(level),
-    // 	    pow(defectNew/defectOld , 1./(max(1.,workUnits(level)))));
+    //      defectNew,defectNew/defectOld,workUnits(level),
+    //      pow(defectNew/defectOld , 1./(max(1.,workUnits(level)))));
 
     real time=iteration;
     const int numberOfComponents=2, component=0;
     // Output the defect and work units (ogmgt will output the error in the solution as a last line)
     fPrintF(checkFile," %8.1e  %3i  %i %8.2e %8.2e  %i %8.2e %8.2e\n",
-	    time,numberOfComponents,component,defectNew,workUnits(level),component+1,
-	    defectNew/defectOld, pow(defectNew/defectOld , 1./(max(1.,workUnits(level)))));
+            time,numberOfComponents,component,defectNew,workUnits(level),component+1,
+            defectNew/defectOld, pow(defectNew/defectOld , 1./(max(1.,workUnits(level)))));
     
   }
 
@@ -2466,9 +2495,9 @@ outputCycleInfo( )
 
     int level=0;
 //     aString cycleLabel = (parameters.cycleType==OgmgParameters::cycleTypeF ? "F" :
-// 			  parameters.numberOfCycles(level)==1 ? "V" : 
-// 			  parameters.numberOfCycles(level)==2 ? "W" : 
-// 			  sPrintF(buffer,"C%i",parameters.numberOfCycles(level)));
+//                        parameters.numberOfCycles(level)==1 ? "V" : 
+//                        parameters.numberOfCycles(level)==2 ? "W" : 
+//                        sPrintF(buffer,"C%i",parameters.numberOfCycles(level)));
     aString cycleLabel;
     if( parameters.cycleType==OgmgParameters::cycleTypeF )
       cycleLabel="F";
@@ -2481,7 +2510,7 @@ outputCycleInfo( )
     
     fPrintF(matlabFile,sPrintF(buffer,"%%%% legend('%s','%s','%s','%7.1e points. %i levels.','CR=%3.3f, ECR=%3.2f, %s[%i,%i], N_p=%i');\n",
                                (const char*)infoFileCaption[0],
-			       (const char*)infoFileCaption[1],(const char*)infoFileCaption[2],
+                               (const char*)infoFileCaption[1],(const char*)infoFileCaption[2],
                                (real)numberOfGridPoints,mgcg.numberOfMultigridLevels(),aveCR,aveECR,
                                (const char*)cycleLabel,parameters.numberOfSmooths(0,level),
                                parameters.numberOfSmooths(1,level),np));
@@ -2499,10 +2528,10 @@ outputCycleInfo( )
       int grid;
       for( grid=0; grid<mgcg.numberOfComponentGrids(); grid++ )
       {
-	fPrintF(matlabFile,"defect%i=[",grid);
-	for( i=1; i<=numberOfIterations; i++ )
-	  fPrintF(matlabFile,"%9.3e ",cycleResults(i,grid0DefectPerCycle+grid));
-	fPrintF(matlabFile,"];\n");
+        fPrintF(matlabFile,"defect%i=[",grid);
+        for( i=1; i<=numberOfIterations; i++ )
+          fPrintF(matlabFile,"%9.3e ",cycleResults(i,grid0DefectPerCycle+grid));
+        fPrintF(matlabFile,"];\n");
       }
       const int numberOfSymbols=6;
       aString symbol[numberOfSymbols]={"r-o","g-x","b-s","c-<","m->","r-+"}; //
@@ -2510,17 +2539,17 @@ outputCycleInfo( )
       fPrintF(matlabFile,"plot(");
       for( grid=0; grid<mgcg.numberOfComponentGrids(); grid++ )
       {
-	fPrintF(matlabFile,sPrintF(buff,"t,defect%i,'%s'",grid,(const char*)symbol[(grid%numberOfSymbols)]));
+        fPrintF(matlabFile,sPrintF(buff,"t,defect%i,'%s'",grid,(const char*)symbol[(grid%numberOfSymbols)]));
         if( grid< mgcg.numberOfComponentGrids()-1 )
-	  fPrintF(matlabFile,",");
-	else
+          fPrintF(matlabFile,",");
+        else
           fPrintF(matlabFile,");\n");
       }
       
       if( parameters.autoSubSmoothDetermination )
         fPrintF(matlabFile,"title('Residuals by component grid, variable smoothing');\n");
       else
-	fPrintF(matlabFile,"title('Residuals by component grid, fixed smoothing');\n");
+        fPrintF(matlabFile,"title('Residuals by component grid, fixed smoothing');\n");
       
       fPrintF(matlabFile,"ylabel('L_2 norm');\n");
 
@@ -2528,9 +2557,9 @@ outputCycleInfo( )
       for( grid=0; grid<mgcg.numberOfComponentGrids(); grid++ )
       {
         fPrintF(matlabFile,"'grid%i'",grid+1);
-	if( grid< mgcg.numberOfComponentGrids()-1 )
-	  fPrintF(matlabFile,",");
-	else
+        if( grid< mgcg.numberOfComponentGrids()-1 )
+          fPrintF(matlabFile,",");
+        else
           fPrintF(matlabFile,");\n");
       }
       fPrintF(matlabFile,"xlabel('iteration');\n");
@@ -2575,8 +2604,8 @@ displaySmoothers(const aString & label, FILE *file /* =stdout */ )
     {
       int smooth = parameters.smootherType(grid,level);
       fPrintF(file,"%s[%i,%i] ",
-	      (const char *)parameters.smootherName[smooth],
-	      parameters.numberOfSmooths(0,level),parameters.numberOfSmooths(1,level));
+              (const char *)parameters.smootherName[smooth],
+              parameters.numberOfSmooths(0,level),parameters.numberOfSmooths(1,level));
     }
     fPrintF(file,"\n");
   }
@@ -2663,7 +2692,7 @@ printStatistics(FILE *file_ /* =stdout */) const
   int level=0, smooth=-1;
 //   aString cycleLabel = (parameters.cycleType==OgmgParameters::cycleTypeF ? "F" :
 //                         parameters.numberOfCycles(level)==1 ? "V" : 
-// 			parameters.numberOfCycles(level)==2 ? "W" : 
+//                      parameters.numberOfCycles(level)==2 ? "W" : 
 //                         sPrintF(buffer,"C%i",parameters.numberOfCycles(level)));
   aString cycleLabel;
   if( parameters.cycleType==OgmgParameters::cycleTypeF )
@@ -2677,7 +2706,7 @@ printStatistics(FILE *file_ /* =stdout */) const
 
   // Label the cycle: (e.g. V[2,1]
   smootherLabel= sPrintF(buffer,"%s[%i,%i]: ",(const char*)cycleLabel,
-			     parameters.numberOfSmooths(0,level),parameters.numberOfSmooths(1,level));
+                             parameters.numberOfSmooths(0,level),parameters.numberOfSmooths(1,level));
 
   for( int grid=0; grid<mgcg.numberOfComponentGrids(); grid++ )
   {
@@ -2707,23 +2736,26 @@ printStatistics(FILE *file_ /* =stdout */) const
     }
   }
 
-  real mem=Overture::getCurrentMemoryUsage();
-  real maxMem=ParallelUtility::getMaxValue(mem);  // max over all processors
-  real minMem=ParallelUtility::getMinValue(mem);  // min over all processors
-  real totalMem=ParallelUtility::getSum(mem);  // min over all processors
-  real aveMem=totalMem/np;
-  real maxMemRecorded=ParallelUtility::getMaxValue(Overture::getMaximumMemoryUsage());
+  const Real totalMemInit = parameters.dbase.get<Real>("totalMemInit");
+
+  Real mem=Overture::getCurrentMemoryUsage();
+  Real maxMem=ParallelUtility::getMaxValue(mem);  // max over all processors
+  Real minMem=ParallelUtility::getMinValue(mem);  // min over all processors
+  Real totalMem=ParallelUtility::getSum(mem);  // min over all processors
+  totalMem -= totalMemInit; // July 8, 2022 subtract memory from libraries
+  Real aveMem=totalMem/np;
+  Real maxMemRecorded=ParallelUtility::getMaxValue(Overture::getMaximumMemoryUsage());
 
   const bool print = myid==0;
 
   if( print )
   {
     fPrintF(infoFile,
-	    "\\hline \n");
+            "\\hline \n");
     for( int n=0; n<5; n++ )
     {
       if( infoFileCaption[n]!="" )
-	fPrintF(infoFile,"\\multicolumn{5}{|c|}{%s}  \\\\\n",(const char*)infoFileCaption[n]);
+        fPrintF(infoFile,"\\multicolumn{5}{|c|}{%s}  \\\\\n",(const char*)infoFileCaption[n]);
     }
 
     if( parameters.useFullMultigrid )
@@ -2732,22 +2764,22 @@ printStatistics(FILE *file_ /* =stdout */) const
     }
   
     fPrintF(infoFile,
-	    "\\multicolumn{5}{|c|}{%s}  \\\\\n"
-	    "\\multicolumn{5}{|c|}{%8.2e grid-points. %i levels. np=%i.}  \\\\\n"
-	    "\\multicolumn{5}{|c|}{Average CR=$%4.3f$, ECR=$%3.2f$.}  \\\\\n"
-	    "\\multicolumn{5}{|c|}{time/cycle = %6.2e(s), TR10=%6.2e (s), TR10/(M/np)=%6.2e (s).}  \\\\\n"
-	    "\\hline \n"
-	    "\\end{tabular}\n"
-	    "\\end{center}\n"
-	    "\\caption{Multigrid convergence rates.}\n"
-	    "%% \\label{fig:square} \n"
-	    "\\end{table}\n" 
-	    "{\\footnotesize\n"
-	    "\\begin{verbatim}\n",
-	    (const char*)smootherLabel,
-	    (real)numberOfGridPoints,
-	    mgcg.numberOfMultigridLevels(),np,
-	    aveCR,aveECR,tm[timeForSolve]/cycles,aveTR10,aveTR10M);
+            "\\multicolumn{5}{|c|}{%s}  \\\\\n"
+            "\\multicolumn{5}{|c|}{%8.2e grid-points. %i levels. np=%i.}  \\\\\n"
+            "\\multicolumn{5}{|c|}{Average CR=$%4.3f$, ECR=$%3.2f$.}  \\\\\n"
+            "\\multicolumn{5}{|c|}{time/cycle = %6.2e(s), TR10=%6.2e (s), TR10/(M/np)=%6.2e (s).}  \\\\\n"
+            "\\hline \n"
+            "\\end{tabular}\n"
+            "\\end{center}\n"
+            "\\caption{Multigrid convergence rates.}\n"
+            "%% \\label{fig:square} \n"
+            "\\end{table}\n" 
+            "{\\footnotesize\n"
+            "\\begin{verbatim}\n",
+            (const char*)smootherLabel,
+            (real)numberOfGridPoints,
+            mgcg.numberOfMultigridLevels(),np,
+            aveCR,aveECR,tm[timeForSolve]/cycles,aveTR10,aveTR10M);
     
   }
   
@@ -2760,36 +2792,36 @@ printStatistics(FILE *file_ /* =stdout */) const
     
 
     fPrintF(file,"\n ========================Ogmg Summary=========================\n\n"
-			"                       Grid = %s \n",(const char*)gridName);
+                        "                       Grid = %s \n",(const char*)gridName);
     
 
     // if( !print ) continue;
       
 
     fPrintF(file," Equation: %s.\n",
-	    (equationToSolve==OgesParameters::userDefined ? "userDefined" :
-	     equationToSolve==OgesParameters::laplaceEquation ? "Laplace" :
-	     equationToSolve==OgesParameters::divScalarGradOperator ? "div(s(x) grad)":
-	     equationToSolve==OgesParameters::heatEquationOperator ? "I + c0*Delta" :
-	     equationToSolve==OgesParameters::variableHeatEquationOperator ? "I + s(x)*Delta" :
-	     equationToSolve==OgesParameters::divScalarGradHeatEquationOperator ? "I + div( s(x) grad )" :
-	     equationToSolve==OgesParameters::secondOrderConstantCoefficients ? "second-order constant coeff" : 
-	     "unknown"));
+            (equationToSolve==OgesParameters::userDefined ? "userDefined" :
+             equationToSolve==OgesParameters::laplaceEquation ? "Laplace" :
+             equationToSolve==OgesParameters::divScalarGradOperator ? "div(s(x) grad)":
+             equationToSolve==OgesParameters::heatEquationOperator ? "I + c0*Delta" :
+             equationToSolve==OgesParameters::variableHeatEquationOperator ? "I + s(x)*Delta" :
+             equationToSolve==OgesParameters::divScalarGradHeatEquationOperator ? "I + div( s(x) grad )" :
+             equationToSolve==OgesParameters::secondOrderConstantCoefficients ? "second-order constant coeff" : 
+             "unknown"));
 
     fPrintF(file," Boundary conditions explicitly specified = %i.\n",(int)bcSupplied);
     fPrintF(file," Equations are %s.\n",(parameters.problemIsSingular ? "singular" : "are not singular"));
     if( parameters.problemIsSingular )
     {
       fPrintF(file," %s right-hand-side for singular problems.\n",(parameters.projectRightHandSideForSingularProblem ?
-								  "Project" : "Do not project"));
+                                                                  "Project" : "Do not project"));
       fPrintF(file," %s mean value for singular problems.\n",(parameters.assignMeanValueForSingularProblem ?
-								  "Assign" : "Do not assign"));
+                                                                  "Assign" : "Do not assign"));
     }
 
     if( parameters.convergenceCriteria==OgmgParameters::residualConverged )
     {
       fPrintF(file," Convergence criteria: l2Norm(residual) < residualTolerance*l2Nnorm(f) + absoluteTolerance"
-	      " (residualTolerance=%8.2e, absoluteTolerance=%8.2e).\n",parameters.residualTolerance,parameters.absoluteTolerance);
+              " (residualTolerance=%8.2e, absoluteTolerance=%8.2e).\n",parameters.residualTolerance,parameters.absoluteTolerance);
     }
     else if( parameters.convergenceCriteria==OgmgParameters::errorEstimateConverged )
     {
@@ -2798,7 +2830,7 @@ printStatistics(FILE *file_ /* =stdout */) const
     else if( parameters.convergenceCriteria==OgmgParameters::residualConvergedOldWay )
     {
       fPrintF(file," Convergence criteria: max-defect < rTol*numGridPoints = %8.2e (rtol=%8.2e)\n",
-	      parameters.residualTolerance*numberOfGridPoints,parameters.residualTolerance);
+              parameters.residualTolerance*numberOfGridPoints,parameters.residualTolerance);
     }
 
     fPrintF(file," maximum number of iterations = %i.\n",parameters.maximumNumberOfIterations);
@@ -2806,7 +2838,7 @@ printStatistics(FILE *file_ /* =stdout */) const
     fPrintF(file," order of coarse level operators = %i.\n",parameters.dbase.get<int>( "orderOfCoarseLevels"));
     
     fPrintF(file," number of levels = %i (%i extra levels, max-extra-levels=%i).\n",mgcg.numberOfMultigridLevels(),
-	    mgcg.numberOfMultigridLevels()-1,parameters.maximumNumberOfExtraLevels);
+            mgcg.numberOfMultigridLevels()-1,parameters.maximumNumberOfExtraLevels);
     fPrintF(file," interpolate defect = %i\n",(int)parameters.interpolateTheDefect);
     if( parameters.cycleType==OgmgParameters::cycleTypeF )
     {
@@ -2816,7 +2848,7 @@ printStatistics(FILE *file_ /* =stdout */) const
     {
       fPrintF(file," number of cycles per level=");
       for( level=0; level<mgcg.numberOfMultigridLevels(); level++ )
-	fPrintF(file," %i ",parameters.numberOfCycles(level));
+        fPrintF(file," %i ",parameters.numberOfCycles(level));
       fPrintF(file,"\n");
     }
     fPrintF(file," number of smooths (global) per level=");
@@ -2824,7 +2856,7 @@ printStatistics(FILE *file_ /* =stdout */) const
       fPrintF(file," [%i,%i] ",parameters.numberOfSmooths(0,level),parameters.numberOfSmooths(1,level));
     fPrintF(file,"\n");
     fPrintF(file," grid ordering in smooth is %s.\n",(parameters.gridOrderingForSmooth==0 ? "1..ng" :
-						    parameters.gridOrderingForSmooth==1 ? "ng..1" : "alternating"));
+                                                    parameters.gridOrderingForSmooth==1 ? "ng..1" : "alternating"));
     fPrintF(file," auto sub-smooth determination is %s (reference grid for sub-smooths=%i).\n",
             (parameters.autoSubSmoothDetermination ? "on" : "off"),subSmoothReferenceGrid);
     fPrintF(file," use new red black smoother=%i.\n",(int)parameters.useNewRedBlackSmoother);
@@ -2838,36 +2870,36 @@ printStatistics(FILE *file_ /* =stdout */) const
     
     const OgmgParameters::AveragingOption & averagingOption = parameters.averagingOption;
     fPrintF(file," operator averaging: %s\n",
-	    averagingOption==OgmgParameters::averageCoarseGridEquations ? "average coarse grid equations." :
-	    averagingOption==OgmgParameters::doNotAverageCoarseGridEquations ? "do not average coarse grid equations." : 
-	    averagingOption==OgmgParameters::doNotAverageCoarseCurvilinearGridEquations ? 
-	    "average Cartesian grids, do not average curvilinear grids." : "unknown option.");
+            averagingOption==OgmgParameters::averageCoarseGridEquations ? "average coarse grid equations." :
+            averagingOption==OgmgParameters::doNotAverageCoarseGridEquations ? "do not average coarse grid equations." : 
+            averagingOption==OgmgParameters::doNotAverageCoarseCurvilinearGridEquations ? 
+            "average Cartesian grids, do not average curvilinear grids." : "unknown option.");
     
     fPrintF(file," operator averaging is %s for the very coarsest level.\n",
-	    (parameters.dbase.get<bool>("averageEquationsOnCoarsestGrid") ? "ON" : "OFF"));
+            (parameters.dbase.get<bool>("averageEquationsOnCoarsestGrid") ? "ON" : "OFF"));
 
     const aString boundaryAveragingOptionName[] = 
       { "imposeDirichlet", 
-	"imposeExtrapolation",
-	"injection",
-	"partialWeighting",
-	"halfWeighting",
-	"lumpedPartialWeighting",
-	"imposeNeumann",
-	"unknown" 
+        "imposeExtrapolation",
+        "injection",
+        "partialWeighting",
+        "halfWeighting",
+        "lumpedPartialWeighting",
+        "imposeNeumann",
+        "unknown" 
       };
     
     fPrintF(file,"   boundary averaging option is %s (for a 'dirichlet BC') and %s (for a 'Neumann' BC)\n",
-	    (const char*)boundaryAveragingOptionName[min(7,max(0,parameters.boundaryAveragingOption[0]))],
-	    (const char*)boundaryAveragingOptionName[min(7,max(0,parameters.boundaryAveragingOption[1]))]);
+            (const char*)boundaryAveragingOptionName[min(7,max(0,parameters.boundaryAveragingOption[0]))],
+            (const char*)boundaryAveragingOptionName[min(7,max(0,parameters.boundaryAveragingOption[1]))]);
 
     fPrintF(file,"   ghost line averaging option is %s (for a 'dirichlet BC') and %s (for a 'Neumann' BC)\n",
-	    (const char*)boundaryAveragingOptionName[min(7,max(0,parameters.ghostLineAveragingOption[0]))],
-	    (const char*)boundaryAveragingOptionName[min(7,max(0,parameters.ghostLineAveragingOption[1]))]);
+            (const char*)boundaryAveragingOptionName[min(7,max(0,parameters.ghostLineAveragingOption[0]))],
+            (const char*)boundaryAveragingOptionName[min(7,max(0,parameters.ghostLineAveragingOption[1]))]);
 
 
     fPrintF(file," boundary smoothing: number of layers=%i, iterations=%i, apply on %i levels.\n",
-	    parameters.numberOfBoundaryLayersToSmooth,
+            parameters.numberOfBoundaryLayersToSmooth,
             parameters.numberOfBoundarySmoothIterations,
             parameters.numberOfLevelsForBoundarySmoothing);
 
@@ -2875,9 +2907,9 @@ printStatistics(FILE *file_ /* =stdout */) const
             "combine-with-smooths=%i.\n",
             parameters.numberOfInterpolationLayersToSmooth,
             parameters.numberOfInterpolationSmoothIterations,
-	    parameters.numberOfIBSIterations,
+            parameters.numberOfIBSIterations,
             parameters.numberOfLevelsForInterpolationSmoothing,
-	    (int)parameters.combineSmoothsWithIBS );
+            (int)parameters.combineSmoothsWithIBS );
     
     fPrintF(file," assumeSparseStencilForRectangularGrids=%i\n",(int)assumeSparseStencilForRectangularGrids);
 
@@ -2903,20 +2935,20 @@ printStatistics(FILE *file_ /* =stdout */) const
     //   int i;
     //   for( i=50; i<length; i++ )
     //   {
-    // 	if( coarseGridSolver[i]==' ' )
-    // 	{
+    //  if( coarseGridSolver[i]==' ' )
+    //  {
     //       a=coarseGridSolver(0,i-1); b=coarseGridSolver(i+1,length-1);
-    // 	  break;
-    // 	}
+    //    break;
+    //  }
     //     else if( i==(length-1) )
-    // 	{ // no split point found at a blank, split at char 60:
+    //  { // no split point found at a blank, split at char 60:
     //       int ii=60;
-    // 	  a=coarseGridSolver(0,ii-1)+"-"; b=coarseGridSolver(ii,length-1);
-    // 	}
+    //    a=coarseGridSolver(0,ii-1)+"-"; b=coarseGridSolver(ii,length-1);
+    //  }
     //   }
     //   fPrintF(file,
     //           "   coarse grid solver : %s\n"
-    // 	      "                        %s\n",(const char*)a,(const char*)b);
+    //        "                        %s\n",(const char*)a,(const char*)b);
     // }
     // else
     //   fPrintF(file,"   coarse grid solver : %s \n",(const char*)coarseGridSolver);
@@ -2931,23 +2963,24 @@ printStatistics(FILE *file_ /* =stdout */) const
 
 
     fPrintF(file,"   average number of iterations per coarse grid solve = %5.1f/cycle\n",
-	    real(totalNumberOfCoarseGridIterations)/cycles);
+            real(totalNumberOfCoarseGridIterations)/cycles);
     int numberOfGridPointsOnCoarseGrid=0;
     CompositeGrid & mgc = mgcg.multigridLevel[mgcg.numberOfMultigridLevels()-1];
     for( int grid=0; grid<mgc.numberOfComponentGrids(); grid++ )
       numberOfGridPointsOnCoarseGrid+=mgc[grid].mask().elementCount();
     fPrintF(file,"   coarse grid has %i grid points (%7.1e %% of fine grid)\n",numberOfGridPointsOnCoarseGrid,
-	    100.*numberOfGridPointsOnCoarseGrid/real(numberOfGridPoints));
+            100.*numberOfGridPointsOnCoarseGrid/real(numberOfGridPoints));
 
     fPrintF(file,"   coarse grid averaging option: %s\n",
-	    (parameters.averagingOption==OgmgParameters::doNotAverageCoarseGridEquations ? "no averaging" :
-             parameters.averagingOption==OgmgParameters::averageCoarseGridEquations ? "Galerkin averaging" :
+            ( (!parameters.dbase.get<bool>("averageEquationsOnCoarsestGrid") ||
+               parameters.averagingOption==OgmgParameters::doNotAverageCoarseGridEquations)         ? "no averaging" :
+             parameters.averagingOption==OgmgParameters::averageCoarseGridEquations                 ? "Galerkin averaging" :
              parameters.averagingOption==OgmgParameters::doNotAverageCoarseCurvilinearGridEquations ? "Galerkin (Cartesian grids only)" :
              "unknown option" ));
     
 
-// 	   "   grid  smoother               iterations  grid name\n"
-// 	   "   ----  --------               ----------  ---------\n");
+//         "   grid  smoother               iterations  grid name\n"
+//         "   ----  --------               ----------  ---------\n");
 //     level=0;
 //     for( grid=0; grid<mgcg.numberOfComponentGrids(); grid++ )
 //     {
@@ -2955,10 +2988,10 @@ printStatistics(FILE *file_ /* =stdout */) const
 //       smooth = smooth<0 || smooth>=numberOfSmoothers ? numberOfSmoothers : smooth;
 //       fPrintF(file,
 //               " %5i %-20s   %8i      %s\n",
-// 	     grid,
-// 	     (const char *) parameters.smootherName[smooth],
-// 	     parameters.numberOfSmooths(level),
-// 	     (const char *) mgcg[grid].mapping().getName(Mapping::mappingName));
+//           grid,
+//           (const char *) parameters.smootherName[smooth],
+//           parameters.numberOfSmooths(level),
+//           (const char *) mgcg[grid].mapping().getName(Mapping::mappingName));
 //     }
 
     fPrintF(file,"\n");
@@ -2973,32 +3006,32 @@ printStatistics(FILE *file_ /* =stdout */) const
                  parameters.numberOfSmooths(0,level),parameters.numberOfSmooths(1,level));
       }
       fPrintF(file,
-	      " : %s \n"
-	      "         bc=",(const char*)mgcg[grid].getName());
+              " : %s \n"
+              "         bc=",(const char*)mgcg[grid].getName());
       for( int axis=0; axis<mgcg.numberOfDimensions(); axis++ )
       {
-	fPrintF(file,"[");
+        fPrintF(file,"[");
         for( int side=0; side<=1; side++ )
-	{
+        {
           aString bcName;
-	  if( mgcg[grid].boundaryCondition(side,axis)==0 ) 
-	    bcName="interp";
-	  else if( mgcg[grid].boundaryCondition(side,axis)<0 ) 
-	    bcName="periodic";
-	  else if( bc(side,axis,grid)==OgesParameters::dirichlet )   // note: check "bc" array
-	    bcName="dirichlet";
-	  else if( bc(side,axis,grid)==OgesParameters::neumann ) 
-	    bcName="neumann";
-	  else if( bc(side,axis,grid)==OgesParameters::mixed ) 
-	    bcName="mixed";
-	  else if( bc(side,axis,grid)==OgesParameters::extrapolate) 
-	    bcName="extrap";
-	  else
-	    bcName="unknown";
+          if( mgcg[grid].boundaryCondition(side,axis)==0 ) 
+            bcName="interp";
+          else if( mgcg[grid].boundaryCondition(side,axis)<0 ) 
+            bcName="periodic";
+          else if( bc(side,axis,grid)==OgesParameters::dirichlet )   // note: check "bc" array
+            bcName="dirichlet";
+          else if( bc(side,axis,grid)==OgesParameters::neumann ) 
+            bcName="neumann";
+          else if( bc(side,axis,grid)==OgesParameters::mixed ) 
+            bcName="mixed";
+          else if( bc(side,axis,grid)==OgesParameters::extrapolate) 
+            bcName="extrap";
+          else
+            bcName="unknown";
 
-// 	  fPrintF(file,"%s",(boundaryCondition(side,axis,grid)==OgmgParameters::extrapolate ? "dirichlet" :
-// 				   boundaryCondition(side,axis,grid)==OgmgParameters::equation ? 
-// 			     (boundaryConditionData(0,side,axis,grid)==0. ? "neumann" : "mixed") : 
+//        fPrintF(file,"%s",(boundaryCondition(side,axis,grid)==OgmgParameters::extrapolate ? "dirichlet" :
+//                                 boundaryCondition(side,axis,grid)==OgmgParameters::equation ? 
+//                           (boundaryConditionData(0,side,axis,grid)==0. ? "neumann" : "mixed") : 
 //                                    mgcg[grid].boundaryCondition(side,axis)<0 ? "periodic" :
 //                                     mgcg[grid].boundaryCondition(side,axis)==0 ? "interp" :  "other"));
           fPrintF(file,"%s",(const char*)bcName);
@@ -3007,7 +3040,7 @@ printStatistics(FILE *file_ /* =stdout */) const
           else
             fPrintF(file,"] ");
 
-	}
+        }
       }
       fPrintF(file,"\n         ave no. of subSmooths: ");
       for( level=0; level<mgcg.numberOfMultigridLevels(); level++ )
@@ -3028,14 +3061,14 @@ printStatistics(FILE *file_ /* =stdout */) const
         parameters.numberOfBoundaryLayersToSmooth>0 && parameters.numberOfLevelsForBoundarySmoothing>0 )
     {
       fPrintF(file," Boundary smoothing: local iterations=%i, layers=%i for %i levels.\n",
-	      parameters.numberOfBoundarySmoothIterations,
+              parameters.numberOfBoundarySmoothIterations,
               parameters.numberOfBoundaryLayersToSmooth,parameters.numberOfLevelsForBoundarySmoothing);
     }
     if( parameters.numberOfIBSIterations>0 && parameters.numberOfInterpolationSmoothIterations>0 && 
         parameters.numberOfInterpolationLayersToSmooth>0 && parameters.numberOfLevelsForInterpolationSmoothing>0 )
     {
       fPrintF(file," IBS: interp. bndry smoothing: global its=%i, local its=%i, layers=%i for %i levels, %s.\n",
-	      parameters.numberOfIBSIterations,parameters.numberOfInterpolationSmoothIterations,
+              parameters.numberOfIBSIterations,parameters.numberOfInterpolationSmoothIterations,
               parameters.numberOfInterpolationLayersToSmooth,parameters.numberOfLevelsForInterpolationSmoothing,
               (parameters.combineSmoothsWithIBS==1 ? "combine with smooths" : "apply separately from smooths"));
     }
@@ -3053,24 +3086,24 @@ printStatistics(FILE *file_ /* =stdout */) const
       // ***** Dirichlet *****
       for( int level=0; level<=min(1,mgcg.numberOfMultigridLevels()-1); level++ )
       {
-	ghostLine=1;
-	getGhostLineBoundaryCondition( OgmgParameters::extrapolate, ghostLine, grid, level, 
-				       orderOfExtrapolation, &ghost1 );
+        ghostLine=1;
+        getGhostLineBoundaryCondition( OgmgParameters::extrapolate, ghostLine, grid, level, 
+                                       orderOfExtrapolation, &ghost1 );
         if( level==0 )
-  	  fPrintF(file,"  Dirichlet: l=0 : B=D,    G1=%8s\n",(const char*)ghost1);
+          fPrintF(file,"  Dirichlet: l=0 : B=D,    G1=%8s\n",(const char*)ghost1);
         else
           fPrintF(file,"           : l>0 : B=D,    G1=%8s\n",(const char*)ghost1);
       }
       // ***** Neumann or Mixed BC *****
       for( int level=0; level<=min(1,mgcg.numberOfMultigridLevels()-1); level++ )
       {
-	ghostLine=1;
-	getGhostLineBoundaryCondition( OgmgParameters::equation, ghostLine, grid, level, 
-				       orderOfExtrapolation, &ghost1 );
+        ghostLine=1;
+        getGhostLineBoundaryCondition( OgmgParameters::equation, ghostLine, grid, level, 
+                                       orderOfExtrapolation, &ghost1 );
         if( level==0 )
-	  fPrintF(file,"  Neumann  : l=0 : B=PDE,  G1=%8s\n",(const char*)ghost1);
+          fPrintF(file,"  Neumann  : l=0 : B=PDE,  G1=%8s\n",(const char*)ghost1);
         else
-	  fPrintF(file,"           : l>0 : B=PDE,  G1=%8s\n",(const char*)ghost1);
+          fPrintF(file,"           : l>0 : B=PDE,  G1=%8s\n",(const char*)ghost1);
       }
     }
     else if( orderOfAccuracy==4 )
@@ -3082,32 +3115,32 @@ printStatistics(FILE *file_ /* =stdout */) const
       // ***** Dirichlet *****
       for( level=0; level<=min(1,mgcg.numberOfMultigridLevels()-1); level++ )
       {
-	ghostLine=1;
-	getGhostLineBoundaryCondition( OgmgParameters::extrapolate, ghostLine, grid, level, 
-				       orderOfExtrapolation, &ghost1 );
-	ghostLine=2;
-	getGhostLineBoundaryCondition( OgmgParameters::extrapolate, ghostLine, grid, level, 
-				       orderOfExtrapolation, &ghost2 );
+        ghostLine=1;
+        getGhostLineBoundaryCondition( OgmgParameters::extrapolate, ghostLine, grid, level, 
+                                       orderOfExtrapolation, &ghost1 );
+        ghostLine=2;
+        getGhostLineBoundaryCondition( OgmgParameters::extrapolate, ghostLine, grid, level, 
+                                       orderOfExtrapolation, &ghost2 );
       
         if( level==0 )
-  	  fPrintF(file,"  Dirichlet: l=0 : B=D,    G1=%8s, G2=%8s\n",(const char*)ghost1,(const char*)ghost2);
+          fPrintF(file,"  Dirichlet: l=0 : B=D,    G1=%8s, G2=%8s\n",(const char*)ghost1,(const char*)ghost2);
         else
           fPrintF(file,"           : l>0 : B=D,    G1=%8s, G2=%8s\n",(const char*)ghost1,(const char*)ghost2);
       }
       // ***** Neumann or Mixed BC *****
       for( level=0; level<=min(1,mgcg.numberOfMultigridLevels()-1); level++ )
       {
-	ghostLine=1;
-	getGhostLineBoundaryCondition( OgmgParameters::equation, ghostLine, grid, level, 
-				       orderOfExtrapolation, &ghost1 );
-	ghostLine=2;
-	getGhostLineBoundaryCondition( OgmgParameters::equation, ghostLine, grid, level, 
-				       orderOfExtrapolation, &ghost2 );
+        ghostLine=1;
+        getGhostLineBoundaryCondition( OgmgParameters::equation, ghostLine, grid, level, 
+                                       orderOfExtrapolation, &ghost1 );
+        ghostLine=2;
+        getGhostLineBoundaryCondition( OgmgParameters::equation, ghostLine, grid, level, 
+                                       orderOfExtrapolation, &ghost2 );
       
         if( level==0 )
-	  fPrintF(file,"  Neumann  : l=0 : B=PDE,  G1=%8s, G2=%8s\n",(const char*)ghost1,(const char*)ghost2);
+          fPrintF(file,"  Neumann  : l=0 : B=PDE,  G1=%8s, G2=%8s\n",(const char*)ghost1,(const char*)ghost2);
         else
-	  fPrintF(file,"           : l>0 : B=PDE,  G1=%8s, G2=%8s\n",(const char*)ghost1,(const char*)ghost2);
+          fPrintF(file,"           : l>0 : B=PDE,  G1=%8s, G2=%8s\n",(const char*)ghost1,(const char*)ghost2);
       }
 
     }
@@ -3130,15 +3163,15 @@ printStatistics(FILE *file_ /* =stdout */) const
     }
 
     fPrintF(file,"\n"
-	    "    Ogmg, Statistics  %s, grids=%i, cycles=%i, gridPoints=%8i, np=%i\n"
-	    "    ----------------                  time (s)  time/cycle  percentage\n"
-	    " smooth..(includes bc's)...............%6.2e  %6.2e   %6.2f%% \n"
-	    " defect.(excluding those in smooth)....%6.2e  %6.2e   %6.2f%% \n"
-	    " fine to coarse........................%6.2e  %6.2e   %6.2f%% \n"
-	    " coarse to fine........................%6.2e  %6.2e   %6.2f%% \n"
-	    " direct solve on coarsest level........%6.2e  %6.2e   %6.2f%% \n"
-	    " miscellaneous.........................%6.2e  %6.2e   %6.2f%% \n"
-	    " sum of above..........................%6.2e  %6.2e   %6.2f%%  \n"
+            "    Ogmg, Statistics  %s, grids=%i, cycles=%i, gridPoints=%8i, np=%i\n"
+            "    ----------------                  time (s)  time/cycle  percentage\n"
+            " smooth..(includes bc's)...............%6.2e  %6.2e   %6.2f%% \n"
+            " defect.(excluding those in smooth)....%6.2e  %6.2e   %6.2f%% \n"
+            " fine to coarse........................%6.2e  %6.2e   %6.2f%% \n"
+            " coarse to fine........................%6.2e  %6.2e   %6.2f%% \n"
+            " direct solve on coarsest level........%6.2e  %6.2e   %6.2f%% \n"
+            " miscellaneous.........................%6.2e  %6.2e   %6.2f%% \n"
+            " sum of above..........................%6.2e  %6.2e   %6.2f%%  \n"
             " Details:\n"
             "    defect called from smooth..........%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
             "    relaxation part of smooth..........%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
@@ -3146,60 +3179,60 @@ printStatistics(FILE *file_ /* =stdout */) const
             "    extra interpolation smoothing......%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
             "    tridiagonal factor part of smooth..%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
             "    tridiagonal solve part of smooth...%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
-	    "    interpolation......................%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
-	    "    boundary conditions................%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
-	    "      (bcOpt=%6.2e extrap=%6.2e setup=%6.2e geom=%6.2e finish=%6.2e total=%6.2e)\n"
-	    "    initial guess with FMG.............%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
-	    "    fine to coarse BC's................%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
-	    "    interp coarse from fine............%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
-	    "    compute norms of defect............%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
-	    "    ghost boundary update..............%6.2e  %6.2e  (%6.2f%%) (already counted)\n\n"
-	    " total.................................%6.2e  %6.2e   %6.2f%% \n\n"
+            "    interpolation......................%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
+            "    boundary conditions................%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
+            "      (bcOpt=%6.2e extrap=%6.2e setup=%6.2e geom=%6.2e finish=%6.2e total=%6.2e)\n"
+            "    initial guess with FMG.............%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
+            "    fine to coarse BC's................%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
+            "    interp coarse from fine............%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
+            "    compute norms of defect............%6.2e  %6.2e  (%6.2f%%) (already counted)\n"
+            "    ghost boundary update..............%6.2e  %6.2e  (%6.2f%%) (already counted)\n\n"
+            " total.................................%6.2e  %6.2e   %6.2f%% \n\n"
             " initialize............................%6.2e  %6.2e   %6.2f%%  (not counted above)\n"
             "    build extra levels.................%6.2e  %6.2e   %6.2f%%  (already counted)\n"
             "    operator averaging.................%6.2e  %6.2e   %6.2f%%  (already counted)\n"
             "    build predefined equations.........%6.2e  %6.2e   %6.2f%%  (already counted)\n"
             "    oges smoother init.................%6.2e  %6.2e   %6.2f%%  (already counted)\n\n"
             " TOTAL (solve+initialize)..............%6.2e  %6.2e\n"
-	    " total number of grid points = %i \n"
-	    " total number of cycles      = %i \n",
+            " total number of grid points = %i \n"
+            " total number of cycles      = %i \n",
             (const char*)gridName,
             mgcg.numberOfComponentGrids(),cycles,numberOfGridPoints,np,
-	    tm[timeForSmooth],       tm[timeForSmooth]/cycles,       100.*tm[timeForSmooth]/total,
-	    tm[timeForDefect],       tm[timeForDefect]/cycles,       100.*tm[timeForDefect]/total,
-	    tm[timeForFineToCoarse], tm[timeForFineToCoarse]/cycles, 100.*tm[timeForFineToCoarse]/total,
-	    tm[timeForCoarseToFine], tm[timeForCoarseToFine]/cycles, 100.*tm[timeForCoarseToFine]/total,
-	    tm[timeForDirectSolver], tm[timeForDirectSolver]/cycles, 100.*tm[timeForDirectSolver]/total,
-	    tm[timeForMiscellaneous],tm[timeForMiscellaneous]/cycles,100.*tm[timeForMiscellaneous]/total,
-	    sumTotal,                sumTotal/cycles,                100.*sumTotal/total,
-	    tm[timeForDefectInSmooth],tm[timeForDefectInSmooth]/cycles,100.*tm[timeForDefectInSmooth]/total,
-	    tm[timeForRelaxInSmooth],tm[timeForRelaxInSmooth]/cycles,100.*tm[timeForRelaxInSmooth]/total,
-	    tm[timeForBoundarySmooth],tm[timeForBoundarySmooth]/cycles,100.*tm[timeForBoundarySmooth]/total,
-	    tm[timeForInterpolationSmooth],tm[timeForInterpolationSmooth]/cycles,100.*tm[timeForInterpolationSmooth]/total,
-	    tm[timeForTridiagonalFactorInSmooth],tm[timeForTridiagonalFactorInSmooth]/cycles,
+            tm[timeForSmooth],       tm[timeForSmooth]/cycles,       100.*tm[timeForSmooth]/total,
+            tm[timeForDefect],       tm[timeForDefect]/cycles,       100.*tm[timeForDefect]/total,
+            tm[timeForFineToCoarse], tm[timeForFineToCoarse]/cycles, 100.*tm[timeForFineToCoarse]/total,
+            tm[timeForCoarseToFine], tm[timeForCoarseToFine]/cycles, 100.*tm[timeForCoarseToFine]/total,
+            tm[timeForDirectSolver], tm[timeForDirectSolver]/cycles, 100.*tm[timeForDirectSolver]/total,
+            tm[timeForMiscellaneous],tm[timeForMiscellaneous]/cycles,100.*tm[timeForMiscellaneous]/total,
+            sumTotal,                sumTotal/cycles,                100.*sumTotal/total,
+            tm[timeForDefectInSmooth],tm[timeForDefectInSmooth]/cycles,100.*tm[timeForDefectInSmooth]/total,
+            tm[timeForRelaxInSmooth],tm[timeForRelaxInSmooth]/cycles,100.*tm[timeForRelaxInSmooth]/total,
+            tm[timeForBoundarySmooth],tm[timeForBoundarySmooth]/cycles,100.*tm[timeForBoundarySmooth]/total,
+            tm[timeForInterpolationSmooth],tm[timeForInterpolationSmooth]/cycles,100.*tm[timeForInterpolationSmooth]/total,
+            tm[timeForTridiagonalFactorInSmooth],tm[timeForTridiagonalFactorInSmooth]/cycles,
                     100.*tm[timeForTridiagonalFactorInSmooth]/total,
-	    tm[timeForTridiagonalSolverInSmooth],tm[timeForTridiagonalSolverInSmooth]/cycles,
+            tm[timeForTridiagonalSolverInSmooth],tm[timeForTridiagonalSolverInSmooth]/cycles,
                     100.*tm[timeForTridiagonalSolverInSmooth]/total,
-	    tm[timeForInterpolation],tm[timeForInterpolation]/cycles,100.*tm[timeForInterpolation]/total,
-	    tm[timeForBoundaryConditions],tm[timeForBoundaryConditions]/cycles,100.*tm[timeForBoundaryConditions]/total,
-	    timeForBCOpt,timeForExtrapolationBC,timeForSetupBC,timeForBCUpdateGeometry,timeForFinishBC,timeForBC,
-	    tm[timeForFullMultigrid],tm[timeForFullMultigrid]/cycles,
-	    100.*tm[timeForFullMultigrid]/total,
-	    tm[timeForFineToCoarseBC], tm[timeForFineToCoarseBC]/cycles, 100.*tm[timeForFineToCoarseBC]/total,
+            tm[timeForInterpolation],tm[timeForInterpolation]/cycles,100.*tm[timeForInterpolation]/total,
+            tm[timeForBoundaryConditions],tm[timeForBoundaryConditions]/cycles,100.*tm[timeForBoundaryConditions]/total,
+            timeForBCOpt,timeForExtrapolationBC,timeForSetupBC,timeForBCUpdateGeometry,timeForFinishBC,timeForBC,
+            tm[timeForFullMultigrid],tm[timeForFullMultigrid]/cycles,
+            100.*tm[timeForFullMultigrid]/total,
+            tm[timeForFineToCoarseBC], tm[timeForFineToCoarseBC]/cycles, 100.*tm[timeForFineToCoarseBC]/total,
             tm[timeForInterpolateCoarseFromFine], tm[timeForInterpolateCoarseFromFine]/cycles, 
-	                                          tm[timeForInterpolateCoarseFromFine]*100./total,
-	    tm[timeForDefectNorm], tm[timeForDefectNorm]/cycles, 100.*tm[timeForDefectNorm]/total,
+                                                  tm[timeForInterpolateCoarseFromFine]*100./total,
+            tm[timeForDefectNorm], tm[timeForDefectNorm]/cycles, 100.*tm[timeForDefectNorm]/total,
             tm[timeForGhostBoundaryUpdate],tm[timeForGhostBoundaryUpdate]/cycles,
                  100.*tm[timeForGhostBoundaryUpdate]/total,
-	    tm[timeForSolve],        tm[timeForSolve]/cycles,        100.*tm[timeForSolve]/total,
-	    tm[timeForInitialize],tm[timeForInitialize]/cycles,100.*tm[timeForInitialize]/total,
-	    tm[timeForBuildExtraLevels],tm[timeForBuildExtraLevels]/cycles,100.*tm[timeForBuildExtraLevels]/total,
-	    tm[timeForOperatorAveraging],tm[timeForOperatorAveraging]/cycles,100.*tm[timeForOperatorAveraging]/total,
-	    tm[timeForBuildPredefinedEquations],tm[timeForBuildPredefinedEquations]/cycles,
+            tm[timeForSolve],        tm[timeForSolve]/cycles,        100.*tm[timeForSolve]/total,
+            tm[timeForInitialize],tm[timeForInitialize]/cycles,100.*tm[timeForInitialize]/total,
+            tm[timeForBuildExtraLevels],tm[timeForBuildExtraLevels]/cycles,100.*tm[timeForBuildExtraLevels]/total,
+            tm[timeForOperatorAveraging],tm[timeForOperatorAveraging]/cycles,100.*tm[timeForOperatorAveraging]/total,
+            tm[timeForBuildPredefinedEquations],tm[timeForBuildPredefinedEquations]/cycles,
                          100.*tm[timeForBuildPredefinedEquations]/total,
-	    tm[timeForOgesSmootherInit],tm[timeForOgesSmootherInit]/cycles,100.*tm[timeForOgesSmootherInit]/total,
+            tm[timeForOgesSmootherInit],tm[timeForOgesSmootherInit]/cycles,100.*tm[timeForOgesSmootherInit]/total,
             tm[timeForSolve]+tm[timeForInitialize],(tm[timeForSolve]+tm[timeForInitialize])/cycles,
-	    numberOfGridPoints,cycles
+            numberOfGridPoints,cycles
       );
     
 
@@ -3215,14 +3248,14 @@ printStatistics(FILE *file_ /* =stdout */) const
       // the first cycle usually skews the results to be too good.
       for( int ii=1; ii<=2; ii++ )
       {
-	int cycleStart=ii, cycleEnd=numberOfCycles;
-	real residualReduction=cycleResults(cycleEnd,defectPerCycle)/cycleResults(cycleStart-1,defectPerCycle);
-	real aveCR=pow(residualReduction,1./(cycleEnd-cycleStart+1));
-	real wu=sum(cycleResults(Range(cycleStart,cycleEnd),workUnitsPerCycle));
-	real aveECR= pow(residualReduction,1./max(1.,wu));
-	fPrintF(file,"\nIteration=%i..%i : Total WU=%8.2e, total res reduction=%8.2e, ave CR=%5.4f ave ECR=%5.3f\n"
-		"  MaxRes=%8.2e, TR10=%8.2e (time to reduce residual by a factor of 10) TR10/(M/np)=%8.2e\n",
-		cycleStart,cycleEnd,wu,residualReduction,aveCR,aveECR,maximumResidual,aveTR10,aveTR10M);
+        int cycleStart=ii, cycleEnd=numberOfCycles;
+        real residualReduction=cycleResults(cycleEnd,defectPerCycle)/cycleResults(cycleStart-1,defectPerCycle);
+        real aveCR=pow(residualReduction,1./(cycleEnd-cycleStart+1));
+        real wu=sum(cycleResults(Range(cycleStart,cycleEnd),workUnitsPerCycle));
+        real aveECR= pow(residualReduction,1./max(1.,wu));
+        fPrintF(file,"\nIteration=%i..%i : Total WU=%8.2e, total res reduction=%8.2e, ave CR=%5.4f ave ECR=%5.3f\n"
+                "  MaxRes=%8.2e, TR10=%8.2e (time to reduce residual by a factor of 10) TR10/(M/np)=%8.2e\n",
+                cycleStart,cycleEnd,wu,residualReduction,aveCR,aveECR,maximumResidual,aveTR10,aveTR10M);
       
       }
     }
@@ -3230,12 +3263,12 @@ printStatistics(FILE *file_ /* =stdout */) const
     {
       fPrintF(file,"\nIteration=%i..%i : Total WU=%8.2e, total res reduction=%8.2e, ave CR=%5.4f ave ECR=%5.3f np=%i\n"
               "  MaxRes=%8.2e, TR10=%8.2e (time to reduce residual by a factor of 10) TR10/(M/np)=%8.2e\n",
-	      1,numberOfCycles,totalWorkUnits,totalResidualReduction,averageCR,averageECR,np,maximumResidual,
+              1,numberOfCycles,totalWorkUnits,totalResidualReduction,averageCR,averageECR,np,maximumResidual,
               aveTR10,aveTR10M);
 
       if( numberOfSolves>1 )
-	fPrintF(file,"\n--Number of solves=%i: total WU=%8.2e, total cycles=%i, cycles/solve=%5.1f, ave. ECR=%5.3f\n",
-		numberOfSolves,sumTotalWorkUnits,totalNumberOfCycles,real(totalNumberOfCycles)/numberOfSolves,
+        fPrintF(file,"\n--Number of solves=%i: total WU=%8.2e, total cycles=%i, cycles/solve=%5.1f, ave. ECR=%5.3f\n",
+                numberOfSolves,sumTotalWorkUnits,totalNumberOfCycles,real(totalNumberOfCycles)/numberOfSolves,
                 averageEffectiveConvergenceRate/numberOfSolves);
     }
 
@@ -3243,29 +3276,29 @@ printStatistics(FILE *file_ /* =stdout */) const
     // Here is the storage required in real's per grid point
     const real realsPerGridPoint = (totalMem*1024.*1024.)/numberOfGridPoints/sizeof(real);
     fPrintF(file,"\n==== memory/proc: [min=%g,ave=%g,max=%g](Mb), max-recorded=%g (Mb), total=%g (Mb), %5.1f reals/(grid-pt)\n",
-	    minMem,aveMem,maxMem,maxMemRecorded,totalMem,realsPerGridPoint);
+            minMem,aveMem,maxMem,maxMemRecorded,totalMem,realsPerGridPoint);
     
 
     real size=sizeOf(file);
     fPrintF(file," storage allocated = %6.2e MBytes, %7.1f bytes/(grid point) or "
-	    "%6.1f reals/(grid point)\n\n",size/(1024.*1024.),
+            "%6.1f reals/(grid point)\n\n",size/(1024.*1024.),
           size/numberOfGridPoints,size/numberOfGridPoints/sizeof(real));
 
 
     fPrintF(file,"*** timeForNeumannBC=%8.2e timeForBC=%8.2e "
-	    " timeForFinishBC=%8.2e timeForBCFinal=%8.2e\n"
-	    "   timeForGeneralNeumannBC=%8.2e timeForExtrapolationBC=%8.2e \n     "
-	    " timeForSetupBC=%8.2e, timeForBCWhere=%8.2e, timeForBCOpt=%8.2e timeForBC4Extrap=%8.2e\n",
-	    timeForNeumannBC,timeForBC,timeForFinishBC,timeForBCFinal,timeForGeneralNeumannBC,
-	    timeForExtrapolationBC,timeForSetupBC,timeForBCWhere,timeForBCOpt,timeForBC4Extrap );
+            " timeForFinishBC=%8.2e timeForBCFinal=%8.2e\n"
+            "   timeForGeneralNeumannBC=%8.2e timeForExtrapolationBC=%8.2e \n     "
+            " timeForSetupBC=%8.2e, timeForBCWhere=%8.2e, timeForBCOpt=%8.2e timeForBC4Extrap=%8.2e\n",
+            timeForNeumannBC,timeForBC,timeForFinishBC,timeForBCFinal,timeForGeneralNeumannBC,
+            timeForExtrapolationBC,timeForSetupBC,timeForBCWhere,timeForBCOpt,timeForBC4Extrap );
 
     if( Ogmg::debug & 4 )
     {
       fPrintF(file,"***time timeForNeumannBC=%8.2e timeForBC=%8.2e "
-	      " timeForFinishBC=%8.2e timeForGeneralNeumannBC=%8.2e timeForExtrapolationBC=%8.2e "
-	      " timeForSetupBC=%8.2e, timeForBCWhere=%8.2e\n",
+              " timeForFinishBC=%8.2e timeForGeneralNeumannBC=%8.2e timeForExtrapolationBC=%8.2e "
+              " timeForSetupBC=%8.2e, timeForBCWhere=%8.2e\n",
               timeForNeumannBC,timeForBC,timeForFinishBC,timeForGeneralNeumannBC,
-	      timeForExtrapolationBC,timeForSetupBC,timeForBCWhere );
+              timeForExtrapolationBC,timeForSetupBC,timeForBCWhere );
     }
     
     
@@ -3275,8 +3308,54 @@ printStatistics(FILE *file_ /* =stdout */) const
 //    real averageTCR=pow(averageCR,1./(max(REAL_EPSILON,scaledTime)));
 //      fPrintF(file,"\nIteration=1..%i : Total WU=%8.2e, total res reduction=%8.2e, ave CR=%5.4f ave ECR=%5.3f"
 //                   " aver TCR=%7.2f (scaledtime=%8.1e)\n",
-//  	   numberOfCycles-1,totalWorkUnits,totalResidualReduction,
+//         numberOfCycles-1,totalWorkUnits,totalResidualReduction,
 //                  averageCR,averageECR,averageTCR,scaledTime);
+
+    // Print a summary informational line for a performance table see doc/performanceComparison.tex
+    //    Grid    & ord &   Solver          &    pts  & its  & $\|{\rm res}\|_\infty$ & total        & setup     & solve & reals/pt \\ \hline
+    // square1024 & 2   &   Ogmg V[2,1]     &  1.1M   &  9   &   9.2e-8           &  .58         &  .02      &  .56  &   9     \\
+ 
+    int firstChar=0; 
+    for( int i=gridName.length()-1; i>=0; i-- )
+    {
+      if( gridName[i]=='/' ){ firstChar=i+1; break; } // start from end, work backwards and look for a directory symbol
+    }
+    aString gridNameNoPrefix = gridName(firstChar,gridName.length()-1);
+
+    int numIts = cycles;
+    aString solverLabel;
+    solverLabel = sPrintF(solverLabel,"Ogmg %s[%d,%d]",
+        parameters.numberOfCycles(0)==1 ? "V" : parameters.numberOfCycles(0)==2 ? "W" : "U",
+        parameters.numberOfSmooths(0,0),parameters.numberOfSmooths(1,0));
+
+    if( numberOfExtraLevels==0 && parameters.useDirectSolverForOneLevel )
+    {
+      // just using the direct solver on one level:    
+      // solverLabel = "Direct";
+      solverLabel = directSolver.parameters.getSolverName();
+      // #ifdef USE_PPP
+      //   solverLabel = directSolver.parameters.getSolverTypeName() + 
+      //               "[" + directSolver.parameters.getSolverMethodName(directSolver.parameters.parallelSolverMethod) +"]";
+      // #else
+      //   solverLabel = directSolver.parameters.getSolverTypeName() + 
+      //               "[" + directSolver.parameters.getSolverMethodName() +"]";
+      // #endif
+      numIts = totalNumberOfCoarseGridIterations; 
+    }
+    fPrintF(file,"Summary info for a performance table see doc/performanceComparison.tex:\n");
+    fPrintF(file,"   Grid    & ord &   Solver          &    pts  & its  & $\\|{\\rm res}\\|_\\infty$ & total        & setup     & solve & reals/pt \\\\ \n");
+    fPrintF(file," %s &  %d  &  %s   &   %.2gM  & %4d  &   %8.1e       & %7.2f  & %7.2f  & %7.2f  & %7.1f \\\\ % PerfInfo\n",
+       (const char*)gridNameNoPrefix,
+       orderOfAccuracy,
+       (const char*)solverLabel,
+       numberOfGridPoints/1e6,
+       numIts,
+       maximumResidual,
+       tm[timeForSolve]+tm[timeForInitialize],
+       tm[timeForInitialize],
+       tm[timeForSolve],
+       realsPerGridPoint
+       );
 
   } // end for io
   fPrintF(infoFile,
@@ -3370,37 +3449,37 @@ buildCoefficientArrays()
 
         printF("\n ++++++++++++++++ over-write averaged operator with laplacian from operators ++++++++++++++\n\n");
         // cgl.update(MappedGrid::THEinverseVertexDerivative );
-	
+        
         int stencilSize=cl[0].getLength(0);
-	if( stencilSize==0 )  // for rectangular grids
-	{
-	   const int width = orderOfThisLevel+1;  // 3 or 5
+        if( stencilSize==0 )  // for rectangular grids
+        {
+           const int width = orderOfThisLevel+1;  // 3 or 5
            stencilSize=int(pow(double(width),double(cgl.numberOfDimensions()))+1.5);
-	}
+        }
         if( Ogmg::debug & 4 ) cl.display("*************Coefficients from averaging ***********************","%5.1f ");
-	
-	
-	op.setStencilSize(stencilSize);
+        
+        
+        op.setStencilSize(stencilSize);
         cl.destroy();
         cl.updateToMatchGrid(cgl,stencilSize);
         const int numberOfGhostLines=2;
         cl.setIsACoefficientMatrix(true,stencilSize,numberOfGhostLines);  
-	cl.setOperators(op);
+        cl.setOperators(op);
 
-	cl=op.laplacianCoefficients();   // get the coefficients for the Laplace operator 
+        cl=op.laplacianCoefficients();   // get the coefficients for the Laplace operator 
         // fill in the coefficients for the boundary conditions
-	cl.applyBoundaryConditionCoefficients(0,0,BCTypes::dirichlet,BCTypes::allBoundaries);
-	cl.applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::allBoundaries);
+        cl.applyBoundaryConditionCoefficients(0,0,BCTypes::dirichlet,BCTypes::allBoundaries);
+        cl.applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::allBoundaries);
         if( orderOfThisLevel==4 )
-	{
-	  BoundaryConditionParameters bcParams;
-	  bcParams.ghostLineToAssign=2;
+        {
+          BoundaryConditionParameters bcParams;
+          bcParams.ghostLineToAssign=2;
           bcParams.orderOfExtrapolation=orderOfExtrapolation; // orderOfThisLevel+1;
-	  cl.applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::allBoundaries,bcParams); // extrap 2nd ghost line
-	}
-	
+          cl.applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::allBoundaries,bcParams); // extrap 2nd ghost line
+        }
+        
         if( Ogmg::debug & 4 ) 
-  	  cl.display(sPrintF(buff,"buildCoefficientArray: coeff from operators on level=%i",level+1),debugFile,"%9.1e");
+          cl.display(sPrintF(buff,"buildCoefficientArray: coeff from operators on level=%i",level+1),debugFile,"%9.1e");
 
       }
       
@@ -3443,29 +3522,29 @@ buildCoefficientArrays()
       if( (l==(numberOfExtraLevels-1) && parameters.useDirectSolverOnCoarseGrid) || 
           applyFinishBoundaryConditions || nullVectorNeedsToBeComputed )
       {
-	if( debug & 4 ) 
-	{
-	  
+        if( debug & 4 ) 
+        {
+          
           printF("*****buildCoefficientArray:  cl.finishBoundaryConditions(); for coarsest level %i\n",level+1);
           // printF(" cornerBC: %i\n",bcParams.getCornerBC(0,0,0));
-	}
-	
+        }
+        
         // bcParams.orderOfExtrapolation=2;
-	
-	if( false && parameters.useSymmetryCornerBoundaryCondition ) // these need to be implemented
-	{
-	  BoundaryConditionParameters::CornerBoundaryConditionEnum cornerBC=
-	    orderOfThisLevel==2 ? BoundaryConditionParameters::taylor2ndOrderEvenCorner :
-	    BoundaryConditionParameters::taylor4thOrderEvenCorner;
+        
+        if( false && parameters.useSymmetryCornerBoundaryCondition ) // these need to be implemented
+        {
+          BoundaryConditionParameters::CornerBoundaryConditionEnum cornerBC=
+            orderOfThisLevel==2 ? BoundaryConditionParameters::taylor2ndOrderEvenCorner :
+            BoundaryConditionParameters::taylor4thOrderEvenCorner;
 
-	  // cornerBC=BoundaryConditionParameters::evenSymmetryCorner; // ********************************
-	  // cornerBC=BoundaryConditionParameters::oddSymmetryCorner; // ********************************
+          // cornerBC=BoundaryConditionParameters::evenSymmetryCorner; // ********************************
+          // cornerBC=BoundaryConditionParameters::oddSymmetryCorner; // ********************************
     
     
-	  bcParams.setCornerBoundaryCondition(cornerBC);  // this sets all corners and edges
-	}
-	
-	cl.finishBoundaryConditions(bcParams);
+          bcParams.setCornerBoundaryCondition(cornerBC);  // this sets all corners and edges
+        }
+        
+        cl.finishBoundaryConditions(bcParams);
 
       }
       else
@@ -3473,18 +3552,18 @@ buildCoefficientArrays()
         // we only call finishBoundaryConditions on each grid to fill in corner points
         // we do not want the interpolation equations filled in
         for( int grid=0; grid<cgl.numberOfComponentGrids(); grid++ )
-	{
+        {
           // bcParams.orderOfExtrapolation=3; // ***** test for mixed BC ***
           if( !(equationToSolve!=OgesParameters::userDefined && cgl[grid].isRectangular() && 
-		(level<mgcg.numberOfMultigridLevels()-1 || !parameters.useDirectSolverOnCoarseGrid)) )
-	  {
-	    if( debug & 4 ) 
+                (level<mgcg.numberOfMultigridLevels()-1 || !parameters.useDirectSolverOnCoarseGrid)) )
+          {
+            if( debug & 4 ) 
               printF("*****buildCoefficientArray:  cl[grid].finishBoundaryConditions() for level %i\n",level+1);
-   	    cl[grid].finishBoundaryConditions(bcParams);
-	  }
-	  
-	}
-	
+            cl[grid].finishBoundaryConditions(bcParams);
+          }
+          
+        }
+        
       }
       
 
@@ -3493,31 +3572,31 @@ buildCoefficientArrays()
       // best would be u(-1,-1)=u(1,1) ?? 
       if( false )
       {
-	bcParams.orderOfExtrapolation=2;
-	cl.finishBoundaryConditions(bcParams);
-	
-	cl[0](0,-1,-1,0)=1.;
-	cl[0](1,-1,-1,0)=0.;
-	cl[0](2,-1,-1,0)=-1.;
+        bcParams.orderOfExtrapolation=2;
+        cl.finishBoundaryConditions(bcParams);
+        
+        cl[0](0,-1,-1,0)=1.;
+        cl[0](1,-1,-1,0)=0.;
+        cl[0](2,-1,-1,0)=-1.;
 
         int n1 = cgl[0].gridIndexRange(End,axis1);
-	cl[0](0,n1+1,-1,0)= 1.;
-	cl[0](1,n1+1,-1,0)= 0.;
-	cl[0](2,n1+1,-1,0)=-1.;
+        cl[0](0,n1+1,-1,0)= 1.;
+        cl[0](1,n1+1,-1,0)= 0.;
+        cl[0](2,n1+1,-1,0)=-1.;
 
         int n2 = cgl[0].gridIndexRange(End,axis2);
-	cl[0](0,-1,n2+1,0)=1.;
-	cl[0](1,-1,n2+1,0)=0.;
-	cl[0](2,-1,n2+1,0)=-1.;
-	cl[0](0,n1+1,n2+1,0)= 1.;
-	cl[0](1,n1+1,n2+1,0)= 0.;
-	cl[0](2,n1+1,n2+1,0)=-1.;
+        cl[0](0,-1,n2+1,0)=1.;
+        cl[0](1,-1,n2+1,0)=0.;
+        cl[0](2,-1,n2+1,0)=-1.;
+        cl[0](0,n1+1,n2+1,0)= 1.;
+        cl[0](1,n1+1,n2+1,0)= 0.;
+        cl[0](2,n1+1,n2+1,0)=-1.;
 
       }
       
       if( debug & 64 )
       {
-	cl.display(sPrintF(buff,"buildCoefficientArray: coeff on level=%i",level+1),debugFile,"%9.1e");
+        cl.display(sPrintF(buff,"buildCoefficientArray: coeff on level=%i",level+1),debugFile,"%9.1e");
       }
     }
     // ******** do this here after we have averaged  
@@ -3534,21 +3613,21 @@ buildCoefficientArrays()
       // we do not want the interpolation equations filled in
       if( parameters.problemIsSingular && nullVectorNeedsToBeComputed )
       {
-	if( debug & 4 ) printF("*****buildCoefficientArray:problemIsSingular  coeff.finishBoundaryConditions() for finest level\n");
-	coeff.finishBoundaryConditions(bcParams);
+        if( debug & 4 ) printF("*****buildCoefficientArray:problemIsSingular  coeff.finishBoundaryConditions() for finest level\n");
+        coeff.finishBoundaryConditions(bcParams);
       }
       else
       {
-	for( int grid=0; grid<mgcg.numberOfComponentGrids(); grid++ )
-	{
+        for( int grid=0; grid<mgcg.numberOfComponentGrids(); grid++ )
+        {
           if( !(equationToSolve!=OgesParameters::userDefined && mgcg[grid].isRectangular()) )
-	  {
-	    if( debug & 4 ) printF("*****buildCoefficientArray:  coeff[grid=%i].finishBoundaryConditions() "
+          {
+            if( debug & 4 ) printF("*****buildCoefficientArray:  coeff[grid=%i].finishBoundaryConditions() "
                            "for finest level\n",grid);
-	    coeff[grid].finishBoundaryConditions(bcParams);
-	  }
-	  
-	}
+            coeff[grid].finishBoundaryConditions(bcParams);
+          }
+          
+        }
       }
       
     }
@@ -3673,10 +3752,10 @@ setCoefficientArray( realCompositeGridFunction & coeff,
     if( debug & 4 )
     {
       printF("Ogmg::setCoefficientArray: cMG: numberOfComponentGrids=%i, numberOfGrids=%i, sizeOf=%12.0f\n",
-	     cMG.numberOfComponentGrids(),cMG.numberOfGrids(),cMG.sizeOf());
+             cMG.numberOfComponentGrids(),cMG.numberOfGrids(),cMG.sizeOf());
       for( int ll=0; ll<mgcg.numberOfMultigridLevels(); ll++ )
       {
-	printf("cMG.multigridLevel[%i].sizeOf()=%12.0f\n",ll,cMG.multigridLevel[ll].sizeOf());
+        printf("cMG.multigridLevel[%i].sizeOf()=%12.0f\n",ll,cMG.multigridLevel[ll].sizeOf());
       }
       printF("cMG.sizeOf()=%12.0f\n",cMG.sizeOf());
     }
@@ -3687,8 +3766,8 @@ setCoefficientArray( realCompositeGridFunction & coeff,
        cMG[grid]=coeff[grid];  // copy existing levels  *** reference ??? *********** ********** fix this ****
       else
       {
-	cMG[grid].reference(coeff[grid]);
-	cMG.multigridLevel[0][grid].reference(cMG[grid]);  // need to do this too
+        cMG[grid].reference(coeff[grid]);
+        cMG.multigridLevel[0][grid].reference(cMG[grid]);  // need to do this too
       }
       
       cMG[grid].setOperators(*coeff[grid].getOperators());
@@ -3717,7 +3796,7 @@ setCoefficientArray( realCompositeGridFunction & coeff,
 //\begin{>>OgmgInclude.tex}{\subsection{setBoundaryConditions}}
 int Ogmg::
 setBoundaryConditions(const IntegerArray & bc_,
-		      const RealArray & bcData /* =Overture::nullRealArray() */ )
+                      const RealArray & bcData /* =Overture::nullRealArray() */ )
 //==================================================================================
 // /Description:
 //    Set the boundary conditions. This is a private routine.
@@ -3761,105 +3840,105 @@ setBoundaryConditions(const IntegerArray & bc_,
     {
       for( int side=Start; side<=End; side++ )
       {
-	if( !bcSupplied )
-	{
-	  bc(side,axis,grid)=mg.boundaryCondition(side,axis);
-	}
-	if( mg.boundaryCondition(side,axis) > 0 )
-	{
-	  if( Ogmg::debug & 4 )
-	    printF("Ogmg::setBoundaryConditions: (side,axis,grid)=(%i,%i,%i) bc(side,axis,grid)=%i (bcDataSupplied=%i)\n",
-		   side,axis,grid,bc(side,axis,grid),bcDataSupplied);
+        if( !bcSupplied )
+        {
+          bc(side,axis,grid)=mg.boundaryCondition(side,axis);
+        }
+        if( mg.boundaryCondition(side,axis) > 0 )
+        {
+          if( Ogmg::debug & 4 )
+            printF("Ogmg::setBoundaryConditions: (side,axis,grid)=(%i,%i,%i) bc(side,axis,grid)=%i (bcDataSupplied=%i)\n",
+                   side,axis,grid,bc(side,axis,grid),bcDataSupplied);
 
 
-	  if( bc(side,axis,grid)==OgmgParameters::dirichlet )
-	  {
-	    boundaryCondition(side,axis,grid)=OgmgParameters::extrapolate;  // default for now
+          if( bc(side,axis,grid)==OgmgParameters::dirichlet )
+          {
+            boundaryCondition(side,axis,grid)=OgmgParameters::extrapolate;  // default for now
             // mg.boundaryCondition()(side,axis)=bc(side,axis,grid);
-	  }
+          }
           else if( bc(side,axis,grid)==OgmgParameters::extrapolate )
-	  { // *new* 100412 -- support extrapolation BC
-	    boundaryCondition(side,axis,grid)=OgmgParameters::equation;
-	    boundaryConditionData(0,side,axis,grid)=bcData(0,side,axis,grid);
+          { // *new* 100412 -- support extrapolation BC
+            boundaryCondition(side,axis,grid)=OgmgParameters::equation;
+            boundaryConditionData(0,side,axis,grid)=bcData(0,side,axis,grid);
 
             if( Ogmg::debug & 4 )
-	      printF(" Ogmg::setBoundaryConditions: (side,axis,grid)=(%i,%i,%i) bc=extrapolate, orderOfExtrap=%i\n",
-		     side,axis,grid,int( boundaryConditionData(0,side,axis,grid)+.5) );
-	    
+              printF(" Ogmg::setBoundaryConditions: (side,axis,grid)=(%i,%i,%i) bc=extrapolate, orderOfExtrap=%i\n",
+                     side,axis,grid,int( boundaryConditionData(0,side,axis,grid)+.5) );
+            
             int orderOfExtrap=int( boundaryConditionData(0,side,axis,grid)+.5 );
             if( orderOfExtrap!=2 )
-	    {
+            {
               // for now we only support orderOfExtrapolation==2 
-	      printF("Ogmg::setBoundaryConditions:WARNING: currently only extrapolation of order 2 is \n"
+              printF("Ogmg::setBoundaryConditions:WARNING: currently only extrapolation of order 2 is \n"
                      "     supported at an extrapolation boundary. I am setting the requested value of %i to 2.\n",
-		     orderOfExtrap);
+                     orderOfExtrap);
               boundaryConditionData(0,side,axis,grid)=2;  // default order of extrapolation
-	    }
-	  }
-	  else if( bc(side,axis,grid)==OgmgParameters::neumann || 
+            }
+          }
+          else if( bc(side,axis,grid)==OgmgParameters::neumann || 
                    bc(side,axis,grid)==OgmgParameters::mixed )
-	  {
+          {
 //             // -- For now we just use a Neumann BC if the user has requested extrapolate -- *wdh* 100327
-// 	    if( bc(side,axis,grid)==OgmgParameters::extrapolate )
-// 	    {
+//          if( bc(side,axis,grid)==OgmgParameters::extrapolate )
+//          {
 //               bc(side,axis,grid)=OgmgParameters::neumann;  // *NOTE*
-// 	      if( Ogmg::debug & 2 )
-// 		printF("Ogmg:setBoundaryConditions:WARNING: using Neumann BC instead of extrapolate.\n");
-// 	    }
-	    
-	    boundaryCondition(side,axis,grid)=OgmgParameters::equation;
+//            if( Ogmg::debug & 2 )
+//              printF("Ogmg:setBoundaryConditions:WARNING: using Neumann BC instead of extrapolate.\n");
+//          }
+            
+            boundaryCondition(side,axis,grid)=OgmgParameters::equation;
             // mg.boundaryCondition()(side,axis)=bc(side,axis,grid);
             if( bcDataSupplied )
-	    {
-	      if( bc(side,axis,grid)==OgmgParameters::neumann )
-	      {
-		boundaryConditionData(0,side,axis,grid)=0.;
-		boundaryConditionData(1,side,axis,grid)=1.;
-	      }
-	      else if( bc(side,axis,grid)==OgmgParameters::mixed )
-	      {
-		boundaryConditionData(0,side,axis,grid)=bcData(0,side,axis,grid);
-		boundaryConditionData(1,side,axis,grid)=bcData(1,side,axis,grid);
+            {
+              if( bc(side,axis,grid)==OgmgParameters::neumann )
+              {
+                boundaryConditionData(0,side,axis,grid)=0.;
+                boundaryConditionData(1,side,axis,grid)=1.;
+              }
+              else if( bc(side,axis,grid)==OgmgParameters::mixed )
+              {
+                boundaryConditionData(0,side,axis,grid)=bcData(0,side,axis,grid);
+                boundaryConditionData(1,side,axis,grid)=bcData(1,side,axis,grid);
 
                 if( Ogmg::debug & 2 )
-		  printF("Ogmg::setBoundaryConditions: (side,axis,grid)=(%i,%i,%i) "
-			 " mixed BC: a0,a1=%8.2e,%8.2e\n",side,axis,grid,bcData(0,side,axis,grid),
-			 bcData(1,side,axis,grid)  );
+                  printF("Ogmg::setBoundaryConditions: (side,axis,grid)=(%i,%i,%i) "
+                         " mixed BC: a0,a1=%8.2e,%8.2e\n",side,axis,grid,bcData(0,side,axis,grid),
+                         bcData(1,side,axis,grid)  );
 
-		if( bcData(0,side,axis,grid)!=0. && bcData(1,side,axis,grid)==0. )
-		{
-		  // this is really a Dirichlet BC
+                if( bcData(0,side,axis,grid)!=0. && bcData(1,side,axis,grid)==0. )
+                {
+                  // this is really a Dirichlet BC
                   if( Ogmg::debug & 4 )
-  		    printF("Ogmg::setBoundaryConditions: (side,axis,grid)=(%i,%i,%i) "
-			   " mixed BC is really dirichlet\n",side,axis,grid);
-		
-		  boundaryCondition(side,axis,grid)=OgmgParameters::extrapolate; 
+                    printF("Ogmg::setBoundaryConditions: (side,axis,grid)=(%i,%i,%i) "
+                           " mixed BC is really dirichlet\n",side,axis,grid);
+                
+                  boundaryCondition(side,axis,grid)=OgmgParameters::extrapolate; 
                   bc(side,axis,grid)=OgmgParameters::dirichlet; // *wdh* 040831
-		  
-		  // mg.boundaryCondition()(side,axis)=OgesParameters::dirichlet;
-		}
-		else if( bcData(0,side,axis,grid)==0. && bcData(1,side,axis,grid)==0. )
-		{
-		  printF("Ogmg::setBoundaryConditions:ERROR: bcData==0 for a mixed bc, bc(%i,%i,%i)=%i\n",
-			 side,axis,grid,bc(side,axis,grid));
-		  Overture::abort();
-		}
-	      }
-	    } // end if bcDataSupplied
-	  }
-	  else 
-	  {
-	    printF("Ogmg::setBoundaryConditions:ERROR: unknown bc(%i,%i,%i)=%i\n",
-		   side,axis,grid,bc(side,axis,grid));
-	    OV_ABORT("error");
-	  }
-	}
-	else
-	{
+                  
+                  // mg.boundaryCondition()(side,axis)=OgesParameters::dirichlet;
+                }
+                else if( bcData(0,side,axis,grid)==0. && bcData(1,side,axis,grid)==0. )
+                {
+                  printF("Ogmg::setBoundaryConditions:ERROR: bcData==0 for a mixed bc, bc(%i,%i,%i)=%i\n",
+                         side,axis,grid,bc(side,axis,grid));
+                  Overture::abort();
+                }
+              }
+            } // end if bcDataSupplied
+          }
+          else 
+          {
+            printF("Ogmg::setBoundaryConditions:ERROR: unknown bc(%i,%i,%i)=%i\n",
+                   side,axis,grid,bc(side,axis,grid));
+            OV_ABORT("error");
+          }
+        }
+        else
+        {
           bc(side,axis,grid)=mg.boundaryCondition(side,axis);  // set to zero or -1 *wdh* 030605
-	  
-	  boundaryCondition(side,axis,grid)=0;
-	}
+          
+          boundaryCondition(side,axis,grid)=0;
+        }
       }
     }
   }
@@ -3931,43 +4010,43 @@ createRightNullVector()
 
       if( useOpt )
       {
-	OV_GET_SERIAL_ARRAY(real,nullVector,nullVectorLocal);
-	int includeGhost=1; // include ghost 
-	bool ok = ParallelUtility::getLocalArrayBounds(nullVector,nullVectorLocal,I1,I2,I3,includeGhost);
-	if( ok )
-	{
-	  real *nullVectorp = nullVectorLocal.Array_Descriptor.Array_View_Pointer2;
-	  const int nullVectorDim0=nullVectorLocal.getRawDataSize(0);
-	  const int nullVectorDim1=nullVectorLocal.getRawDataSize(1);
+        OV_GET_SERIAL_ARRAY(real,nullVector,nullVectorLocal);
+        int includeGhost=1; // include ghost 
+        bool ok = ParallelUtility::getLocalArrayBounds(nullVector,nullVectorLocal,I1,I2,I3,includeGhost);
+        if( ok )
+        {
+          real *nullVectorp = nullVectorLocal.Array_Descriptor.Array_View_Pointer2;
+          const int nullVectorDim0=nullVectorLocal.getRawDataSize(0);
+          const int nullVectorDim1=nullVectorLocal.getRawDataSize(1);
 #define NULLVECTOR(i0,i1,i2) nullVectorp[i0+nullVectorDim0*(i1+nullVectorDim1*(i2))]
 
-	  OV_GET_SERIAL_ARRAY_CONST(int,mask,maskLocal);
-	  const int *maskp = maskLocal.Array_Descriptor.Array_View_Pointer2;
-	  const int maskDim0=maskLocal.getRawDataSize(0);
-	  const int maskDim1=maskLocal.getRawDataSize(1);
+          OV_GET_SERIAL_ARRAY_CONST(int,mask,maskLocal);
+          const int *maskp = maskLocal.Array_Descriptor.Array_View_Pointer2;
+          const int maskDim0=maskLocal.getRawDataSize(0);
+          const int maskDim1=maskLocal.getRawDataSize(1);
 #define MASK(i0,i1,i2) maskp[i0+maskDim0*(i1+maskDim1*(i2))]
 
           nullVectorLocal=0.;
-	  int i1,i2,i3;
-	  FOR_3D(i1,i2,i3,I1,I2,I3)
-	  {
-	    if( MASK(i1,i2,i3)!=0 )
-	    {
-	      NULLVECTOR(i1,i2,i3)=1.;
-	      norm++;
-	    }
-	  }
+          int i1,i2,i3;
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
+            if( MASK(i1,i2,i3)!=0 )
+            {
+              NULLVECTOR(i1,i2,i3)=1.;
+              norm++;
+            }
+          }
 #undef NULLVECTOR
 #undef MASK
-	}
+        }
 
       }
       else
       {
-	nullVector=0.;
-	where( mask(I1,I2,I3) >0 )
-	  nullVector(I1,I2,I3)=1.;
-	norm+=sum(nullVector);
+        nullVector=0.;
+        where( mask(I1,I2,I3) >0 )
+          nullVector(I1,I2,I3)=1.;
+        norm+=sum(nullVector);
       }
       
     }
@@ -4050,10 +4129,10 @@ interpolate(realCompositeGridFunction & u, const int & grid /* =-1 */, int level
       Range R=cg.numberOfInterpolationPoints(gg);
       if( R.getLength() > 0 )
       {
-	if( cg.numberOfDimensions()==2 )
-	  uu(ip(R,0),ip(R,1),0)=0.;
-	else
-	  uu(ip(R,0),ip(R,1),ip(R,2))=0.;
+        if( cg.numberOfDimensions()==2 )
+          uu(ip(R,0),ip(R,1),0)=0.;
+        else
+          uu(ip(R,0),ip(R,1),ip(R,2))=0.;
       }
     }
   }
@@ -4212,19 +4291,19 @@ loadBalance( CompositeGrid & mg, CompositeGrid & mgcg )
       gridDistributionList[grid].getProcessorRange(pStart,pEnd);
       if( Ogmg::debug & 2  )
       {
-	printF("Ogmg:loadBalance: assign level=%i grid=%i to processors=[%i,%i]\n",
-	       level,grid,pStart,pEnd);
+        printF("Ogmg:loadBalance: assign level=%i grid=%i to processors=[%i,%i]\n",
+               level,grid,pStart,pEnd);
       }
       if( false )
-	printF(" level=%i grid=%i gridNumber=%i componentGridNumber=%i\n",level,grid,cg.gridNumber(grid),
-	       cg.componentGridNumber(grid));
-	  
+        printF(" level=%i grid=%i gridNumber=%i componentGridNumber=%i\n",level,grid,cg.gridNumber(grid),
+               cg.componentGridNumber(grid));
+          
       cg[grid].specifyProcesses(Range(pStart,pEnd));
 
       // Also set the distribution in the master GDL:
       const int masterGridNumber = cg.gridNumber(grid); // here is the grid number in the master list of grids
       masterGDL[masterGridNumber]=gridDistributionList[grid]; 
-	
+        
     } // end for grid
 
   } // end for l 

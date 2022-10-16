@@ -36,16 +36,16 @@ getLocalBoundsAndBoundaryConditions( const realMappedGridFunction & a,
 extern "C"
 {
 void interfaceCnsSm( const int&nd, 
-		    const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
-		    const int&gridIndexRange1, real&u1, const int&mask1,const real&rsxy1, const real&xy1, const real&gv1,
-		    const int&boundaryCondition1, 
-		    const int&md1a,const int&md1b,const int&md2a,const int&md2b,const int&md3a,const int&md3b,
-		    const int&gridIndexRange2, real&u2, const int&mask2,const real&rsxy2, const real&xy2, const real&gv2,
-		    const int&boundaryCondition2,
-		     const int&ipar, const real&rpar, const DataBase *pdb1, const DataBase *pdb2, 
-		    real&aa2, real&aa4, real&aa8, 
-		    int&ipvt2, int&ipvt4, int&ipvt8,
-		    int&ierr );
+                    const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
+                    const int&gridIndexRange1, real&u1, const int&mask1,const real&rsxy1, const real&xy1, const real&gv1,
+                    const int&boundaryCondition1, 
+                    const int&md1a,const int&md1b,const int&md2a,const int&md2b,const int&md3a,const int&md3b,
+                    const int&gridIndexRange2, real&u2, const int&mask2,const real&rsxy2, const real&xy2, const real&gv2,
+                    const int&boundaryCondition2,
+                     const int&ipar, const real&rpar, const DataBase *pdb1, const DataBase *pdb2, 
+                    real&aa2, real&aa4, real&aa8, 
+                    int&ipvt2, int&ipvt4, int&ipvt8,
+                    int&ierr );
 }
 
 // ===================================================================================================================
@@ -132,8 +132,8 @@ interfaceProjection( real t, real dt, int correct, std::vector<int> & gfIndex, i
       {
         unknownDomainSolver=-1,
         CgadDomainSolver=0,
-	CgcnsDomainSolver,
-	CginsDomainSolver,
+        CgcnsDomainSolver,
+        CginsDomainSolver,
         CgsmDomainSolver
       };
       
@@ -163,7 +163,7 @@ interfaceProjection( real t, real dt, int correct, std::vector<int> & gfIndex, i
       // -- For now we only handle the case of a fluid next to a solid.
       if( domainSolverTypea==unknownDomainSolver || domainSolverTypeb==unknownDomainSolver || domainSolverTypea==domainSolverTypeb )
       {
-	continue;
+        continue;
       }
       
       assert( (domainSolverTypea==CgcnsDomainSolver && domainSolverTypeb==CgsmDomainSolver) ||
@@ -224,20 +224,20 @@ interfaceProjection( real t, real dt, int correct, std::vector<int> & gfIndex, i
       // check that the number of points in the tangential directions match -- eventually we will fix this
       for( int dir=1; dir<mg1.numberOfDimensions(); dir++ )
       {
-	int dir1p = (dir1+dir) % mg1.numberOfDimensions();
-	int dir2p = (dir2+dir) % mg2.numberOfDimensions();
-	if( Iv[dir1p].getLength()!=Jv[dir2p].getLength() )
-	{
-	  printF("interfaceProjection:ERROR: The number of grid points on the two interfaces do not match\n"
-	         " (d1,grid1,side1,dir1,bc1)=(%i,%i,%i,%i,%i) Iv=[%i,%i][%i,%i][%i,%i]\n"
-		 " (d2,grid2,side2,dir2,bc2)=(%i,%i,%i,%i,%i) Jv=[%i,%i][%i,%i][%i,%i]\n",
-		 d1,grid1,side1,dir1,mg1.boundaryCondition(side1,dir1),
+        int dir1p = (dir1+dir) % mg1.numberOfDimensions();
+        int dir2p = (dir2+dir) % mg2.numberOfDimensions();
+        if( Iv[dir1p].getLength()!=Jv[dir2p].getLength() )
+        {
+          printF("interfaceProjection:ERROR: The number of grid points on the two interfaces do not match\n"
+                 " (d1,grid1,side1,dir1,bc1)=(%i,%i,%i,%i,%i) Iv=[%i,%i][%i,%i][%i,%i]\n"
+                 " (d2,grid2,side2,dir2,bc2)=(%i,%i,%i,%i,%i) Jv=[%i,%i][%i,%i][%i,%i]\n",
+                 d1,grid1,side1,dir1,mg1.boundaryCondition(side1,dir1),
                    I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),  
                  d2,grid2,side2,dir2,mg2.boundaryCondition(side2,dir2),
                    J1.getBase(),J1.getBound(),J2.getBase(),J2.getBound(),J3.getBase(),J3.getBound());
-	  cout<<"grid names are "<<mg1.getName()<<" , "<<mg2.getName()<<endl;
-	  OV_ABORT("error");
-	}
+          cout<<"grid names are "<<mg1.getName()<<" , "<<mg2.getName()<<endl;
+          OV_ABORT("error");
+        }
 
         // We need to interpolate the grid function if an interface has interpolation points on it:
 
@@ -245,13 +245,13 @@ interfaceProjection( real t, real dt, int correct, std::vector<int> & gfIndex, i
         //            interface points and thus over-write interpolation points **** FIX ME ***
 
         if( bc1(0,dir1p)==0 || bc1(1,dir1p)==0 )
-	{
+        {
          interpolateThisDomain[d1]=true;
-	}
+        }
         if( bc2(0,dir2p)==0 || bc2(1,dir2p)==0 )
-	{
+        {
          interpolateThisDomain[d2]=true;
-	}
+        }
 
       }
 
@@ -277,13 +277,13 @@ interfaceProjection( real t, real dt, int correct, std::vector<int> & gfIndex, i
       #endif
 
 
-	
+        
 
       real t1=gf1.t;
       real t2=gf2.t;
       if( fabs(t1-t2) > REAL_EPSILON*100.*max(t1,t2) )
       {
-	printf("interfaceProjection:WARNING: t1=%9.3e and t2=%9.3e are not the same, t1-t2=%8.2e\n",t1,t2,t1-t2);
+        printf("interfaceProjection:WARNING: t1=%9.3e and t2=%9.3e are not the same, t1-t2=%8.2e\n",t1,t2,t1-t2);
       }
       
       // --- Extract the impedance, velocity and stress from both sides ----
@@ -335,18 +335,18 @@ interfaceProjection( real t, real dt, int correct, std::vector<int> & gfIndex, i
 
       if( t<=dt )
       {
-	printF("IP: fluid: t1=%9.3e I1=[%i,%i] I2=[%i,%i] gamma=%5.2f, pOffset=%8.2e, tc=%i pc=%i, \n"
-	       "    solid: t2=%9.3e J1=[%i,%i] J2=[%i,%i] rhos=%8.2e, lambda=%8.2e, mu=%8.2e \n",
-	       t1,I1.getBase(),I1.getBound(), I2.getBase(),I2.getBound(),gamma,pOffset,tc,pc,
-	       t2,J1.getBase(),J1.getBound(), J2.getBase(),J2.getBound(),rhos,lambda,mu);
+        printF("IP: fluid: t1=%9.3e I1=[%i,%i] I2=[%i,%i] gamma=%5.2f, pOffset=%8.2e, tc=%i pc=%i, \n"
+               "    solid: t2=%9.3e J1=[%i,%i] J2=[%i,%i] rhos=%8.2e, lambda=%8.2e, mu=%8.2e \n",
+               t1,I1.getBase(),I1.getBound(), I2.getBase(),I2.getBound(),gamma,pOffset,tc,pc,
+               t2,J1.getBase(),J1.getBound(), J2.getBase(),J2.getBound(),rhos,lambda,mu);
       }
       
       if( v1c<0 || v2c<0 || s11c<0 || s12c<0 || s21c<0 || s22c<0 )
       {
-	printF("Cgmp:interfaceProjection:ERROR: invalid components: v1c=%i v2c=%i s11c=%i s12c=%i s21c=%i s22c=%i\n",
-	       v1c,v2c,s11c,s12c,s21c,s22c);
-	printF("This routine expects the FOS cgsm solver.\n");
-	OV_ABORT("error");
+        printF("Cgmp:interfaceProjection:ERROR: invalid components: v1c=%i v2c=%i s11c=%i s12c=%i s21c=%i s22c=%i\n",
+               v1c,v2c,s11c,s12c,s21c,s22c);
+        printF("This routine expects the FOS cgsm solver.\n");
+        OV_ABORT("error");
       }
 
       bool useNewWay=true; // false; // true; 
@@ -355,243 +355,243 @@ interfaceProjection( real t, real dt, int correct, std::vector<int> & gfIndex, i
       {
         // *new* way 
 
-	int n1a=I1.getBase(),n1b=I1.getBound(),
-	    n2a=I2.getBase(),n2b=I2.getBound(),
-	    n3a=I3.getBase(),n3b=I3.getBound();
+        int n1a=I1.getBase(),n1b=I1.getBound(),
+            n2a=I2.getBase(),n2b=I2.getBound(),
+            n3a=I3.getBase(),n3b=I3.getBound();
 
-	int m1a=J1.getBase(),m1b=J1.getBound(),
-	    m2a=J2.getBase(),m2b=J2.getBound(),
-	    m3a=J3.getBase(),m3b=J3.getBound();
+        int m1a=J1.getBase(),m1b=J1.getBound(),
+            m2a=J2.getBase(),m2b=J2.getBound(),
+            m3a=J3.getBase(),m3b=J3.getBound();
 
 
-	bool isRectangular1= mg1.isRectangular();
-	real dx1[3]={0.,0.,0.}; //
-	if( isRectangular1 )
-	  mg1.getDeltaX(dx1);
+        bool isRectangular1= mg1.isRectangular();
+        real dx1[3]={0.,0.,0.}; //
+        if( isRectangular1 )
+          mg1.getDeltaX(dx1);
 
-	bool isRectangular2= mg2.isRectangular();
-	real dx2[3]={0.,0.,0.}; //
-	if( isRectangular2 )
-	  mg2.getDeltaX(dx2);
+        bool isRectangular2= mg2.isRectangular();
+        real dx2[3]={0.,0.,0.}; //
+        if( isRectangular2 )
+          mg2.getDeltaX(dx2);
 
-	if( true )
-	{ // for testing -- make rectangular grids look curvilinear ***************************************
-	  isRectangular1=false;
-	  isRectangular2=false;
-	}
-	if( !isRectangular1 )
-	{
-	  mg1.update(MappedGrid::THEinverseVertexDerivative);
-	  mg2.update(MappedGrid::THEinverseVertexDerivative);
-	}
-		  
-	assert(isRectangular1==isRectangular2);
+        if( true )
+        { // for testing -- make rectangular grids look curvilinear ***************************************
+          isRectangular1=false;
+          isRectangular2=false;
+        }
+        if( !isRectangular1 )
+        {
+          mg1.update(MappedGrid::THEinverseVertexDerivative);
+          mg2.update(MappedGrid::THEinverseVertexDerivative);
+        }
+                  
+        assert(isRectangular1==isRectangular2);
 
-	int useForcing = parameters.dbase.get<bool >("twilightZoneFlow");
+        int useForcing = parameters.dbase.get<bool >("twilightZoneFlow");
         assert( parameters.dbase.get<bool >("twilightZoneFlow")==domainSolver[d1]->parameters.dbase.get<bool >("twilightZoneFlow"));
         assert( parameters.dbase.get<bool >("twilightZoneFlow")==domainSolver[d2]->parameters.dbase.get<bool >("twilightZoneFlow"));
-	if( useForcing )
-	{
-	  mg1.update(MappedGrid::THEcenter);
-	  mg2.update(MappedGrid::THEcenter);
-	}
-	
+        if( useForcing )
+        {
+          mg1.update(MappedGrid::THEcenter);
+          mg2.update(MappedGrid::THEcenter);
+        }
+        
         int orderOfAccuracyInSpace=2; // ** fix me **
 
-	int gridType = isRectangular1 ? 0 : 1;  // ******************************* fix this --> gridType[1,2]
-	int orderOfExtrapolation=orderOfAccuracyInSpace+1;  // not used
-	int useWhereMask=true;
+        int gridType = isRectangular1 ? 0 : 1;  // ******************************* fix this --> gridType[1,2]
+        int orderOfExtrapolation=orderOfAccuracyInSpace+1;  // not used
+        int useWhereMask=true;
 
 
         // We take the normal from one side the of the interface. normalSign1 and normalSign2
         // are used to flip the sign from one side to the other
         int normalSign1=2*side1-1;    // for an outward normal
-	int normalSign2=2*side2-1;
+        int normalSign2=2*side2-1;
 
-	int materialInterfaceOption=0;  // ** fix me **
-	
+        int materialInterfaceOption=0;  // ** fix me **
+        
         int numberOfIterationsForInterfaceBC=1;
-	int interfaceInitialized=0;
+        int interfaceInitialized=0;
 
-	int ierr=0;
-	int ipar[]={ //
-	  side1, dir1, grid1,
-	  n1a,n1b,n2a,n2b,n3a,n3b,
-	  side2, dir2, grid2,
-	  m1a,m1b,m2a,m2b,m3a,m3b,
- 	  gridType,            
- 	  orderOfAccuracyInSpace,    
- 	  orderOfExtrapolation,
- 	  useForcing,          
- 	  np,
- 	  myid,
+        int ierr=0;
+        int ipar[]={ //
+          side1, dir1, grid1,
+          n1a,n1b,n2a,n2b,n3a,n3b,
+          side2, dir2, grid2,
+          m1a,m1b,m2a,m2b,m3a,m3b,
+          gridType,            
+          orderOfAccuracyInSpace,    
+          orderOfExtrapolation,
+          useForcing,          
+          np,
+          myid,
           normalSign1,
-	  normalSign2,
- 	  useWhereMask,       
- 	  parameters.dbase.get<int >("debug"),
- 	  numberOfIterationsForInterfaceBC,
- 	  materialInterfaceOption,
-	  interfaceInitialized,
+          normalSign2,
+          useWhereMask,       
+          parameters.dbase.get<int >("debug"),
+          numberOfIterationsForInterfaceBC,
+          materialInterfaceOption,
+          interfaceInitialized,
           rc,uc,vc,wc,tc, 
           u1c,u2c,u3c,v1c,v2c,v3c,s11c,s12c,s13c,s21c,s22c,s23c,s31c,s32c,s33c,
           option,
           (int)parameters.dbase.get<bool >("twilightZoneFlow"),
           parameters.dbase.get<int >("interfaceProjectionOption"),   // ipar[53]
           parameters.dbase.get<int>("interfaceProjectionGhostOption")
-	};
-		  
-	real rpar[]={ //
-	  dx1[0],
-	  dx1[1],
-	  dx1[2],
-	  mg1.gridSpacing(0),
-	  mg1.gridSpacing(1),
-	  mg1.gridSpacing(2),
-	  dx2[0],
-	  dx2[1],
-	  dx2[2],
-	  mg2.gridSpacing(0),
-	  mg2.gridSpacing(1),
-	  mg2.gridSpacing(2),
-	  t,    
-	  (real &)domainSolver[d1]->parameters.dbase.get<OGFunction* >("exactSolution"),  // twilight zone pointer
-	  (real &)domainSolver[d2]->parameters.dbase.get<OGFunction* >("exactSolution"),  // twilight zone pointer
-	  dt,    
+        };
+                  
+        real rpar[]={ //
+          dx1[0],
+          dx1[1],
+          dx1[2],
+          mg1.gridSpacing(0),
+          mg1.gridSpacing(1),
+          mg1.gridSpacing(2),
+          dx2[0],
+          dx2[1],
+          dx2[2],
+          mg2.gridSpacing(0),
+          mg2.gridSpacing(1),
+          mg2.gridSpacing(2),
+          t,    
+          (real &)domainSolver[d1]->parameters.dbase.get<OGFunction* >("exactSolution"),  // twilight zone pointer
+          (real &)domainSolver[d2]->parameters.dbase.get<OGFunction* >("exactSolution"),  // twilight zone pointer
+          dt,    
           gamma,pOffset, 
           rhos, mu, lambda
-	};
+        };
 
-	real *u1p=u1Local.getDataPointer();
-	real *prsxy1=isRectangular1 ? u1p : mg1.inverseVertexDerivative().getLocalArray().getDataPointer();
-	real *pxy1= !useForcing ? u1p : mg1.center().getLocalArray().getDataPointer(); 
-	int *mask1p=mg1.mask().getLocalArray().getDataPointer();
+        real *u1p=u1Local.getDataPointer();
+        real *prsxy1=isRectangular1 ? u1p : mg1.inverseVertexDerivative().getLocalArray().getDataPointer();
+        real *pxy1= !useForcing ? u1p : mg1.center().getLocalArray().getDataPointer(); 
+        int *mask1p=mg1.mask().getLocalArray().getDataPointer();
         real *gv1p = gv1Local.getDataPointer();
 
-	real *u2p=u2Local.getDataPointer();
-	real *prsxy2=isRectangular2 ? u2p : mg2.inverseVertexDerivative().getLocalArray().getDataPointer();
-	real *pxy2= !useForcing ? u2p : mg2.center().getLocalArray().getDataPointer(); 
-	int *mask2p=mg2.mask().getLocalArray().getDataPointer();
+        real *u2p=u2Local.getDataPointer();
+        real *prsxy2=isRectangular2 ? u2p : mg2.inverseVertexDerivative().getLocalArray().getDataPointer();
+        real *pxy2= !useForcing ? u2p : mg2.center().getLocalArray().getDataPointer(); 
+        int *mask2p=mg2.mask().getLocalArray().getDataPointer();
         real *gv2p = gv2Local.getDataPointer();
 
 
 
         // work spaces are not currently used: 
         real rwk[1];
-	int iwk[1];
-	// assign pointers into the work spaces
-	int pa2=0,pa4=0,pa8=0, pipvt2=0,pipvt4=0,pipvt8=0;
+        int iwk[1];
+        // assign pointers into the work spaces
+        int pa2=0,pa4=0,pa8=0, pipvt2=0,pipvt4=0,pipvt8=0;
 
-	interfaceCnsSm( mg1.numberOfDimensions(), 
-			u1Local.getBase(0),u1Local.getBound(0),
-			u1Local.getBase(1),u1Local.getBound(1),
-			u1Local.getBase(2),u1Local.getBound(2),
-			mg1.gridIndexRange(0,0), *u1p, *mask1p,*prsxy1, *pxy1, *gv1p, bc1(0,0), 
-			u2Local.getBase(0),u2Local.getBound(0),
-			u2Local.getBase(1),u2Local.getBound(1),
-			u2Local.getBase(2),u2Local.getBound(2),
-			mg2.gridIndexRange(0,0), *u2p, *mask2p,*prsxy2, *pxy2, *gv2p, bc2(0,0), 
-			ipar[0], rpar[0], pdb1, pdb2, 
-			rwk[pa2],rwk[pa4],rwk[pa8], iwk[pipvt2],iwk[pipvt4],iwk[pipvt8],
-			ierr );
+        interfaceCnsSm( mg1.numberOfDimensions(), 
+                        u1Local.getBase(0),u1Local.getBound(0),
+                        u1Local.getBase(1),u1Local.getBound(1),
+                        u1Local.getBase(2),u1Local.getBound(2),
+                        mg1.gridIndexRange(0,0), *u1p, *mask1p,*prsxy1, *pxy1, *gv1p, bc1(0,0), 
+                        u2Local.getBase(0),u2Local.getBound(0),
+                        u2Local.getBase(1),u2Local.getBound(1),
+                        u2Local.getBase(2),u2Local.getBound(2),
+                        mg2.gridIndexRange(0,0), *u2p, *mask2p,*prsxy2, *pxy2, *gv2p, bc2(0,0), 
+                        ipar[0], rpar[0], pdb1, pdb2, 
+                        rwk[pa2],rwk[pa4],rwk[pa8], iwk[pipvt2],iwk[pipvt4],iwk[pipvt8],
+                        ierr );
 
       }
       else
       {
 
-	// --- This only works in 2D: 
-	j1=J1.getBase(), j2=J2.getBase(), j3=J3.getBase();
-	const int dir2p1 = (dir2+1) % mg2.numberOfDimensions();
-	FOR_3D(i1,i2,i3,I1,I2,I3)
-	{
-	  // fluid: 
-	  real rhof = u1(i1,i2,i3,rc);
-	  real v1f = u1(i1,i2,i3,uc)/rhof;
-	  real v2f = u1(i1,i2,i3,vc)/rhof;
+        // --- This only works in 2D: 
+        j1=J1.getBase(), j2=J2.getBase(), j3=J3.getBase();
+        const int dir2p1 = (dir2+1) % mg2.numberOfDimensions();
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
+          // fluid: 
+          real rhof = u1(i1,i2,i3,rc);
+          real v1f = u1(i1,i2,i3,uc)/rhof;
+          real v2f = u1(i1,i2,i3,vc)/rhof;
 
-	  real ef = u1(i1,i2,i3,tc); // in conservative vars this is E = p/(gamma-1) + .5*rho*v^2 
+          real ef = u1(i1,i2,i3,tc); // in conservative vars this is E = p/(gamma-1) + .5*rho*v^2 
 
-	  real pf = (gamma-1.)*( ef-.5*rhof*(SQR(v1f)+SQR(v2f)) );    // p 
-	  real pf0 = -(pf-pOffset);          // traction = pf0*nf
+          real pf = (gamma-1.)*( ef-.5*rhof*(SQR(v1f)+SQR(v2f)) );    // p 
+          real pf0 = -(pf-pOffset);          // traction = pf0*nf
 
-	
-	  real af = sqrt(gamma*pf/rhof);
-	  real eps1 = 1./(rhof*af);
-      
-	  real n1f=-normal1(i1,i2,i3,0), n2f=-normal1(i1,i2,i3,1);  // NOTE: flip sign of fluid normal 
-	
-	  real vf = n1f*v1f + n2f*v2f; // normal component of the fluid velocity
-
-	  // solid:
-	  real v1s = u2(j1,j2,j3,v1c), v2s=u2(j1,j2,j3,v2c);
-	  real s11s = u2(j1,j2,j3,s11c), s12s=u2(j1,j2,j3,s12c), s22s=u2(j1,j2,j3,s22c);
-	
-	  real n1s=normal2(j1,j2,j3,0), n2s=normal2(j1,j2,j3,1);
-	  real vs = n1s*v1s + n2s*v2s; // normal component of the solid velocity 
-
-	  // traction is n.sigma:
-	  real traction1 = n1s*s11s + n2s*s12s;  
-	  real traction2 = n1s*s12s + n2s*s22s;
-
-	  real ps = n1s*traction1+n2s*traction2;  // ps = n.sigma.n 
-
-	  // projected values: 
-	  real vi = (eps2*vf  + eps1*vs)/( eps1+eps2 );  // interface velocity 
- 
-	  real pi = (eps1*pf0 + eps2*ps)/( eps1+eps2 );  // interface "pressure" n.s.n 
-	
-// 	  printF("IP: fluid: (i1,i2)=(%2i,%2i) n=(%8.2e,%8.2e) (rhof,v1f,v2f,pf)=(%9.3e,%9.3e,%9.3e,%9.3e) eps1=%9.3e af=%9.3e\n"
-// 		 "    solid: (j1,j2)=(%2i,%2i) n=(%8.2e,%8.2e) (rhos,v1s,v2s,ps)=(%9.3e,%9.3e,%9.3e,%9.3e) eps2=%9.3e cp=%9.3e -> vi=%9.3e, pi=%9.3e\n"
-//		 ,i1,i2,n1f,n2f,rhof,v1f,v2f,pf,eps1,af, j1,j2,n1s,n2s,rhos,v1s,v2s,ps,eps2,cp, vi,pi);
-
-	  // vi = vs;
-	  // pi = pf0;
-	
-
-
-	  // -- here is the projection --
-	  if( true )
-	  {
-	    // Set normal component of fluid velocity to be vi:
-	    v1f += (vi-vf)*n1f;
-	    v2f += (vi-vf)*n2f;
-	  
-	    // Adjust rhof using: Entropy const : p/rho^gamma = K
-
-	    // real rhofi = rhof;
-	    real rhofi = rhof*pow(pi/pf0,1./gamma); // choose interface rho from S=const
-	    u1(i1,i2,i3,rc) = rhofi;
-
-	    u1(i1,i2,i3,uc) = v1f*rhofi;
-	    u1(i1,i2,i3,vc) = v2f*rhofi;
-	
-	    real pif = -pi+pOffset;
-	    real eif = pif/(gamma-1.)+.5*rhofi*(SQR(v1f)+SQR(v2f));
-	    u1(i1,i2,i3,tc)=eif;
-	
-	    // Set normal component of solid velocity to be vi:
-	    u2(j1,j2,j3,v1c) +=  (vi-vs)*n1s;
-	    u2(j1,j2,j3,v2c) +=  (vi-vs)*n2s;
         
-	    // Assign the stress in the solid: s.n =g = pi n 
-	    // In 2d we use the 3 equations:
-	    //     n.s.n = n.g = f11
-	    //     t.s.n = t.g = f12 
-	    //     t.s.t = t.s(old).t = f22  (i.e. do not change this component)
-	    real t1s=-n2s, t2s=n1s;  // solid tangent 
-	    real f11 = pi, f12=0., f22=t1s*t1s*s11s + 2.*t1s*t2s*s12s + t2s*t2s*s22s; 
-	    u2(j1,j2,j3,s11c) = n1s*n1s*f11 + 2.*n1s*t1s      *f12 + t1s*t1s*f22;
-	    u2(j1,j2,j3,s12c) = n1s*n2s*f11 +(n1s*t2s+n2s*t1s)*f12 + t1s*t2s*f22;
-	    u2(j1,j2,j3,s22c) = n2s*n2s*f11 + 2.*n2s*t2s      *f12 + t2s*t2s*f22;
-	
-	    u2(j1,j2,j3,s21c) =   u2(j1,j2,j3,s12c);
-	  }
-	
-	
-	  jv[dir2p1]++; // increment j1 or j2 
-	
-	} // end for 3D
+          real af = sqrt(gamma*pf/rhof);
+          real eps1 = 1./(rhof*af);
       
-	
+          real n1f=-normal1(i1,i2,i3,0), n2f=-normal1(i1,i2,i3,1);  // NOTE: flip sign of fluid normal 
+        
+          real vf = n1f*v1f + n2f*v2f; // normal component of the fluid velocity
+
+          // solid:
+          real v1s = u2(j1,j2,j3,v1c), v2s=u2(j1,j2,j3,v2c);
+          real s11s = u2(j1,j2,j3,s11c), s12s=u2(j1,j2,j3,s12c), s22s=u2(j1,j2,j3,s22c);
+        
+          real n1s=normal2(j1,j2,j3,0), n2s=normal2(j1,j2,j3,1);
+          real vs = n1s*v1s + n2s*v2s; // normal component of the solid velocity 
+
+          // traction is n.sigma:
+          real traction1 = n1s*s11s + n2s*s12s;  
+          real traction2 = n1s*s12s + n2s*s22s;
+
+          real ps = n1s*traction1+n2s*traction2;  // ps = n.sigma.n 
+
+          // projected values: 
+          real vi = (eps2*vf  + eps1*vs)/( eps1+eps2 );  // interface velocity 
+ 
+          real pi = (eps1*pf0 + eps2*ps)/( eps1+eps2 );  // interface "pressure" n.s.n 
+        
+//        printF("IP: fluid: (i1,i2)=(%2i,%2i) n=(%8.2e,%8.2e) (rhof,v1f,v2f,pf)=(%9.3e,%9.3e,%9.3e,%9.3e) eps1=%9.3e af=%9.3e\n"
+//               "    solid: (j1,j2)=(%2i,%2i) n=(%8.2e,%8.2e) (rhos,v1s,v2s,ps)=(%9.3e,%9.3e,%9.3e,%9.3e) eps2=%9.3e cp=%9.3e -> vi=%9.3e, pi=%9.3e\n"
+//               ,i1,i2,n1f,n2f,rhof,v1f,v2f,pf,eps1,af, j1,j2,n1s,n2s,rhos,v1s,v2s,ps,eps2,cp, vi,pi);
+
+          // vi = vs;
+          // pi = pf0;
+        
+
+
+          // -- here is the projection --
+          if( true )
+          {
+            // Set normal component of fluid velocity to be vi:
+            v1f += (vi-vf)*n1f;
+            v2f += (vi-vf)*n2f;
+          
+            // Adjust rhof using: Entropy const : p/rho^gamma = K
+
+            // real rhofi = rhof;
+            real rhofi = rhof*pow(pi/pf0,1./gamma); // choose interface rho from S=const
+            u1(i1,i2,i3,rc) = rhofi;
+
+            u1(i1,i2,i3,uc) = v1f*rhofi;
+            u1(i1,i2,i3,vc) = v2f*rhofi;
+        
+            real pif = -pi+pOffset;
+            real eif = pif/(gamma-1.)+.5*rhofi*(SQR(v1f)+SQR(v2f));
+            u1(i1,i2,i3,tc)=eif;
+        
+            // Set normal component of solid velocity to be vi:
+            u2(j1,j2,j3,v1c) +=  (vi-vs)*n1s;
+            u2(j1,j2,j3,v2c) +=  (vi-vs)*n2s;
+        
+            // Assign the stress in the solid: s.n =g = pi n 
+            // In 2d we use the 3 equations:
+            //     n.s.n = n.g = f11
+            //     t.s.n = t.g = f12 
+            //     t.s.t = t.s(old).t = f22  (i.e. do not change this component)
+            real t1s=-n2s, t2s=n1s;  // solid tangent 
+            real f11 = pi, f12=0., f22=t1s*t1s*s11s + 2.*t1s*t2s*s12s + t2s*t2s*s22s; 
+            u2(j1,j2,j3,s11c) = n1s*n1s*f11 + 2.*n1s*t1s      *f12 + t1s*t1s*f22;
+            u2(j1,j2,j3,s12c) = n1s*n2s*f11 +(n1s*t2s+n2s*t1s)*f12 + t1s*t2s*f22;
+            u2(j1,j2,j3,s22c) = n2s*n2s*f11 + 2.*n2s*t2s      *f12 + t2s*t2s*f22;
+        
+            u2(j1,j2,j3,s21c) =   u2(j1,j2,j3,s12c);
+          }
+        
+        
+          jv[dir2p1]++; // increment j1 or j2 
+        
+        } // end for 3D
+      
+        
       } // end old way
       
 
@@ -607,8 +607,8 @@ interfaceProjection( real t, real dt, int correct, std::vector<int> & gfIndex, i
     if( interpolateThisDomain[d] )
     {
       if( debug() & 8 )
-	printF("\n ++++++++++  Cgmp:interfaceProjection: Interpolate domain %i after assigning the "
-	       "interface values +++++++++++++++\n",d);
+        printF("\n ++++++++++  Cgmp:interfaceProjection: Interpolate domain %i after assigning the "
+               "interface values +++++++++++++++\n",d);
       GridFunction & gf = domainSolver[d]->gf[gfIndex[d]];
       gf.u.interpolate();
     }

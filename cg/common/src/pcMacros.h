@@ -249,7 +249,7 @@ if( parameters.dbase.get<bool >("twilightZoneFlow") )
       const int nabPastTime=(nab0+m);
       savePressureAndGhostVelocity(tp,nabPastTime);
       
-      if( debug() & 4 )
+      if( debug() & 32 )
       {
         // determineErrors( gf[mOld].u,gf[mOld].gridVelocity, tp, 0, error,
         //               sPrintF(" adams:startup: errors in u at t=%e \n",nab,tp) );
@@ -512,12 +512,15 @@ if( parameters.dbase.get<bool >("twilightZoneFlow") )
     {
       determineErrors( gf[mOld].u,gf[mOld].gridVelocity, gf[mOld].t, 0, error,
                        sPrintF("--METHOD-- errors in u at t=%9.3e (t0-dt0=%9.3e)\n",gf[mOld].t,t0-dt0) );
-      if( numberOfPastTimeDerivatives>0 )
-      {
-        fn[nab1].updateToMatchGrid(gf[mOld].cg);  // for moving grid TZ to get errors correct
-        determineErrors( fn[nab1],gf[mOld].gridVelocity, gf[mOld].t, 1, error,
-                       sPrintF("--METHOD-- errors in ut (fn[nab1]) at t=%9.3e (t0-dt0=%9.3e)\n",gf[mOld].t,t0-dt0) );
-      }
+      #If #METHOD == "BDF"
+      #Else
+        if( numberOfPastTimeDerivatives>0 )
+        {
+          fn[nab1].updateToMatchGrid(gf[mOld].cg);  // for moving grid TZ to get errors correct
+          determineErrors( fn[nab1],gf[mOld].gridVelocity, gf[mOld].t, 1, error,
+                         sPrintF("--METHOD-- errors in ut (fn[nab1]) at t=%9.3e (t0-dt0=%9.3e)\n",gf[mOld].t,t0-dt0) );
+        }
+      #End
     }
     
   }
@@ -694,8 +697,11 @@ else
   
     if( debug() & 4 )
     {
+      #If #METHOD == "BDF"
+      #Else      
       determineErrors( fn[nab1],gf[mOld].gridVelocity, gf[mOld].t, 1, error,
                        sPrintF(" PC:init: du/dt at past time t=%e \n",gf[mOld].t) );
+      #End
     }
   
     for( int grid=0; grid<gf[mOld].cg.numberOfComponentGrids(); grid++ )

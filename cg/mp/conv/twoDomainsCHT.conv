@@ -1,0 +1,107 @@
+#
+# Measure convergence rates for cgmp 
+#       TWO DOMAINS HEAT EQUATION
+#
+# -conv= conv directory (and directory for output). .. So you can run the script outside the conv dir, e.g. for parallel
+# 
+# To run the convergence tests type: 
+#
+#    conv.p twoDomainsCHT.conv -cg=doubleAnnulusGrid  -tp=.5 -tf=.5 -ng=2
+#
+# --------options: 
+#   -en : error norm: max, l1, l2
+#   -ng : number of grids to use (i.e. how many times is the grid refined)
+#   -cg : square, sis, cic, sic
+#   -alwaysCompute=1 : force each case to be re-run even if the check file exists
+# ---------------------
+# Set default parameters: 
+$problem = "twoDomainCHT"; # prefix on name for output file 
+$tz="none"; $bcn = "d";  $ng=4;  $tf=.5;  $tp=.1; $order=2; $nd=2; $ts="im";
+$cfl=.9; $numberOfParallelGhost=2; 
+$en="max"; $trigTzScaleFactor=1.; 
+$nMode=0; $mRoot=0; 
+$CGBUILDPREFIX=$ENV{CGBUILDPREFIX};
+$cgmpCmd = "$CGBUILDPREFIX/mp/bin/cgmp";  # command for cgmp
+$cmdDir="$ENV{CG}/mp/runs/twoSquares"; 
+$cmdFile="$cmdDir/twoDomainsCHT.cmd";     # command file to run 
+$useChamp=0; $useMultiStage=0; $nc=21;         # for CHAMP interface conditions
+$kappa1=.1;  $ktc1=.1; $advx1=0; $advy1=0;
+$kappa2=.05; $ktc2=.2; $advx2=0; $advy2=0; 
+$varCoeff=""; # radial 
+$dtMax=.05; # dt on coarsest grid
+# $known="concentricCylinders"; 
+$known=""; $caseName=""; $periodic=""; 
+$domain1="innerDomain";  $domain2="outerDomain";
+$cg = "square"; $bg="square"; $alwaysCompute=1; 
+$showAllComponents=0;  # set to 1 to include all components in the table.
+# $case="default"; 
+#
+GetOptions( "problem=s"=>\$problem,"cg=s"=>\$cg,"en=s"=>\$en,"nMode=i"=>\$nMode,"mRoot=i"=>\$mRoot,\
+            "ng=i"=>\$ng,"bcn=s"=>\$bcn,"ts=s"=>\$ts,"tf=f"=>\$tf,"tp=f"=>\$tp,"alwaysCompute=i"=>\$alwaysCompute,\
+            "showAllComponents=i"=>\$showAllComponents,"bg=s"=>\$bg,"tol=f"=>\$tol,"domain1=s"=>\$domain1,"domain2=s"=>\$domain2,\
+            "cfl=f"=>\$cfl,"cgmpCmd=s"=>\$cgmpCmd,"numberOfParallelGhost=i"=>\$numberOfParallelGhost,"nc=i"=>\$nc,\
+            "case=s"=>\$case,"useChamp=i"=>\$useChamp,"useMultiStage=i"=>\$useMultiStage,"known=s"=>\$known,"tz=s"=>\$tz,\
+            "order=i"=>\$order,"kappa1=f"=>\$kappa1,"kappa2=f"=>\$kappa2,"ktc1=f"=>\$ktc1,"ktc2=f"=>\$ktc2,"dtMax=f"=>\$dtMax,\
+            "advx1=f"=>\$advx1,"advy1=f"=>\$advy1,"advx2=f"=>\$advx2,"advy2=f"=>\$advy2,\
+            "caseName=s"=>\$caseName,"periodic=s"=>\$periodic,"varCoeff=s"=>\$varCoeff );
+#
+printf("cg=[$cg]\n");
+if( $useChamp == 1 ){ $useMultiStage=1; }
+#
+$check="mp.check";
+#
+$numberOfDomains=2; 
+$myCaseName="$problem$caseName"; 
+if( $useChamp == 1 ){ $myCaseName.= "Champ"; }
+$myCaseName.= "Order$order"; 
+$name=$myCaseName;
+$mpCaseName=$caseName;
+$caseName=$myCaseName;   # caseName is used by conv.p !!
+#
+# --- define the table heading and caption --
+# 
+#  --- Godunov solid: include |u|, |v|, |sigma| in table by default (these are the first three in the sm check file)
+#    for($i=3; $i<11; $i++ ){ $ignoreComponent[$i]=1; } 
+#    $ignoreComponent[3]=1; $ignoreComponent[4]=1;  
+$numberOfComponents=1; 
+$title ="grid  \& N \&  \$T\$ ";
+@componentName = ( "T" );
+#
+$caption= "\\caption\{MP, $name, \$t=$tf\$, cfl=$cfl, tz=$tz, known=$known, -caseName=$mpCaseName, nMode=$nMode, mRoot=$mRoot, useChamp=$useChamp, nc=$nc kappa1=$kappa1, ktc1=$ktc1, advx1=$advx1, advy1=$advy1, kappa2=$kappa2, ktc2=$ktc2, advx2=$advx2, advy2=$advy2, varCoeff=$varCoeff, useMultiStage=$useMultiStage, $date}\\label\{table:$name}"; 
+$outputFile="$name" . ".ConvTable.tex"; 
+# 
+$options = "-domain1=$domain1 -domain2=$domain2 -useChamp=$useChamp -bdfOrder=$order -useMultiStage=$useMultiStage -nc=$nc -kappa1=$kappa1 -ktc1=$ktc1 -advx1=$advx1 -advy1=$advy1 -kappa2=$kappa2 -ktc2=$ktc2 -advx2=$advx2 -advy2=$advy2 -known=$known -caseName=$mpCaseName -varCoeff=$varCoeff -tz=$tz -ncc=$nMode -mcc=$mRoot -uMin=-.4 -uMax=.2 -tf=$tf -tp=$tp -ts=$ts -coupled=0 -itol=1e-12";
+# 
+if( $cg eq "doubleAnnulusGrid" ){\
+$grid1="doubleAnnulusGride1";  $gName1 = "doubleAnnulusGride1.order$order";  $dtMax1=$dtMax; \
+$grid2="doubleAnnulusGride2";  $gName2 = "doubleAnnulusGride2.order$order";  $dtMax2=$dtMax1/2; \
+$grid3="doubleAnnulusGride4";  $gName3 = "doubleAnnulusGride4.order$order";  $dtMax4=$dtMax1/4; \
+$grid4="doubleAnnulusGride8";  $gName4 = "doubleAnnulusGride8.order$order";  $dtMax8=$dtMax1/8; \
+$grid5="doubleAnnulusGride16"; $gName5 = "doubleAnnulusGride16.order$order"; $dtMax16=$dtMax1/16;\
+$grid6="doubleAnnulusGride32"; $gName6 = "doubleAnnulusGride32.order$order"; $dtMax32=$dtMax1/32;\
+$grid7="doubleAnnulusGride64"; $gName7 = "doubleAnnulusGride64.order$order"; $dtMax64=$dtMax1/64;\
+}\
+else{\
+$grid1=$cg ."e1";  $gName1 = $cg ."e1$periodic.order$order";  $dtMax1=$dtMax; \
+$grid2=$cg ."e2";  $gName2 = $cg ."e2$periodic.order$order";  $dtMax2=$dtMax1/2; \
+$grid3=$cg ."e4";  $gName3 = $cg ."e4$periodic.order$order";  $dtMax4=$dtMax1/4; \
+$grid4=$cg ."e8";  $gName4 = $cg ."e8$periodic.order$order";  $dtMax8=$dtMax1/8; \
+$grid5=$cg ."e16"; $gName5 = $cg ."e16$periodic.order$order"; $dtMax16=$dtMax1/16;\
+$grid6=$cg ."e32"; $gName6 = $cg ."e32$periodic.order$order"; $dtMax16=$dtMax1/32;\
+$grid7=$cg ."e64"; $gName7 = $cg ."e64$periodic.order$order"; $dtMax16=$dtMax1/64;\
+}
+#
+#  -- define commands for running cgmp ----
+# 
+#printf("gName6=$gName6\n");
+#exit
+if( $ng > 0 ){ $grid=$grid1; $res=1;  $cmd="$cgmpCmd -noplot $cmdFile -g=$gName1 $options -dtMax=$dtMax1";}
+if( $ng > 1 ){ $grid=$grid2; $res=2;  $cmd="$cgmpCmd -noplot $cmdFile -g=$gName2 $options -dtMax=$dtMax2";}
+if( $ng > 2 ){ $grid=$grid3; $res=4;  $cmd="$cgmpCmd -noplot $cmdFile -g=$gName3 $options -dtMax=$dtMax4";}
+if( $ng > 3 ){ $grid=$grid4; $res=8;  $cmd="$cgmpCmd -noplot $cmdFile -g=$gName4 $options -dtMax=$dtMax8";}
+if( $ng > 4 ){ $grid=$grid5; $res=16; $cmd="$cgmpCmd -noplot $cmdFile -g=$gName5 $options -dtMax=$dtMax16";}
+if( $ng > 5 ){ $grid=$grid6; $res=32; $cmd="$cgmpCmd -noplot $cmdFile -g=$gName6 $options -dtMax=$dtMax32";}
+if( $ng > 6 ){ $grid=$grid7; $res=64; $cmd="$cgmpCmd -noplot $cmdFile -g=$gName7 $options -dtMax=$dtMax64";}
+$closeFile="true";
+# -------------------------------------------------------------------------------
+exit

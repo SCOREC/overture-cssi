@@ -1,3 +1,239 @@
+set tcm3p = $op/tests/tcm3
+
+
+***************************************************************************
+****** Sat July 9, 2022
+
+TEST HYPRE
+
+**SET ORDER FOR TCM3 !!
+
+mpirun -np 1 $tcm3p -g=square1024.order4 -order=4 -solver=petsc -predefined -dirichlet -debug=1 -hypre -tol=1e-12
+
+
+***************************************************************************
+****** Fri July 8, 2022
+
+TEST HYPRE
+
+
+++++ SHAPES
+
+mpirun -np 1 $tcm3p -g=shapesBige16.order4.ml3.hdf -solver=petsc -predefined -dirichlet -debug=1 -hypre -tol=1e-10
+
+PETScSolver::Time for solve=7.94e+00 (its=22) 
+
+*** max residual=1.85e-07, time for 1st solve of the Dirichlet problem = 1.08e+01 (iterations=22) ***
+PETScSolver::Time for solve=6.32e+00 (its=22) 
+
+*** max residual=1.85e-07, time for 2nd solve of the Dirichlet problem = 6.41e+00 (iterations=22) ***
+
+.....solver: size = 2.09e+08 (bytes), grid-pts=1060956, reals/grid-pt=24.63 
+
+
+
+++++++++++++ CIC +++++++
+mpirun -np 1 $tcm3p -g=cice32.order4 -solver=petsc -predefined -dirichlet -debug=1 -hypre -tol=1e-10
+
+
+PETScSolver::Time for solve=1.21e+01 (its=20) 
+
+*** max residual=9.34e-08, time for 1st solve of the Dirichlet problem = 1.68e+01 (iterations=20) ***
+PETScSolver::Time for solve=9.43e+00 (its=20) 
+
+*** max residual=9.34e-08, time for 2nd solve of the Dirichlet problem = 9.58e+00 (iterations=20) ***
+
+.....solver: size = 3.30e+08 (bytes), grid-pts=1666855, reals/grid-pt=24.73 
+ grid=0 (square) max. rel. err=8.262364e-10 (8.262364e-10 with ghost)
+ grid=1 (Annulus) max. rel. err=5.300603e-09 (5.305551e-09 with ghost)
+Maximum relative error with dirichlet bc's= 5.300603e-09 (5.305551e-09 with ghost)
+
+
+
+
+++++++ SQUARE:
+
+decrease tol:
+mpirun -np 1 $tcm3p -g=square1024.order4 -solver=petsc -predefined -dirichlet -debug=1 -hypre -tol=1e-12
+
+PETScSolver::Time for solve=4.02e+00 (its=8) 
+
+*** max residual=1.00e-09, time for 1st solve of the Dirichlet problem = 7.14e+00 (iterations=8) ***
+PETScSolver::Time for solve=2.49e+00 (its=8) 
+
+*** max residual=1.00e-09, time for 2nd solve of the Dirichlet problem = 2.59e+00 (iterations=8) ***
+
+
+
+mpirun -np 1 $tcm3p -g=square1024.order4 -solver=petsc -predefined -dirichlet -debug=1 -hypre 
+
+
+ === Solver:
+ PETScNew, parallel=[generalized minimal residual iteration + hypre], local=[+hypre + reverse Cuthill-McKee ordering]
+ =====
+PETScSolver:: build matrix... Oges::debug=1
+PETScSolver::NEW: grid=0 p=0 local bounds=[-2,1026][-2,1026][0,0] 
+--PES-- Time for counting equations= 1.40e+00(s)
+--PES--- Time for assembling matrices= 2.52e-02(s)
+PETScSolver:: ... done build matrix, cpu=3.02e+00
+PETScSolver::buildSolver: INFO: adding option=[-ksp_type] value=[gmres]
+PETScSolver::buildSolver: INFO: adding option=[-pc_type] value=[hypre]
+PETScSolver::buildSolver: INFO: adding option=[-pc_hypre_type] value=[boomeramg]
+PETScSolver::buildSolver: INFO: adding option=[-pc_hypre_boomeramg_strong_threshold] value=[.5]
+PETScSolver::buildSolver: INFO: adding option=[-pc_hypre_boomeramg_max_levels] value=[20]
+PETScSolver::buildSolver: INFO: adding option=[-pc_hypre_boomeramg_coarsen_type] value=[Falgout]
+*** -pc_type found in the options database: [hypre]
+
+BoomerAMG SETUP PARAMETERS:
+
+ Max levels = 20
+ Num levels = 14
+
+ Strength Threshold = 0.500000
+ Interpolation Truncation Factor = 0.000000
+ Maximum Row Sum Threshold for Dependency Weakening = 0.900000
+
+ Coarsening Type = Falgout-CLJP 
+ measures are determined locally
+
+ Interpolation = modified classical interpolation
+
+Operator Matrix Information:
+
+            nonzero         entries per row        row sums
+lev   rows  entries  sparse  min  max   avg       min         max
+===================================================================
+ 0 1058841  5257269  0.000     1    5   5.0   0.000e+00   1.000e+00
+ 1  523265  4701201  0.000     4    9   9.0  -3.125e-01   0.000e+00
+ 2  261121  5461077  0.000     8   21  20.9  -1.919e-01   0.000e+00
+ 3  130561  3243601  0.000     9   25  24.8  -2.337e-01   0.000e+00
+ 4   65025  2379465  0.001    13   37  36.6  -1.631e-01   0.000e+00
+ 5   32513  1437665  0.001    14   45  44.2  -1.939e-01   0.000e+00
+ 6    8194   199272  0.003     7   25  24.3  -2.262e-01   0.000e+00
+ 7    2050    48564  0.012     7   25  23.7  -2.436e-01   0.000e+00
+ 8     557    12453  0.040     6   27  22.4  -2.825e-01   3.816e-17
+ 9     182     3744  0.113     8   29  20.6  -2.826e-01   1.124e-16
+10      70     1206  0.246     8   27  17.2  -2.583e-01   0.000e+00
+11      27      411  0.564    10   27  15.2  -2.741e-01   0.000e+00
+12      10       96  0.960     9   10   9.6  -3.284e-01   0.000e+00
+13       4       16  1.000     4    4   4.0  -2.912e-01   0.000e+00
+
+
+Interpolation Matrix Information:
+                 entries/row    min     max         row sums
+lev  rows cols    min max     weight   weight     min       max 
+=================================================================
+ 0 1058841 x 523265   0   4   2.500e-01 2.500e-01 0.000e+00 1.000e+00
+ 1 523265 x 261121   1   4   1.667e-01 2.500e-01 1.667e-01 1.000e+00
+ 2 261121 x 130561   1   4   1.983e-01 2.500e-01 6.007e-01 1.000e+00
+ 3 130561 x 65025   1   4   1.407e-01 2.500e-01 1.407e-01 1.000e+00
+ 4 65025 x 32513   1   4   1.625e-01 2.500e-01 4.989e-01 1.000e+00
+ 5 32513 x 8194    1   4   1.235e-01 5.000e-01 1.235e-01 1.000e+00
+ 6  8194 x 2050    1   4   7.669e-02 5.150e-01 7.669e-02 1.000e+00
+ 7  2050 x 557     0   5   4.280e-02 5.000e-01 0.000e+00 1.000e+00
+ 8   557 x 182     0   5   4.185e-02 5.751e-01 0.000e+00 1.000e+00
+ 9   182 x 70      1   5   5.328e-02 7.126e-01 9.587e-02 1.000e+00
+10    70 x 27      1   5   6.136e-02 6.450e-01 1.551e-01 1.000e+00
+11    27 x 10      0   4   8.138e-02 2.811e-01 0.000e+00 1.000e+00
+12    10 x 4       0   3   4.006e-02 1.681e-01 0.000e+00 1.000e+00
+
+
+     Complexity:    grid = 1.966698
+                operator = 4.326589
+
+
+
+
+BoomerAMG SOLVER PARAMETERS:
+
+  Maximum number of cycles:         1 
+  Stopping Tolerance:               0.000000e+00 
+  Cycle type (1 = V, 2 = W, etc.):  1
+
+  Relaxation Parameters:
+   Visiting Grid:                     down   up  coarse
+            Number of sweeps:            1    1     1 
+   Type 0=Jac, 3=hGS, 6=hSGS, 9=GE:      6    6     9 
+   Point types, partial sweeps (1=C, -1=F):
+                  Pre-CG relaxation (down):   1  -1
+                   Post-CG relaxation (up):  -1   1
+                             Coarsest grid:   0
+
+  0 KSP Residual norm 2.468301119096e+03 
+  1 KSP Residual norm 9.164929478948e+01 
+  2 KSP Residual norm 4.008777702260e+00 
+  3 KSP Residual norm 9.670755069880e-02 
+  4 KSP Residual norm 2.455477655574e-03 
+  5 KSP Residual norm 5.842864580656e-05 
+  6 KSP Residual norm 1.424968092018e-06 
+PETScSolver::Time for solve=3.53e+00 (its=6) 
+
+*** max residual=1.42e-06, time for 1st solve of the Dirichlet problem = 6.65e+00 (iterations=6) ***
+  0 KSP Residual norm 2.468301119096e+03 
+  1 KSP Residual norm 9.164929478948e+01 
+  2 KSP Residual norm 4.008777702260e+00 
+  3 KSP Residual norm 9.670755069880e-02 
+  4 KSP Residual norm 2.455477655574e-03 
+  5 KSP Residual norm 5.842864580656e-05 
+  6 KSP Residual norm 1.424968092018e-06 
+PETScSolver::Time for solve=1.98e+00 (its=6) 
+
+*** max residual=1.42e-06, time for 2nd solve of the Dirichlet problem = 2.08e+00 (iterations=6) ***
+
+.....solver: size = 2.11e+08 (bytes), grid-pts=1058841, reals/grid-pt=24.95 
+ grid=0 (square) max. rel. err=2.874330e-09 (3.370111e-09 with ghost)
+Maximum relative error with dirichlet bc's= 2.874330e-09 (3.370111e-09 with ghost)
+petsc/square1024.order4///dirichlet: error                                                  : err = 2.87e-09, cpu=2.1e+00(s)  
+
+
+
+
+
+
+*** max residual=1.42e-06, time for 1st solve of the Dirichlet problem = 6.62e+00 (iterations=6) ***
+PETScSolver::Time for solve=4.83e-01 (its=0) 
+
+
+Maybe works: 
+mpirun -np 1 $tcm3p -g=square32.order2 -solver=petsc -predefined -dirichlet -debug=1 -hypre
+
+***************************************************************************
+****** Fri June 10, 2022
+
+make testExtrapInterpNeighbours
+
+testExtrapInterpNeighbours -g=sise2.order2 -useNew=1 -interpolateNeighbours=1 -debug=3
+
+testExtrapInterpNeighbours -g=cice2.order2 -useNew=1 -interpolateNeighbours=1 -debug=3
+
+interpNeighbours: 196 pts interpolated max error =2.01e-05 
+cice2.order2/square///extrapInterpNeighbours                                                : err = 2.01e-05, cpu=0.0e+00(s)  
+cice2.order2/Annulus///extrapInterpNeighbours                                               : err = 6.66e-16, cpu=0.0e+00(s)  
+
+
+***************************************************************************
+****** Sun/Mon Jun 5/6, 2022
+
+Revisit extrapolate interp neighbours 
+Add option to interpolate interp neighbours
+
+make testExtrapInterpNeighbours
+
+testExtrapInterpNeighbours -g=sise2.order2 -useNew=1 -interpolateNeighbours=1 -debug=3
+
+testExtrapInterpNeighbours -g=cice2.order2 -useNew=1 -interpolateNeighbours=1 -debug=3
+
+
+testExtrapInterpNeighbours -g=cice2.order2 -useNew=1 -debug=3
+
+testExtrapInterpNeighbours -g=cice2.order4 -useNew=1 -debug=3  **trouble***
+testExtrapInterpNeighbours -g=cice2.order4.ng3 -useNew=1 -debug=3   ** OK **
+
+testExtrapInterpNeighbours -g=sise2.order2 -useNew=1
+testExtrapInterpNeighbours -g=sise2.order4 -useNew=1 -debug=3
+
+testExtrapInterpNeighbours -g=bibe2.order2 -useNew=1
+
 ***************************************************************************
 ****** June 21, 201
 

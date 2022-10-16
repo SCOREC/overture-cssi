@@ -126,6 +126,10 @@ printTimeStepInfo( const int & step, const real & t, const real & cpuTime );
 int
 projectInitialConditions( real t, real dt, std::vector<int> & gfIndex );
 
+// -- project the temperature at interfaces
+int 
+projectInterface( real t, real dt, std::vector<int> & gfIndex );
+
 virtual int
 setParametersInteractively(bool runSetupOnExit=true);
 

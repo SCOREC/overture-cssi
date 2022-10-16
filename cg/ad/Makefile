@@ -52,6 +52,8 @@ all: $(BINDIR)cgad
 
 cgad: $(BINDIR)cgad
 
+testExact: $(BINDIR)testExact		
+
 test:; -@echo "NODEP=$(NODEP), MAKECMDGOALS=$(MAKECMDGOALS)"
 
 usage: 
@@ -72,7 +74,10 @@ include $(PKG_INCLUDE)
 include $(CONFIGDIR)/make.src
 
 # add dependencies for main programs that are not in the previous source file lists
-DEP += cgadMain.d
+DEP += cgadMain.d testExact.d
+
+.PHONY: doc cgsm testExact
+
 
 # libCommon:=$(CGBUILDPREFIX)common/lib/libCgCommon.so
 libCommon:=$(CGBUILDPREFIX)common/libCgCommon
@@ -89,6 +94,15 @@ $(PETSC_FILES_OBJ) : $(OBJPREFIX)%.o : %.C
 CGAD_EXTRA_FILES = $(PETSC_FILES_OBJ)
 $(BINDIR)cgad: $(LIBDIR)libCgad.a $(OBJDIR)cgadMain.o $(OBJ)  $(CGAD_EXTRA_FILES) $(libCommon)
 	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)cgadMain.o  $(CGAD_EXTRA_FILES) $(LIBS)
+
+
+
+# test exact solutions: 
+$(BINDIR)testExact: $(SHARED_LIBRARY) $(OBJDIR)testExact.o $(CGAD_EXTRA_FILES) $(libCommon)
+	-@mkdir -p $(BINDIR)
+	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)testExact.o $(OBJ) $(CGAD_EXTRA_FILES) $(LIBS)
+
+$(OBJDIR)testExact.o : src/testExact.C; $(CXX) $(CXX_FLAGS) -o $*.o -c $<	
 
 lib_build: $(LIBDIR)libCgad.a
 	touch lib_build

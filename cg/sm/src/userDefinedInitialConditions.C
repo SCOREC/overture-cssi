@@ -403,10 +403,40 @@ userDefinedInitialConditions(CompositeGrid & cg, realCompositeGridFunction & u )
       }
       else
       {
-        OV_ABORT("finish me");
-      }
-      
+        // Displacements:
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
+          ug(i1,i2,i3,uc)= myRand();
+          ug(i1,i2,i3,vc)= myRand();
+          ug(i1,i2,i3,wc)= myRand();
+        }
+        
+        
+        if( assignVelocities )
+        { // Some solvers need the velocity:
+          // standing wave has zero velocity at t=0:
+          ug(I1,I2,I3,v1c)=myRand();  
+          ug(I1,I2,I3,v2c)=myRand();
+          ug(I1,I2,I3,v3c)=myRand();
+        }
+        if( assignStress )
+        {  // Some solvers need the stress:
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
+            ug(I1,I2,I3,s11c)=myRand();
+            ug(I1,I2,I3,s12c)=myRand();
+            ug(I1,I2,I3,s13c)=myRand();
+            ug(I1,I2,I3,s21c)=myRand();
+            ug(I1,I2,I3,s22c)=myRand();
+            ug(I1,I2,I3,s23c)=myRand();
+            ug(I1,I2,I3,s31c)=myRand();
+            ug(I1,I2,I3,s32c)=myRand();
+            ug(I1,I2,I3,s33c)=myRand();
 
+          }
+        }        
+
+      }
 
     }
     

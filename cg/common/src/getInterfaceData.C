@@ -41,7 +41,7 @@ getInterfaceData( real tSource, int grid, int side, int axis,
   assert( targetDomain>=0 );
   
   // int sourceDomain = sourfaceDomainNumber(targetDomainNumber,grid,side,axis);
-  if( debug & 4 )
+  if( debug & 8 )
     printF("--DS-- getInterfaceData: This is a multi-domain problem: targetDomain=%i, numberOfDomains=%i\n",
            targetDomain,numberOfDomains);
   
@@ -69,7 +69,7 @@ getInterfaceData( real tSource, int grid, int side, int axis,
 
       assert( d1>=0 && d1<numberOfDomains && d2>=0 && d2<numberOfDomains );
 
-      if( debug & 4 )
+      if( debug & 8 )
         printF(" Interface =%i, face=%i "
                "(domain1,grid1,side1,dir1)=(%i,%i,%i,%i) (domain2,grid2,side2,dir2)=(%i,%i,%i,%i)\n",
                inter,face,d1,grid1,side1,dir1,d2,grid2,side2,dir2);
@@ -95,7 +95,7 @@ getInterfaceData( real tSource, int grid, int side, int axis,
   assert( interfaceNumber>=0 && sourceInterfaceSide>=0 && sourceFace>=0 );
   assert( sourceDomain>=0 );
 
-  if( debug & 4 )
+  if( debug & 8 )
     printF("... source found: sourceDomain=%i, interfaceNumber=%i face=%i interfaceSide=%i \n",
            sourceDomain, interfaceNumber,sourceFace,sourceInterfaceSide);
 

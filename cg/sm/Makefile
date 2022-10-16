@@ -35,6 +35,11 @@ include $(CONFIGDIR)/make.rules
 #    compile:=[default/dbg/opt/optdbg]
 #    profile:=[on/off]   
 # compile=dbg
+
+# TEST: add option to init fortran variables to signaling nan's 
+FC_FLAGS += -finit-real=snan
+FC_FLAGS_DBG += -finit-real=snan
+
 include $(CONFIGDIR)/make.options
 include make
 

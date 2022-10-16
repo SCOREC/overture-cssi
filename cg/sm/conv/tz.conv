@@ -180,17 +180,18 @@ $amr=0; $tol=.01; $x0=.5; $y0=.5; $z0=0.; $ratio=2;  $nrl=2; $nbz=2;
 $cg = "square"; $bg="square"; $alwaysCompute=1; $ts="me"; $lambda=1; $filter=0; $filterOrder=6; $filterStages=2; 
 $incompressible=0; $cdv=1.; $upwindSOS=1; 
 $bc1=""; $bc2=""; $bc3=""; $bc4=""; $bc5=""; $bc6=""; 
+$psolver="yale"; $rtol=1.e-5; $atol=1.e-6; 
 $showAllComponents=0;  # set to 1 to include all components in the table.
 #
 GetOptions( "pv=s"=>\$pv,"cg=s"=>\$cg,"en=s"=>\$en,"mode=i"=>\$mode,"ng=i"=>\$ng,"bcn=s"=>\$bcn,"ts=s"=>\$ts,"tf=f"=>\$tf,\
             "diss=f"=>\$diss,"tz=s"=>\$tz,"fx=f"=>\$fx,"fy=f"=>\$fy,"fz=f"=>\$fz,"ft=f"=>\$ft,\
-            "order=i"=>\$order,"alwaysCompute=i"=>\$alwaysCompute,"lambda=f"=>\$lambda,\
+            "order=i"=>\$order,"alwaysCompute=i"=>\$alwaysCompute,"lambda=f"=>\$lambda,"rtolp=f"=>\$rtolp,"atolp=f"=>\$atolp,\
             "filter=i"=>\$filter,"filterOrder=i"=>\$filterOrder,"filterStages=i"=>\$filterStages,\
             "showAllComponents=i"=>\$showAllComponents,"bg=s"=>\$bg,"amr=i"=>\$amr,"tol=f"=>\$tol,"nrl=i"=>\$nrl,\
             "nbz=i"=>\$nbz,"ratio=i"=>\$ratio,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"cfl=f"=>\$cfl,"ad=f"=>\$ad,\
             "cgsmCmd=s"=>\$cgsmCmd,"numberOfParallelGhost=i"=>\$numberOfParallelGhost,"dissOrder=i"=>\$dissOrder,\
             "stressRelaxation=f"=>\$stressRelaxation,"relaxAlpha=f"=>\$relaxAlpha,"relaxDelta=f"=>\$relaxDelta,\
-            "godunovType=i"=>\$godunovType,"degreeX=i"=>\$degreeX,"degreeT=i"=>\$degreeT,\
+            "godunovType=i"=>\$godunovType,"degreeX=i"=>\$degreeX,"degreeT=i"=>\$degreeT,"psolver=s"=>\$psolver,\
             "bc1=s"=>\$bc1,"bc2=s"=>\$bc2,"bc3=s"=>\$bc3,"bc4=s"=>\$bc4,"bc5=s"=>\$bc5,"bc6=s"=>\$bc6,\
             "incompressible=i"=>\$incompressible,"upwindSOS=i"=>\$upwindSOS,"cdv=f"=>\$cdv,"tp=f"=>\$tPlot );
 #
@@ -297,10 +298,10 @@ if( $tz eq "poly" ){ $tzLabel = "$tz TZ, degreeX=$degreeX, degreeT=$degreeT"; }e
 $amrCaption=""; 
 if( $amr eq 1 ){ $amrCaption = "amr, tol=$tol, l=$nrl, ratio=$ratio, "; }
 if( $pv eq "g" ){ $clabel="ad=$ad"; }else{ $clabel = "diss=$diss, dissOrder=$dissOrder, filter=$filter, filterOrder=$filterOrder"; }
-$caption= "\\caption\{SM, $name, bcn=$bcn,  -bcn=$bcn -bc1=$bc1 -bc2=$bc2 -bc3=$bc3 -bc4=$bc4 -bc5=$bc5 -bc6=$bc6 \$t=$tf\$, $tzLabel, $clabel, \$\\lambda=$lambda\$, cfl=$cfl, $amrCaption godunovType=$godunovType incompressible=$incompressible upwindSOS=$upwindSOS cdv=$cdv $date}\\label\{table:$name}"; 
+$caption= "\\caption\{SM, $name, bcn=$bcn,  -bcn=$bcn -bc1=$bc1 -bc2=$bc2 -bc3=$bc3 -bc4=$bc4 -bc5=$bc5 -bc6=$bc6 \$t=$tf\$, $tzLabel, $clabel, \$\\lambda=$lambda\$, cfl=$cfl, $amrCaption godunovType=$godunovType incompressible=$incompressible upwindSOS=$upwindSOS cdv=$cdv psolver=$psolver atolp=$atolp rtolp=$rtolp $date}\\label\{table:$name}"; 
 $outputFile="$name" . ".ConvTable.tex"; 
 # 
-$options = "-pv=$pv -ts=$ts -cfl=$cfl -degreex=$degreeX -degreet=$degreeT -tf=$tf -tp=$tPlot -tz=$tz -bcn=$bcn -bc1=$bc1 -bc2=$bc2 -bc3=$bc3 -bc4=$bc4 -bc5=$bc5 -bc6=$bc6 -en=$en -diss=$diss -dissOrder=$dissOrder -incompressible=$incompressible -upwindSOS=$upwindSOS -cdv=$cdv -filter=$filter -filterOrder=$filterOrder -filterStages=$filterStages -fx=$fx -fy=$fy -fz=$fz -ft=$ft -lambda=$lambda -bg=$bg -amr=$amr -tol=$tol -x0=$x0 -y0=$y0 -z0=$z0 -ratio=$ratio -nrl=$nrl -nbz=$nbz -ad=$ad -numberOfParallelGhost=$numberOfParallelGhost -stressRelaxation=$stressRelaxation -relaxAlpha=relaxAlpha -relaxDelta=$relaxDelta -godunovType=$godunovType -go=go"; 
+$options = "-pv=$pv -ts=$ts -cfl=$cfl -degreex=$degreeX -degreet=$degreeT -tf=$tf -tp=$tPlot -tz=$tz -bcn=$bcn -bc1=$bc1 -bc2=$bc2 -bc3=$bc3 -bc4=$bc4 -bc5=$bc5 -bc6=$bc6 -en=$en -diss=$diss -dissOrder=$dissOrder -incompressible=$incompressible -upwindSOS=$upwindSOS -cdv=$cdv -filter=$filter -filterOrder=$filterOrder -filterStages=$filterStages -fx=$fx -fy=$fy -fz=$fz -ft=$ft -lambda=$lambda -bg=$bg -amr=$amr -tol=$tol -x0=$x0 -y0=$y0 -z0=$z0 -ratio=$ratio -nrl=$nrl -nbz=$nbz -ad=$ad -numberOfParallelGhost=$numberOfParallelGhost -stressRelaxation=$stressRelaxation -relaxAlpha=relaxAlpha -relaxDelta=$relaxDelta -godunovType=$godunovType -psolver=$psolver -atolp=$atolp -rtolp=$rtolp -go=go"; 
 # 
 if( $cg eq "square" ){\
 $grid1="sq20";  $gName1 = "square20.order$order";\
@@ -345,15 +346,15 @@ $grid2="sicFixed4";  $gName2 = "sicFixede4.order$order";\
 $grid3="sicFixed8";  $gName3 = "sicFixede8.order$order";\
 $grid4="sicFixed16"; $gName4 = "sicFixede16.order$order";}
 if( $cg eq "box" ){\
-$grid1="box1"; $gName1 = "box10.order$order";\
-$grid2="box2"; $gName2 = "box20.order$order";\
-$grid3="box4"; $gName3 = "box40.order$order";\
-$grid4="box8"; $gName4 = "box80.order$order";}
+$grid1="box1"; $gName1 = "box1.order$order";\
+$grid2="box2"; $gName2 = "box2.order$order";\
+$grid3="box4"; $gName3 = "box4.order$order";\
+$grid4="box8"; $gName4 = "box8.order$order";}
 if( $cg eq "nonBox" ){\
-$grid1="nonBox1"; $gName1 = "nonBox10.order$order";\
-$grid2="nonBox2"; $gName2 = "nonBox20.order$order";\
-$grid3="nonBox4"; $gName3 = "nonBox40.order$order";\
-$grid4="nonBox8"; $gName4 = "nonBox80.order$order";}
+$grid1="nonBox1"; $gName1 = "nonBox1.order$order";\
+$grid2="nonBox2"; $gName2 = "nonBox2.order$order";\
+$grid3="nonBox4"; $gName3 = "nonBox4.order$order";\
+$grid4="nonBox8"; $gName4 = "nonBox8.order$order";}
 if( $cg eq "rotatedBox" ){\
 $grid1="rotatedBox1"; $gName1 = "rotatedBox1.order$order";\
 $grid2="rotatedBox2"; $gName2 = "rotatedBox2.order$order";\

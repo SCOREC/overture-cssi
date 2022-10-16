@@ -22,8 +22,8 @@ CPU()
 
 real
 getError( CompositeGrid & cg,
-	  realCompositeGridFunction & u,
-	  Range & C,
+          realCompositeGridFunction & u,
+          Range & C,
           OGFunction & exact,
           real & worstError,
           int debug  )
@@ -47,10 +47,10 @@ getError( CompositeGrid & cg,
     {
       where( cg[grid].mask()(I1,I2,I3)!=0 )
       {
-	err=abs(u[grid](I1,I2,I3,n)-exact(cg[grid],I1,I2,I3,n,0.))/max(abs(exact(cg[grid],I1,I2,I3,n,0.)));
+        err=abs(u[grid](I1,I2,I3,n)-exact(cg[grid],I1,I2,I3,n,0.))/max(abs(exact(cg[grid],I1,I2,I3,n,0.)));
         gridErr=max(gridErr,max(err));
-	componentError(n)=max(componentError(n),gridErr);
-	error=max(error,componentError(n));
+        componentError(n)=max(componentError(n),gridErr);
+        error=max(error,componentError(n));
       }
     }
     if( debug & 4 )
@@ -98,13 +98,13 @@ main(int argc, char **argv)
       else if( arg(0,6)=="-debug=" )
       {
         sScanF(arg(7,arg.length()-1),"%i",&Oges::debug);
-	printf("Setting Oges::debug=%i\n",Oges::debug);
+        printf("Setting Oges::debug=%i\n",Oges::debug);
         debug=Oges::debug;
       }
       else
       {
-	numberOfGridsToTest=1;
-	gridName[0]=argv[i];
+        numberOfGridsToTest=1;
+        gridName[0]=argv[i];
       }
     }
   }
@@ -165,7 +165,7 @@ main(int argc, char **argv)
 
       int degreeOfTimePolynomial = 1;
       exactPointer = new OGPolyFunction(degreeOfSpacePolynomial,cg.numberOfDimensions(),numberOfComponents,
-					degreeOfTimePolynomial);
+                                        degreeOfTimePolynomial);
     
     }
     OGFunction & exact = *exactPointer;
@@ -195,48 +195,48 @@ main(int argc, char **argv)
       int grid;
       for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
       {
-//	getIndex(cg[grid].gridIndexRange(),I1,I2,I3); 
-	getIndex(cg[grid].dimension(),I1,I2,I3); 
-	if( debug & 2 && iteration==0 )
-	{
-	  display(cg.interpolationPoint[grid],sPrintF(buff,"interpolationPoint[%s]",
-						      (const char*)cg[grid].getName()),NULL,"%3i ");
-	  display(cg.interpoleeLocation[grid],sPrintF(buff,"cg.interpoleeLocation[%s]",
-						      (const char*)cg[grid].getName()),"%3i ");
-	  display(cg.interpoleeGrid[grid],    sPrintF(buff,"cg.interpoleeGrid[%s]",
-						      (const char*)cg[grid].getName()),NULL,"%3i ");
-	  display(cg.interpolationCoordinates[grid],sPrintF(buff,"cg.interpolationCoords",
-							    (const char*)cg[grid].getName()),NULL,"%3.2f ");
-	  printf("\n\n");
-	  if( debug & 4 )
-	    displayMask(cg[grid].mask(),"mask");
-	}
+//      getIndex(cg[grid].gridIndexRange(),I1,I2,I3); 
+        getIndex(cg[grid].dimension(),I1,I2,I3); 
+        if( debug & 2 && iteration==0 )
+        {
+          display(cg.interpolationPoint[grid],sPrintF(buff,"interpolationPoint[%s]",
+                                                      (const char*)cg[grid].getName()),NULL,"%3i ");
+          display(cg.interpoleeLocation[grid],sPrintF(buff,"cg.interpoleeLocation[%s]",
+                                                      (const char*)cg[grid].getName()),"%3i ");
+          display(cg.interpoleeGrid[grid],    sPrintF(buff,"cg.interpoleeGrid[%s]",
+                                                      (const char*)cg[grid].getName()),NULL,"%3i ");
+          display(cg.interpolationCoordinates[grid],sPrintF(buff,"cg.interpolationCoords",
+                                                            (const char*)cg[grid].getName()),NULL,"%3.2f ");
+          printf("\n\n");
+          if( debug & 4 )
+            displayMask(cg[grid].mask(),"mask");
+        }
   
-	where( cg[grid].mask()(I1,I2,I3)<=0 )
-	{
-	  for( int n=u.getComponentBase(0); n<=u.getComponentBound(0); n++ )
-	  {
-	    u[grid](I1,I2,I3,n)=-999.;
-	  }
-	}
-	if( cg.numberOfDimensions()==2 )
-	{
-	  for( int n=0; n<cg.numberOfInterpolationPoints(grid); n++ )
-	  {
-	    int i1=cg.interpoleeLocation[grid](n,0);
-	    int i2=cg.interpoleeLocation[grid](n,1);
-	    intArray & mask = cg[cg.interpoleeGrid[grid](n)].mask();
-	    if( mask(i1,i2  )==0 || mask(i1+1,i2  )==0 ||  mask(i1+2,i2  )==0 ||
-		mask(i1,i2+1)==0 || mask(i1+1,i2+1)==0 ||  mask(i1+2,i2+1)==0 ||
-		mask(i1,i2+2)==0 || mask(i1+1,i2+2)==0 ||  mask(i1+2,i2+2)==0 )
-	    {
-	      printf("****Invalid interpolation **** grid=%i, n=%i, interpoleeLocation=(%i,%i) \n",grid,n,i1,i2);
-	    }
-	  }
-	}
+        where( cg[grid].mask()(I1,I2,I3)<=0 )
+        {
+          for( int n=u.getComponentBase(0); n<=u.getComponentBound(0); n++ )
+          {
+            u[grid](I1,I2,I3,n)=-999.;
+          }
+        }
+        if( cg.numberOfDimensions()==2 )
+        {
+          for( int n=0; n<cg.numberOfInterpolationPoints(grid); n++ )
+          {
+            int i1=cg.interpoleeLocation[grid](n,0);
+            int i2=cg.interpoleeLocation[grid](n,1);
+            intArray & mask = cg[cg.interpoleeGrid[grid](n)].mask();
+            if( mask(i1,i2  )==0 || mask(i1+1,i2  )==0 ||  mask(i1+2,i2  )==0 ||
+                mask(i1,i2+1)==0 || mask(i1+1,i2+1)==0 ||  mask(i1+2,i2+1)==0 ||
+                mask(i1,i2+2)==0 || mask(i1+1,i2+2)==0 ||  mask(i1+2,i2+2)==0 )
+            {
+              printf("****Invalid interpolation **** grid=%i, n=%i, interpoleeLocation=(%i,%i) \n",grid,n,i1,i2);
+            }
+          }
+        }
       }
       if( debug & 4 )
-	u.display("u before","%7.2f");
+        u.display("u before","%7.2f");
   
   
       real time0;
@@ -244,55 +244,55 @@ main(int argc, char **argv)
     
       if( iteration==0 )
       {
-	C=Range(u.getComponentBase(0),u.getComponentBound(0));
+        C=Range(u.getComponentBase(0),u.getComponentBound(0));
         time0=CPU();
-	u.interpolate();
-	real time = CPU()-time0;
-	printf("Time to interpolate =%8.2e (%i components)\n",time,C.getBound()-C.getBase()+1);
-	time0=CPU();
+        u.interpolate();
+        real time = CPU()-time0;
+        printf("Time to interpolate =%8.2e (%i components)\n",time,C.getBound()-C.getBase()+1);
+        time0=CPU();
   
-	u.interpolate();
+        u.interpolate();
 
-	time = CPU()-time0;
-	printf("Time to interpolate again =%8.2e (%i components)\n",time,C.getBound()-C.getBase()+1);
+        time = CPU()-time0;
+        printf("Time to interpolate again =%8.2e (%i components)\n",time,C.getBound()-C.getBase()+1);
 
-	if( true )
-	{
+        if( true )
+        {
           // shock ellipse 
-	  int grid=12, i1=973, i2=1252, i3=0;
-	  if( grid<cg.numberOfComponentGrids() )
-	  {
-	    const IntegerArray & d = cg[grid].dimension();
-	    const IntegerArray & gid = cg[grid].gridIndexRange();
-	    printF("After AMR: grid=%i gid=[%i,%i][%i,%i]\n",grid,gid(0,0),gid(1,0),gid(0,1),gid(1,1));
-	    if( i1>=d(0,0) && i1<=d(1,0) && i2>=d(0,1) && i2<=d(1,1) )
-	    {
-	      printF("SHOCK-ELLIPSE: (grid,i1,i2,i3)=(%i,%i,%i,%i) mask=%i u=%9.3e,%9.3e,%9.3e\n"
-		     ,grid,i1,i2,i3,cg[grid].mask()(i1,i2,i3),
-		     u[grid](i1,i2,i3,0),u[grid](i1,i2,i3,1),u[grid](i1,i2,i3,2));
-	    }
-	  }
-	}
+          int grid=12, i1=973, i2=1252, i3=0;
+          if( grid<cg.numberOfComponentGrids() )
+          {
+            const IntegerArray & d = cg[grid].dimension();
+            const IntegerArray & gid = cg[grid].gridIndexRange();
+            printF("After AMR: grid=%i gid=[%i,%i][%i,%i]\n",grid,gid(0,0),gid(1,0),gid(0,1),gid(1,1));
+            if( i1>=d(0,0) && i1<=d(1,0) && i2>=d(0,1) && i2<=d(1,1) )
+            {
+              printF("SHOCK-ELLIPSE: (grid,i1,i2,i3)=(%i,%i,%i,%i) mask=%i u=%9.3e,%9.3e,%9.3e\n"
+                     ,grid,i1,i2,i3,cg[grid].mask()(i1,i2,i3),
+                     u[grid](i1,i2,i3,0),u[grid](i1,i2,i3,1),u[grid](i1,i2,i3,2));
+            }
+          }
+        }
       }
 
       if( (iteration>0 && numberOfComponents>1) )
       {
-	printf("\n\n +++++++++++++++++++ only interpolate component 1 +++++++++++++++++++++++++\n\n");
-	C=Range(1,1);
+        printf("\n\n +++++++++++++++++++ only interpolate component 1 +++++++++++++++++++++++++\n\n");
+        C=Range(1,1);
         time0=CPU();
-	u.interpolate(C);
-	real time = CPU()-time0;
-	printf("Time to interpolate =%8.2e (1 component)\n",time);
+        u.interpolate(C);
+        real time = CPU()-time0;
+        printf("Time to interpolate =%8.2e (1 component)\n",time);
 
         time0=CPU();
-	u.interpolate(C);
-	time = CPU()-time0;
-	printf("Time to interpolate again =%8.2e (1 component)\n",time);
+        u.interpolate(C);
+        time = CPU()-time0;
+        printf("Time to interpolate again =%8.2e (1 component)\n",time);
       }
     
   
       if( debug & 4 )
-	u.display("u after","%7.2f");
+        u.display("u after","%7.2f");
 
       real error=getError(cg,u,C,exact,worstError,debug);
 
@@ -300,31 +300,31 @@ main(int argc, char **argv)
   
 //       for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
 //       {
-// 	const int numberOfGhostPoints = (max(cg[grid].discretizationWidth())-1)/2;
+//      const int numberOfGhostPoints = (max(cg[grid].discretizationWidth())-1)/2;
       
-// 	getIndex(cg[grid].indexRange(),I1,I2,I3,numberOfGhostPoints); 
-// 	// getIndex(cg[grid].dimension(),I1,I2,I3); 
+//      getIndex(cg[grid].indexRange(),I1,I2,I3,numberOfGhostPoints); 
+//      // getIndex(cg[grid].dimension(),I1,I2,I3); 
 
-// 	RealArray err(I1,I2,I3);
-// 	for( int n=C.getBase(); n<=C.getBound(); n++ )
-// 	{
-// 	  where( cg[grid].mask()(I1,I2,I3)!=0 )
-// 	  {
-// 	    err=abs(u[grid](I1,I2,I3,n)-exact(cg[grid],I1,I2,I3,n,0.))/max(abs(exact(cg[grid],I1,I2,I3,n,0.)));
-// 	    componentError(n)=max(componentError(n),max(err));
-// 	    error=max(error,componentError(n));
-// 	  }
-// 	}
-// 	if( debug & 4 )
-// 	{
-// 	  display(u[grid](I1,I2,I3,C),"u",NULL,"%7.2e ");
-// 	  display(err,"Error",NULL,"%7.1e ");
-// 	}
+//      RealArray err(I1,I2,I3);
+//      for( int n=C.getBase(); n<=C.getBound(); n++ )
+//      {
+//        where( cg[grid].mask()(I1,I2,I3)!=0 )
+//        {
+//          err=abs(u[grid](I1,I2,I3,n)-exact(cg[grid],I1,I2,I3,n,0.))/max(abs(exact(cg[grid],I1,I2,I3,n,0.)));
+//          componentError(n)=max(componentError(n),max(err));
+//          error=max(error,componentError(n));
+//        }
+//      }
+//      if( debug & 4 )
+//      {
+//        display(u[grid](I1,I2,I3,C),"u",NULL,"%7.2e ");
+//        display(err,"Error",NULL,"%7.1e ");
+//      }
 //       }
 //       printf("\n >>>>Maximum relative error in interpolating = %e <<<<<<\n\n",error);  
 //       for( int n=C.getBase(); n<=C.getBound(); n++ )
 //       {
-// 	printf(" component=%i relative error=%e\n",n,componentError(n));
+//      printf(" component=%i relative error=%e\n",n,componentError(n));
 //         worstError=max(worstError,componentError(n));
 //       }
 
@@ -341,37 +341,37 @@ main(int argc, char **argv)
     {
       for( int method=0; method<Interpolant::numberOfInterpolationMethods; method+=1 )
       {
-	if( useOptStorage && method!=(int)Interpolant::optimized )
-	  continue;
+        if( useOptStorage && method!=(int)Interpolant::optimized )
+          continue;
       
-	interpolant.setInterpolationMethod((Interpolant::InterpolationMethodEnum)method);
+        interpolant.setInterpolationMethod((Interpolant::InterpolationMethodEnum)method);
 
-	time[method]=0.;
-	for( int num=0; num<number; num++ )
-	{
-	  int grid;
-	  for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	  {
-	    getIndex(cg[grid].dimension(),I1,I2,I3); 
-	    where( cg[grid].mask()(I1,I2,I3)<=0 )
-	    {
-	      for( int n=u.getComponentBase(0); n<=u.getComponentBound(0); n++ )
-		u[grid](I1,I2,I3,n)=0.;  // initial guess
-	    }
-	  }
-	  real time0=CPU();
-	  u.interpolate();
-	  time[method] += CPU()-time0;
-	}
+        time[method]=0.;
+        for( int num=0; num<number; num++ )
+        {
+          int grid;
+          for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+          {
+            getIndex(cg[grid].dimension(),I1,I2,I3); 
+            where( cg[grid].mask()(I1,I2,I3)<=0 )
+            {
+              for( int n=u.getComponentBase(0); n<=u.getComponentBound(0); n++ )
+                u[grid](I1,I2,I3,n)=0.;  // initial guess
+            }
+          }
+          real time0=CPU();
+          u.interpolate();
+          time[method] += CPU()-time0;
+        }
       
-	printf("\n*** method %s (time=%8.2e,%i components): ",(method==0 ? "standard" : method==1 ? "optimized" : "optimizedC"),
-	       time[method]/number,u.getComponentBound(0)-u.getComponentBase(0)+1);
-	real error=getError(cg,u,C,exact,worstError,debug);
+        printf("\n*** method %s (time=%8.2e,%i components): ",(method==0 ? "standard" : method==1 ? "optimized" : "optimizedC"),
+               time[method]/number,u.getComponentBound(0)-u.getComponentBase(0)+1);
+        real error=getError(cg,u,C,exact,worstError,debug);
       }
     
       printf("\nAverage time to interpolate =%8.1e(standard) %8.1e(opt speedup=%3.1f) %8.1e (C speedup=%3.1f) for grid %s\n",
-	     time[0]/number,time[1]/number,time[0]/max(REAL_MIN,time[1]),
-	     time[2]/number,time[0]/max(REAL_MIN,time[2]),(const char*)gridName[it]);
+             time[0]/number,time[1]/number,time[0]/max(REAL_MIN,time[1]),
+             time[2]/number,time[0]/max(REAL_MIN,time[2]),(const char*)gridName[it]);
       
     }
     else
@@ -380,35 +380,35 @@ main(int argc, char **argv)
       for( int method=0; method<3; method+=1 )
       {
         interpolant.updateToMatchGrid(cg);
-	interpolant.setInterpolationMethod(Interpolant::optimized);
-	interpolant.setExplicitInterpolationStorageOption((Interpolant::ExplicitInterpolationStorageOptionEnum)method);
+        interpolant.setInterpolationMethod(Interpolant::optimized);
+        interpolant.setExplicitInterpolationStorageOption((Interpolant::ExplicitInterpolationStorageOptionEnum)method);
 
-	time[method]=0.;
-	for( int num=0; num<number; num++ )
-	{
-	  int grid;
-	  for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	  {
-	    getIndex(cg[grid].dimension(),I1,I2,I3); 
-	    where( cg[grid].mask()(I1,I2,I3)<=0 )
-	    {
-	      for( int n=u.getComponentBase(0); n<=u.getComponentBound(0); n++ )
-		u[grid](I1,I2,I3,n)=0.; // REAL_MAX; // 0.;  // initial guess
-	    }
-	  }
-	  real time0=CPU();
-	  u.interpolate();
-	  time[method] += CPU()-time0;
-	}
+        time[method]=0.;
+        for( int num=0; num<number; num++ )
+        {
+          int grid;
+          for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+          {
+            getIndex(cg[grid].dimension(),I1,I2,I3); 
+            where( cg[grid].mask()(I1,I2,I3)<=0 )
+            {
+              for( int n=u.getComponentBase(0); n<=u.getComponentBound(0); n++ )
+                u[grid](I1,I2,I3,n)=0.; // REAL_MAX; // 0.;  // initial guess
+            }
+          }
+          real time0=CPU();
+          u.interpolate();
+          time[method] += CPU()-time0;
+        }
       
-	printf("\n*** method %s (time=%8.2e,%i components): ",(method==0 ? "full storage" : method==1 ? "tensor product" : "sparse"),
-	       time[method]/number,u.getComponentBound(0)-u.getComponentBase(0)+1);
-	real error=getError(cg,u,C,exact,worstError,debug);
+        printf("\n*** method %s (time=%8.2e,%i components): ",(method==0 ? "full storage" : method==1 ? "tensor product" : "sparse"),
+               time[method]/number,u.getComponentBound(0)-u.getComponentBase(0)+1);
+        real error=getError(cg,u,C,exact,worstError,debug);
       }
     
       printf("\nAverage time to interpolate =%8.1e(full) %8.1e(tensor speedup=%3.1f) %8.1e (sparse speedup=%3.1f) for grid %s\n",
-	     time[0]/number,time[1]/number,time[0]/max(REAL_MIN,time[1]),
-	     time[2]/number,time[0]/max(REAL_MIN,time[2]),(const char*)gridName[it]);
+             time[0]/number,time[1]/number,time[0]/max(REAL_MIN,time[1]),
+             time[2]/number,time[0]/max(REAL_MIN,time[2]),(const char*)gridName[it]);
 
     }
     
@@ -417,7 +417,7 @@ main(int argc, char **argv)
   printf("\n\n ************************************************************************************************\n");
   if( worstError > .01 )
     printf(" ************** Warning, there is a large error somewhere, worst error =%e ******************\n",
-	   worstError);
+           worstError);
   else
     printf(" ************** Test apparently successful, worst error =%e ******************\n",worstError);
   printf(" **************************************************************************************************\n\n");

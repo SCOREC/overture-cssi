@@ -6,20 +6,20 @@ extern "C"
 {
   void polyFunction(const int &nd,
                     const int &ndra,const int &ndrb,const int &ndsa,const int &ndsb,const int &ndta,const int &ndtb,
-		    const int &ndrra,const int &ndrrb,const int &ndrsa,const int &ndrsb,
+                    const int &ndrra,const int &ndrrb,const int &ndrsa,const int &ndrsb,
                     const int &ndrta,const int &ndrtb,const int &ndrca,const int &ndrcb,
                     const int &ndc1,const int &ndc2,const int &ndc3,
-		    const int &nra,const int &nrb,const int &nsa,const int &nsb,const int &nta,const int &ntb, 
+                    const int &nra,const int &nrb,const int &nsa,const int &nsb,const int &nta,const int &ntb, 
                     const int &nca, const int &ncb, const int &nda, 
                     const int &degree, const int &degreeTime, const real &t,
-		    const real &a, const real &c, real &r,
+                    const real &a, const real &c, real &r,
                     const real &xa,const real &ya,const real &za, 
                     const int &dx,const int &dy,const int &dz,const int &dt);
 
   void polyEvaluate(const int &nd, real &r, const real &x,const real &y,const real &z,const int &n,const real &t, 
-		    const int &ndc1,const int &ndc2,const int &ndc3,const int &nda,
-		    const int &degree, const int &degreeTime, const real &a, const real &c, 
-		    const int &dx,const int &dy,const int &dz,const int &dt);
+                    const int &ndc1,const int &ndc2,const int &ndc3,const int &nda,
+                    const int &degree, const int &degreeTime, const real &a, const real &c, 
+                    const int &dx,const int &dy,const int &dz,const int &dt);
  
 }
 
@@ -247,7 +247,7 @@ checkArguments(const Index & N)
   {
     cout << "OGPolyFunction:ERROR: trying to evaluate a function with " << N.getBound()+1 
          << " components, \n  but the polynomial only supports numberOfComponents = " 
-	   << numberOfComponents << endl;
+           << numberOfComponents << endl;
     cout << "Why not create the OGPolyFunction object with more components :-) \n";
     Overture::abort( "OGPolyFunction:ERROR");
   }
@@ -278,10 +278,10 @@ checkArguments(const Index & N)
 //\begin{>OGFunctionInclude.tex}{\subsection{Evaluate the function or a derivative at a point}} 
 real OGPolyFunction::
 operator()(const real x, 
-	   const real y, 
-	   const real z, 
-	   const int n /* =0 */ , 
-	   const real t /* =0. */ )
+           const real y, 
+           const real z, 
+           const int n /* =0 */ , 
+           const real t /* =0. */ )
 //===================================================================================
 //\end{OGFunctionInclude.tex} 
 // ==========================================================================================
@@ -612,12 +612,12 @@ gd(const int & ntd,
       xPow=xFactorial;
       for( ix=nxd; ix<=degreeX; ix++ )
       {
-	result+=cc(ix,iy,iz,n)*xPow*yPowZpow;
-	if( ix<degreeX )
-	  xPow*=(ix+1)*x/(ix-nxd+1);
+        result+=cc(ix,iy,iz,n)*xPow*yPowZpow;
+        if( ix<degreeX )
+          xPow*=(ix+1)*x/(ix-nxd+1);
       }
       if( iy<degreeX )
-	yPow*=(iy+1)*y/(iy-nyd+1);
+        yPow*=(iy+1)*y/(iy-nyd+1);
     }
     if( iz<degreeX )
       zPow*=(iz+1)*z/(iz-nzd+1);;
@@ -656,9 +656,9 @@ operator()(const MappedGrid & c, const Index & I1,
     MappedGrid & mg = (MappedGrid &)c;
     result.partition(mg.getPartition());
     result.redim(Range(I1.getBase(),I1.getBound()),  
-		 Range(I2.getBase(),I2.getBound()),  
-		 Range(I3.getBase(),I3.getBound()),  
-		 Range( N.getBase(), N.getBound()));  
+                 Range(I2.getBase(),I2.getBound()),  
+                 Range(I3.getBase(),I3.getBound()),  
+                 Range( N.getBase(), N.getBound()));  
   
 
     const realArray & center = c.center();
@@ -691,9 +691,9 @@ operator()(const MappedGrid & c, const Index & I1,
   
     result.partition(xd.getPartition());  
     result.redim(Range(I1.getBase(),I1.getBound()),  
-		 Range(I2.getBase(),I2.getBound()),  
-		 Range(I3.getBase(),I3.getBound()),  
-		 Range( N.getBase(), N.getBound()));  
+                 Range(I2.getBase(),I2.getBound()),  
+                 Range(I3.getBase(),I3.getBound()),  
+                 Range( N.getBase(), N.getBound()));  
   
    #ifndef USE_PPP
     const realSerialArray & x = xd;
@@ -730,9 +730,9 @@ operator()(const MappedGrid & c, const Index & I1,
                r.getBase(0),r.getBound(0),r.getBase(1),r.getBound(1),
                r.getBase(2),r.getBound(2),r.getBase(3),r.getBound(3),
                cc.getLength(0),cc.getLength(1),cc.getLength(2),  
-	       I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),  
+               I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),  
                N.getBase(),N.getBound(), a.getLength(0), degreeX, degreeT, t,  
-	       *a.getDataPointer(), *cc.getDataPointer(), *r.getDataPointer(),  
+               *a.getDataPointer(), *cc.getDataPointer(), *r.getDataPointer(),  
                *xp,*yp,*zp,  
                ndx,ndy,ndz,ndt ); 
 #endMacro
@@ -740,12 +740,12 @@ operator()(const MappedGrid & c, const Index & I1,
 //\begin{>>OGFunctionInclude.tex}{}
 RealDistributedArray OGPolyFunction::
 operator()(const MappedGrid & c,
-	   const Index & I1,
-	   const Index & I2,
-	   const Index & I3, 
-	   const Index & N, 
-	   const real t /* =0. */ ,
-	   const GridFunctionParameters::GridFunctionType & centering 
+           const Index & I1,
+           const Index & I2,
+           const Index & I3, 
+           const Index & N, 
+           const real t /* =0. */ ,
+           const GridFunctionParameters::GridFunctionType & centering 
            /* =defaultCentering */ )
 //===================================================================================
 //\end{OGFunctionInclude.tex} 
@@ -764,9 +764,9 @@ operator()(const MappedGrid & c,
 //   RealDistributedArray result;
 //   result.partition(x.getPartition());
 //   result.redim(Range(I1.getBase(),I1.getBound()),
-// 	       Range(I2.getBase(),I2.getBound()),
-// 	       Range(I3.getBase(),I3.getBound()),
-// 	       Range( N.getBase(), N.getBound()));
+//             Range(I2.getBase(),I2.getBound()),
+//             Range(I3.getBase(),I3.getBound()),
+//             Range( N.getBase(), N.getBound()));
                    
 //   bool useNew=true;
 //   if( useNew )
@@ -789,9 +789,9 @@ operator()(const MappedGrid & c,
 //                  result.getBase(0),result.getBound(0),result.getBase(1),result.getBound(1),
 //                  result.getBase(2),result.getBound(2),
 //                  cc.getLength(0),cc.getLength(1),cc.getLength(2),
-// 		 I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
+//               I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
 //                  N.getBase(),N.getBound(), a.getLength(0), degreeX, degreeT, t,
-// 		 *a.getDataPointer(), *cc.getDataPointer(), *result.getDataPointer(),
+//               *a.getDataPointer(), *cc.getDataPointer(), *result.getDataPointer(),
 //                  xp,yp,zp,
 //                  0,0,0,0 ); // dx,dy,dz,dt
 
@@ -802,20 +802,20 @@ operator()(const MappedGrid & c,
 //     int n;
 //     if( c.numberOfDimensions()==2 )     
 //       for( n=N.getBase(); n<=N.getBound(); n++ )
-// 	result(I1,I2,I3,n)=
+//      result(I1,I2,I3,n)=
 //           (cc(0,0,0,n)+x*(cc(1,0,0,n)+y*cc(1,1,0,n)+x*(cc(2,0,0,n)+x*(cc(3,0,0,n)+x*cc(4,0,0,n))))
-// 	   +y*(cc(0,1,0,n)+y*(cc(0,2,0,n)+y*(cc(0,3,0,n)+y*cc(0,4,0,n)))))*TIME(n,t);
+//         +y*(cc(0,1,0,n)+y*(cc(0,2,0,n)+y*(cc(0,3,0,n)+y*cc(0,4,0,n)))))*TIME(n,t);
 //     else if( c.numberOfDimensions()==3 )
 //       for( n=N.getBase(); n<=N.getBound(); n++ )
-// 	result(I1,I2,I3,n)=
+//      result(I1,I2,I3,n)=
 //           (cc(0,0,0,n)
 //            +x*(cc(1,0,0,n)+y*cc(1,1,0,n)+x*(cc(2,0,0,n)+x*(cc(3,0,0,n)+x*cc(4,0,0,n))))
 //            +y*(cc(0,1,0,n)+z*cc(0,1,1,n)+y*(cc(0,2,0,n)+y*(cc(0,3,0,n)+y*cc(0,4,0,n))))
-//   	   +z*(cc(0,0,1,n)+x*cc(1,0,1,n)+z*(cc(0,0,2,n)+z*(cc(0,0,3,n)+z*cc(0,0,4,n)))))*TIME(n,t);
+//         +z*(cc(0,0,1,n)+x*cc(1,0,1,n)+z*(cc(0,0,2,n)+z*(cc(0,0,3,n)+z*cc(0,0,4,n)))))*TIME(n,t);
 //     else
 //       for( n=N.getBase(); n<=N.getBound(); n++ )
-// 	result(I1,I2,I3,n)=
-// 	  (cc(0,0,0,n)+x*(cc(1,0,0,n)+x*(cc(2,0,0,n)+x*(cc(3,0,0,n)+x*cc(4,0,0,n)))))*TIME(n,t);
+//      result(I1,I2,I3,n)=
+//        (cc(0,0,0,n)+x*(cc(1,0,0,n)+x*(cc(2,0,0,n)+x*(cc(3,0,0,n)+x*cc(4,0,0,n)))))*TIME(n,t);
 
 //     // result.display("result from old");
 //   }
@@ -972,15 +972,15 @@ t(const MappedGrid & c, const Index & I1,
 //       result(I1,I2,I3,n)=
 //           (cc(0,0,0,n)+x*(cc(1,0,0,n)+y*cc(1,1,0,n)+x*(cc(2,0,0,n)+x*(cc(3,0,0,n)+x*cc(4,0,0,n))))
 //                       +y*(cc(0,1,0,n)+y*(cc(0,2,0,n)+y*(cc(0,3,0,n)+y*cc(0,4,0,n)))))*
-// 			(a(1,n)+t*(2.*a(2,n)+t*(3.*a(3,n)+t*(4.*a(4,n)))));
+//                      (a(1,n)+t*(2.*a(2,n)+t*(3.*a(3,n)+t*(4.*a(4,n)))));
 //   else if( c.numberOfDimensions()==3 )
 //     for( n=N.getBase(); n<=N.getBound(); n++ )
 //       result(I1,I2,I3,n)=
 //           (cc(0,0,0,n)
 //            +x*(cc(1,0,0,n)+y*cc(1,1,0,n)+x*(cc(2,0,0,n)+x*(cc(3,0,0,n)+x*cc(4,0,0,n))))
 //            +y*(cc(0,1,0,n)+z*cc(0,1,1,n)+y*(cc(0,2,0,n)+y*(cc(0,3,0,n)+y*cc(0,4,0,n))))
-//   	   +z*(cc(0,0,1,n)+x*cc(1,0,1,n)+z*(cc(0,0,2,n)+z*(cc(0,0,3,n)+z*cc(0,0,4,n)))))*
-// 			(a(1,n)+t*(2.*a(2,n)+t*(3.*a(3,n)+t*(4.*a(4,n)))));
+//         +z*(cc(0,0,1,n)+x*cc(1,0,1,n)+z*(cc(0,0,2,n)+z*(cc(0,0,3,n)+z*cc(0,0,4,n)))))*
+//                      (a(1,n)+t*(2.*a(2,n)+t*(3.*a(3,n)+t*(4.*a(4,n)))));
 //   else
 //     for( n=N.getBase(); n<=N.getBound(); n++ )
 //       result(I1,I2,I3,n)=
@@ -1258,7 +1258,7 @@ gd(const int & ntd,
   if( ntd<0 || nxd<0 || nyd<0 || nzd <0 )
   {
     printf("OGPolyFunction::gd: ERROR: invalid derivative requested, ntd=%i, nxd=%i, nyd=%i, nzd=%i\n",
-	   ntd,nxd,nyd,nzd);
+           ntd,nxd,nyd,nzd);
     Overture::abort("error");
   }
   if( ntd==0 && nxd==0 && nyd==0 && nzd==0 )
@@ -1276,9 +1276,9 @@ gd(const int & ntd,
     result.partition(mg.getPartition());
   #endif
   result.redim(Range(I1.getBase(),I1.getBound()),
-	       Range(I2.getBase(),I2.getBound()),
-	       Range(I3.getBase(),I3.getBound()),
-	       Range( N.getBase(), N.getBound()));
+               Range(I2.getBase(),I2.getBound()),
+               Range(I3.getBase(),I3.getBound()),
+               Range( N.getBase(), N.getBound()));
 
   if( nxd>degreeX || nyd>degreeY || nzd>degreeZ || ntd >degreeT )
   {
@@ -1310,7 +1310,7 @@ gd(const int & ntd,
     for( ix=nxd; ix<=degreeX; ix++ )
     {
       for( n=N.getBase(); n<=N.getBound(); n++ )
-	result(I1,I2,I3,n)+=cc(ix,0,0,n)*xPow;
+        result(I1,I2,I3,n)+=cc(ix,0,0,n)*xPow;
       if( ix<degreeX )
         xPow*=((ix+1.)/(ix-nxd+1.))*x;
     }
@@ -1332,14 +1332,14 @@ gd(const int & ntd,
       xPow=xFactorial;
       for( ix=nxd; ix<=degreeX; ix++ )
       {
-	const RealDistributedArray & temp = evaluate( xPow*yPow );
-	for( n=N.getBase(); n<=N.getBound(); n++ )
-	  result(I1,I2,I3,n)+=cc(ix,iy,0,n)*temp;
-	if( ix<degreeX )
-	  xPow*=((ix+1.)/(ix-nxd+1.))*x;
+        const RealDistributedArray & temp = evaluate( xPow*yPow );
+        for( n=N.getBase(); n<=N.getBound(); n++ )
+          result(I1,I2,I3,n)+=cc(ix,iy,0,n)*temp;
+        if( ix<degreeX )
+          xPow*=((ix+1.)/(ix-nxd+1.))*x;
       }
       if( iy<degreeX )
-	yPow*=((iy+1.)/(iy-nyd+1.))*y;
+        yPow*=((iy+1.)/(iy-nyd+1.))*y;
     }
   }
   else
@@ -1361,18 +1361,18 @@ gd(const int & ntd,
       yPow=yFactorial;
       for( iy=nyd; iy<=degreeX; iy++ )
       {
-	const RealDistributedArray & yPowZpow = evaluate( yPow*zPow );
+        const RealDistributedArray & yPowZpow = evaluate( yPow*zPow );
         xPow=xFactorial;
-	for( ix=nxd; ix<=degreeX; ix++ )
-	{
-	  const RealDistributedArray & temp = evaluate( xPow*yPowZpow );
-	  for( n=N.getBase(); n<=N.getBound(); n++ )
-	    result(I1,I2,I3,n)+=cc(ix,iy,iz,n)*temp;
-	  if( ix<degreeX )
-	    xPow*=((ix+1.)/(ix-nxd+1.))*x;
-	}
-	if( iy<degreeX )
-	  yPow*=((iy+1.)/(iy-nyd+1.))*y;
+        for( ix=nxd; ix<=degreeX; ix++ )
+        {
+          const RealDistributedArray & temp = evaluate( xPow*yPowZpow );
+          for( n=N.getBase(); n<=N.getBound(); n++ )
+            result(I1,I2,I3,n)+=cc(ix,iy,iz,n)*temp;
+          if( ix<degreeX )
+            xPow*=((ix+1.)/(ix-nxd+1.))*x;
+        }
+        if( iy<degreeX )
+          yPow*=((iy+1.)/(iy-nyd+1.))*y;
       }
       if( iz<degreeX )
         zPow*=((iz+1.)/(iz-nzd+1.))*z;
@@ -1446,7 +1446,7 @@ gd( realSerialArray & result,
 
   if( i1a>i1b || i2a>i2b || i3a>i3b )
     return result;  // nothing to do
-		    
+                    
   Index J1=Range(i1a,i1b);
   Index J2=Range(i2a,i2b);
   Index J3=Range(i3a,i3b);
@@ -1484,9 +1484,9 @@ gd( realSerialArray & result,
                result.getBase(2),result.getBound(2),  
                ndrca,ndrcb,
                cc.getLength(0),cc.getLength(1),cc.getLength(2),  
-	       J1.getBase(),J1.getBound(),J2.getBase(),J2.getBound(),J3.getBase(),J3.getBound(),  
+               J1.getBase(),J1.getBound(),J2.getBase(),J2.getBound(),J3.getBase(),J3.getBound(),  
                N.getBase(),N.getBound(), a.getLength(0), degreeX, degreeT, t,  
-	       *a.getDataPointer(), *cc.getDataPointer(), *result.getDataPointer(),  
+               *a.getDataPointer(), *cc.getDataPointer(), *result.getDataPointer(),  
                *xp,*yp,*zp,  
                nxd,nyd,nzd,ntd ); 
 
@@ -1497,8 +1497,8 @@ gd( realSerialArray & result,
 //\begin{>>OGFunctionInclude.tex}{\subsection{Evaluate the function or a derivative on a CompositeGrid}} 
 realCompositeGridFunction OGPolyFunction::
 operator()(CompositeGrid & cg, 
-	   const Index & N, 
-	   const real t,
+           const Index & N, 
+           const real t,
            const GridFunctionParameters::
            GridFunctionType & centering  /* = defaultCentering */ )
 // ==========================================================================================

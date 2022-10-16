@@ -77,24 +77,24 @@ getMean(realCompositeGridFunction & u)
       bool ok = ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1,I2,I3,includeGhost);
       if( ok )
       {
-	real *up = uLocal.Array_Descriptor.Array_View_Pointer2;
-	const int uDim0=uLocal.getRawDataSize(0);
-	const int uDim1=uLocal.getRawDataSize(1);
+        real *up = uLocal.Array_Descriptor.Array_View_Pointer2;
+        const int uDim0=uLocal.getRawDataSize(0);
+        const int uDim1=uLocal.getRawDataSize(1);
         #define U(i0,i1,i2) up[i0+uDim0*(i1+uDim1*(i2))]
 
         OV_GET_SERIAL_ARRAY(int,cg[grid].mask(),maskLocal);
-	const int *maskp = maskLocal.Array_Descriptor.Array_View_Pointer2;
-	const int maskDim0=maskLocal.getRawDataSize(0);
-	const int maskDim1=maskLocal.getRawDataSize(1);
+        const int *maskp = maskLocal.Array_Descriptor.Array_View_Pointer2;
+        const int maskDim0=maskLocal.getRawDataSize(0);
+        const int maskDim1=maskLocal.getRawDataSize(1);
         #define MASK(i0,i1,i2) maskp[i0+maskDim0*(i1+maskDim1*(i2))]
-	int i1,i2,i3;
-	FOR_3D(i1,i2,i3,I1,I2,I3)
-	{
-	  if( MASK(i1,i2,i3)!=0 )
-	  {
-	    mean+=U(i1,i2,i3);
-	  }
-	}
+        int i1,i2,i3;
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
+          if( MASK(i1,i2,i3)!=0 )
+          {
+            mean+=U(i1,i2,i3);
+          }
+        }
       }
     }
     else
@@ -102,7 +102,7 @@ getMean(realCompositeGridFunction & u)
       // non-opt version
       where( cg[grid].mask()(I1,I2,I3)!=0 )
       {
-	mean+=sum(u[grid](I1,I2,I3));
+        mean+=sum(u[grid](I1,I2,I3));
       }
     }
     
@@ -139,25 +139,25 @@ setMean(realCompositeGridFunction & u, const real meanValue, int level)
       bool ok = ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1,I2,I3,includeGhost);
       if( ok )
       {
-	real *up = uLocal.Array_Descriptor.Array_View_Pointer2;
-	const int uDim0=uLocal.getRawDataSize(0);
-	const int uDim1=uLocal.getRawDataSize(1);
+        real *up = uLocal.Array_Descriptor.Array_View_Pointer2;
+        const int uDim0=uLocal.getRawDataSize(0);
+        const int uDim1=uLocal.getRawDataSize(1);
         #define U(i0,i1,i2) up[i0+uDim0*(i1+uDim1*(i2))]
 
         OV_GET_SERIAL_ARRAY(int,cg[grid].mask(),maskLocal);
-	const int *maskp = maskLocal.Array_Descriptor.Array_View_Pointer2;
-	const int maskDim0=maskLocal.getRawDataSize(0);
-	const int maskDim1=maskLocal.getRawDataSize(1);
+        const int *maskp = maskLocal.Array_Descriptor.Array_View_Pointer2;
+        const int maskDim0=maskLocal.getRawDataSize(0);
+        const int maskDim1=maskLocal.getRawDataSize(1);
         #define MASK(i0,i1,i2) maskp[i0+maskDim0*(i1+maskDim1*(i2))]
-	int i1,i2,i3;
-	FOR_3D(i1,i2,i3,I1,I2,I3)
-	{
-	  if( MASK(i1,i2,i3)!=0 )
-	  {
-	    mean+=U(i1,i2,i3);
-	    count++;
-	  }
-	}
+        int i1,i2,i3;
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
+          if( MASK(i1,i2,i3)!=0 )
+          {
+            mean+=U(i1,i2,i3);
+            count++;
+          }
+        }
         #undef U
         #undef MASK
       }
@@ -168,8 +168,8 @@ setMean(realCompositeGridFunction & u, const real meanValue, int level)
       intArray mask = cg[grid].mask()(I1,I2,I3)!=0;
       where( mask )
       {
-	mean+=sum(u[grid](I1,I2,I3));
-	// doesn't work: count++;
+        mean+=sum(u[grid](I1,I2,I3));
+        // doesn't work: count++;
       }
       count+=sum(mask);   
     }
@@ -187,7 +187,7 @@ setMean(realCompositeGridFunction & u, const real meanValue, int level)
   if( Ogmg::debug & 4 )
   {
     printF("%*.1s Ogmg::setMean: level=%i, actual-mean/count=%g, count=%i, meanValue - actual-mean=%8.2e\n",
-	   level*4," ",level,mean/max(1,count),count,meanValue-mean);
+           level*4," ",level,mean/max(1,count),count,meanValue-mean);
   }
 
   const real value=(meanValue-mean)/max(1,count);
@@ -201,15 +201,15 @@ setMean(realCompositeGridFunction & u, const real meanValue, int level)
       bool ok = ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1,I2,I3,1);
       if( ok )
       {
-	real *up = uLocal.Array_Descriptor.Array_View_Pointer2;
-	const int uDim0=uLocal.getRawDataSize(0);
-	const int uDim1=uLocal.getRawDataSize(1);
+        real *up = uLocal.Array_Descriptor.Array_View_Pointer2;
+        const int uDim0=uLocal.getRawDataSize(0);
+        const int uDim1=uLocal.getRawDataSize(1);
         #define U(i0,i1,i2) up[i0+uDim0*(i1+uDim1*(i2))]
-	int i1,i2,i3;
-	FOR_3D(i1,i2,i3,I1,I2,I3)
-	{
-	  U(i1,i2,i3)+=value;
-	}
+        int i1,i2,i3;
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
+          U(i1,i2,i3)+=value;
+        }
         #undef U
       }
     }
@@ -235,56 +235,56 @@ extern "C"
 {
 
   void l2normOpt( const int & nd1a, const int &nd1b, const int &nd2a, const int &nd2b,
-		  const int &nd3a, const int &nd3b,
-		  const int &n1a, const int &n1b, 
-		  const int &n2a, const int &n2b, 
-		  const int &n3a, const int &n3b, 
-		  const real & u, const int & mask, real & norm, int & count );
+                  const int &nd3a, const int &nd3b,
+                  const int &n1a, const int &n1b, 
+                  const int &n2a, const int &n2b, 
+                  const int &n3a, const int &n3b, 
+                  const real & u, const int & mask, real & norm, int & count );
 
   void l2AndMaxNormOpt( const int & nd1a, const int &nd1b, const int &nd2a, const int &nd2b,
-		  const int &nd3a, const int &nd3b,
-		  const int &n1a, const int &n1b, 
-		  const int &n2a, const int &n2b, 
-		  const int &n3a, const int &n3b, 
-		  const real & u, const int & mask, real & norm, int & count, real & uMax );
+                  const int &nd3a, const int &nd3b,
+                  const int &n1a, const int &n1b, 
+                  const int &n2a, const int &n2b, 
+                  const int &n3a, const int &n3b, 
+                  const real & u, const int & mask, real & norm, int & count, real & uMax );
 
   void maxNormOpt( const int & nd1a, const int &nd1b, const int &nd2a, const int &nd2b,
-		  const int &nd3a, const int &nd3b,
-		  const int &n1a, const int &n1b, 
-		  const int &n2a, const int &n2b, 
-		  const int &n3a, const int &n3b, 
-		  const real & u, const int & mask, real & uMax );
+                  const int &nd3a, const int &nd3b,
+                  const int &n1a, const int &n1b, 
+                  const int &n2a, const int &n2b, 
+                  const int &n3a, const int &n3b, 
+                  const real & u, const int & mask, real & uMax );
 
   void l2ErrorOpt( const int & nd1a, const int &nd1b, const int &nd2a, const int &nd2b,
-		  const int &nd3a, const int &nd3b,
-		  const int &n1a, const int &n1b, 
-		  const int &n2a, const int &n2b, 
-		  const int &n3a, const int &n3b, 
-		  const real & u, const real & v, const int & mask, real & norm, int & count );
+                  const int &nd3a, const int &nd3b,
+                  const int &n1a, const int &n1b, 
+                  const int &n2a, const int &n2b, 
+                  const int &n3a, const int &n3b, 
+                  const real & u, const real & v, const int & mask, real & norm, int & count );
 
 
 // --- These versions take a maskOption
 void getL2normOpt( const int & nd1a, const int &nd1b, const int &nd2a, const int &nd2b,
-		   const int &nd3a, const int &nd3b,
-		   const int &n1a, const int &n1b, 
-		   const int &n2a, const int &n2b, 
-		   const int &n3a, const int &n3b, 
-		   const real & u, const int & mask, real & norm, int & count, const int & maskOption );
+                   const int &nd3a, const int &nd3b,
+                   const int &n1a, const int &n1b, 
+                   const int &n2a, const int &n2b, 
+                   const int &n3a, const int &n3b, 
+                   const real & u, const int & mask, real & norm, int & count, const int & maskOption );
 
 
 void getMaxNormOpt( const int & nd1a, const int &nd1b, const int &nd2a, const int &nd2b,
-		    const int &nd3a, const int &nd3b,
-		    const int &n1a, const int &n1b, 
-		    const int &n2a, const int &n2b, 
-		    const int &n3a, const int &n3b, 
-		    const real & u, const int & mask, real & uMax, const int & maskOption );
+                    const int &nd3a, const int &nd3b,
+                    const int &n1a, const int &n1b, 
+                    const int &n2a, const int &n2b, 
+                    const int &n3a, const int &n3b, 
+                    const real & u, const int & mask, real & uMax, const int & maskOption );
 
 void getL2AndMaxNormOpt( const int & nd1a, const int &nd1b, const int &nd2a, const int &nd2b,
-			 const int &nd3a, const int &nd3b,
-			 const int &n1a, const int &n1b, 
-			 const int &n2a, const int &n2b, 
-			 const int &n3a, const int &n3b, 
-			 const real & u, const int & mask, real & norm, int & count, real & uMax, 
+                         const int &nd3a, const int &nd3b,
+                         const int &n1a, const int &n1b, 
+                         const int &n2a, const int &n2b, 
+                         const int &n3a, const int &n3b, 
+                         const real & u, const int & mask, real & norm, int & count, real & uMax, 
                          const int & maskOption );
 
 
@@ -314,23 +314,23 @@ l2Norm(const realCompositeGridFunction & u )
       getIndex(mg.gridIndexRange(),I1,I2,I3);
       if( parameters.useOptimizedVersion )
       {
-	const IntegerArray & d = mg.dimension();
-	int countg;
-	real uSquared;
-	l2normOpt( d(0,0),d(1,0),d(0,1),d(1,1),d(0,2),d(1,2),
-		   I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
-		   *getDataPointer(u[grid]),  *getDataPointer(mg.mask()), uSquared, countg);
-	returnValue+=uSquared;
-	count+=countg;
+        const IntegerArray & d = mg.dimension();
+        int countg;
+        real uSquared;
+        l2normOpt( d(0,0),d(1,0),d(0,1),d(1,1),d(0,2),d(1,2),
+                   I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
+                   *getDataPointer(u[grid]),  *getDataPointer(mg.mask()), uSquared, countg);
+        returnValue+=uSquared;
+        count+=countg;
       }
       else
       {
-	const intArray & mask = evaluate( mg.mask()(I1,I2,I3)!=0 );
-	count+=sum(mask);
-	where( mask )
-	{
-	  returnValue+=sum(u[grid](I1,I2,I3)*u[grid](I1,I2,I3));
-	}
+        const intArray & mask = evaluate( mg.mask()(I1,I2,I3)!=0 );
+        count+=sum(mask);
+        where( mask )
+        {
+          returnValue+=sum(u[grid](I1,I2,I3)*u[grid](I1,I2,I3));
+        }
       }
     }
   
@@ -356,8 +356,8 @@ l2Norm(const realMappedGridFunction & u )
       IntegerArray gid; gid = mg.gridIndexRange();
       for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
       {
-	gid(0,axis) = max(gid(0,axis),maskLocal.getBase(axis) +maskd.getGhostBoundaryWidth(axis));
-	gid(1,axis) = min(gid(1,axis),maskLocal.getBound(axis)-maskd.getGhostBoundaryWidth(axis));
+        gid(0,axis) = max(gid(0,axis),maskLocal.getBase(axis) +maskd.getGhostBoundaryWidth(axis));
+        gid(1,axis) = min(gid(1,axis),maskLocal.getBound(axis)-maskd.getGhostBoundaryWidth(axis));
       }
     #else
       const realSerialArray & uLocal = u;
@@ -366,10 +366,10 @@ l2Norm(const realMappedGridFunction & u )
     #endif
 
     l2normOpt( maskLocal.getBase(0),maskLocal.getBound(0),
-	       maskLocal.getBase(1),maskLocal.getBound(1),
-	       maskLocal.getBase(2),maskLocal.getBound(2),
-	       gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
-	       *getDataPointer(uLocal),  *getDataPointer(maskLocal), returnValue, count );
+               maskLocal.getBase(1),maskLocal.getBound(1),
+               maskLocal.getBase(2),maskLocal.getBound(2),
+               gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+               *getDataPointer(uLocal),  *getDataPointer(maskLocal), returnValue, count );
 
     #ifdef USE_PPP
       returnValue=ParallelUtility::getSum(returnValue);
@@ -418,10 +418,10 @@ maxNorm(const realCompositeGridFunction & u )
         intSerialArray maskLocal; getLocalArrayWithGhostBoundaries(maskd,maskLocal);
         IntegerArray gid; gid = mg.gridIndexRange();
         for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
-	{
-	  gid(0,axis) = max(gid(0,axis),maskLocal.getBase(axis) +maskd.getGhostBoundaryWidth(axis));
-	  gid(1,axis) = min(gid(1,axis),maskLocal.getBound(axis)-maskd.getGhostBoundaryWidth(axis));
-	}
+        {
+          gid(0,axis) = max(gid(0,axis),maskLocal.getBase(axis) +maskd.getGhostBoundaryWidth(axis));
+          gid(1,axis) = min(gid(1,axis),maskLocal.getBound(axis)-maskd.getGhostBoundaryWidth(axis));
+        }
       #else
         const realSerialArray & uLocal = u[grid];
         const intSerialArray & maskLocal = mg.mask();
@@ -431,10 +431,10 @@ maxNorm(const realCompositeGridFunction & u )
       real maxNorm=0.;
       const int maskOption=1;  // *wdh* 110321 -- compute for mask>0 instead of mask!=0
       getMaxNormOpt( maskLocal.getBase(0),maskLocal.getBound(0),
-		     maskLocal.getBase(1),maskLocal.getBound(1),
-		     maskLocal.getBase(2),maskLocal.getBound(2),
-		     gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
-		     *getDataPointer(uLocal),  *getDataPointer(maskLocal), maxNorm, maskOption );
+                     maskLocal.getBase(1),maskLocal.getBound(1),
+                     maskLocal.getBase(2),maskLocal.getBound(2),
+                     gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+                     *getDataPointer(uLocal),  *getDataPointer(maskLocal), maxNorm, maskOption );
       #ifdef USE_PPP
         maxNorm=ParallelUtility::getMaxValue(maxNorm);
       #endif
@@ -446,7 +446,7 @@ maxNorm(const realCompositeGridFunction & u )
       getIndex(mg.gridIndexRange(),I1,I2,I3);
       where( mg.mask()(I1,I2,I3)!=0 )
       {
-	returnValue=max(returnValue,max(fabs(u[grid](I1,I2,I3))));
+        returnValue=max(returnValue,max(fabs(u[grid](I1,I2,I3))));
       }
     }
     
@@ -468,10 +468,10 @@ maxNorm(const realMappedGridFunction & u )
       intSerialArray maskLocal; getLocalArrayWithGhostBoundaries(maskd,maskLocal);
       IntegerArray gid; gid = mg.gridIndexRange();
       for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
-	{
-	  gid(0,axis) = max(gid(0,axis),maskLocal.getBase(axis) +maskd.getGhostBoundaryWidth(axis));
-	  gid(1,axis) = min(gid(1,axis),maskLocal.getBound(axis)-maskd.getGhostBoundaryWidth(axis));
-	}
+        {
+          gid(0,axis) = max(gid(0,axis),maskLocal.getBase(axis) +maskd.getGhostBoundaryWidth(axis));
+          gid(1,axis) = min(gid(1,axis),maskLocal.getBound(axis)-maskd.getGhostBoundaryWidth(axis));
+        }
     #else
       const realSerialArray & uLocal = u;
       const intSerialArray & maskLocal = mg.mask();
@@ -481,10 +481,10 @@ maxNorm(const realMappedGridFunction & u )
     real maxNorm=0.;
     const int maskOption=1;  // *wdh* 110321 -- compute for mask>0 instead of mask!=0
     getMaxNormOpt( maskLocal.getBase(0),maskLocal.getBound(0),
-		   maskLocal.getBase(1),maskLocal.getBound(1),
-		   maskLocal.getBase(2),maskLocal.getBound(2),
-		   gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
-		   *getDataPointer(uLocal),  *getDataPointer(maskLocal), returnValue, maskOption );
+                   maskLocal.getBase(1),maskLocal.getBound(1),
+                   maskLocal.getBase(2),maskLocal.getBound(2),
+                   gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+                   *getDataPointer(uLocal),  *getDataPointer(maskLocal), returnValue, maskOption );
     #ifdef USE_PPP
       returnValue=ParallelUtility::getMaxValue(returnValue);
     #endif
@@ -526,8 +526,8 @@ l2Error(const realCompositeGridFunction & u, const realCompositeGridFunction & v
         IntegerArray gid; gid = mg.gridIndexRange();
         for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
         {
-  	  gid(0,axis) = max(gid(0,axis),maskLocal.getBase(axis) +maskd.getGhostBoundaryWidth(axis));
-  	  gid(1,axis) = min(gid(1,axis),maskLocal.getBound(axis)-maskd.getGhostBoundaryWidth(axis));
+          gid(0,axis) = max(gid(0,axis),maskLocal.getBase(axis) +maskd.getGhostBoundaryWidth(axis));
+          gid(1,axis) = min(gid(1,axis),maskLocal.getBound(axis)-maskd.getGhostBoundaryWidth(axis));
         }
       #else
         const realSerialArray & uLocal = u[grid];
@@ -539,11 +539,11 @@ l2Error(const realCompositeGridFunction & u, const realCompositeGridFunction & v
       int countg=0;
       real uSquared;
       l2ErrorOpt( maskLocal.getBase(0),maskLocal.getBound(0),
-		  maskLocal.getBase(1),maskLocal.getBound(1),
-		  maskLocal.getBase(2),maskLocal.getBound(2),
-		  gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
-		  *getDataPointer(uLocal), *getDataPointer(vLocal), 
-		  *getDataPointer(maskLocal), uSquared, countg);
+                  maskLocal.getBase(1),maskLocal.getBound(1),
+                  maskLocal.getBase(2),maskLocal.getBound(2),
+                  gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+                  *getDataPointer(uLocal), *getDataPointer(vLocal), 
+                  *getDataPointer(maskLocal), uSquared, countg);
       returnValue+=uSquared;
       count+=countg;
     }
@@ -556,7 +556,7 @@ l2Error(const realCompositeGridFunction & u, const realCompositeGridFunction & v
       w = u[grid](I1,I2,I3)-v[grid](I1,I2,I3);
       where( mask )
       {
-	returnValue+=sum(w*w);
+        returnValue+=sum(w*w);
       }
     }
   }

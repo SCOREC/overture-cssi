@@ -26,6 +26,21 @@ void pressureIsmOpt( const int&nd,
 
 }
 
+
+#define FOR_3D(i1,i2,i3,I1,I2,I3) \
+int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  \
+int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
+for(int i3=I3Base; i3<=I3Bound; i3++) \
+for(int i2=I2Base; i2<=I2Bound; i2++) \
+for(int i1=I1Base; i1<=I1Bound; i1++)
+
+#define FOR_3(i1,i2,i3,I1,I2,I3) \
+I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  \
+I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
+for(int i3=I3Base; i3<=I3Bound; i3++) \
+for(int i2=I2Base; i2<=I2Bound; i2++) \
+for(int i1=I1Base; i1<=I1Bound; i1++)
+
 // Macros to define 2nd-order difference approximations: 
 // #include "cgux2a.h"
 // These next were taken from bcIsm2dOrder4c.f90
@@ -488,7 +503,34 @@ int Cgsm::solveForPressure( int current, Real t, Real dt )
   const int & pressurePoissonIsSingular = parameters.dbase.get<int>("pressurePoissonIsSingular");
   if( pressurePoissonIsSingular )
   {
+    // --- Set the RHS for the singular pressure equation ---
     real value[1]={0.};
+    if( forcingOption==twilightZoneForcing )
+    {
+      // Is there a better way? This is from tcm3.C 
+      OGFunction & exact = *parameters.dbase.get<OGFunction*>("exactSolution");
+      Range all;
+      realCompositeGridFunction pe(cg,all,all,all); // holds exact solution
+      Index I1,I2,I3;
+      for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+      {
+        MappedGrid & mg = cg[grid];
+        getIndex(mg.dimension(),I1,I2,I3);
+        OV_GET_SERIAL_ARRAY(Real,pe[grid],peLocal);
+        OV_GET_SERIAL_ARRAY(Real,mg.vertex(),xLocal);
+        bool ok = ParallelUtility::getLocalArrayBounds(pe[grid],peLocal,I1,I2,I3); // restrict bounds to the local array
+        if( ok )
+        {
+          bool isRectangular=0;
+          exact.gd( peLocal,xLocal,mg.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,pc,t);
+        }
+      }
+
+      // exact.assignGridFunction(ue,t);
+      pressureSolver.initialize();
+      pressureSolver.evaluateExtraEquation(pe,value[0]);      
+    }
+
     pressureSolver.setExtraEquationRightHandSideValues(pressureRightHandSide,value );
   }
   // If we need to set the RHS for the compatibility constraint then here is how to do it (from tcm3.C)
@@ -517,9 +559,38 @@ int Cgsm::solveForPressure( int current, Real t, Real dt )
     pressureSolver.set(OgesParameters::THEkeepSparseMatrix,true);
   }
 
-  if( false )
+  bool checkForNans = false;
+  if( checkForNans )
   {
-    pressureRightHandSide.display("pressureRHS","%7.3f");
+
+    // ---- check for nan's ----
+
+    bool nanFound=false;
+    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+    {
+      MappedGrid & mg = cg[grid];
+
+      Index I1,I2,I3;
+      getIndex(mg.dimension(),I1,I2,I3);  
+
+      OV_GET_SERIAL_ARRAY(real,pressureRightHandSide[grid],rLocal);
+      FOR_3D(i1,i2,i3,I1,I2,I3)
+      {
+        if( isnan(rLocal(i1,i2,i3)))
+        {
+          nanFound=true;
+          break;
+        }
+      }   
+      if( nanFound )
+      {
+        ::display(pressureRightHandSide[grid],"pressureRHS","%7.3f");
+        printF("\n **** NAN FOUND IN PRESSURE RHS on grid=%d, at t=%9.3e\n",grid,t);
+        OV_ABORT("ERROR- nan");
+      }       
+    }
+
+
   }
 
   // ----------------------------------------------------------------------------
@@ -558,19 +629,7 @@ for( m3=-halfWidth3; m3<=halfWidth3; m3++) \
 for( m2=-halfWidth2; m2<=halfWidth2; m2++) \
 for( m1=-halfWidth1; m1<=halfWidth1; m1++)
 
-#define FOR_3D(i1,i2,i3,I1,I2,I3) \
-int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  \
-int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
-for(int i3=I3Base; i3<=I3Bound; i3++) \
-for(int i2=I2Base; i2<=I2Bound; i2++) \
-for(int i1=I1Base; i1<=I1Bound; i1++)
 
-#define FOR_3(i1,i2,i3,I1,I2,I3) \
-I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  \
-I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
-for(int i3=I3Base; i3<=I3Bound; i3++) \
-for(int i2=I2Base; i2<=I2Bound; i2++) \
-for(int i1=I1Base; i1<=I1Bound; i1++)
 
 // =======================================================================
 // indexToEquation( n,i1,i2,i3 ) : defines the global index for each unknown in the system

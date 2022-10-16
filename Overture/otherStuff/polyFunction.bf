@@ -4,6 +4,7 @@
 !  Here are the versions for evaluating many points at a time
 ! ************************************************************************************
 
+
 #beginMacro defineTime()
 if( dt.eq.0 )then
  if( degreeTime.eq.0 )then
@@ -84,6 +85,7 @@ else if( dt.eq.3 )then
   write(*,*) 'PolyFunction:ERROR invalid degreeTime'
   stop 1836
  end if
+
 else if( dt.eq.4 )then
  ! --- 4th time derivative ---
  if( degreeTime.eq.0 )then
@@ -104,8 +106,51 @@ else if( dt.eq.4 )then
   write(*,*) 'PolyFunction:ERROR invalid degreeTime'
   stop 1837
  end if
+
+else if( dt.eq.5 )then
+ ! --- 5th time derivative ---
+ if( degreeTime.eq.0 )then
+  time=0.
+ else if( degreeTime.eq.1 )then
+  time=0.
+ else if( degreeTime.eq.2 )then
+  time=0.
+ else if( degreeTime.eq.3 )then
+  time=0.
+ else if( degreeTime.eq.4 )then
+  time=0.
+ else if( degreeTime.eq.5 )then
+  time=(120.*a(5,n))
+ else if( degreeTime.eq.6 )then
+  time=(120.*a(5,n)+t*(720.*a(6,n)))
+ else
+  write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+  stop 1837
+ end if
+
+else if( dt.eq.6 )then
+ ! --- 6th time derivative ---
+ if( degreeTime.eq.0 )then
+  time=0.
+ else if( degreeTime.eq.1 )then
+  time=0.
+ else if( degreeTime.eq.2 )then
+  time=0.
+ else if( degreeTime.eq.3 )then
+  time=0.
+ else if( degreeTime.eq.4 )then
+  time=0.
+ else if( degreeTime.eq.5 )then
+  time=0.
+ else if( degreeTime.eq.6 )then
+  time=(720.*a(6,n))
+ else
+  write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+  stop 1837
+ end if
+
 else
-  write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+  write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
   stop 1838
 end if
 #endMacro
@@ -188,12 +233,47 @@ else if( dt.eq.4 )then
   time=24.*a(4,n)+t*(120.*a(5,n))
  else if( degreeTime.eq.6 )then
   time=24.*a(4,n)+t*(120.*a(5,n)+t*(360.*a(6,n)))
+
+else if( dt.eq.5 )then
+ ! --- 5th time derivative ---
+ if( degreeTime.eq.0 )then
+  time=0.
+ else if( degreeTime.eq.1 )then
+  time=0.
+ else if( degreeTime.eq.2 )then
+  time=0.
+ else if( degreeTime.eq.3 )then
+  time=0.
+ else if( degreeTime.eq.4 )then
+  time=0.
+ else if( degreeTime.eq.5 )then
+  time=(120.*a(5,n))
+ else if( degreeTime.eq.6 )then
+  time=(120.*a(5,n)+ t*(720.*a(6,n)))
+
+else if( dt.eq.6 )then
+ ! --- 6th time derivative ---
+ if( degreeTime.eq.0 )then
+  time=0.
+ else if( degreeTime.eq.1 )then
+  time=0.
+ else if( degreeTime.eq.2 )then
+  time=0.
+ else if( degreeTime.eq.3 )then
+  time=0.
+ else if( degreeTime.eq.4 )then
+  time=0.
+ else if( degreeTime.eq.5 )then
+  time=0.
+ else if( degreeTime.eq.6 )then
+  time= (720.*a(6,n))
+
  else
   write(*,*) 'PolyFunction:ERROR invalid degreeTime'
   stop 1837
  end if
 else
-  write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+  write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
   stop 1838
 end if
 #endMacro

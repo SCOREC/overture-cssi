@@ -28,6 +28,12 @@ doubleEighthAnnulusGrids:
 	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleEighthAnnulusGrid -theta2=.125 -order=2 -interp=e -factor=8
 	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleEighthAnnulusGrid -theta2=.125 -order=2 -interp=e -factor=16
 	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleEighthAnnulusGrid -theta2=.125 -order=2 -interp=e -factor=32
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleEighthAnnulusGrid -theta2=.125 -order=4 -interp=e -factor=1
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleEighthAnnulusGrid -theta2=.125 -order=4 -interp=e -factor=2
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleEighthAnnulusGrid -theta2=.125 -order=4 -interp=e -factor=4
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleEighthAnnulusGrid -theta2=.125 -order=4 -interp=e -factor=8
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleEighthAnnulusGrid -theta2=.125 -order=4 -interp=e -factor=16
+	$(ogen) -noplot doubleAnnulusGrid -prefix=doubleEighthAnnulusGrid -theta2=.125 -order=4 -interp=e -factor=32	
 
 # two squares or non-squares in a horizontal orientation
 twoSquaresInterface:
@@ -43,6 +49,22 @@ twoSquaresInterface:
 	$(ogen) -noplot twoSquaresInterface  -interp=e -angle=0 -order=4 -factor=1 
 	$(ogen) -noplot twoSquaresInterface  -interp=e -angle=0 -order=4 -factor=2 
 	$(ogen) -noplot twoSquaresInterface  -interp=e -angle=0 -order=4 -factor=4	
+
+# periodic in y 
+twoSquaresInterfacep:
+	$(ogen) -noplot twoSquaresInterface -prefix=twoNonSquaresInterface -angle=0.0 -bc=p -interp=e -order=2 -factor=1 
+	$(ogen) -noplot twoSquaresInterface -prefix=twoNonSquaresInterface -angle=0.0 -bc=p -interp=e -order=2 -factor=2 
+	$(ogen) -noplot twoSquaresInterface -prefix=twoNonSquaresInterface -angle=0.0 -bc=p -interp=e -order=2 -factor=4
+	$(ogen) -noplot twoSquaresInterface -prefix=twoNonSquaresInterface -angle=0.0 -bc=p -interp=e -angle=0 -order=2 -factor=1 
+	$(ogen) -noplot twoSquaresInterface -prefix=twoNonSquaresInterface -angle=0.0 -bc=p -interp=e -angle=0 -order=2 -factor=2 
+	$(ogen) -noplot twoSquaresInterface -prefix=twoNonSquaresInterface -angle=0.0 -bc=p -interp=e -angle=0 -order=2 -factor=4
+	$(ogen) -noplot twoSquaresInterface -prefix=twoNonSquaresInterface -angle=0.0 -bc=p -interp=e -order=4 -factor=1 
+	$(ogen) -noplot twoSquaresInterface -prefix=twoNonSquaresInterface -angle=0.0 -bc=p -interp=e -order=4 -factor=2 
+	$(ogen) -noplot twoSquaresInterface -prefix=twoNonSquaresInterface -angle=0.0 -bc=p -interp=e -order=4 -factor=4
+	$(ogen) -noplot twoSquaresInterface -prefix=twoNonSquaresInterface -angle=0.0 -bc=p -interp=e -angle=0 -order=4 -factor=1 
+	$(ogen) -noplot twoSquaresInterface -prefix=twoNonSquaresInterface -angle=0.0 -bc=p -interp=e -angle=0 -order=4 -factor=2 
+	$(ogen) -noplot twoSquaresInterface -prefix=twoNonSquaresInterface -angle=0.0 -bc=p -interp=e -angle=0 -order=4 -factor=4	
+
 
 # two horizontal squares, right-side finer in dx
 twoHorizontalSquares:

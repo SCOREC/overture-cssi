@@ -1,4 +1,169 @@
 ******************************************
+***** Sat May 14, 2022
+
+SPHERE DISPLACEMENT - longer time
+setsid $cgsm -noplot random.cmd -g=spheree2.order2.hdf -ts=me -tf=10000 -tp=10 -cfl=0.9 -bc1=d -bc2=d -bc3=d -bc4=d -bc5=d -bc6=d -cdv=1 -upwindSOS=1 -useCurlCurl=0 -projectLinearMode=1 -show=sphereG2D.show -go=go > sphereG2D.out
+
+plotStuff plotRandom -show=sphereG2D -name=randomSphereG2D -nd=3 
+
+******************************************
+***** Fri May 13, 2022
+
+SPHERE TRACTION - project linear mode -OK but run longer
+setsid $cgsm -noplot random.cmd -g=spheree2.order2.hdf -ts=me -tf=10000 -tp=10 -cfl=0.9 -bc1=t -bc2=t -bc3=t -bc4=t -bc5=t -bc6=t -cdv=1 -upwindSOS=1 -useCurlCurl=0 -projectLinearMode=1 -show=sphereG2T.show -go=go > sphereG2T.out
+
+plotStuff plotRandom -show=sphereG2T -name=randomSphereG2t -nd=3 
+
+
+
+SPHERE DISPLACEMENT
+setsid $cgsm -noplot random.cmd -g=spheree2.order2.hdf -ts=me -tf=1000 -tp=10 -cfl=0.9 -bc1=d -bc2=d -bc3=d -bc4=d -bc5=d -bc6=d -cdv=1 -upwindSOS=1 -useCurlCurl=0 -projectLinearMode=1 -show=sphereG2D.show -go=go > sphereG2D.out
+
+plotStuff plotRandom -show=sphereG2D -name=randomSphereG2D -nd=3 
+
+
+>>> projectLinearMode: t=9.981e+02
+  u1 ~= (3.58085e-08 + -3.33968e-09 * x + -4.37134e-09 * y + 1.48692e-09 * z)*t 
+  u2 ~= (-4.73476e-09 + -1.04172e-08 * x + -5.5651e-09 * y + -2.51976e-09 * z)*t 
+  u3 ~= (9.39661e-09 + 4.09706e-09 * x + 2.12183e-09 * y + 2.07152e-09 * z)*t 
+-->t=1.0000e+03 dt=1.94e-02 |div(U)|=4.73e-05 |div(U)|/|grad(U)|=3.35e-03, |grad(U)|=1.41e-02, max(u):[2.87e-03,1.88e-03,4.20e-03,1.46e-02,]
+>>> Cgsm: ILE22u: t=1.00e+03, steps=51500, dt=1.9e-02 TS=ME |div(U)|=4.73e-05, |curl(U)|=2.03e-02, cpu=6.30e+03(s)
+>>> Cgsm: ILE22u: t=1.00e+03, steps=51500, dt=1.9e-02 TS=ME |div(U)|=4.73e-05, |curl(U)|=2.03e-02, |div(U)|/|grad(U)|=3.35e-03 |grad(U)|=1.41e-02, cpu=6.30e+03(s)
+>>> Cgsm: ILE22u: t=1.00e+03, steps=51500, dt=1.9e-02 TS=ME |div(U)|=4.73e-05, |curl(U)|=2.03e-02, cpu=6.30e+03(s)
+>>> Cgsm: ILE22u: t=1.00e+03, steps=51500, dt=1.9e-02 TS=ME |div(U)|=4.73e-05, |curl(U)|=2.03e-02, |div(U)|/|grad(U)|=3.35e-03 |grad(U)|=1.41e-02, cpu=6.30e+03(s)
+finish
+ solve: timing(SmParameters::totalTime)=6.30e+03
+
+
+
+SPHERE TRACTION - project linear mode -OK but run longer
+setsid $cgsm -noplot random.cmd -g=spheree2.order2.hdf -ts=me -tf=1000 -tp=10 -cfl=0.9 -bc1=t -bc2=t -bc3=t -bc4=t -bc5=t -bc6=t -cdv=1 -upwindSOS=1 -useCurlCurl=0 -projectLinearMode=1 -show=sphereG2T.show -go=go > sphereG2T.out
+
+plotStuff plotRandom -show=sphereG2T -name=randomSphereG2t -nd=3 
+
+
+
+REDO DISK with new projection: 
+
+plotStuff plotRandom -show=randomDiskG4ta -name=randomDiskG4ta 
+cgsm -noplot random.cmd -g=sicFixede4.order2 -ts=me -tf=10000 -tp=10 -cfl=0.9 -bc1=t -cdv=1 -upwindSOS=1 -useCurlCurl=0  -projectLinearMode=1 -show=randomDiskG4ta.show -go=go > randomDiskG4ta.out
+
+displacement BC
+plotStuff plotRandom -show=randomDiskG4d -name=randomDiskG4d 
+cgsm -noplot random.cmd -g=sicFixede4.order2 -ts=me -tf=10000 -tp=10 -cfl=0.9 -bc1=d -cdv=1 -upwindSOS=1 -useCurlCurl=0  -projectLinearMode=0 -show=randomDiskG4d.show -go=go > randomDiskG4d.out
+
+
+LONG TIME ON A CYINDER OR SPHERE 
+
+CYLINDER displacement:
+plotStuff plotRandom -show=pipeG2D -name=randomPipeG2D -nd=3 
+setsid $cgsm -noplot random.cmd -g=pipeze2.order2.hdf -ts=me -tf=10000 -tp=10 -cfl=0.9 -bc1=d -bc2=d -bc3=d -bc4=d -bc5=d -bc6=d -cdv=1 -upwindSOS=1 -useCurlCurl=0  -projectLinearMode=0 -show=pipeG2D.show -go=go > pipeG2D.out
+
+-->t=1.0000e+04 dt=1.74e-02 |div(U)|=4.41e-21 |div(U)|/|grad(U)|=2.16e-15, |grad(U)|=2.04e-06, max(u):[1.41e-21,1.36e-20,7.27e-07,6.78e-20,]
+>>> Cgsm: ILE22u: t=1.00e+04, steps=574000, dt=1.7e-02 TS=ME |div(U)|=4.41e-21, |curl(U)|=2.04e-06, cpu=6.88e+03(s)
+>>> Cgsm: ILE22u: t=1.00e+04, steps=574000, dt=1.7e-02 TS=ME |div(U)|=4.41e-21, |curl(U)|=2.04e-06, |div(U)|/|grad(U)|=2.16e-15 |grad(U)|=2.04e-06, cpu=6.88e+03(s)
+>>> Cgsm: ILE22u: t=1.00e+04, steps=574000, dt=1.7e-02 TS=ME |div(U)|=4.41e-21, |curl(U)|=2.04e-06, cpu=6.88e+03(s)
+>>> Cgsm: ILE22u: t=1.00e+04, steps=574000, dt=1.7e-02 TS=ME |div(U)|=4.41e-21, |curl(U)|=2.04e-06, |div(U)|/|grad(U)|=2.16e-15 |grad(U)|=2.04e-06, cpu=6.88e+03(s)
+
+******************************************
+***** Thurs May 12, 2022
+
+LONG TIME ON A CYINDER OR SPHERE 
+
+ADD PROJECT LINEAR MODE FOR 3D
+
+REDO CYLINDER:
+plotStuff plotRandom -show=pipeG2Traction -name=randomPipeG2Traction -nd=3 
+setsid $cgsm -noplot random.cmd -g=pipeze2.order2.hdf -ts=me -tf=10000 -tp=10 -cfl=0.9 -bc1=t -bc2=t -bc3=t -bc4=t -bc5=t -bc6=t -cdv=1 -upwindSOS=1 -useCurlCurl=0  -projectLinearMode=1 -show=pipeG2Traction.show -go=go > pipeG2Traction.out
+
+
+>>> projectLinearMode: t=9.998e+03
+  u1 ~= (-7.31105e-11 + 7.7449e-23 * x + -1.5979e-21 * y + -1.99103e-24 * z)*t 
+  u2 ~= (1.84125e-10 + 1.52452e-21 * x + 7.94328e-23 * y + -1.13267e-23 * z)*t 
+  u3 ~= (1.29778e-10 + 8.46972e-25 * x + 1.94804e-22 * y + 1.23886e-23 * z)*t 
+-->t=1.0000e+04 dt=1.74e-02 |div(U)|=6.87e-17 |div(U)|/|grad(U)|=1.81e-02, |grad(U)|=3.80e-15, max(u):[7.31e-07,1.84e-06,1.30e-06,2.95e-15,]
+>>> Cgsm: ILE22u: t=1.00e+04, steps=574000, dt=1.7e-02 TS=ME |div(U)|=6.87e-17, |curl(U)|=2.10e-15, cpu=7.41e+03(s)
+>>> Cgsm: ILE22u: t=1.00e+04, steps=574000, dt=1.7e-02 TS=ME |div(U)|=6.87e-17, |curl(U)|=2.10e-15, |div(U)|/|grad(U)|=1.81e-02 |grad(U)|=3.80e-15, cpu=7.41e+03(s)
+>>> Cgsm: ILE22u: t=1.00e+04, steps=574000, dt=1.7e-02 TS=ME |div(U)|=6.87e-17, |curl(U)|=2.10e-15, cpu=7.41e+03(s)
+>>> Cgsm: ILE22u: t=1.00e+04, steps=574000, dt=1.7e-02 TS=ME |div(U)|=6.87e-17, |curl(U)|=2.10e-15, |div(U)|/|grad(U)|=1.81e-02 |grad(U)|=3.80e-15, cpu=7.41e+03(s)
+
+
+
+
+BOX PROJECT:  BUG FIXED -- SCALE COEFF BY t 
+cgsm -noplot random.cmd -g=box2npp.order2 -ts=me -tf=200 -tp=10 -cfl=0.9 -bc1=t -bc2=t -bc3=t -bc4=t -bc5=t -bc6=t -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -projectLinearMode=1 -show=boxG2Ta.show -go=go > boxG2Ta.out
+
+plotStuff plotRandom -show=boxG2T -name=boxG2T -nd=3  
+cgsm -noplot random.cmd -g=box2npp.order2 -ts=me -tf=1000 -tp=10 -cfl=0.9 -bc1=t -bc2=t -bc3=t -bc4=t -bc5=t -bc6=t -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -projectLinearMode=1 -show=boxG2T.show -go=go > boxG2T.out
+
+
+BOX NO PROJECT: --> linear growth
+plotStuff plotRandom -show=boxG2Tnp -name=boxG2Tnp -nd=3     : box traction, no projection
+cgsm -noplot random.cmd -g=box2npp.order2 -ts=me -tf=1000 -tp=10 -cfl=0.9 -bc1=t -bc2=t -bc3=t -bc4=t -bc5=t -bc6=t -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -projectLinearMode=0 -show=boxG2Tnp.show -go=go > boxG2Tnp.out
+
+
+
+
+BOX -- periodic in 2 directions to avoid corners
+cgsm -noplot random.cmd -g=box2npp.order2 -ts=me -tf=1000 -tp=1 -cfl=0.9 -bc1=t -bc2=t -bc3=t -bc4=t -bc5=t -bc6=t -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -projectLinearMode=1 -go=og
+
+
+>>> projectLinearMode: 
+  u1 ~= (-0.0120954 + -0.00705818 * x + 0.00243287 * y + 0.0105752 * z)*t 
+  u2 ~= (0.0976847 + 0.00888633 * x + -0.00421704 * y + 0.00302368 * z)*t 
+  u3 ~= (-0.0304425 + -0.0180064 * x + -0.0178426 * y + -0.00322237 * z)*t 
+
+
+
+TRY A SPHERE
+cgsm -noplot random.cmd -g=spheree2.order2.hdf -ts=me -tf=100 -tp=1 -cfl=0.9 -bc1=t -bc2=t -bc3=t -bc4=t -bc5=t -bc6=t -cdv=1 -upwindSOS=1 -useCurlCurl=0 -show=sphereG2T.show -go=go > sphereG2T.out
+
+plotStuff plotRandom -show=sphereG2T -name=randomSphereG2t -nd=3 
+
+
+
+CYLINDER HAS A LINEAR TIME MODE IN u3
+plotStuff plotRandom -show=pipeG2Traction -name=randomPipeG2t -nd=3 
+
+
+TRACTION BC 
+cgsm -noplot random.cmd -g=pipeze2.order2.hdf -ts=me -tf=1000 -tp=10 -cfl=0.9 -bc1=t -bc2=t -bc3=t -bc4=t -bc5=t -bc6=t -cdv=1 -upwindSOS=1 -useCurlCurl=0  -projectLinearMode=1 -show=pipeG2Traction.show -go=go > pipeG2Traction.out
+
+
+******************************************
+***** Wed May 11, 2022
+
+LONG TIME ON A CYINDER
+
+THIS IS ACTUALLY A DISPLACEMENT BC
+
+cgsm -noplot random.cmd -g=pipeze2.order2.hdf -ts=me -tf=10000 -tp=10 -cfl=0.9 -bc1=t -bc2=t -cdv=1 -upwindSOS=1 -useCurlCurl=0  -projectLinearMode=1 -show=pipeG2t.show -go=go > pipeG2t.out
+
+
+cgsm -noplot random.cmd -g=pipeze2.order2.hdf -ts=me -tf=100 -tp=1.0 -cfl=0.9 -bc1=t -bc2=t -cdv=1 -upwindSOS=1 -useCurlCurl=0  -projectLinearMode=1 -show=pipeG2t.show -go=go > pipeG2t.out
+
+
+
+
+
+******************************************
+***** Fri Jan 28, 2022
+
+LONG TIME ON A DISK OR ANNULUS
+
+
+cgsm -noplot random.cmd -g=sicFixede4.order2 -ts=me -tf=100000 -tp=10 -cfl=0.9 -bc1=t -cdv=1 -upwindSOS=1 -useCurlCurl=0  -projectLinearMode=1 -show=randomDiskG4t.show -go=go > randomDiskG4t.out
+
+>>> Cgsm: ILE22u: t=1.00e+05, steps=6840000, dt=1.5e-02 TS=ME |div(U)|=5.94e-06, |curl(U)|=2.49e-02, cpu=1.30e+04(s)
+>>> Cgsm: ILE22u: t=1.00e+05, steps=6840000, dt=1.5e-02 TS=ME |div(U)|=5.94e-06, |curl(U)|=2.49e-02, |div(U)|/|grad(U)|=4.47e-04 |grad(U)|=1.33e-02, cpu=1.30e+04(s)
+>>> Cgsm: ILE22u: t=1.00e+05, steps=6840000, dt=1.5e-02 TS=ME |div(U)|=5.94e-06, |curl(U)|=2.49e-02, cpu=1.30e+04(s)
+>>> Cgsm: ILE22u: t=1.00e+05, steps=6840000, dt=1.5e-02 TS=ME |div(U)|=5.94e-06, |curl(U)|=2.49e-02, |div(U)|/|grad(U)|=4.47e-04 |grad(U)|=1.33e-02, cpu=1.30e+04(s)
+
+
+cgsm -noplot random.cmd -g=sicFixede4.order2 -ts=me -tf=100000 -tp=1 -cfl=0.9 -bc1=t -cdv=1 -upwindSOS=1 -useCurlCurl=0  -projectLinearMode=1 -go=og
+
+
+******************************************
 ***** Sat Oct 9, 2021
 
 START: can we project out the linear in time mode? --> seems to work

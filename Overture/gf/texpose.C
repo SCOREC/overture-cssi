@@ -66,16 +66,16 @@ main(int argc, char *argv[])
         plotOption=true;
       else if( len=line.matches("-grid=") )
       {
-	nameOfOGFile=line(len,line.length()-1);
+        nameOfOGFile=line(len,line.length()-1);
       }
       else if( len=line.matches("-grid2=") )
       {
-	nameOfOGFile2=line(len,line.length()-1);
+        nameOfOGFile2=line(len,line.length()-1);
       }
       else if( len=line.matches("-debug=") )
       {
-	sScanF(line(len,line.length()-1),"%i",&ExposedPoints::debug);
-	printF(" Setting ExposedPoints::debug=%i \n",ExposedPoints::debug);
+        sScanF(line(len,line.length()-1),"%i",&ExposedPoints::debug);
+        printF(" Setting ExposedPoints::debug=%i \n",ExposedPoints::debug);
       }
       else if( commandFileName=="" )
       {
@@ -313,9 +313,9 @@ main(int argc, char *argv[])
     if( plotOption )
     {
       if( moveOption==rotate )
-	psp.set(GI_TOP_LABEL,sPrintF(buff,"Grid at step %i, angle=%6.2e",i,currentAngle*180./Pi));  // set title
+        psp.set(GI_TOP_LABEL,sPrintF(buff,"Grid at step %i, angle=%6.2e",i,currentAngle*180./Pi));  // set title
       else
-	psp.set(GI_TOP_LABEL,sPrintF(buff,"Grid at step %i",i));  // set title
+        psp.set(GI_TOP_LABEL,sPrintF(buff,"Grid at step %i",i));  // set title
       //     psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
       ps.erase();
       PlotIt::plot(ps,cg[oldCG],psp);

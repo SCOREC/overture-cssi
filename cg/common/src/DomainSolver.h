@@ -630,11 +630,16 @@ printStatistics(FILE *file = stdout );              // print timing statistics
 virtual void 
 printTimeStepInfo( const int & step, const real & t, const real & cpuTime );
 
+// -- project initial conditions I think ---
 virtual int
 project(GridFunction & cgf);
 
 virtual int
 projectInitialConditionsForMovingGrids(int gfIndex);
+
+// -- project interface values such as Temperature for conjugate heat transfer  ---
+virtual int
+projectInterface(real t, real dt, GridFunction & cgf );
 
 virtual int 
 readRestartFile(realCompositeGridFunction & v,   // this version came from CgSolver

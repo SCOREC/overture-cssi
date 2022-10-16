@@ -45,16 +45,16 @@ saveShow( GridFunction & gf0 )
       // *wdh* 080530 : allow each domain solver to save its parameters
       for( int d=0; d<domainSolver.size(); d++ )
       {
-	if ( domainSolver[d] )
-	{
-	  ogshow->setCurrentFrameSeries(cg.getDomainName(d));
-	    
-	  assert( domainSolver[d]->parameters.dbase.get<Ogshow*>("show")==NULL );
-	  domainSolver[d]->parameters.dbase.get<Ogshow*>("show")=ogshow; 
-	  domainSolver[d]->parameters.saveParametersToShowFile();
-	  domainSolver[d]->numberSavedToShowFile=0;
-	  domainSolver[d]->parameters.dbase.get<Ogshow*>("show")=NULL;
-	}
+        if ( domainSolver[d] )
+        {
+          ogshow->setCurrentFrameSeries(cg.getDomainName(d));
+            
+          assert( domainSolver[d]->parameters.dbase.get<Ogshow*>("show")==NULL );
+          domainSolver[d]->parameters.dbase.get<Ogshow*>("show")=ogshow; 
+          domainSolver[d]->parameters.saveParametersToShowFile();
+          domainSolver[d]->numberSavedToShowFile=0;
+          domainSolver[d]->parameters.dbase.get<Ogshow*>("show")=NULL;
+        }
       }
       
     }
@@ -80,35 +80,35 @@ saveShow( GridFunction & gf0 )
 //       else
       if ( domainSolver[d] )
       {
-	ogshow->setCurrentFrameSeries(cg.getDomainName(d));
-	// We need set the moving grid property for each frame series.
-	ogshow->setIsMovingGridProblem( domainSolver[d]->parameters.isMovingGridProblem() );
-	  
-	Ogshow *&domainShow = domainSolver[d]->parameters.dbase.get<Ogshow*>("show");
-	  
-	Ogshow *domainShowSave = domainShow;
-	domainShow=ogshow;  // the domain show file now points to the Cgmp show file
-	  
-	printF("\n ============= Cgmp::saveShow for domain %i (%s) ==================\n",d,
-	       (const char*)cg.getDomainName(d));
-	  
-	GridFunction & ud = domainSolver[d]->gf[domainSolver[d]->current];
-	domainSolver[d]->saveShow(ud);
-	  
-	ogshow->saveParameters(dirName,frameSeriesParameters);
-	  
-	  
-	domainShow=domainShowSave; // reset
+        ogshow->setCurrentFrameSeries(cg.getDomainName(d));
+        // We need set the moving grid property for each frame series.
+        ogshow->setIsMovingGridProblem( domainSolver[d]->parameters.isMovingGridProblem() );
+          
+        Ogshow *&domainShow = domainSolver[d]->parameters.dbase.get<Ogshow*>("show");
+          
+        Ogshow *domainShowSave = domainShow;
+        domainShow=ogshow;  // the domain show file now points to the Cgmp show file
+          
+        printF("\n ============= Cgmp::saveShow for domain %i (%s) ==================\n",d,
+               (const char*)cg.getDomainName(d));
+          
+        GridFunction & ud = domainSolver[d]->gf[domainSolver[d]->current];
+        domainSolver[d]->saveShow(ud);
+          
+        ogshow->saveParameters(dirName,frameSeriesParameters);
+          
+          
+        domainShow=domainShowSave; // reset
       
-	// we may also want to save results in separate domain show files ?
+        // we may also want to save results in separate domain show files ?
 
 //       if( domainSolver[d]->parameters.dbase.get<Ogshow* >("show")!=NULL )
 //       {
-// 	printF("\n ============= Cgmp::saveShow for domain %i (%s) ==================\n",d,
-// 	       (const char*)cg.getDomainName(d));
+//      printF("\n ============= Cgmp::saveShow for domain %i (%s) ==================\n",d,
+//             (const char*)cg.getDomainName(d));
 
-// 	GridFunction & ud = domainSolver[d]->gf[domainSolver[d]->current];
-// 	domainSolver[d]->saveShow(ud);
+//      GridFunction & ud = domainSolver[d]->gf[domainSolver[d]->current];
+//      domainSolver[d]->saveShow(ud);
 //       }
       }
     }

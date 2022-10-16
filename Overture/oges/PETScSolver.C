@@ -207,53 +207,53 @@ initializePETSc()
 
             if( OGES_COMM != MPI_COMM_NULL )    
             {
-      	processorIsActive=true;  // this process IS in the PETSc sub-communicator
-      	if( PETSC_COMM_WORLD == MPI_COMM_NULL )
-      	{
-        	  printf("--PETScSolver-- initializePETSc:ERROR: myid=%i is in OGES_COMM but not in OGES_COMM_WORLD\n",
-             		 myid);
-        	  OV_ABORT("ERROR");
-      	}
-      	
-      	if( true && Oges::debug & 4 )
-      	{
-        	  int size=-1, rank=-1; 
-        	  MPI_Comm_size(OGES_COMM,&size);
-        	  MPI_Comm_rank(OGES_COMM,&rank);
+                processorIsActive=true;  // this process IS in the PETSc sub-communicator
+                if( PETSC_COMM_WORLD == MPI_COMM_NULL )
+                {
+                    printf("--PETScSolver-- initializePETSc:ERROR: myid=%i is in OGES_COMM but not in OGES_COMM_WORLD\n",
+                                  myid);
+                    OV_ABORT("ERROR");
+                }
+                
+                if( true && Oges::debug & 4 )
+                {
+                    int size=-1, rank=-1; 
+                    MPI_Comm_size(OGES_COMM,&size);
+                    MPI_Comm_rank(OGES_COMM,&rank);
             
-        	  printf(" --PETScSolver-- initializePETSc: OGES_COMM: myid=%i size=%i, rank=%i, processorIsActive=%i.\n",myid,size,rank,(int)processorIsActive);
-      	}
+                    printf(" --PETScSolver-- initializePETSc: OGES_COMM: myid=%i size=%i, rank=%i, processorIsActive=%i.\n",myid,size,rank,(int)processorIsActive);
+                }
             }
             else
             {
-      	processorIsActive=false; // this process is NOT in the PETSc sub-communicator
-      	if( true && Oges::debug & 4 )
-      	{
-                    	  printf(" --PETScSolver--initializePETSc:  PETSC_COMM_WORLD==NULL, myid=%i, processorIsActive=%i.\n",myid,(int)processorIsActive);
-      	}
+                processorIsActive=false; // this process is NOT in the PETSc sub-communicator
+                if( true && Oges::debug & 4 )
+                {
+                    printf(" --PETScSolver--initializePETSc:  PETSC_COMM_WORLD==NULL, myid=%i, processorIsActive=%i.\n",myid,(int)processorIsActive);
+                }
             }
             
 
             if( PETSC_COMM_WORLD!=MPI_COMM_NULL )
             {
         // -- Initialize PETSc on any processor that lives in PETSC_COMM_WORLD --
-      	if( true && Oges::debug & 4 )
-      	{
-        	  int size=-1, rank=-1; 
-        	  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-        	  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+                if( true && Oges::debug & 4 )
+                {
+                    int size=-1, rank=-1; 
+                    MPI_Comm_size(PETSC_COMM_WORLD,&size);
+                    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
             
-        	  printf(" --PETScSolver-- initializePETSc: PETSC_COMM_WORLD: myid=%i size=%i, rank=%i.\n",myid,size,rank);
-      	}
-      	
-      	PetscInitialize(&oges.argc,&oges.argv,(char *)0,_p_ov_help);
+                    printf(" --PETScSolver-- initializePETSc: PETSC_COMM_WORLD: myid=%i size=%i, rank=%i.\n",myid,size,rank);
+                }
+                
+                PetscInitialize(&oges.argc,&oges.argv,(char *)0,_p_ov_help);
 
-      	if( turnOnPETScMemoryTracing )
-      	{
-	  // Activate logging of PETSC's malloc call
-	  // 2.2.1 ierr = PetscTrLog();CHKERRQ( ierr );
-        	  ierr = PetscMallocDumpLog(stdout); CHKERRQ( ierr );
-      	}
+                if( turnOnPETScMemoryTracing )
+                {
+          // Activate logging of PETSC's malloc call
+          // 2.2.1 ierr = PetscTrLog();CHKERRQ( ierr );
+                    ierr = PetscMallocDumpLog(stdout); CHKERRQ( ierr );
+                }
             }
             
       // allProcessorsAreActive==true if PETSC_COMM_WORLD == MPI_COMM_WORLD
@@ -439,7 +439,7 @@ getGlobalIndex( int n, int *iv, int grid, int p ) const
     return  n + numberOfComponents*(
                   (iv[0]-nab(0,axis1,p,grid))+ndab(0,p,grid)*(
                     iv[1]-nab(0,axis2,p,grid) +ndab(1,p,grid)*(
-        	  iv[2]-nab(0,axis3,p,grid))) + noffset(p,grid) );
+                    iv[2]-nab(0,axis3,p,grid))) + noffset(p,grid) );
 }
 
 int PETScSolver::
@@ -453,7 +453,7 @@ getGlobalIndex( int n, int *iv, int grid, realArray & ug ) const
     return  n + numberOfComponents*(
                   (iv[0]-nab(0,axis1,p,grid))+ndab(0,p,grid)*(
                     iv[1]-nab(0,axis2,p,grid) +ndab(1,p,grid)*(
-        	  iv[2]-nab(0,axis3,p,grid))) + noffset(p,grid) ); 
+                    iv[2]-nab(0,axis3,p,grid))) + noffset(p,grid) ); 
 }
 
 //=============================================================================
@@ -490,8 +490,8 @@ equationToIndex( const int eqnNo0, int & n, int & i1, int & i2, int & i3, int & 
     
             if( eqnNumber < noffset(proc,g) )
             {
-      	found=true;
-      	break;
+                found=true;
+                break;
             }
             p=proc;
             grid=g;
@@ -521,9 +521,9 @@ equationToIndex( const int eqnNo0, int & n, int & i1, int & i2, int & i3, int & 
     {
     // **** DOUBLE CHECK THE ANSWER FOR NOW *****
         int diff = (n + numberOfComponents*(
-              		  (i1-nab(0,axis1,p,grid))+ndab(0,p,grid)*(
-               		   i2-nab(0,axis2,p,grid) +ndab(1,p,grid)*(
-               		   i3-nab(0,axis3,p,grid))) + noffset(p,grid) )) -eqnNumber;
+                                    (i1-nab(0,axis1,p,grid))+ndab(0,p,grid)*(
+                                      i2-nab(0,axis2,p,grid) +ndab(1,p,grid)*(
+                                      i3-nab(0,axis3,p,grid))) + noffset(p,grid) )) -eqnNumber;
         assert( diff==0 );
     }
         
@@ -548,12 +548,12 @@ equationNo( const int n, const int i1, const int i2, const int i3, const int gri
     intArray & mask = oges.cg[grid].mask();
     int p= mask.Array_Descriptor.findProcNum( iv );  // processor number
   // printF("--PETSc::equationNo: point (i1,i2,i3,grid)=(%i,%i,%i,grid) lives on proc=%i, noffset(p,grid)=%i\n",
-  // 	 i1,i2,i3,grid,p,noffset(p,grid));
+  //     i1,i2,i3,grid,p,noffset(p,grid));
     
     return  eqnBase + n + numberOfComponents*(
                   (iv[0]-nab(0,axis1,p,grid))+ndab(0,p,grid)*(
                     iv[1]-nab(0,axis2,p,grid) +ndab(1,p,grid)*(
-        	  iv[2]-nab(0,axis3,p,grid))) + noffset(p,grid) ); 
+                    iv[2]-nab(0,axis3,p,grid))) + noffset(p,grid) ); 
 }
 
 
@@ -682,26 +682,26 @@ int PETScSolver::findExtraEquations()
 
       // Note: classify already may have an extra eqn in it if, for example, initialize was called twice
             if( (classifyXLocal(i1,i2,i3,n)==SparseRepForMGF::unused 
-         	   || classifyXLocal(i1,i2,i3,n) >= startingExtraEquationClassifyValue) && extraEqn<numberOfExtraEquations )
-	// if( classifyXLocal(i1,i2,i3,n)==SparseRepForMGF::unused )
+                      || classifyXLocal(i1,i2,i3,n) >= startingExtraEquationClassifyValue) && extraEqn<numberOfExtraEquations )
+        // if( classifyXLocal(i1,i2,i3,n)==SparseRepForMGF::unused )
             {
 
         // Important: use equation numbering from the sparseRep (parallel PETSc orders equations differently)
 
-      	extraEquationNumber(extraEqn)=sparseRep.indexToEquation( n, i1, i2, i3);
+                extraEquationNumber(extraEqn)=sparseRep.indexToEquation( n, i1, i2, i3);
 
-	// extraEquationNumber(extraEqn)=getGlobalIndex( n, iv, grid, p ) + eqnBase;  // get the global index
+        // extraEquationNumber(extraEqn)=getGlobalIndex( n, iv, grid, p ) + eqnBase;  // get the global index
 
                 classifyXLocal(i1,i2,i3,n)=startingExtraEquationClassifyValue+extraEqn;
-      	if( false )
-      	{
+                if( false )
+                {
                     int globalIndex = getGlobalIndex( n, iv, grid, p ) + eqnBase;  // get the global index
-        	  printf("--PS--::findExtraEquations: p=%i extraEqn=%i grid=%i (i1,i2,i3,n)=(%i,%i,%i,%i) "
+                    printf("--PS--::findExtraEquations: p=%i extraEqn=%i grid=%i (i1,i2,i3,n)=(%i,%i,%i,%i) "
                                   "equation=%i (PETSc globalIndex=%i <- old way)\n",
-             		 p,extraEqn,grid,i1,i2,i3,n,extraEquationNumber(extraEqn),globalIndex);
-      	}
-      	
-      	extraEqn++;
+                                  p,extraEqn,grid,i1,i2,i3,n,extraEquationNumber(extraEqn),globalIndex);
+                }
+                
+                extraEqn++;
             }
             i1--;  // next point to check 
             
@@ -715,7 +715,7 @@ int PETScSolver::findExtraEquations()
                       "  This application is requesting numberOfExtraEquations =%i\n"
                       "  Extra equations are placed at unused points at the LAST point on the LAST grid.\n"
                       "  You could add an extra ghostline to the LAST grid.\n",
-         	   numberOfExtraEquations);
+                      numberOfExtraEquations);
         OV_ABORT("ERROR");
     }
 
@@ -789,14 +789,14 @@ buildGlobalIndexing(CompositeGrid & cg )
             CopyArray::getLocalArrayBox( p, ug, uBox ); // find the array bounds on proc. p (no ghost)
             for( int axis=0; axis<3; axis++ )
             {
-      	nab(0,axis,p,grid)=uBox.base(axis);
-      	nab(1,axis,p,grid)=uBox.bound(axis);
+                nab(0,axis,p,grid)=uBox.base(axis);
+                nab(1,axis,p,grid)=uBox.bound(axis);
             }
             if( debug & 1 )
-      	printF("PETScSolver::NEW: grid=%i p=%i local bounds=[%i,%i][%i,%i][%i,%i] \n",grid,p,
-             	       nab(0,axis1,p,grid),nab(1,axis1,p,grid),
-             	       nab(0,axis2,p,grid),nab(1,axis2,p,grid),
-             	       nab(0,axis3,p,grid),nab(1,axis3,p,grid));
+                printF("PETScSolver::NEW: grid=%i p=%i local bounds=[%i,%i][%i,%i][%i,%i] \n",grid,p,
+                              nab(0,axis1,p,grid),nab(1,axis1,p,grid),
+                              nab(0,axis2,p,grid),nab(1,axis2,p,grid),
+                              nab(0,axis3,p,grid),nab(1,axis3,p,grid));
         }
         
         numberOfGridPointsThisProcessor+=ndab(0,myid,grid)*ndab(1,myid,grid)*ndab(2,myid,grid);
@@ -817,7 +817,7 @@ buildGlobalIndexing(CompositeGrid & cg )
     if( debug & 4 )
     {
         printf(" >>>>>>>>>>> myid=%i numberOfGridPointsThisProcessor=%i, numberOfGridPoints=%i<<<<<<<<<<<<<<<<<<<\n",
-         	   myid,numberOfGridPointsThisProcessor,numberOfGridPoints);
+                      myid,numberOfGridPointsThisProcessor,numberOfGridPoints);
         fflush(0);
     }
     
@@ -873,14 +873,14 @@ buildGlobalIndexingOld(CompositeGrid & cg, realCompositeGridFunction & uu )
             CopyArray::getLocalArrayBox( p, ug, uBox ); // find the array bounds on proc. p (no ghost)
             for( int axis=0; axis<3; axis++ )
             {
-      	nab(0,axis,p,grid)=uBox.base(axis);
-      	nab(1,axis,p,grid)=uBox.bound(axis);
+                nab(0,axis,p,grid)=uBox.base(axis);
+                nab(1,axis,p,grid)=uBox.bound(axis);
             }
             if( debug & 1 )
-      	printF("PETScSolver::NEW: grid=%i p=%i local bounds=[%i,%i][%i,%i][%i,%i] \n",grid,p,
-             	       nab(0,axis1,p,grid),nab(1,axis1,p,grid),
-             	       nab(0,axis2,p,grid),nab(1,axis2,p,grid),
-             	       nab(0,axis3,p,grid),nab(1,axis3,p,grid));
+                printF("PETScSolver::NEW: grid=%i p=%i local bounds=[%i,%i][%i,%i][%i,%i] \n",grid,p,
+                              nab(0,axis1,p,grid),nab(1,axis1,p,grid),
+                              nab(0,axis2,p,grid),nab(1,axis2,p,grid),
+                              nab(0,axis3,p,grid),nab(1,axis3,p,grid));
         }
         
         numberOfGridPointsThisProcessor+=ndab(0,myid,grid)*ndab(1,myid,grid)*ndab(2,myid,grid);
@@ -901,7 +901,7 @@ buildGlobalIndexingOld(CompositeGrid & cg, realCompositeGridFunction & uu )
     if( debug & 4 )
     {
         printf(" >>>>>>>>>>> myid=%i numberOfGridPointsThisProcessor=%i, numberOfGridPoints=%i<<<<<<<<<<<<<<<<<<<\n",
-         	   myid,numberOfGridPointsThisProcessor,numberOfGridPoints);
+                      myid,numberOfGridPointsThisProcessor,numberOfGridPoints);
         fflush(0);
     }
     
@@ -938,7 +938,7 @@ printSolverDescription( const aString & label, FILE *file /* = stdout */ ) const
             fPrintF(file," Hypre: AMG (boomeramg) cycle=%s, strong-threshold=%s, coarsen-type=%s \n",
                             (const char*)cycle,
                             (const char*)threshold,
-            	      (const char*)coarsenType);
+                            (const char*)coarsenType);
         }
 
     }
@@ -1001,7 +1001,7 @@ extern "C"
     void initExplicitInterp(const int&ndc1,const int&ndc2,const int&ndc3,const int&ndci,
                     const int&ipar,real&coeff,const real&ci,real&pr,real&ps,real&pt,
                     const real&gridSpacing,const int&indexStart,
-        	  const int&variableInterpolationWidth,const int&interpoleeLocation,const int&interpoleeGrid);
+                    const int&variableInterpolationWidth,const int&interpoleeLocation,const int&interpoleeGrid);
 }
 
 
@@ -1265,8 +1265,8 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
                 else
                 {      
                     bool exteriorPoint = (i1<ir(0,0) || i1>ir(1,0) || 
-                                      		      i2<ir(0,1) || i2>ir(1,1) || 
-                                      		      i3<ir(0,2) || i3>ir(1,2));
+                                                            i2<ir(0,1) || i2>ir(1,1) || 
+                                                            i3<ir(0,2) || i3>ir(1,2));
                     real dScale;
                     if( parameters.rescaleRowNorms )
                     {
@@ -1314,7 +1314,6 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
 
                 // Convert an Overture equation number "eqn" into a PETSc equation jg
                 // and find the processor p
-                // convertOvertureToPETSc(eqn,jg,grid);
                                     int jg,p;
                                     if( eqn<equationBounds(0,grid) || eqn>equationBounds(1,grid) )
                                     {
@@ -1362,7 +1361,6 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
                                 eqn = EQUATIONNUMBER(m,n,i1,i2,i3) - eqnBase;
 
                 // Convert an Overture equation number "eqn" into a PETSc equation jg
-                // convertOvertureToPETSc(eqn,jg,grid);
                                     int jg,p;
                                     if( eqn<equationBounds(0,grid) || eqn>equationBounds(1,grid) )
                                     {
@@ -1518,14 +1516,14 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
         if( optionWasSet )
         {
             if( Oges::debug & 2 )
-      	printF("PETScSolver:Using -mat_block_size option: block size = %i\n"
-             	       "                    This option over-rides the value in OgesParameters\n",blockSize);
+                printF("PETScSolver:Using -mat_block_size option: block size = %i\n"
+                              "                    This option over-rides the value in OgesParameters\n",blockSize);
         }
         else
         {
             blockSize=parameters.blockSize;
             if( Oges::debug & 2 )
-      	printF("PETScSolver:Using blockSize=%i from OgesParameters\n",blockSize);
+                printF("PETScSolver:Using blockSize=%i from OgesParameters\n",blockSize);
         }
 
     // ****** fix these:
@@ -1538,20 +1536,20 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
         
         if( blockSize==1 )
         {
-      // 	numberOfMats++;
-      // 	printF("MatCreateMPIAIJ: create object %i.\n",numberOfMats);
+      //        numberOfMats++;
+      //        printF("MatCreateMPIAIJ: create object %i.\n",numberOfMats);
 
             if( true )
             {
-	// d_nz = fullStencilDimension;  // expected number of non-zero entries on this processor ("diagonal block")
-	// o_nz = fullStencilDimension;
+        // d_nz = fullStencilDimension;  // expected number of non-zero entries on this processor ("diagonal block")
+        // o_nz = fullStencilDimension;
                 if (fillInCount)
                 {
         //d_nz and o_nz will be ignored when d_nnzv and o_nnzv are provided
-      	ierr = MatCreateAIJ(OGES_COMM,numberOfUnknownsThisProcessor,numberOfUnknownsThisProcessor,
-                      			    numberOfUnknowns,numberOfUnknowns,
-                      			    d_nz,d_nnzv,o_nz,o_nnzv,
-                      			    &A); CHKERRQ(ierr);
+                ierr = MatCreateAIJ(OGES_COMM,numberOfUnknownsThisProcessor,numberOfUnknownsThisProcessor,
+                                                        numberOfUnknowns,numberOfUnknowns,
+                                                        d_nz,d_nnzv,o_nz,o_nnzv,
+                                                        &A); CHKERRQ(ierr);
 
         //turning on the following option will avoid PETSc malloc errors. However, Petsc fillin may become slow
         //When the options is needed, it means the nonzeros are not counted correctly -QT
@@ -1559,10 +1557,10 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
                 }
                 else
                 {
-      	ierr = MatCreateAIJ(OGES_COMM,numberOfUnknownsThisProcessor,numberOfUnknownsThisProcessor,
-                      			    numberOfUnknowns,numberOfUnknowns,
-                      			    d_nz,d_nnz,o_nz,o_nnz,
-                      			    &A); CHKERRQ(ierr);
+                ierr = MatCreateAIJ(OGES_COMM,numberOfUnknownsThisProcessor,numberOfUnknownsThisProcessor,
+                                                        numberOfUnknowns,numberOfUnknowns,
+                                                        d_nz,d_nnz,o_nz,o_nnz,
+                                                        &A); CHKERRQ(ierr);
         // This next line is needed to avoid error when malloc'ing an additional entry that was more
         // than the estimated number
                 MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);
@@ -1570,14 +1568,14 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
             }
             else
             {
-	// v 2.3.2
-	// ierr = MatCreateMPIAIJ(OGES_COMM,numberOfUnknownsThisProcessor,numberOfUnknownsThisProcessor,
-	// 		       numberOfUnknowns,numberOfUnknowns,
-	// 		       d_nz,d_nnz,o_nz,o_nnz,
-      	ierr = MatCreateAIJ(OGES_COMM,numberOfUnknownsThisProcessor,numberOfUnknownsThisProcessor,
-                      			    numberOfUnknowns,numberOfUnknowns,
-                      			    d_nz,d_nnz,o_nz,o_nnz,
-                      			    &A); CHKERRQ(ierr);
+        // v 2.3.2
+        // ierr = MatCreateMPIAIJ(OGES_COMM,numberOfUnknownsThisProcessor,numberOfUnknownsThisProcessor,
+        //                     numberOfUnknowns,numberOfUnknowns,
+        //                     d_nz,d_nnz,o_nz,o_nnz,
+                ierr = MatCreateAIJ(OGES_COMM,numberOfUnknownsThisProcessor,numberOfUnknownsThisProcessor,
+                                                        numberOfUnknowns,numberOfUnknowns,
+                                                        d_nz,d_nnz,o_nz,o_nnz,
+                                                        &A); CHKERRQ(ierr);
             }
 
       // // PETSc documentation recommends doing this instead **FINISH ME**
@@ -1598,10 +1596,10 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
 
       // v 2.3.2
       // ierr = MatCreateMPIBAIJ(PETSC_COMM_SELF,blockSize,numberOfUnknownsThisProcessor,numberOfUnknownsThisProcessor,
-      // 			     numberOfUnknowns,numberOfUnknowns,d_nz,d_nnz,o_nz,o_nnz,&A); CHKERRQ(ierr);
+      //                             numberOfUnknowns,numberOfUnknowns,d_nz,d_nnz,o_nz,o_nnz,&A); CHKERRQ(ierr);
 
             ierr = MatCreateBAIJ(PETSC_COMM_SELF,blockSize,numberOfUnknownsThisProcessor,numberOfUnknownsThisProcessor,
-                     			   numberOfUnknowns,numberOfUnknowns,d_nz,d_nnz,o_nz,o_nnz,&A); CHKERRQ(ierr);
+                                                      numberOfUnknowns,numberOfUnknowns,d_nz,d_nnz,o_nz,o_nnz,&A); CHKERRQ(ierr);
 
         }
         
@@ -1688,26 +1686,26 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
             if( false )
             {
         // ** THIS IS WRONG -- need to sum values of all grids!  -- use no scaling for now 
-      	denseEquationScaleFactor=0.;
-      	FOR3N(i1,i2,i3,n,n1a,n1b,n2a,n2b,n3a,n3b)
-      	{
-        	  if( classify(i1,i2,i3,n)!=0 && classify(i1,i2,i3,n) !=-1 )
-        	  {
-          	    bool exteriorPoint = (i1<ir(0,0) || i1>ir(1,0) || 
-                          				  i2<ir(0,1) || i2>ir(1,1) || 
-                          				  i3<ir(0,2) || i3>ir(1,2));
-          	    if( !exteriorPoint )
-          	    {
-            	      denseEquationScaleFactor+=1.;
-          	    }
-        	  }
-      	
-      	}
-      	denseEquationScaleFactor=ParallelUtility::getSum(denseEquationScaleFactor);
-      	if( denseEquationScaleFactor>deps )
-        	  denseEquationScaleFactor=1./denseEquationScaleFactor;
-      	else
-        	  denseEquationScaleFactor=1.;
+                denseEquationScaleFactor=0.;
+                FOR3N(i1,i2,i3,n,n1a,n1b,n2a,n2b,n3a,n3b)
+                {
+                    if( classify(i1,i2,i3,n)!=0 && classify(i1,i2,i3,n) !=-1 )
+                    {
+                        bool exteriorPoint = (i1<ir(0,0) || i1>ir(1,0) || 
+                                                                    i2<ir(0,1) || i2>ir(1,1) || 
+                                                                    i3<ir(0,2) || i3>ir(1,2));
+                        if( !exteriorPoint )
+                        {
+                            denseEquationScaleFactor+=1.;
+                        }
+                    }
+                
+                }
+                denseEquationScaleFactor=ParallelUtility::getSum(denseEquationScaleFactor);
+                if( denseEquationScaleFactor>deps )
+                    denseEquationScaleFactor=1./denseEquationScaleFactor;
+                else
+                    denseEquationScaleFactor=1.;
             }
             
             RealArray & extraEquationScaleFactor = oges.dbase.get<RealArray>("extraEquationScaleFactor");
@@ -1721,8 +1719,8 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
       // extra eqn done later:  *wdh* 201/05/22 -- needed for predefine equations and user defined eqns
             if( classify(i1,i2,i3,n) >= startingExtraEquationClassifyValue ) continue;  
 
-      // 	int p= ug.Array_Descriptor.findProcNum( iv );  // processor number
-      // 	assert( p==myid );
+      //        int p= ug.Array_Descriptor.findProcNum( iv );  // processor number
+      //        assert( p==myid );
 
             int ig=getGlobalIndex( n, iv, grid, myid );  // get the global index (equation number, base 0)
 
@@ -1738,80 +1736,79 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
             
             if( classify(i1,i2,i3,n)==0 )
             {
-	// unused
-      	int jg=ig;
-      	v=1.;      // eqn at unused pts is the identity
+        // unused
+                int jg=ig;
+                v=1.;      // eqn at unused pts is the identity
                 if( ig!=denseExtraEquation )
-      	{
-        	  ierr = MatSetValues(A,1,&ig,1,&jg,&v,INSERT_VALUES);CHKERRQ(ierr);
-      	}
+                {
+                    ierr = MatSetValues(A,1,&ig,1,&jg,&v,INSERT_VALUES);CHKERRQ(ierr);
+                }
             }
             else
             {
                 bool exteriorPoint = (i1<ir(0,0) || i1>ir(1,0) || 
-                        			      i2<ir(0,1) || i2>ir(1,1) || 
-                        			      i3<ir(0,2) || i3>ir(1,2));
+                                                            i2<ir(0,1) || i2>ir(1,1) || 
+                                                            i3<ir(0,2) || i3>ir(1,2));
 
-      	real dScale;
-      	if( parameters.rescaleRowNorms )
-      	{
+                real dScale;
+                if( parameters.rescaleRowNorms )
+                {
                     dScale=0.;
-        	  for( int m=0; m<stencilDim; m++ )
-        	  {
+                    for( int m=0; m<stencilDim; m++ )
+                    {
             // Change row scaling to 1-norm to match serial PETScEquationSolver *wdh* April 1, 2017
-	    // dScale=max(dScale,fabs(COEFF(m,n,i1,i2,i3)));
-          	    dScale += fabs(COEFF(m,n,i1,i2,i3));
-        	  }
-        	  if( problemIsSingular==addExtraEquation && !exteriorPoint )
-          	    dScale+=1.; // here is the extra entry when there is a dense constraint
+            // dScale=max(dScale,fabs(COEFF(m,n,i1,i2,i3)));
+                        dScale += fabs(COEFF(m,n,i1,i2,i3));
+                    }
+                    if( problemIsSingular==addExtraEquation && !exteriorPoint )
+                        dScale+=1.; // here is the extra entry when there is a dense constraint
 
                     if( dScale>deps )
                         dScale=1./dScale;
-        	  else
+                    else
                         dScale=1.;  // all coefficients are small, just scale by 1.
                     
                     ds(i1,i2,i3,n)=dScale;  // save inverse of the scale factor
-      	}
-      	else
-      	{
-        	  dScale=1.;
-      	}
+                }
+                else
+                {
+                    dScale=1.;
+                }
 
                 if( exteriorPoint )
-      	{
+                {
           // ********************************************************************
-	  // ***** fill-in equations at ghost points or periodic points *********
+          // ***** fill-in equations at ghost points or periodic points *********
           // ********************************************************************
 
 
-	  // int jg=ig;
-	  // v=1.;      // eqn at ghost points is the identity for now
-	  // ierr = MatSetValues(A,1,&ig,1,&jg,&v,INSERT_VALUES);CHKERRQ(ierr);
-	  // printf("p=%i: i1,i2=%i,%i   ig,jg=%i,%i  set to identity.\n",myid,i1,i2,ig,jg);
-        	  
-        	  if( debug & 8 ) 
-          	    printf(" Boundary Eqn: grid=%i classify=%i (i1,i2,i3)=(%i,%i,%i) mask=%i:\n",
-               		   grid,classify(i1,i2,i3,n),i1,i2,i3,mask(i1,i2,i3)); 
+          // int jg=ig;
+          // v=1.;      // eqn at ghost points is the identity for now
+          // ierr = MatSetValues(A,1,&ig,1,&jg,&v,INSERT_VALUES);CHKERRQ(ierr);
+          // printf("p=%i: i1,i2=%i,%i   ig,jg=%i,%i  set to identity.\n",myid,i1,i2,ig,jg);
+                    
+                    if( debug & 8 ) 
+                        printf(" Boundary Eqn: grid=%i classify=%i (i1,i2,i3)=(%i,%i,%i) mask=%i:\n",
+                                      grid,classify(i1,i2,i3,n),i1,i2,i3,mask(i1,i2,i3)); 
 
-      	
+                
 
                     for( int m=0; m<stencilDim; m++ )
-        	  {
-          	    if( COEFF(m,n,i1,i2,i3)!=0. )
-          	    {
+                    {
+                        if( COEFF(m,n,i1,i2,i3)!=0. )
+                        {
               // *****************************************************************
               // NOTE: equation-numbering in the sparseRep is DIFFERENT from the
               //       equation-numbering in parallel PETScSolver
               // *****************************************************************
 
-            	      v=COEFF(m,n,i1,i2,i3)*dScale; 
-            	      if( fabs(v)<eps ) continue;
+                            v=COEFF(m,n,i1,i2,i3)*dScale; 
+                            if( fabs(v)<eps ) continue;
 
               // Overture numbers equations with base eqnBase=1, shift to base=0: 
-            	      eqn = EQUATIONNUMBER(m,n,i1,i2,i3)-eqnBase;
+                            eqn = EQUATIONNUMBER(m,n,i1,i2,i3)-eqnBase;
 
               // Convert an Overture equation number "eqn" into a PETSc equation jg
-              // convertOvertureToPETSc(eqn,jg,grid);
                                 int jg,p;
                                 if( eqn<equationBounds(0,grid) || eqn>equationBounds(1,grid) )
                                 {
@@ -1834,11 +1831,11 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
                                     jg=getGlobalIndex( n1, jv, grid, p );  // get the global index
                                 }
                             
-            	      ierr = MatSetValues(A,1,&ig,1,&jg,&v,INSERT_VALUES);CHKERRQ(ierr);
+                            ierr = MatSetValues(A,1,&ig,1,&jg,&v,INSERT_VALUES);CHKERRQ(ierr);
 
-            	      if( debug & 8 ) 
-            		printf("      m=%i n=%i j=(%i,%i,%i) value=%6.2f [eqn=%i,ig=%i,jg=%i],\n",
-                   		       m,n,j1,j2,j3,COEFF(m,n,i1,i2,i3),eqn,ig,jg);
+                            if( debug & 8 ) 
+                                printf("      m=%i n=%i j=(%i,%i,%i) value=%6.2f [eqn=%i,ig=%i,jg=%i],\n",
+                                              m,n,j1,j2,j3,COEFF(m,n,i1,i2,i3),eqn,ig,jg);
 
                         }
                     }
@@ -1854,7 +1851,7 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
             // compute the offset for this stencil pt  --------------- fix this ---------------
             // int m1 = (m % 3) -1;
             // int m2 = int(m/3) -1;
-        	  
+                    
                         if( COEFF(m,n,i1,i2,i3)!=0. )
                         {
                             v=COEFF(m,n,i1,i2,i3)*dScale;
@@ -1863,7 +1860,6 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
                             eqn = EQUATIONNUMBER(m,n,i1,i2,i3) - eqnBase;
 
               // Convert an Overture equation number "eqn" into a PETSc equation jg
-              // convertOvertureToPETSc(eqn,jg,grid);
                                 int jg,p;
                                 if( eqn<equationBounds(0,grid) || eqn>equationBounds(1,grid) )
                                 {
@@ -1891,7 +1887,7 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
                 // Here we explicitly change the matrix to use the periodic image that is inside the grid
 
                 // printf(" grid=%i, i=(%i,%i,%i), j=(%i,%i,%i) --> periodic pt",grid,i1,i2,i3,j1,j2,j3);
-            		
+                                
                 // This is a periodic point
                 // eqn = EQUATIONNUMBER(1,n1,j1,j2,j3) -1;  // *wdh* 061014  bug found for systems
                 // The periodic point must be located at m=1: 
@@ -1902,9 +1898,9 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
                                 jg=getGlobalIndex( n1, jv, grid, p );  // get the global index
                               
                 // printf(" j=(%i,%i,%i)\n",j1,j2,j3);
-            		
+                                
                             }
-            	      
+                            
 
                             ierr = MatSetValues(A,1,&ig,1,&jg,&v,INSERT_VALUES);CHKERRQ(ierr);
 
@@ -1954,67 +1950,67 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
             const int ieqn = eqnExtra(iExtraEquation)-eqnBase; // row for this user supplied extra equation
 
             if( false )
-      	printF("--PETScSolver--: Add user supplied extra eqn %i to row %i\n",iExtraEquation,ieqn);
+                printF("--PETScSolver--: Add user supplied extra eqn %i to row %i\n",iExtraEquation,ieqn);
             
             real dScale;
             if( parameters.rescaleRowNorms )
             {
-      	const bool useMaxNorm=true;
+                const bool useMaxNorm=true;
                 const bool extraEquationsAreDistributed=true;  // *wdh* June 1, 2017
-      	if( useMaxNorm )
-      	{
-        	  dScale=0.;
-        	  for( int kk=iaExtra(iExtraEquation); kk<=iaExtra(iExtraEquation+1)-1; kk++ )
-        	  {
-          	    dScale =max(dScale,fabs(aExtra(kk)));
-        	  }
+                if( useMaxNorm )
+                {
+                    dScale=0.;
+                    for( int kk=iaExtra(iExtraEquation); kk<=iaExtra(iExtraEquation+1)-1; kk++ )
+                    {
+                        dScale =max(dScale,fabs(aExtra(kk)));
+                    }
 
-        	  if( extraEquationsAreDistributed )
-        	  {
-          	    dScale=ParallelUtility::getMaxValue(dScale);
-        	  }
-      	}
-      	else
-      	{
-	  // scale row by 1-norm 
-        	  dScale=0.;
-        	  for( int kk=iaExtra(iExtraEquation); kk<=iaExtra(iExtraEquation+1)-1; kk++ )
-        	  {
-          	    dScale+=fabs(aExtra(kk));
-	    // printF("--PETSc-- kk=%i, aExtra=%10.2e dScale=%9.2e\n",kk,aExtra(kk),dScale); // *********************
-        	  }
-        	  if( extraEquationsAreDistributed )
-        	  {
-          	    dScale=ParallelUtility::getSum(dScale);
-        	  }
-      	}
-      	
+                    if( extraEquationsAreDistributed )
+                    {
+                        dScale=ParallelUtility::getMaxValue(dScale);
+                    }
+                }
+                else
+                {
+          // scale row by 1-norm 
+                    dScale=0.;
+                    for( int kk=iaExtra(iExtraEquation); kk<=iaExtra(iExtraEquation+1)-1; kk++ )
+                    {
+                        dScale+=fabs(aExtra(kk));
+            // printF("--PETSc-- kk=%i, aExtra=%10.2e dScale=%9.2e\n",kk,aExtra(kk),dScale); // *********************
+                    }
+                    if( extraEquationsAreDistributed )
+                    {
+                        dScale=ParallelUtility::getSum(dScale);
+                    }
+                }
+                
 
-      	if( dScale>deps )
-        	  dScale=1./dScale;
-      	else
-        	  dScale=1.;  // all coefficients are small, just scale by 1.
+                if( dScale>deps )
+                    dScale=1./dScale;
+                else
+                    dScale=1.;  // all coefficients are small, just scale by 1.
                     
         // save inverse of the scale factor (needed to scale RHS)
 
         // We need to find the index for the extra equation in the main list of extra equations  
         //    Do this for now, not very efficient ********************************************* FIX ME ****
-      	int extra=-1;
-      	for( int jj=0; jj<oges.numberOfExtraEquations; jj++ )
-      	{
-        	  if( ieqn== (extraEquationNumber(jj)-eqnBase) )
-        	  {
-          	    extra=jj;
-          	    break;
-        	  }
-      	}
-      	assert( extra>=0 );
-      	
+                int extra=-1;
+                for( int jj=0; jj<oges.numberOfExtraEquations; jj++ )
+                {
+                    if( ieqn== (extraEquationNumber(jj)-eqnBase) )
+                    {
+                        extra=jj;
+                        break;
+                    }
+                }
+                assert( extra>=0 );
+                
         // extraEquationScaleFactor(iExtraEquation)=dScale;
-      	if( false )
-        	  printF("--PETSc-- iExtraEquation=%i ieqn=%i extra=%i  extraEquationScaleFactor(%i)=%12.3e\n",
-             		 iExtraEquation,ieqn,extra,extra,dScale);
-      	
+                if( false )
+                    printF("--PETSc-- iExtraEquation=%i ieqn=%i extra=%i  extraEquationScaleFactor(%i)=%12.3e\n",
+                                  iExtraEquation,ieqn,extra,extra,dScale);
+                
                 extraEquationScaleFactor(extra)=dScale; // put scale factor here
 
             }
@@ -2037,7 +2033,7 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
           // *optimize me* -- add all entries in this row at once: 
                     v= aExtra(kk)*dScale;
                     if( fabs(v)<eps ) continue; // skip very small elements
-      	
+                
           // Convert an Oges equation number =jaExtra(kk)  to PETSc equation number= jg  
                     oges.equationToIndex( jaExtra(kk), nj,j1,j2,j3,gridj );
                     pj = uu[gridj].Array_Descriptor.findProcNum( jv );  // processor number
@@ -2071,7 +2067,7 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
                       {
                           v= aExtra(kk)*dScale;
                           if( fabs(v)<eps ) continue; // skip very small elements
-      	
+                
              // Convert an Oges equation number =jaExtra(kk)  to PETSc equation number= jg  
                           int eqn=jaExtra(kk);
 
@@ -2156,7 +2152,7 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
             ierr = MatGetValues(A,1,&ig,1,&ig,&v);CHKERRQ(ierr);
             if( fabs(v)<1.e-10 )
             {
-      	printf("WARNING: matrix diagonal a(%i,%i)=%e is very small\n",ig,ig,v);
+                printf("WARNING: matrix diagonal a(%i,%i)=%e is very small\n",ig,ig,v);
             }
         }
     }
@@ -2247,20 +2243,20 @@ buildMatrix( realCompositeGridFunction & coeff, realCompositeGridFunction & uu )
 
             FOR3N(i1,i2,i3,n,n1a,n1b,n2a,n2b,n3a,n3b)
             {
-      	assert( ig>= Istart && ig<=Iend );
-        	  
-      	if( classify(i1,i2,i3,n)==0 ) 
+                assert( ig>= Istart && ig<=Iend );
+                    
+                if( classify(i1,i2,i3,n)==0 ) 
 //             i1<IR(0,0) || i1>IR(1,0) || i2<IR(0,1) || i2>IR(1,1) || i3<IR(0,2) || i3>IR(1,2) )
-      	{
-        	  nv[ig-Istart]=0.; // Null vector is zero at unused pts
-      	}
-      	else
-      	{
-        	  nv[ig-Istart]=1.; 
+                {
+                    nv[ig-Istart]=0.; // Null vector is zero at unused pts
+                }
+                else
+                {
+                    nv[ig-Istart]=1.; 
                     if( debug & 2 ) printf(" Null vector: grid=%i, (i1,i2,i3)=(%i,%i,%i) ig=%i\n",grid,i1,i2,i3,ig);
-        	  
-      	}
-      	ig++;
+                    
+                }
+                ig++;
             }
         }
         #undef IR
@@ -2372,7 +2368,7 @@ buildSolver()
         if( type==ShowFileParameter::stringParameter )
         {
             if( debug & 1 )
-      	printF("PETScSolver::buildSolver: INFO: adding option=[%s] value=[%s]\n",(const char*)name,(const char*)stringValue);
+                printF("PETScSolver::buildSolver: INFO: adding option=[%s] value=[%s]\n",(const char*)name,(const char*)stringValue);
             PetscOptionsSetValue(name,stringValue);
 
             if( name=="-pc_type" )
@@ -2785,8 +2781,8 @@ setPetscParameters()
             else
             {
                 found=false;
-      	printF("PETScSolver::setPetscParameters:ERROR: unknown result from -pc_type found in the "
-             	       "options database = [%s]\n",(const char*)pcType);
+                printF("PETScSolver::setPetscParameters:ERROR: unknown result from -pc_type found in the "
+                              "options database = [%s]\n",(const char*)pcType);
             }
 
 //       printf("PETScSolver::setPetscParameters: pcType= [%s]\n",(const char*)pcType);
@@ -2804,13 +2800,13 @@ setPetscParameters()
                 petscPreconditioner==PCHYPRE) 
         {
             if( Oges::debug & 2 ) 
-      	printF(" ********** PETScSolver: set preconditioner ***********\n");
+                printF(" ********** PETScSolver: set preconditioner ***********\n");
             ierr = PCSetType(pc,      petscPreconditioner);  CHKERRQ(ierr);
         }
         else if( numberOfProcessors>1 )
         {
             printF("PETScSolver:ERROR: cannot set the parallel preconditioner to be %i\n",
-           	     newPreconditioner);
+                          newPreconditioner);
         }
         
     }
@@ -2849,7 +2845,7 @@ setPetscParameters()
         if( numberOfProcessors==1 )
         {
             if( Oges::debug & 2 ) 
-      	printF(" ********** PETScSolver: set matrix ordering ***********\n");
+                printF(" ********** PETScSolver: set matrix ordering ***********\n");
 
       // 2.2.1 ierr = PCILUSetMatOrdering(pc, matOrdering); CHKERRQ(ierr);
 #if (PETSC_VERSION_MAJOR==3)
@@ -2879,7 +2875,7 @@ setPetscParameters()
         if( numberOfProcessors==1 )
         {
             if( Oges::debug & 2 ) 
-      	printF(" ********** PETScSolver: set ilu levels ***********\n");
+                printF(" ********** PETScSolver: set ilu levels ***********\n");
 
       // 2.2.1 ierr = PCILUSetLevels(pc, parameters.numberOfIncompleteLULevels);  CHKERRQ(ierr);
       // 2.2.1 ierr = PCILUSetFill(pc,   parameters.incompleteLUExpectedFill);    CHKERRQ(ierr);
@@ -2928,80 +2924,80 @@ setPetscParameters()
           
             if( isbjacobi )
             {
-      	ierr = PCBJacobiGetSubKSP(pc,&nlocal,&first,&subksp);CHKERRQ(ierr);
+                ierr = PCBJacobiGetSubKSP(pc,&nlocal,&first,&subksp);CHKERRQ(ierr);
             }
             else
             {
-      	ierr = PCASMGetSubKSP(pc,&nlocal,&first,&subksp);CHKERRQ(ierr);
+                ierr = PCASMGetSubKSP(pc,&nlocal,&first,&subksp);CHKERRQ(ierr);
             }
             if( Oges::debug & 1 )
-      	printF(" PETScSolver::setPetscParameters:INFO: number of local blocks=%i\n",nlocal); 
+                printF(" PETScSolver::setPetscParameters:INFO: number of local blocks=%i\n",nlocal); 
 
       // Loop over the local blocks, setting various KSP options for each block.  
             PC subpc;        /* PC context for subdomain */
             for (i=0; i<nlocal; i++) 
             {
-      	ierr = KSPGetPC(subksp[i],&subpc);CHKERRQ(ierr);
+                ierr = KSPGetPC(subksp[i],&subpc);CHKERRQ(ierr);
                 PetscOptionsHasName(PETSC_NULL,"-sub_pc_type",&optionWasSet);  // check if user has set
                 if( !optionWasSet && parameters.preconditioner!=preconditioner )
-      	{
-        	  if( Oges::debug & 1 )
-          	    printF(" PETScSolver::setPetscParameters:INFO: setting block preconditioner for block %i (p=%i) to %i\n",
-               		   i,myid,parameters.preconditioner);
+                {
+                    if( Oges::debug & 1 )
+                        printF(" PETScSolver::setPetscParameters:INFO: setting block preconditioner for block %i (p=%i) to %i\n",
+                                      i,myid,parameters.preconditioner);
 
                     PCType petscPreconditioner = getPetscPreconditioner(parameters.preconditioner);
-        	  
-        	  ierr = PCSetType(subpc,petscPreconditioner);CHKERRQ(ierr);
-      	}
+                    
+                    ierr = PCSetType(subpc,petscPreconditioner);CHKERRQ(ierr);
+                }
 
                 PetscOptionsHasName(PETSC_NULL,"-sub_ksp_type",&optionWasSet);  // check if user has set
-      	if( !optionWasSet && parameters.solverMethod!=solverMethod )
-      	{
-        	  if( Oges::debug & 1 )
-          	    printF(" PETScSolver::setPetscParameters:INFO: setting KSP type for block %i (p=%i) to %i\n",
-               		   i,myid,parameters.solverMethod);
+                if( !optionWasSet && parameters.solverMethod!=solverMethod )
+                {
+                    if( Oges::debug & 1 )
+                        printF(" PETScSolver::setPetscParameters:INFO: setting KSP type for block %i (p=%i) to %i\n",
+                                      i,myid,parameters.solverMethod);
                     
-        	  KSPType krylovSpaceMethod = getPetscKrylovSpaceMethod(parameters.solverMethod);
-        	  ierr = KSPSetType(subksp[i],krylovSpaceMethod);CHKERRQ(ierr);
-      	}
+                    KSPType krylovSpaceMethod = getPetscKrylovSpaceMethod(parameters.solverMethod);
+                    ierr = KSPSetType(subksp[i],krylovSpaceMethod);CHKERRQ(ierr);
+                }
 
-      	PetscOptionsHasName(PETSC_NULL,"-sub_pc_factor_mat_ordering_type",&optionWasSet);  // check if user has set
+                PetscOptionsHasName(PETSC_NULL,"-sub_pc_factor_mat_ordering_type",&optionWasSet);  // check if user has set
                 if( !optionWasSet &&
-          	    parameters.matrixOrdering!=matrixOrdering && 
-          	    parameters.preconditioner==OgesParameters::incompleteLUPreconditioner)
-      	{
-	  // 2.2.1 ierr = PCILUSetMatOrdering(subpc, matOrdering); CHKERRQ(ierr);
+                        parameters.matrixOrdering!=matrixOrdering && 
+                        parameters.preconditioner==OgesParameters::incompleteLUPreconditioner)
+                {
+          // 2.2.1 ierr = PCILUSetMatOrdering(subpc, matOrdering); CHKERRQ(ierr);
 #if (PETSC_VERSION_MAJOR==3)
-        	  ierr = PCFactorSetMatOrderingType(subpc, matOrdering); CHKERRQ(ierr);
+                    ierr = PCFactorSetMatOrderingType(subpc, matOrdering); CHKERRQ(ierr);
 #else
-        	  ierr = PCFactorSetMatOrdering(subpc, matOrdering); CHKERRQ(ierr);
+                    ierr = PCFactorSetMatOrdering(subpc, matOrdering); CHKERRQ(ierr);
 #endif
-      	}
+                }
     
                 PetscOptionsHasName(PETSC_NULL,"-sub_pc_factor_levels",&optionWasSet);  // check if user has set
-      	if( !optionWasSet &&
+                if( !optionWasSet &&
                         parameters.numberOfIncompleteLULevels!=numberOfIncompleteLULevels &&
-          	    parameters.preconditioner==OgesParameters::incompleteLUPreconditioner )
-      	{
-        	  ierr = PCFactorSetLevels(subpc, parameters.numberOfIncompleteLULevels);  CHKERRQ(ierr);
-      	}
+                        parameters.preconditioner==OgesParameters::incompleteLUPreconditioner )
+                {
+                    ierr = PCFactorSetLevels(subpc, parameters.numberOfIncompleteLULevels);  CHKERRQ(ierr);
+                }
                 PetscOptionsHasName(PETSC_NULL,"-sub_pc_factor_fill",&optionWasSet);  // check if user has set
-      	if( !optionWasSet &&
+                if( !optionWasSet &&
                         parameters.numberOfIncompleteLULevels!=numberOfIncompleteLULevels &&
-          	    parameters.preconditioner==OgesParameters::incompleteLUPreconditioner )
-      	{
-        	  ierr = PCFactorSetFill(subpc,   parameters.incompleteLUExpectedFill);    CHKERRQ(ierr);
-      	}
-	// ierr = KSPSetTolerances(subksp[i],1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+                        parameters.preconditioner==OgesParameters::incompleteLUPreconditioner )
+                {
+                    ierr = PCFactorSetFill(subpc,   parameters.incompleteLUExpectedFill);    CHKERRQ(ierr);
+                }
+        // ierr = KSPSetTolerances(subksp[i],1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
-// 	if( parameters.solverMethod!=OgesParameters::preonly ) // petscPreconditioner!=PCLU )
-// 	{
-// 	  ierr = KSPSetInitialGuessNonzero(subksp[i],PETSC_TRUE); CHKERRQ(ierr); 
-// 	}
-// 	else
-// 	{
-// 	  ierr = KSPSetInitialGuessNonzero(subksp[i],PETSC_FALSE); CHKERRQ(ierr); 
-// 	}
+//      if( parameters.solverMethod!=OgesParameters::preonly ) // petscPreconditioner!=PCLU )
+//      {
+//        ierr = KSPSetInitialGuessNonzero(subksp[i],PETSC_TRUE); CHKERRQ(ierr); 
+//      }
+//      else
+//      {
+//        ierr = KSPSetInitialGuessNonzero(subksp[i],PETSC_FALSE); CHKERRQ(ierr); 
+//      }
 
             }
         }
@@ -3109,9 +3105,9 @@ sizeOf( FILE *file /* =NULL */  )
         {
             if( processorIsActive )
             {
-      	MatInfo matInfo;
-      	ierr=MatGetInfo(A,MAT_GLOBAL_SUM,&matInfo); CHKERRQ(ierr);
-      	size=matInfo.memory;
+                MatInfo matInfo;
+                ierr=MatGetInfo(A,MAT_GLOBAL_SUM,&matInfo); CHKERRQ(ierr);
+                size=matInfo.memory;
             }
             
         }
@@ -3121,8 +3117,8 @@ sizeOf( FILE *file /* =NULL */  )
     {
     // 2.2.1  fprintf(outputFile,
     // 2.2.1          ">> PETSC: %e Kbytes in use.  (maximum used=%e Kbytes, total memory use=%e Kbytes)\n"
-    // 2.2.1  	    "  matrix=%e Kbytes, fragments=%e\n",
-    // 2.2.1  	    space*.001,maximumBytes*.001,mem*.001,matInfo.memory*.001,fragments);
+    // 2.2.1        "  matrix=%e Kbytes, fragments=%e\n",
+    // 2.2.1        space*.001,maximumBytes*.001,mem*.001,matInfo.memory*.001,fragments);
         fprintf(outputFile,">> PETSC: maximum memory used=%e (Kbytes)\n",mem/1000);
 
     }
@@ -3289,41 +3285,41 @@ solve( realCompositeGridFunction & uu, realCompositeGridFunction & f )
             if( ig<Istart || ig>Iend )
             {
                 int igg=getGlobalIndex( n,iv, grid, myid );
-      	printf("PETScSolver:solve:ERROR filling in the rhs and initial conditions\n"
-             	       " ig=%i is not in the range [Istart,Iend]=[%i,%i]\n"
+                printf("PETScSolver:solve:ERROR filling in the rhs and initial conditions\n"
+                              " ig=%i is not in the range [Istart,Iend]=[%i,%i]\n"
                               " myid=%i, grid=%i, getGlobalIndex( n,iv, grid, myid )=%i (should equal ig)\n" 
                               " (i1,i2,i3,n)=(%i,%i,%i,%i) [n1a,n1b][n2a,n2b][n3a,n3b]=[%i,%i][%i,%i][%i,%i]\n",
-             	       ig,Istart,Iend, myid,grid, igg, i1,i2,i3,n, n1a,n1b,n2a,n2b,n3a,n3b);
+                              ig,Istart,Iend, myid,grid, igg, i1,i2,i3,n, n1a,n1b,n2a,n2b,n3a,n3b);
 
-// 	i1=n1a, i2=n2a, i3=n3a;
-// 	int ig0=getGlobalIndex( n,iv, grid, myid ); 
+//      i1=n1a, i2=n2a, i3=n3a;
+//      int ig0=getGlobalIndex( n,iv, grid, myid ); 
 //         printf(" intial value: (i1,i2,i3)=(%i,%i,%i) getGlobalIndex( n,iv, grid, myid )=%i\n",
-// 	       i1,i2,i3,ig0);
+//             i1,i2,i3,ig0);
 
-// 	int p=myid;
+//      int p=myid;
 //         printf("getGlobalIndex: nab(0,axis1,p,grid)=%i, ndab(0,p,grid)=%i\n"
 //                "                nab(0,axis2,p,grid)=%i, ndab(1,p,grid)=%i\n" 
 //                "                nab(0,axis3,p,grid)=%i \n" 
 //                "  noffset(p,grid)=%i\n",
-// 	       nab(0,axis1,p,grid),ndab(0,p,grid),nab(0,axis2,p,grid),ndab(1,p,grid),nab(0,axis3,p,grid),
+//             nab(0,axis1,p,grid),ndab(0,p,grid),nab(0,axis2,p,grid),ndab(1,p,grid),nab(0,axis3,p,grid),
 //                noffset(p,grid));
 
-      	Overture::abort("fatal error");
+                Overture::abort("fatal error");
             }
-        	  
+                    
             if( classify(i1,i2,i3,n)<=0 ) // mask(i1,i2,i3)<0 )
             {
         // -1=interp, -2=periodic, -3=extrap, 0=unused
-      	bv[ig-Istart]=0.; // VecSetValues( b, 1, &ig, &v, INSERT_VALUES );
+                bv[ig-Istart]=0.; // VecSetValues( b, 1, &ig, &v, INSERT_VALUES );
                 xv[ig-Istart]=uLocal(i1,i2,i3,n+nb);  
             }
             else
             {
                 if( parameters.rescaleRowNorms )
-        	  bv[ig-Istart]=fLocal(i1,i2,i3,n+nb)*ds(i1,i2,i3,n); // VecSetValues( b, 1, &ig, &v, INSERT_VALUES );
-      	else
-        	  bv[ig-Istart]=fLocal(i1,i2,i3,n+nb); // VecSetValues( b, 1, &ig, &v, INSERT_VALUES );
-      	
+                    bv[ig-Istart]=fLocal(i1,i2,i3,n+nb)*ds(i1,i2,i3,n); // VecSetValues( b, 1, &ig, &v, INSERT_VALUES );
+                else
+                    bv[ig-Istart]=fLocal(i1,i2,i3,n+nb); // VecSetValues( b, 1, &ig, &v, INSERT_VALUES );
+                
                 xv[ig-Istart]=uLocal(i1,i2,i3,n+nb);
             }
 
@@ -3336,20 +3332,20 @@ solve( realCompositeGridFunction & uu, realCompositeGridFunction & f )
       // **OLD WAY **
             if( grid==gride && problemIsSingular==addExtraEquation )
             {
-	// fill in the RHS for the extra equation
-      	int grid=cg.numberOfComponentGrids()-1;
-      	const IntegerArray & d = cg[grid].dimension();
-      	i1=d(1,0), i2=d(1,1), i3=d(1,2); 
-      	int p= uu[grid].Array_Descriptor.findProcNum( iv );  // processor number
-      	if( myid==p )
-      	{
-        	  int n=numberOfComponents-1;
-        	  int extraEquation=getGlobalIndex( n, iv, grid, p );  // get the global index
-        	  assert( extraEquation>=Istart && extraEquation<=Iend );
-	  // NOTE: no diagonal scaling on this equation
-        	  bv[extraEquation-Istart]=fLocal(i1,i2,i3,n+nb);
-	  // printf("PETScSolver: Assign RHS for constraint : value=%g\n",bv[extraEquation-Istart]);
-      	}
+        // fill in the RHS for the extra equation
+                int grid=cg.numberOfComponentGrids()-1;
+                const IntegerArray & d = cg[grid].dimension();
+                i1=d(1,0), i2=d(1,1), i3=d(1,2); 
+                int p= uu[grid].Array_Descriptor.findProcNum( iv );  // processor number
+                if( myid==p )
+                {
+                    int n=numberOfComponents-1;
+                    int extraEquation=getGlobalIndex( n, iv, grid, p );  // get the global index
+                    assert( extraEquation>=Istart && extraEquation<=Iend );
+          // NOTE: no diagonal scaling on this equation
+                    bv[extraEquation-Istart]=fLocal(i1,i2,i3,n+nb);
+          // printf("PETScSolver: Assign RHS for constraint : value=%g\n",bv[extraEquation-Istart]);
+                }
             }
         }
         
@@ -3386,14 +3382,14 @@ solve( realCompositeGridFunction & uu, realCompositeGridFunction & f )
         // scale RHS if the equations are scaled.
                 const real dScale=  parameters.rescaleRowNorms ? extraEquationScaleFactor(extra) : 1.;
 
-      	if( false )
-        	  printf("--PETSc-- solve: set RHS for extra eqn=%i eqnNumber=%i value=%9.3e scale=%9.2e myid=%i\n",
-             		 extra,extraEquationNumber(extra),extraEquationRightHandSideValues(extra),dScale,myid);
-        	  
-      	bv[extraEqn-Istart]=extraEquationRightHandSideValues(extra)*dScale;
+                if( false )
+                    printf("--PETSc-- solve: set RHS for extra eqn=%i eqnNumber=%i value=%9.3e scale=%9.2e myid=%i\n",
+                                  extra,extraEquationNumber(extra),extraEquationRightHandSideValues(extra),dScale,myid);
+                    
+                bv[extraEqn-Istart]=extraEquationRightHandSideValues(extra)*dScale;
 
             }
-      	
+                
         }
     // -------------------------------------------------
     // --- Assign initial values for extra equations ---
@@ -3404,20 +3400,20 @@ solve( realCompositeGridFunction & uu, realCompositeGridFunction & f )
             const RealArray & extraEquationInitialValues = oges.dbase.get<RealArray>("extraEquationInitialValues");
             for( int extra=0; extra<oges.numberOfExtraEquations; extra++ )
             {
-	// int extraEqn = extraEquationNumber(extra)-eqnBase;
+        // int extraEqn = extraEquationNumber(extra)-eqnBase;
         // Convert an Oges equation number to a PETSc equation number
                 oges.equationToIndex( extraEquationNumber(extra), nj,j1,j2,j3,gridj );
                 pj = uu[gridj].Array_Descriptor.findProcNum( jv );  // processor number
                 int extraEqn = getGlobalIndex( nj, jv, gridj, pj );
 
-      	if( extraEqn>=Istart && extraEqn<=Iend )
-      	{
-        	  if( false )
-          	    printf("--PETSc-- solve: set initial condition for extra eqn=%i eqnNumber=%i value=%9.3e myid=%i\n",
-               		   extra,extraEquationNumber(extra),extraEquationInitialValues(extra),myid);
-        	  
-        	  xv[extraEqn-Istart]=extraEquationInitialValues(extra);
-      	}
+                if( extraEqn>=Istart && extraEqn<=Iend )
+                {
+                    if( false )
+                        printf("--PETSc-- solve: set initial condition for extra eqn=%i eqnNumber=%i value=%9.3e myid=%i\n",
+                                      extra,extraEquationNumber(extra),extraEquationInitialValues(extra),myid);
+                    
+                    xv[extraEqn-Istart]=extraEquationInitialValues(extra);
+                }
             }
         }
         
@@ -3501,33 +3497,33 @@ solve( realCompositeGridFunction & uu, realCompositeGridFunction & f )
         {
             if( reason==-3 || reason==-4 || reason==-5 || reason==-6 )
             {
-      	printF("--PTSC-- KSP failed, try to solve again with zero initial guess...\n");
+                printF("--PTSC-- KSP failed, try to solve again with zero initial guess...\n");
                 ierr = KSPSetInitialGuessNonzero(ksp,PETSC_FALSE); CHKERRQ(ierr); 
 
                 ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
-      	ierr = KSPGetConvergedReason(ksp,&reason);
-      	if( reason<0 )
-      	{
-        	  printF("--PTSC--- SOLVE AGAIN: ERROR Solution diverged! reason=%i: \n",(int)reason);
-        	  printF("     KSP_DIVERGED_NULL                = -2,\n"
-             		 "     KSP_DIVERGED_ITS                 = -3,\n"
-             		 "     KSP_DIVERGED_DTOL                = -4,\n"
-             		 "     KSP_DIVERGED_BREAKDOWN           = -5,\n"
-             		 "     KSP_DIVERGED_BREAKDOWN_BICG      = -6,\n"
-             		 "     KSP_DIVERGED_NONSYMMETRIC        = -7,\n"
-             		 "     KSP_DIVERGED_INDEFINITE_PC       = -8,\n"
-             		 "     KSP_DIVERGED_NAN                  = -9,\n"
-             		 "     KSP_DIVERGED_INDEFINITE_MAT      = -10\n");
-        	  printF("NOTE 1: to see more information turn on the '-info' PETSc option (e.g. in your .petscrc)\n");
-        	  printF("NOTE 2: to avoid the divergence error '-4' you can set the Oges option 'maximum allowable increase in the residual' \n");
-      	}
-      	else
-      	{
-        	  printF("--PTSC-- Solve again WORKED!\n");
-                          	
-      	}
-      	
+                ierr = KSPGetConvergedReason(ksp,&reason);
+                if( reason<0 )
+                {
+                    printF("--PTSC--- SOLVE AGAIN: ERROR Solution diverged! reason=%i: \n",(int)reason);
+                    printF("     KSP_DIVERGED_NULL                = -2,\n"
+                                  "     KSP_DIVERGED_ITS                 = -3,\n"
+                                  "     KSP_DIVERGED_DTOL                = -4,\n"
+                                  "     KSP_DIVERGED_BREAKDOWN           = -5,\n"
+                                  "     KSP_DIVERGED_BREAKDOWN_BICG      = -6,\n"
+                                  "     KSP_DIVERGED_NONSYMMETRIC        = -7,\n"
+                                  "     KSP_DIVERGED_INDEFINITE_PC       = -8,\n"
+                                  "     KSP_DIVERGED_NAN                  = -9,\n"
+                                  "     KSP_DIVERGED_INDEFINITE_MAT      = -10\n");
+                    printF("NOTE 1: to see more information turn on the '-info' PETSc option (e.g. in your .petscrc)\n");
+                    printF("NOTE 2: to avoid the divergence error '-4' you can set the Oges option 'maximum allowable increase in the residual' \n");
+                }
+                else
+                {
+                    printF("--PTSC-- Solve again WORKED!\n");
+                                
+                }
+                
             }
         }
         if( reason==-3 )
@@ -3594,8 +3590,8 @@ solve( realCompositeGridFunction & uu, realCompositeGridFunction & f )
 
             if( ig>=Istart && ig<=Iend )
             {
-      	if( false ) printf(" myid=%i: i1,i2=%i,%i, ig=%i xv[ig]=%6.4f\n",myid,i1,i2,ig,xv[ig-Istart]);
-      	uLocal(i1,i2,i3,n+nb)=xv[ig-Istart];
+                if( false ) printf(" myid=%i: i1,i2=%i,%i, ig=%i xv[ig]=%6.4f\n",myid,i1,i2,ig,xv[ig-Istart]);
+                uLocal(i1,i2,i3,n+nb)=xv[ig-Istart];
             }
             else
             {
@@ -3641,14 +3637,14 @@ solve( realCompositeGridFunction & uu, realCompositeGridFunction & f )
             if( iExtra>=Istart && iExtra<=Iend )
             {
         // extra value is stored on this processor
-      	extraValues[i]=xv[iExtra-Istart];
+                extraValues[i]=xv[iExtra-Istart];
 
-      	if( false ) printf(" --PETSc-- fill in extraEqn values after solve: myid=%i: iExtra=%i xv[iExtra]=%6.4f\n",
+                if( false ) printf(" --PETSc-- fill in extraEqn values after solve: myid=%i: iExtra=%i xv[iExtra]=%6.4f\n",
                                                     myid,iExtra,extraValues[i]);
             }
             else
             {
-      	extraValues[i]=0.;
+                extraValues[i]=0.;
             }
             
         }
@@ -3781,14 +3777,14 @@ fillInterpolationCoefficients(realCompositeGridFunction & uu)
 
         int ni=cg.numberOfInterpolationPoints(grid);
         if( ni==0 ) continue;
-      	
+                
         intArray & interpoleeLocation = cg.interpoleeLocation[grid];
         intSerialArray il; 
         
     // *wdh* 091129 -- fix to use local interpolation arrays if they are there.
         if( ( grid<cg.numberOfBaseGrids() && 
-        	  cg->localInterpolationDataState==CompositeGridData::localInterpolationDataForAMR ) || 
-      	cg->localInterpolationDataState==CompositeGridData::noLocalInterpolationData )
+                    cg->localInterpolationDataState==CompositeGridData::localInterpolationDataForAMR ) || 
+                cg->localInterpolationDataState==CompositeGridData::noLocalInterpolationData )
         {
 
       // use the interpolation data in the parallel arrays
@@ -3818,8 +3814,8 @@ fillInterpolationCoefficients(realCompositeGridFunction & uu)
         realSerialArray ci; 
 
         if( ( grid<cg.numberOfBaseGrids() && 
-        	  cg->localInterpolationDataState==CompositeGridData::localInterpolationDataForAMR ) || 
-      	cg->localInterpolationDataState==CompositeGridData::noLocalInterpolationData )
+                    cg->localInterpolationDataState==CompositeGridData::localInterpolationDataForAMR ) || 
+                cg->localInterpolationDataState==CompositeGridData::noLocalInterpolationData )
         {
 
       // use the interpolation data in the parallel arrays
@@ -3845,32 +3841,32 @@ fillInterpolationCoefficients(realCompositeGridFunction & uu)
         if( debug & 4 )
         {
             printf("PETScSolver::fillInterp: myid=%i: grid=%i [n1a,n1b]=[%i,%i] numberOfComponents=%i interp-width=%i\n",myid,grid,n1a,n1b,
-           	     numberOfComponents,width(axis1,grid));
+                          numberOfComponents,width(axis1,grid));
       // for( int i=n1a; i<=n1b; i++ )
       // {
-      // 	printf(" grid=%i i=%i ip=(%i,%i) il=(%i,%i) viw=%i\n",grid,i,ip(i,0),ip(i,1),il(i,0),il(i,1),viw(i));
+      //        printf(" grid=%i i=%i ip=(%i,%i) il=(%i,%i) viw=%i\n",grid,i,ip(i,0),ip(i,1),il(i,0),il(i,1),viw(i));
       // }
         }
 
         int ipar[7]={numberOfDimensions,
-             		 grid,
-             		 ni,
-             		 mg.isCellCentered(0),
-             		 (int)Interpolant::precomputeAllCoefficients,
-             		 maxWidth,
-             		 0}; //  This last position is saved for a return value of useVariableWidthInterpolation
+                                  grid,
+                                  ni,
+                                  mg.isCellCentered(0),
+                                  (int)Interpolant::precomputeAllCoefficients,
+                                  maxWidth,
+                                  0}; //  This last position is saved for a return value of useVariableWidthInterpolation
 
         realSerialArray & cc = coeff;
 
-    // ************ warning -- watch out for indexing of local arrays -- base and bound : n1a,..,n1b	
+    // ************ warning -- watch out for indexing of local arrays -- base and bound : n1a,..,n1b    
     //   use interpoleeGrid(n1a,0)
         RealArray pr(R),ps(R),pt(R);
         initExplicitInterp(cc.getLength(0),cc.getLength(1),cc.getLength(2),il.getLength(0),
-                   		       ipar[0], 
-                   		       *cc.getDataPointer(),
-                   		       ci(n1a,0),pr(n1a),ps(n1a),pt(n1a),gridSpacing(0,0),indexStart(0,0),
-                   		       viw(n1a),il(n1a,0),interpoleeGrid(n1a,0));
-      	
+                                              ipar[0], 
+                                              *cc.getDataPointer(),
+                                              ci(n1a,0),pr(n1a),ps(n1a),pt(n1a),gridSpacing(0,0),indexStart(0,0),
+                                              viw(n1a),il(n1a,0),interpoleeGrid(n1a,0));
+                
         int useVariableWidthInterpolation=ipar[6]; 
 
     // printf("PETScSolver::useVariableWidthInterpolation=%i\n",useVariableWidthInterpolation);
@@ -3898,39 +3894,39 @@ fillInterpolationCoefficients(realCompositeGridFunction & uu)
             {
 
         // fill in value -1 for grid,(i1,i2,i3)
-      	const int ig=getGlobalIndex( n, iv, grid, p );  // get the global index
-      	v=-1.; 
-      	ierr = MatSetValues(A,1,&ig,1,&ig,&v,INSERT_VALUES);CHKERRQ(ierr);
+                const int ig=getGlobalIndex( n, iv, grid, p );  // get the global index
+                v=-1.; 
+                ierr = MatSetValues(A,1,&ig,1,&ig,&v,INSERT_VALUES);CHKERRQ(ierr);
 
-	// if( debug & 1 ) printf("interp: grid=%i p=%i i=%i ip=(%i,%i,%i) n=%i coeff[m1,m2]:\n",grid,p,i,i1,i2,i3,n);
+        // if( debug & 1 ) printf("interp: grid=%i p=%i i=%i ip=(%i,%i,%i) n=%i coeff[m1,m2]:\n",grid,p,i,i1,i2,i3,n);
 
 
-      	for( int m3=0; m3<iw3; m3++ )
-      	{
-        	  if( numberOfDimensions==3 ) i3d=il(i,2)+m3;
-        	  for( int m2=0; m2<iw; m2++ )
-        	  {
-          	    i2d=il(i,1)+m2;
-          	    for( int m1=0; m1<iw; m1++ )
-          	    {
-            	      i1d=il(i,0)+m1;
-      	
-            	      int p= uu[gridi].Array_Descriptor.findProcNum( ivd );  // processor number
-            	      int jg=getGlobalIndex( n, ivd, gridi, p );  // get the global index
+                for( int m3=0; m3<iw3; m3++ )
+                {
+                    if( numberOfDimensions==3 ) i3d=il(i,2)+m3;
+                    for( int m2=0; m2<iw; m2++ )
+                    {
+                        i2d=il(i,1)+m2;
+                        for( int m1=0; m1<iw; m1++ )
+                        {
+                            i1d=il(i,0)+m1;
+                
+                            int p= uu[gridi].Array_Descriptor.findProcNum( ivd );  // processor number
+                            int jg=getGlobalIndex( n, ivd, gridi, p );  // get the global index
 
-	      // fill in value  grid, (i1,i2,i3) coeff(i,m1,m2,m3)
-            	      v=coeff(i,m1,m2,m3);
+              // fill in value  grid, (i1,i2,i3) coeff(i,m1,m2,m3)
+                            v=coeff(i,m1,m2,m3);
 
-            	      if( fabs(v)>epsForInterpCoeff )
-            	      {
-		// if( debug & 1 ) printf(" (ig,jg)=(%i,%i) [m1=%i,m2=%i,m3=%i](gridi=%i,p=%i)=%4.2f \n",ig,jg,m1,m2,m3,gridi,p,v);
-            		ierr = MatSetValues(A,1,&ig,1,&jg,&v,INSERT_VALUES);CHKERRQ(ierr);
+                            if( fabs(v)>epsForInterpCoeff )
+                            {
+                // if( debug & 1 ) printf(" (ig,jg)=(%i,%i) [m1=%i,m2=%i,m3=%i](gridi=%i,p=%i)=%4.2f \n",ig,jg,m1,m2,m3,gridi,p,v);
+                                ierr = MatSetValues(A,1,&ig,1,&jg,&v,INSERT_VALUES);CHKERRQ(ierr);
 
-            	      }
-          	    
-          	    }
-        	  }
-      	}
+                            }
+                        
+                        }
+                    }
+                }
             }
         }
 
@@ -4138,11 +4134,11 @@ evaluateExtraEquation( const realCompositeGridFunction & u, real & value, real &
             int i1,i2,i3,n=0;
             FOR_3D(i1,i2,i3,I1,I2,I3)
             {
-      	if( classify(i1,i2,i3,n)>0 && myid==pDenseExtraEquation)  // include interior and boundary 
-      	{
-        	  value+=uLocal(i1,i2,i3);
-        	  sumOfExtraEquationCoefficients+=1;
-      	}
+                if( classify(i1,i2,i3,n)>0 && myid==pDenseExtraEquation)  // include interior and boundary 
+                {
+                    value+=uLocal(i1,i2,i3);
+                    sumOfExtraEquationCoefficients+=1;
+                }
             }
             
         }

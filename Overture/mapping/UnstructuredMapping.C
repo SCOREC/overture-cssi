@@ -34,21 +34,21 @@ getLineFromFile( FILE *file, char s[], int lim);
 /* ---- These were moved to initStaticMappingVariables.C since they need to be in the static library *wdh* 030825
 /// an array usefull for diagnostics involving EntityTypeEnum
 aString UnstructuredMapping::EntityTypeStrings[] = { "Vertex",
-						     "Edge",
-						     "Face",
-						     "Region",
-						     "Mesh" };		
+                                                     "Edge",
+                                                     "Face",
+                                                     "Region",
+                                                     "Mesh" };          
 
 aString UnstructuredMapping::ElementTypeStrings[] = { "triangle",
-						      "quadrilateral",
-						      "tetrahedron",
-						      "pyramid",
-						      "triPrism",
-						      "septahedron",  
-						      "hexahedron",
-						      "other",
-						      "boundary" };
-	      
+                                                      "quadrilateral",
+                                                      "tetrahedron",
+                                                      "pyramid",
+                                                      "triPrism",
+                                                      "septahedron",  
+                                                      "hexahedron",
+                                                      "other",
+                                                      "boundary" };
+              
 ------------------*/
 
 namespace {
@@ -70,49 +70,49 @@ namespace {
     eit_end = umap.end(type);
     for ( eit=umap.begin(type); eit!=eit_end; eit++ )
       {
-	bool isGhost = false; // is a ghost if at least 1 vert is a ghost
-	bool isBdy   = true; // is a bdy if all verts are bdy 
+        bool isGhost = false; // is a ghost if at least 1 vert is a ghost
+        bool isBdy   = true; // is a bdy if all verts are bdy 
 
-	vit_end = umap.adjacency_end(eit,UnstructuredMapping::Vertex);
-	for ( vit=umap.adjacency_begin(eit,UnstructuredMapping::Vertex);
-	      vit!=vit_end && !isGhost;
-	      vit++ )
-	  {
-	    isBdy = isBdy && umap.hasTag(UnstructuredMapping::Vertex, *vit,bvtag);
-	    isGhost = vit.isGhost();
-	  }
+        vit_end = umap.adjacency_end(eit,UnstructuredMapping::Vertex);
+        for ( vit=umap.adjacency_begin(eit,UnstructuredMapping::Vertex);
+              vit!=vit_end && !isGhost;
+              vit++ )
+          {
+            isBdy = isBdy && umap.hasTag(UnstructuredMapping::Vertex, *vit,bvtag);
+            isGhost = vit.isGhost();
+          }
 
-	if ( isGhost )
-	  {
-	    umap.setAsGhost(type, *eit);
-	    ng++;
-	  }
-	else if ( isBdy && int(type)!=(umap.getDomainDimension()-1) )
-	  {
-	    UnstructuredMappingAdjacencyIterator ai;
-	    ai = umap.adjacency_begin(eit, UnstructuredMapping::EntityTypeEnum(umap.getDomainDimension()-1));
-	    
-	    if ( umap.hasTag(ai.getType(), *ai, bndtag) && !umap.hasTag(type,*eit,betag) )
-	      {
-		umap.addTag(type, *eit, betag, (void *)0);
-		nb++;
-	      }
-	  }
-	else if ( isBdy )
-	  {
-	    int nadj = 0;
-	    vit_end = umap.adjacency_end(eit, UnstructuredMapping::EntityTypeEnum(umap.getDomainDimension()), true);
-	    for ( vit=umap.adjacency_begin(eit, UnstructuredMapping::EntityTypeEnum(umap.getDomainDimension()),true);
-		  vit!=vit_end;
-		  vit++ ) nadj++; 
+        if ( isGhost )
+          {
+            umap.setAsGhost(type, *eit);
+            ng++;
+          }
+        else if ( isBdy && int(type)!=(umap.getDomainDimension()-1) )
+          {
+            UnstructuredMappingAdjacencyIterator ai;
+            ai = umap.adjacency_begin(eit, UnstructuredMapping::EntityTypeEnum(umap.getDomainDimension()-1));
+            
+            if ( umap.hasTag(ai.getType(), *ai, bndtag) && !umap.hasTag(type,*eit,betag) )
+              {
+                umap.addTag(type, *eit, betag, (void *)0);
+                nb++;
+              }
+          }
+        else if ( isBdy )
+          {
+            int nadj = 0;
+            vit_end = umap.adjacency_end(eit, UnstructuredMapping::EntityTypeEnum(umap.getDomainDimension()), true);
+            for ( vit=umap.adjacency_begin(eit, UnstructuredMapping::EntityTypeEnum(umap.getDomainDimension()),true);
+                  vit!=vit_end;
+                  vit++ ) nadj++; 
 
-	    if ( nadj==1 && !umap.hasTag(type,*eit,betag) ) 
-	      {
-		umap.addTag(type, *eit, betag, (void *)0);
-		nb++;
-	      }
-	    
-	  }
+            if ( nadj==1 && !umap.hasTag(type,*eit,betag) ) 
+              {
+                umap.addTag(type, *eit, betag, (void *)0);
+                nb++;
+              }
+            
+          }
       }
 #if 0
     cout<<"NUMBER OF (V)"<<umap.tagPrefix(type,UnstructuredMapping::GhostEntity)<<" : "<<ng<<endl;
@@ -148,13 +148,13 @@ namespace {
         int nAdj=0;
         for ( cellIter=umap.adjacency_begin(e_iter, cellType); 
               cellIter!=umap.adjacency_end(e_iter, cellType); cellIter++ )
-	  if ( !cellIter.isGhost() /*umap.hasTag(cellType, *cellIter, gcell)*/ ) nAdj++;
+          if ( !cellIter.isGhost() /*umap.hasTag(cellType, *cellIter, gcell)*/ ) nAdj++;
 
-	if ( nAdj==0 )
-	  {
-	    // then this is a ghost (both adjacent cells are ghosts)
-	    umap.setAsGhost(e_iter.getType(),*e_iter);
-	  }
+        if ( nAdj==0 )
+          {
+            // then this is a ghost (both adjacent cells are ghosts)
+            umap.setAsGhost(e_iter.getType(),*e_iter);
+          }
       }
 
     for ( e_iter=umap.begin(cellBdyType); e_iter!=e_iter_end; e_iter++)
@@ -163,79 +163,79 @@ namespace {
         int nAdj=0;
         for ( cellIter=umap.adjacency_begin(e_iter, cellType); 
               cellIter!=umap.adjacency_end(e_iter, cellType); cellIter++ )
-	  if ( !cellIter.isGhost() /*umap.hasTag(cellType, *cellIter, gcell)*/ ) nAdj++;
-	
-	if ( nAdj==0 )
-	  {
-	    umap.setAsGhost(e_iter.getType(),*e_iter);
-	  }
+          if ( !cellIter.isGhost() /*umap.hasTag(cellType, *cellIter, gcell)*/ ) nAdj++;
+        
+        if ( nAdj==0 )
+          {
+            umap.setAsGhost(e_iter.getType(),*e_iter);
+          }
         else if ( nAdj==1 ) 
           {
-	    std::string stag = std::string("boundary ") + UnstructuredMapping::EntityTypeStrings[int(cellBdyType)].c_str();
-	    std::string etag = std::string("boundary ") + UnstructuredMapping::EntityTypeStrings[UnstructuredMapping::Edge].c_str();
-	    if ( !umap.hasTag(cellBdyType,*e_iter,stag) )
-	      umap.addTag(cellBdyType,*e_iter,stag,((void *)*e_iter));
-	    //	    break;
-	    stag = std::string("boundary ") + UnstructuredMapping::EntityTypeStrings[int(cellType)].c_str();
-	    if ( !umap.hasTag(cellType,*umap.adjacency_begin(e_iter, cellType),stag) )
-	      umap.addTag(cellType,*umap.adjacency_begin(e_iter, cellType),
-			  stag,((void *)*umap.adjacency_begin(e_iter, cellType)));
-	    
-	    stag = std::string("boundary ") + UnstructuredMapping::EntityTypeStrings[int(UnstructuredMapping::Vertex)].c_str();
+            std::string stag = std::string("boundary ") + UnstructuredMapping::EntityTypeStrings[int(cellBdyType)].c_str();
+            std::string etag = std::string("boundary ") + UnstructuredMapping::EntityTypeStrings[UnstructuredMapping::Edge].c_str();
+            if ( !umap.hasTag(cellBdyType,*e_iter,stag) )
+              umap.addTag(cellBdyType,*e_iter,stag,((void *)*e_iter));
+            //      break;
+            stag = std::string("boundary ") + UnstructuredMapping::EntityTypeStrings[int(cellType)].c_str();
+            if ( !umap.hasTag(cellType,*umap.adjacency_begin(e_iter, cellType),stag) )
+              umap.addTag(cellType,*umap.adjacency_begin(e_iter, cellType),
+                          stag,((void *)*umap.adjacency_begin(e_iter, cellType)));
+            
+            stag = std::string("boundary ") + UnstructuredMapping::EntityTypeStrings[int(UnstructuredMapping::Vertex)].c_str();
 
             // we are on a boundary, tag the vertices as such
             for ( vertIter=umap.adjacency_begin(e_iter, UnstructuredMapping::Vertex);
                   vertIter!=umap.adjacency_end(e_iter, UnstructuredMapping::Vertex);
                   vertIter++ )
-	      if ( !umap.hasTag(UnstructuredMapping::Vertex, *vertIter, stag) )
-		umap.addTag(UnstructuredMapping::Vertex, *vertIter, stag, ((void *)*vertIter));
+              if ( !umap.hasTag(UnstructuredMapping::Vertex, *vertIter, stag) )
+                umap.addTag(UnstructuredMapping::Vertex, *vertIter, stag, ((void *)*vertIter));
 
-	    if ( cellBdyType==UnstructuredMapping::Face )
-	      {
-		// then we need to tag the edges also! kkc 031213
-		UnstructuredMappingAdjacencyIterator edgeIt, edgeIt_end;
-		for ( edgeIt=umap.adjacency_begin(e_iter,UnstructuredMapping::Edge);
-		      edgeIt!=umap.adjacency_end(e_iter,UnstructuredMapping::Edge);
-		      edgeIt++ )
-		  if ( !umap.hasTag(UnstructuredMapping::Edge, *edgeIt, etag) )
-		    umap.addTag(UnstructuredMapping::Edge, *edgeIt, etag, ((void *)*edgeIt));
-	      }
+            if ( cellBdyType==UnstructuredMapping::Face )
+              {
+                // then we need to tag the edges also! kkc 031213
+                UnstructuredMappingAdjacencyIterator edgeIt, edgeIt_end;
+                for ( edgeIt=umap.adjacency_begin(e_iter,UnstructuredMapping::Edge);
+                      edgeIt!=umap.adjacency_end(e_iter,UnstructuredMapping::Edge);
+                      edgeIt++ )
+                  if ( !umap.hasTag(UnstructuredMapping::Edge, *edgeIt, etag) )
+                    umap.addTag(UnstructuredMapping::Edge, *edgeIt, etag, ((void *)*edgeIt));
+              }
           }
 
-	if ( e_iter.isGhost() )
-	  {
-	    int nAdj=0;
-	    for ( cellIter=umap.adjacency_begin(e_iter, cellType); 
-		  cellIter!=umap.adjacency_end(e_iter, cellType); cellIter++ ) nAdj++;
+        if ( e_iter.isGhost() )
+          {
+            int nAdj=0;
+            for ( cellIter=umap.adjacency_begin(e_iter, cellType); 
+                  cellIter!=umap.adjacency_end(e_iter, cellType); cellIter++ ) nAdj++;
 
-	    if (nAdj==1)
-	      {
-		std::string stag = std::string("Ghost boundary ") + UnstructuredMapping::EntityTypeStrings[int(cellBdyType)].c_str();
-		std::string etag = std::string("Ghost boundary ") + UnstructuredMapping::EntityTypeStrings[UnstructuredMapping::Edge].c_str();
-		std::string vtag = std::string("Ghost boundary ") + UnstructuredMapping::EntityTypeStrings[UnstructuredMapping::Vertex].c_str();
+            if (nAdj==1)
+              {
+                std::string stag = std::string("Ghost boundary ") + UnstructuredMapping::EntityTypeStrings[int(cellBdyType)].c_str();
+                std::string etag = std::string("Ghost boundary ") + UnstructuredMapping::EntityTypeStrings[UnstructuredMapping::Edge].c_str();
+                std::string vtag = std::string("Ghost boundary ") + UnstructuredMapping::EntityTypeStrings[UnstructuredMapping::Vertex].c_str();
 
-		if ( !umap.hasTag(cellBdyType,*e_iter,stag) )
-		  umap.addTag(cellBdyType,*e_iter,stag,0);
+                if ( !umap.hasTag(cellBdyType,*e_iter,stag) )
+                  umap.addTag(cellBdyType,*e_iter,stag,0);
 
-		if ( cellBdyType==UnstructuredMapping::Face )
-		  {
-		    UnstructuredMappingAdjacencyIterator edgeIt;
-		    for ( edgeIt=umap.adjacency_begin(e_iter,UnstructuredMapping::Edge);
-		      edgeIt!=umap.adjacency_end(e_iter,UnstructuredMapping::Edge);
-		      edgeIt++ )
-		      if ( !umap.hasTag(edgeIt.getType(), *edgeIt, etag) )
-			umap.addTag(edgeIt.getType(), *edgeIt, etag,0);
-		  }
+                if ( cellBdyType==UnstructuredMapping::Face )
+                  {
+                    UnstructuredMappingAdjacencyIterator edgeIt;
+                    for ( edgeIt=umap.adjacency_begin(e_iter,UnstructuredMapping::Edge);
+                      edgeIt!=umap.adjacency_end(e_iter,UnstructuredMapping::Edge);
+                      edgeIt++ )
+                      if ( !umap.hasTag(edgeIt.getType(), *edgeIt, etag) )
+                        umap.addTag(edgeIt.getType(), *edgeIt, etag,0);
+                  }
 
-		for ( vertIter=umap.adjacency_begin(e_iter, UnstructuredMapping::Vertex);
-		      vertIter!=umap.adjacency_end(e_iter, UnstructuredMapping::Vertex);
-		      vertIter++ )
-		  if ( !umap.hasTag(vertIter.getType(), *vertIter, vtag) )
-		    umap.addTag(vertIter.getType(), *vertIter, vtag, 0);
-	      }
-	    
-	  }
-	
+                for ( vertIter=umap.adjacency_begin(e_iter, UnstructuredMapping::Vertex);
+                      vertIter!=umap.adjacency_end(e_iter, UnstructuredMapping::Vertex);
+                      vertIter++ )
+                  if ( !umap.hasTag(vertIter.getType(), *vertIter, vtag) )
+                    umap.addTag(vertIter.getType(), *vertIter, vtag, 0);
+              }
+            
+          }
+        
       }
 
     UnstructuredMapping::EntityTypeEnum bdybdyType = UnstructuredMapping::EntityTypeEnum(cellBdyType-1);
@@ -246,12 +246,12 @@ namespace {
     // loop through all the ghost cellBdyType, and bdybdyType that is not on the boundary is a ghost
 #if 1
     for ( UnstructuredMapping::tag_entity_iterator git=umap.tag_entity_begin(gbdytag); 
-	  git != umap.tag_entity_end(gbdytag); git++ )
+          git != umap.tag_entity_end(gbdytag); git++ )
       {
-	biter_end = umap.adjacency_end(git->et, git->e, bdybdyType);
-	for ( biter=umap.adjacency_begin(git->et, git->e, bdybdyType); biter!=biter_end; biter++ )
-	  if ( !umap.hasTag( bdybdyType, *biter, bdytag ) && !biter.isGhost() )//umap.hasTag( bdybdyType, *biter, getag ) )
-	    umap.setAsGhost(bdybdyType, *biter);
+        biter_end = umap.adjacency_end(git->et, git->e, bdybdyType);
+        for ( biter=umap.adjacency_begin(git->et, git->e, bdybdyType); biter!=biter_end; biter++ )
+          if ( !umap.hasTag( bdybdyType, *biter, bdytag ) && !biter.isGhost() )//umap.hasTag( bdybdyType, *biter, getag ) )
+            umap.setAsGhost(bdybdyType, *biter);
       }
 #endif
 #if 0
@@ -285,7 +285,7 @@ UnstructuredMappingIterator()
 UnstructuredMappingIterator::
 UnstructuredMappingIterator(const UnstructuredMapping & uns, 
                             UnstructuredMapping::EntityTypeEnum entityType_,
-			    int position, 
+                            int position, 
                             bool skipGhostEntities_ /* = false */ )
 //===========================================================================
 /// \details  Constructor for an iterator positioned to the start or end.
@@ -317,7 +317,7 @@ UnstructuredMappingIterator(const UnstructuredMapping & uns,
       e=0;
       //      if( includeGhostElements )
       //{
-	  //kkc old interface	  while( entityMask[e]<=0 && e<numberOfEntities ) e++;  // look for the first non-ghost element
+          //kkc old interface     while( entityMask[e]<=0 && e<numberOfEntities ) e++;  // look for the first non-ghost element
       //}
       //      int skipMask = includeGhostElements ? ( UnstructuredMapping::HoleInEntityData | UnstructuredMapping::GhostEntity ) : UnstructuredMapping::HoleInEntityData;
       while ( e<numberOfEntities && (entityMask[e]&skipMask) ) e++;
@@ -403,12 +403,12 @@ operator=(const UnstructuredMappingIterator & iter)
 
 UnstructuredMappingAdjacencyIterator::
 UnstructuredMappingAdjacencyIterator() : entityType(UnstructuredMapping::Invalid), adjEntityType(UnstructuredMapping::Invalid), 
-					 entityArray(0), orientationArray(0), numberOfEntities(0), stride(0), 
-					 offset(0), e(0), skipGhostEntities(false), skipMask(0) { }
+                                         entityArray(0), orientationArray(0), numberOfEntities(0), stride(0), 
+                                         offset(0), e(0), skipGhostEntities(false), skipMask(0) { }
 
 UnstructuredMappingAdjacencyIterator::
 UnstructuredMappingAdjacencyIterator(const UnstructuredMapping & uns, UnstructuredMapping::EntityTypeEnum from, int adjTo,
-				     UnstructuredMapping::EntityTypeEnum to, int position, bool skipGhostEntities_ /*= false*/ ) : 
+                                     UnstructuredMapping::EntityTypeEnum to, int position, bool skipGhostEntities_ /*= false*/ ) : 
   entityType(from), adjEntityType(to), entityArray(0), orientationArray(0), numberOfEntities(0), stride(0), offset(0), 
   e(0), entityMask(0), skipGhostEntities(skipGhostEntities_) 
 { 
@@ -430,45 +430,45 @@ UnstructuredMappingAdjacencyIterator(const UnstructuredMapping & uns, Unstructur
 
       switch(to) {
       case UnstructuredMapping::Vertex:
-	{
-	  if ( from==UnstructuredMapping::Edge )
-	    {
-	      entityArray = ((UnstructuredMapping &)uns).getEntities(UnstructuredMapping::Edge).getDataPointer();
-	      numberOfEntities=2;
-	    }
-	  else
-	    {	    
-	      UnstructuredMapping::ElementType et = ((UnstructuredMapping &)uns).computeElementType(from,adjTo);
-	      numberOfEntities = topoNVerts[et];
-	      entityArray = ((UnstructuredMapping &)uns).getEntities(from).getDataPointer();
-	    }
-	  break;
-	}
+        {
+          if ( from==UnstructuredMapping::Edge )
+            {
+              entityArray = ((UnstructuredMapping &)uns).getEntities(UnstructuredMapping::Edge).getDataPointer();
+              numberOfEntities=2;
+            }
+          else
+            {       
+              UnstructuredMapping::ElementType et = ((UnstructuredMapping &)uns).computeElementType(from,adjTo);
+              numberOfEntities = topoNVerts[et];
+              entityArray = ((UnstructuredMapping &)uns).getEntities(from).getDataPointer();
+            }
+          break;
+        }
       case UnstructuredMapping::Edge:
-	{
-	  UnstructuredMapping::ElementType et = ((UnstructuredMapping &)uns).computeElementType(from,adjTo);
-	  numberOfEntities = topoNEdges[et];
-	  break;
-	}
+        {
+          UnstructuredMapping::ElementType et = ((UnstructuredMapping &)uns).computeElementType(from,adjTo);
+          numberOfEntities = topoNEdges[et];
+          break;
+        }
       case UnstructuredMapping::Face:
-	{
-	  UnstructuredMapping::ElementType et = ((UnstructuredMapping &)uns).computeElementType(from,adjTo);
-	  numberOfEntities = topoNFaces[et];
-	  break;
-	}
+        {
+          UnstructuredMapping::ElementType et = ((UnstructuredMapping &)uns).computeElementType(from,adjTo);
+          numberOfEntities = topoNFaces[et];
+          break;
+        }
       default:
-	numberOfEntities=-1;
+        numberOfEntities=-1;
       }
     }
   else if ( from<to )
     {
       stride=1; //csr arrays are 1d
       if ( uns.indexLists[from][to] )
-	{
-	  offset = (*uns.upwardOffsets[from][to])(adjTo);
-	  numberOfEntities = (*uns.upwardOffsets[from][to])(adjTo+1)-(*uns.upwardOffsets[from][to])(adjTo);
-	  entityArray = uns.indexLists[from][to] ? uns.indexLists[from][to]->getDataPointer() : 0;
-	}
+        {
+          offset = (*uns.upwardOffsets[from][to])(adjTo);
+          numberOfEntities = (*uns.upwardOffsets[from][to])(adjTo+1)-(*uns.upwardOffsets[from][to])(adjTo);
+          entityArray = uns.indexLists[from][to] ? uns.indexLists[from][to]->getDataPointer() : 0;
+        }
     }
   else
     {
@@ -481,15 +481,15 @@ UnstructuredMappingAdjacencyIterator(const UnstructuredMapping & uns, Unstructur
   if ( position==0 && entityMask )
     {
       if ( from!=to )
-	{
-	  e=0;
-	  //      if ( skipGhostEntities )
-	  while ( e<numberOfEntities && (entityMask[entityArray[offset + e*stride]]&skipMask) ) e++;
-	}
+        {
+          e=0;
+          //      if ( skipGhostEntities )
+          while ( e<numberOfEntities && (entityMask[entityArray[offset + e*stride]]&skipMask) ) e++;
+        }
       else
-	{
-	  e = adjTo;
-	}
+        {
+          e = adjTo;
+        }
     }
   else
     e=numberOfEntities;
@@ -512,13 +512,13 @@ UnstructuredMappingAdjacencyIterator::operator=(const UnstructuredMappingAdjacen
 
   return *this;
 }
-													     
+                                                                                                             
 
 UnstructuredMapping::
 UnstructuredMapping(int domainDimension_ /* =3 */, 
-		    int rangeDimension_ /* =3 */, 
-		    mappingSpace domainSpace_ /* =parameterSpace */,
-		    mappingSpace rangeSpace_ /* =cartesianSpace */ ) : Mapping(domainDimension_,rangeDimension_,parameterSpace,cartesianSpace)   
+                    int rangeDimension_ /* =3 */, 
+                    mappingSpace domainSpace_ /* =parameterSpace */,
+                    mappingSpace rangeSpace_ /* =cartesianSpace */ ) : Mapping(domainDimension_,rangeDimension_,parameterSpace,cartesianSpace)   
 //===========================================================================
 /// \details  Default Constructor
 //
@@ -607,23 +607,23 @@ UnstructuredMapping::
   maintainTagToEntityMap(false);
   
   for ( int eti=int(UnstructuredMapping::Vertex); 
-	eti<(UnstructuredMapping::Mesh); eti++ )
+        eti<(UnstructuredMapping::Mesh); eti++ )
     {
       
       UnstructuredMapping::EntityTypeEnum et=UnstructuredMapping::EntityTypeEnum(eti);
       UnstructuredMappingIterator it;
       
       if ( size((EntityTypeEnum)eti) )
-	for ( it = begin(et); it!=end(et); it++ )
-	  {
-	    entity_tag_iterator tagit=entity_tag_begin(et,*it);
-	    while ( tagit!=entity_tag_end(et,*it) )
-	      {
-		entity_tag_iterator tag2delete = tagit;
-		deleteTag(et, *it, (*tag2delete)->getName());
-		tagit = entity_tag_begin(et,*it);
-	      }
-	  }
+        for ( it = begin(et); it!=end(et); it++ )
+          {
+            entity_tag_iterator tagit=entity_tag_begin(et,*it);
+            while ( tagit!=entity_tag_end(et,*it) )
+              {
+                entity_tag_iterator tag2delete = tagit;
+                deleteTag(et, *it, (*tag2delete)->getName());
+                tagit = entity_tag_begin(et,*it);
+              }
+          }
     }
   
   entity_tag_iterator tagit=entity_tag_begin(Mesh,0);
@@ -698,12 +698,12 @@ initMapping()
       entitySize[int(et)] = entityCapacity[int(et)] = 0;
       int i_et2=0;
       for ( EntityTypeEnum et2=UnstructuredMapping::Vertex; et2<UnstructuredMapping::Mesh; et2=EntityTypeEnum(++i_et2) )
-	{
-	  indexLists[int(et)][int(et2)] = indexLists[int(et2)][int(et)] = 
-	    upwardOffsets[int(et)][int(et2)] = upwardOffsets[int(et2)][int(et)] = NULL;
-	  adjacencyOrientation[int(et)][int(et2)] = adjacencyOrientation[int(et2)][int(et)] = NULL;
+        {
+          indexLists[int(et)][int(et2)] = indexLists[int(et2)][int(et)] = 
+            upwardOffsets[int(et)][int(et2)] = upwardOffsets[int(et2)][int(et)] = NULL;
+          adjacencyOrientation[int(et)][int(et2)] = adjacencyOrientation[int(et2)][int(et)] = NULL;
 
-	}
+        }
     }
 
   maintainTagToEntityMap(true);
@@ -799,10 +799,10 @@ operator=( const UnstructuredMapping & x )
       reserve(et, x.entityCapacity[et]);
 
       if ( x.entities[et] )
-	*entities[et] = *(x.entities[et]);
+        *entities[et] = *(x.entities[et]);
 
       if ( x.entityMasks[et] )
-	*(entityMasks[et]) = *(x.entityMasks[et]);
+        *(entityMasks[et]) = *(x.entityMasks[et]);
 
       entitySize[et] = x.entitySize[et];
 
@@ -810,18 +810,18 @@ operator=( const UnstructuredMapping & x )
 
       int i_et2 = 0;
       for ( EntityTypeEnum et2=UnstructuredMapping::Vertex; et2<UnstructuredMapping::Mesh; et2=EntityTypeEnum(++i_et2))
-	{
-	  if ( x.indexLists[et][et2] && et<et2 )
-	    specifyConnectivity(et, et2, *x.indexLists[et][et2],  x.adjacencyOrientation[et][et2], *x.upwardOffsets[et][et2]);
-	  else if ( x.indexLists[et][et2] && et>et2 )
-	    specifyConnectivity(et, et2, *x.indexLists[et][et2], x.adjacencyOrientation[et][et2]);
-	  else
-	    {
-	      deleteConnectivity(et,et2);
-	      deleteConnectivity(et2,et);
-	    }	      
-	     
-	}
+        {
+          if ( x.indexLists[et][et2] && et<et2 )
+            specifyConnectivity(et, et2, *x.indexLists[et][et2],  x.adjacencyOrientation[et][et2], *x.upwardOffsets[et][et2]);
+          else if ( x.indexLists[et][et2] && et>et2 )
+            specifyConnectivity(et, et2, *x.indexLists[et][et2], x.adjacencyOrientation[et][et2]);
+          else
+            {
+              deleteConnectivity(et,et2);
+              deleteConnectivity(et2,et);
+            }         
+             
+        }
 
     }
 
@@ -830,21 +830,21 @@ operator=( const UnstructuredMapping & x )
   //kkc why did I think this would work?  entityTags=x.entityTags;
   //kkc 050124 actually set new tags as specified by the copied mapping x
   for ( int eti=int(UnstructuredMapping::Vertex); 
-	eti<(UnstructuredMapping::Mesh); eti++ )
+        eti<(UnstructuredMapping::Mesh); eti++ )
     {
       
       UnstructuredMapping::EntityTypeEnum et=UnstructuredMapping::EntityTypeEnum(eti);
       UnstructuredMappingIterator it;
       
       if ( size((EntityTypeEnum)eti) )
-	for ( it = begin(et); it!=end(et); it++ )
-	  {
-	    for ( const_entity_tag_iterator xtag=x.entity_tag_begin(et,*it); xtag!=x.entity_tag_end(et,*it); xtag++ )
-	      {
-		EntityTag &xt = **xtag;
-		addTag(et,*it,xt.getName(), xt.getData(), xt.copiesData(), xt.getDataSize());
-	      }
-	  }
+        for ( it = begin(et); it!=end(et); it++ )
+          {
+            for ( const_entity_tag_iterator xtag=x.entity_tag_begin(et,*it); xtag!=x.entity_tag_end(et,*it); xtag++ )
+              {
+                EntityTag &xt = **xtag;
+                addTag(et,*it,xt.getName(), xt.getData(), xt.copiesData(), xt.getDataSize());
+              }
+          }
     }
 
   tagEntities = x.tagEntities;
@@ -1115,52 +1115,52 @@ getElementFaces()
       // Triangles
       for( int f=0; f<numberOfFaces; f++ )
       {
-	for( int i=0; i<=1; i++ ) // loop over two elements on this face.
-	{
-	  int e = faceElements(f,i);   // element on this face
-	  if( e<0 )
-	    continue;  // boundary face will only belong to one element.
-	  int n0 = face(f,0);  // first node on this face.
-	  int n1 = face(f,1);  // 2nd node
-	  int faceOffset=-1;
-	  if( element(e,0)==n0 )
-	  {
-	    if( element(e,1)==n1 )
-	      faceOffset=0;
-	    else
-	      faceOffset=2;
-	  }
-	  else if( element(e,1)==n0 )
-	  {
-	    if( element(e,2)==n1 )
-	      faceOffset=1;
-	    else
-	      faceOffset=0;
+        for( int i=0; i<=1; i++ ) // loop over two elements on this face.
+        {
+          int e = faceElements(f,i);   // element on this face
+          if( e<0 )
+            continue;  // boundary face will only belong to one element.
+          int n0 = face(f,0);  // first node on this face.
+          int n1 = face(f,1);  // 2nd node
+          int faceOffset=-1;
+          if( element(e,0)==n0 )
+          {
+            if( element(e,1)==n1 )
+              faceOffset=0;
+            else
+              faceOffset=2;
+          }
+          else if( element(e,1)==n0 )
+          {
+            if( element(e,2)==n1 )
+              faceOffset=1;
+            else
+              faceOffset=0;
       
-	  }
-	  else if( element(e,2)==n0 )
-	  {
-	    if( element(e,0)==n1 )
-	      faceOffset=2;
-	    else
-	      faceOffset=1;
-	  }
-	  if( faceOffset<0 )
-	  {
+          }
+          else if( element(e,2)==n0 )
+          {
+            if( element(e,0)==n1 )
+              faceOffset=2;
+            else
+              faceOffset=1;
+          }
+          if( faceOffset<0 )
+          {
             if( getIsPeriodic(0)==notPeriodic &&  getIsPeriodic(1)==notPeriodic )
-	    {
+            {
               // this test will sometimes fail for periodic grids
-	      printf("getElementFaces:ERROR: face f=%i, nodes=(%i,%i) is next to element e=%i, nodes=(%i,%i,%i)\n",
-		     f,n0,n1,e,element(e,0),element(e,1),element(e,2));
-	      printf(" *** The nodes do not match *** \n");
-	    }
-	    
-	  }
-	  else
-	  {
-	    ef(e,faceOffset)=f;
-	  }
-	}
+              printf("getElementFaces:ERROR: face f=%i, nodes=(%i,%i) is next to element e=%i, nodes=(%i,%i,%i)\n",
+                     f,n0,n1,e,element(e,0),element(e,1),element(e,2));
+              printf(" *** The nodes do not match *** \n");
+            }
+            
+          }
+          else
+          {
+            ef(e,faceOffset)=f;
+          }
+        }
       }
     }
     else 
@@ -1168,39 +1168,39 @@ getElementFaces()
       int nn;
       for( int f=0; f<numberOfFaces; f++ )
       {
-	for( int i=0; i<=1; i++ ) // loop over two elements on this face.
-	{
-	  const int e = faceElements(f,i);   // element on this face
-	  if( e<0 )
-	    continue;  // boundary face will only belong to one element.
-	  const int n0 = face(f,0);  // first node on this face.
-	  const int n1 = face(f,1);  // 2nd node
+        for( int i=0; i<=1; i++ ) // loop over two elements on this face.
+        {
+          const int e = faceElements(f,i);   // element on this face
+          if( e<0 )
+            continue;  // boundary face will only belong to one element.
+          const int n0 = face(f,0);  // first node on this face.
+          const int n1 = face(f,1);  // 2nd node
           const int numNodes=getNumberOfNodesThisElement(e);
           bool found=false;
-	  for( nn=0; nn<numNodes; nn++ )
-	  {
-	    int na=element(e,nn), nb=element(e,(nn+1)%numNodes);
-	    if( (na==n0 && nb==n1) || (na==n1 && nb==n0) )
-	    {
-	      ef(e,nn)=f;
+          for( nn=0; nn<numNodes; nn++ )
+          {
+            int na=element(e,nn), nb=element(e,(nn+1)%numNodes);
+            if( (na==n0 && nb==n1) || (na==n1 && nb==n0) )
+            {
+              ef(e,nn)=f;
               found=true;
-	      break;
-	    }
-	  }
+              break;
+            }
+          }
           if( !found )
-	  {
+          {
             if( getIsPeriodic(0)==notPeriodic &&  getIsPeriodic(1)==notPeriodic )
-	    {
+            {
               // this test will sometimes fail for periodic grids
-	      printf("getElementFaces:ERROR: face f=%i, nodes=(%i,%i) is next to element e=%i, nodes=(",
-		     f,n0,n1,e);
-	      for( nn=0; nn<numNodes; nn++ )
-		printf("%i,",element(e,nn));
-	      printf(")\n");
-	      printf(" *** The nodes do not match *** \n");
-	    }
-	  }
-	}
+              printf("getElementFaces:ERROR: face f=%i, nodes=(%i,%i) is next to element e=%i, nodes=(",
+                     f,n0,n1,e);
+              for( nn=0; nn<numNodes; nn++ )
+                printf("%i,",element(e,nn));
+              printf(")\n");
+              printf(" *** The nodes do not match *** \n");
+            }
+          }
+        }
       }
     }
     
@@ -1259,7 +1259,7 @@ int UnstructuredMapping::
 setNodesAndConnectivity( const realArray & nodes, 
                          const intArray & elements,
                          int domainDimension_ /* =-1 */,
-			 bool buildConnectivity /* =true */)
+                         bool buildConnectivity /* =true */)
 //===========================================================================
 /// \details 
 ///    Supply a list of nodes and a list of connectivity information.
@@ -1363,11 +1363,11 @@ static int boundaryFaceCompare(const void *i0, const void *j0)
 
 int UnstructuredMapping::
 setNodesElementsAndNeighbours(const realArray & nodes, 
-			      const intArray & elements, 
-			      const intArray & neighbours,
-			      int numberOfFaces_ /* =-1 */,
-			      int numberOfBoundaryFaces_ /* =-1 */,
-			      int domainDimension_  /* =-1 */ )
+                              const intArray & elements, 
+                              const intArray & neighbours,
+                              int numberOfFaces_ /* =-1 */,
+                              int numberOfBoundaryFaces_ /* =-1 */,
+                              int domainDimension_  /* =-1 */ )
 //===========================================================================
 /// \details 
 ///    Supply a list of nodes, elements and element neighbours. The element neighbours are used
@@ -1460,35 +1460,35 @@ setNodesElementsAndNeighbours(const realArray & nodes,
       {
         // this is a new face
         assert( f<maxNumberOfFaces );
-	
+        
         face(f,0)=element(e,m);
         face(f,1)=element(e,(m+1)%3);
-	
+        
         ef(e,m)=f;
         faceElements(f,0)=e;
 
         int en = neighbours(e,(m+2)%3);
         if( en>=0 )
-	{
-	  int mn = element(en,0)==face(f,1) ? 0 : element(en,1)==face(f,1) ? 1 : 2;
-	
+        {
+          int mn = element(en,0)==face(f,1) ? 0 : element(en,1)==face(f,1) ? 1 : 2;
+        
           assert( ef(en,mn)==-1 );
           assert( element(en,mn)==face(f,1) && element(en,(mn+1)%3)==face(f,0) );
 
-	  ef(en,mn)=f;
+          ef(en,mn)=f;
 
-	  faceElements(f,1)=en;
-	}
-	else
-	{
-	  // this is a boundary face ** these are sorted below ** 
+          faceElements(f,1)=en;
+        }
+        else
+        {
+          // this is a boundary face ** these are sorted below ** 
           assert( bf<maxNumberOfBoundaryFaces );
           // printf(" Boundary face %i is face f=%i, nodes=(%i,%i) \n",bf,f,face(f,0),face(f,1));
           bdyFace(bf)=f;
-	  bf++;
-	}
+          bf++;
+        }
 
-	f++;
+        f++;
       }
     }
   }
@@ -1577,13 +1577,13 @@ setNodesElementsAndNeighbours(const realArray & nodes,
 
 int UnstructuredMapping::
 setNodesAndConnectivity( const realArray & nodes, 
-			 const intArray & elements,
-			 const intArray & faces,
-			 const intArray & faceElements_,
-			 const intArray & elementFaces_,
-			 int numberOfFaces_ /* =-1 */,
-			 int numberOfBoundaryFaces_ /* =-1 */,
-			 int domainDimension_ /* =-1 */,
+                         const intArray & elements,
+                         const intArray & faces,
+                         const intArray & faceElements_,
+                         const intArray & elementFaces_,
+                         int numberOfFaces_ /* =-1 */,
+                         int numberOfBoundaryFaces_ /* =-1 */,
+                         int domainDimension_ /* =-1 */,
                          bool constantNumberOfNodesPerElement /* =false */ )
 //===========================================================================
 /// \details 
@@ -1735,11 +1735,11 @@ setNodesAndConnectivity( const realArray & nodes,
 
 int UnstructuredMapping::
 intersects(Mapping & map2, 
-	   const int & side1 /* =-1 */, 
-	   const int & axis1 /* =-1 */,
-	   const int & side2 /* =-1 */, 
-	   const int & axis2 /* =-1 */,
-	   const real & tol /* =0. */ ) const
+           const int & side1 /* =-1 */, 
+           const int & axis1 /* =-1 */,
+           const int & side2 /* =-1 */, 
+           const int & axis2 /* =-1 */,
+           const real & tol /* =0. */ ) const
 // =============================================================================
 // /Description:
 //    Return false if the Mapping's do not intersect, true if they may.
@@ -1931,9 +1931,9 @@ buildConnectivityLists()
       smask = 0;
       // count the number of points in this face
       where(fpts>=0) 
-	{
-	  smask = 1;
-	}
+        {
+          smask = 1;
+        }
       fhash_zfid(3,fhash_index(0,nmin) + fhash_index(1,nmin)) = sum(smask);//sum(fpts>=0);
       fhash_index(1,nmin)++;
     }
@@ -1972,57 +1972,57 @@ buildConnectivityLists()
       bool match = false;
       if (fhash_zfid(1,f)==-1) // if this face has not been considered...
       {
-	int z1 = fhash_zfid(0,f);
-	const intArray & fpts = fhash(f,If);
-	int fuse = -1;
-	for (int f2=f+1; f2<(fhash_index(0,n)+fhash_index(1,n)); f2++)
-	{ // search the remaining faces in key n
-	  int z2 = fhash_zfid(0,f2);
-	  // ignore faces in the same Element and faces with different numbers of nodes 
-	  if (z1!=z2 && fhash_zfid(3,f)==fhash_zfid(3,f2)) 
-	    {  // if f2 is not in the same zone and the number of nodes on f and f2 are the same
-	      const intArray & f2pts = fhash(f2,If);
-	      // compare points in the face, in the same order, they should all be the same...
-	      int nfloc=0;
-	      int nf2loc=0;
-	      int numNodesCurrentFace = fhash_zfid(3,f);
-	      // start face node comparison at the key node, so we need to find out where that is on each face
+        int z1 = fhash_zfid(0,f);
+        const intArray & fpts = fhash(f,If);
+        int fuse = -1;
+        for (int f2=f+1; f2<(fhash_index(0,n)+fhash_index(1,n)); f2++)
+        { // search the remaining faces in key n
+          int z2 = fhash_zfid(0,f2);
+          // ignore faces in the same Element and faces with different numbers of nodes 
+          if (z1!=z2 && fhash_zfid(3,f)==fhash_zfid(3,f2)) 
+            {  // if f2 is not in the same zone and the number of nodes on f and f2 are the same
+              const intArray & f2pts = fhash(f2,If);
+              // compare points in the face, in the same order, they should all be the same...
+              int nfloc=0;
+              int nf2loc=0;
+              int numNodesCurrentFace = fhash_zfid(3,f);
+              // start face node comparison at the key node, so we need to find out where that is on each face
               int nf;
-	      for (nf=0; nf<numNodesCurrentFace; nf++)
-		{
-		  if (fpts(f,nf) == n) nfloc = nf;
-		  if (f2pts(f2,nf) == n) nf2loc = nf;
-		}
-	      for (nf=0; nf<numNodesCurrentFace; nf++)
-		{
-		  // starting with the lowest numbered point (n) on each face, loop through the
-		  // the faces in the direction defined by the "f" face point list.  In other words,
-		  // loop through the "f2" face's point list in a reverse order, starting with the 
-		  // location of n.  This will ensure that the points are the same and are oriented consistently.
-		  if (fpts(f,(nfloc+nf)%numNodesCurrentFace) != 
-		      f2pts(f2,(nf2loc+numNodesCurrentFace-nf)%numNodesCurrentFace))
-		    {
-		      match = false;
-		      break;
-		    } else {
-		      match = true;
-		      fuse = f2;
-		    }
-		}
-	
-	    } // end check f2 candidate face for a match
-	  if (match) break; // if a match has been found, stop the search
-	} // end check other faces in this key
+              for (nf=0; nf<numNodesCurrentFace; nf++)
+                {
+                  if (fpts(f,nf) == n) nfloc = nf;
+                  if (f2pts(f2,nf) == n) nf2loc = nf;
+                }
+              for (nf=0; nf<numNodesCurrentFace; nf++)
+                {
+                  // starting with the lowest numbered point (n) on each face, loop through the
+                  // the faces in the direction defined by the "f" face point list.  In other words,
+                  // loop through the "f2" face's point list in a reverse order, starting with the 
+                  // location of n.  This will ensure that the points are the same and are oriented consistently.
+                  if (fpts(f,(nfloc+nf)%numNodesCurrentFace) != 
+                      f2pts(f2,(nf2loc+numNodesCurrentFace-nf)%numNodesCurrentFace))
+                    {
+                      match = false;
+                      break;
+                    } else {
+                      match = true;
+                      fuse = f2;
+                    }
+                }
+        
+            } // end check f2 candidate face for a match
+          if (match) break; // if a match has been found, stop the search
+        } // end check other faces in this key
       
-	// update information on face connectivity
-	fhash_zfid(1,f) = interiorFaceIndexCounter;
-	interiorFaceIndexCounter++;
-	if (match) 
-	  {
-	    fhash_zfid(1,fuse) = fhash_zfid(1,f);
-	  } else { // must be a boundary face
-	    boundaryFaceIndexCounter++;
-	  }
+        // update information on face connectivity
+        fhash_zfid(1,f) = interiorFaceIndexCounter;
+        interiorFaceIndexCounter++;
+        if (match) 
+          {
+            fhash_zfid(1,fuse) = fhash_zfid(1,f);
+          } else { // must be a boundary face
+            boundaryFaceIndexCounter++;
+          }
       } // end if a match has not been found for f
       
     } // end find a match for face f in this hash key
@@ -2049,15 +2049,15 @@ buildConnectivityLists()
       int fglob = fhash_zfid(1,f);
       if (faceElements(fglob,0)!=-1) 
       { // if this global face index has been stored already store the 
-	// adjacency information
-	faceElements(fglob,1) = fhash_zfid(0,f);
-	checkNumberOfElementsOnFace(fglob)++;
+        // adjacency information
+        faceElements(fglob,1) = fhash_zfid(0,f);
+        checkNumberOfElementsOnFace(fglob)++;
       } else {
-	// store new global face index
-	faceElements(fglob,0) = fhash_zfid(0,f);
-	faceZ1Offset(fglob) = fhash_zfid(2,f);
-	face(fglob,If) = fhash(f,If);
-	checkNumberOfElementsOnFace(fglob)++;
+        // store new global face index
+        faceElements(fglob,0) = fhash_zfid(0,f);
+        faceZ1Offset(fglob) = fhash_zfid(2,f);
+        face(fglob,If) = fhash(f,If);
+        checkNumberOfElementsOnFace(fglob)++;
       }
      
     }
@@ -2074,15 +2074,15 @@ buildConnectivityLists()
   {
     if (faceElements(f,1)==-1) 
       {
-	bdyFace(bdyFcnt) = f;
-	bdyFcnt++;
-	if( bdyFcnt>numberOfBoundaryFaces )
-	{
-	  printf("UnstructuredMapping:buildConnectivityLists:ERROR: too many boundary faces. something wrong here.\n"
+        bdyFace(bdyFcnt) = f;
+        bdyFcnt++;
+        if( bdyFcnt>numberOfBoundaryFaces )
+        {
+          printf("UnstructuredMapping:buildConnectivityLists:ERROR: too many boundary faces. something wrong here.\n"
                  " expected number : %i. This could be caused if there is an element with a collapsed edge. \n",
                  numberOfBoundaryFaces);
-	  break;
-	}
+          break;
+        }
       }
   }
   bdyFaceTags.redim(numberOfBoundaryFaces);
@@ -2144,11 +2144,11 @@ buildConnectivityLists()
       { // loop through the edges in this hash key (n)
       if (ehash(1,ni)==0) // have not set an edge for this pair yet
       {
-	ehash(1,ni) = 1;
-	numberOfEdges++;
-	// loop through remaining edges in the key to find matches
-	for (int nii=ni+1; nii<nimax; nii++) 
-	  if (ehash(0,nii)==ehash(0,ni)) ehash(1,nii)=1;
+        ehash(1,ni) = 1;
+        numberOfEdges++;
+        // loop through remaining edges in the key to find matches
+        for (int nii=ni+1; nii<nimax; nii++) 
+          if (ehash(0,nii)==ehash(0,ni)) ehash(1,nii)=1;
       }
     }
   }
@@ -2163,14 +2163,14 @@ buildConnectivityLists()
     {
       if (ehash(1,ni)==0) // have not set an edge for this pair yet
       {
-	ehash(1,ni) = 1;
-	edge(numberOfEdges2,0) = n;
-	edge(numberOfEdges2,1) = ehash(0,ni);
-	numberOfEdges2++;
-	// mark remaining matched edges as found
-	for (int nii=ni+1; nii<(ehash_index(0,n)+ehash_index(1,n)); nii++) 
-	  if (ehash(0,nii)==ehash(0,ni)) ehash(1,nii)=1;
-	
+        ehash(1,ni) = 1;
+        edge(numberOfEdges2,0) = n;
+        edge(numberOfEdges2,1) = ehash(0,ni);
+        numberOfEdges2++;
+        // mark remaining matched edges as found
+        for (int nii=ni+1; nii<(ehash_index(0,n)+ehash_index(1,n)); nii++) 
+          if (ehash(0,nii)==ehash(0,ni)) ehash(1,nii)=1;
+        
       }
     }
   }
@@ -2193,7 +2193,7 @@ buildConnectivityLists()
   if(domainDimension==2 && numberOfFaces!=numberOfEdges ) 
   {
     printf("***UnstructuredMapping::buildConnectivityLists:ERROR: numberOfFaces=%i != numberOfEdges=%i ***\n",
-	   numberOfFaces,numberOfEdges);
+           numberOfFaces,numberOfEdges);
     return 1;
   }
   // probably should perfrom geometry and connectivity checks now...
@@ -2217,7 +2217,7 @@ buildConnectivityLists()
 // when Overture supports namespaces these should probably be stuck into an unnammed namespace
 
 static void setElement(const int &v0, const int &v1, const int &v2, const int &v3,
-		       const intArray &elements, const int &elementID)
+                       const intArray &elements, const int &elementID)
 {
   
   elements(elementID, 0) = v0;
@@ -2228,8 +2228,8 @@ static void setElement(const int &v0, const int &v1, const int &v2, const int &v
 }
 
 static void setElement(const int &v0, const int &v1, const int &v2, const int &v3,
-		       const int &v4, const int &v5, const int &v6, const int &v7,
-		       const intArray &elements, const int &elementID)
+                       const int &v4, const int &v5, const int &v6, const int &v7,
+                       const intArray &elements, const int &elementID)
 {
 
   elements(elementID, 0) = v0;
@@ -2279,7 +2279,7 @@ static void assignQuad(intArray &elements, int elementID, real sj, int v1, int v
 
 static int 
 assembleElements2D(const Mapping & map, const intArray &mapVertexIDs, 
-		   const intArray &mask, intArray &elements, intArray &elembdy, bool preferTriangles,int ngc )
+                   const intArray &mask, intArray &elements, intArray &elembdy, bool preferTriangles,int ngc )
 {
 
   // assemble triangles and quadrilaterals from mapping map into the array elements
@@ -2302,10 +2302,10 @@ assembleElements2D(const Mapping & map, const intArray &mapVertexIDs,
   for ( int a=0; a<2; a++ )
     {
       if ( per[a]!=Mapping::functionPeriodic ) // no need to add ghost cells on a branch cut.
-	{
-	  ib[a] -= numberOfGhostCells;
-	  ie[a] += numberOfGhostCells;
-	}
+        {
+          ib[a] -= numberOfGhostCells;
+          ie[a] += numberOfGhostCells;
+        }
     }
 #if 0
   int ie[2],ib[2];
@@ -2334,73 +2334,73 @@ assembleElements2D(const Mapping & map, const intArray &mapVertexIDs,
   for ( int i2=ib[1]; i2<=ie[1]; i2++ )
     {
       for ( int i1=ib[0]; i1<=ie[0]; i1++ )
-	{
-	  // check the various possibilities for a triangle
+        {
+          // check the various possibilities for a triangle
 
-	  if ( mask(i1,i2,i3)!=0 && mask(i1+1,i2,i3)!=0 &&
-	       mask(i1+1,i2+1,i3)!=0 && mask(i1,i2+1,i3)!=0 )
-	    {
+          if ( mask(i1,i2,i3)!=0 && mask(i1+1,i2,i3)!=0 &&
+               mask(i1+1,i2+1,i3)!=0 && mask(i1,i2+1,i3)!=0 )
+            {
 
-	      if ( i1<xa0 || i1>xb0 || i2<xa1 || i2>xb1 )
-		elembdy(elementID) = 0x1; // this is a ghost element
+              if ( i1<xa0 || i1>xb0 || i2<xa1 || i2>xb1 )
+                elembdy(elementID) = 0x1; // this is a ghost element
 
-	      if ( mapVertexIDs(i1, i2, i3) == mapVertexIDs(i1+1, i2, i3) )
-		{ 
- 		  assignTri(elements,elementID,sj,mapVertexIDs(i1,i2,i3),mapVertexIDs(i1+1, i2+1, i3),mapVertexIDs(i1, i2+1, i3));
-// 		  elements(elementID, 0) = mapVertexIDs(i1,i2,i3);
-// 		  elements(elementID, 1) = mapVertexIDs(i1+1, i2+1, i3);
-// 		  elements(elementID, 2) = mapVertexIDs(i1, i2+1, i3);
-		} 
-	      else if ( mapVertexIDs(i1, i2, i3) == mapVertexIDs(i1, i2+1, i3) )
-		{
-		  assignTri(elements,elementID,sj,mapVertexIDs(i1,i2,i3),mapVertexIDs(i1+1, i2, i3),mapVertexIDs(i1+1, i2+1, i3));
-// 		  elements(elementID, 0) = mapVertexIDs(i1,i2,i3);
-// 		  elements(elementID, 1) = mapVertexIDs(i1+1, i2, i3);
-// 		  elements(elementID, 2) = mapVertexIDs(i1+1, i2+1, i3);
-		}
-	      else if (mapVertexIDs(i1+1, i2, i3) == mapVertexIDs(i1+1, i2+1, i3) )
-		{
-		  assignTri(elements,elementID,sj,mapVertexIDs(i1+1,i2,i3),mapVertexIDs(i1, i2+1, i3),mapVertexIDs(i1, i2, i3));
-// 		  elements(elementID, 0) = mapVertexIDs(i1+1,i2,i3);
-// 		  elements(elementID, 1) = mapVertexIDs(i1, i2+1, i3);
-// 		  elements(elementID, 2) = mapVertexIDs(i1, i2, i3);
-		}
-	      else if (mapVertexIDs(i1, i2+1, i3) == mapVertexIDs(i1+1, i2+1, i3) )
-		{
-		  assignTri(elements,elementID,sj,mapVertexIDs(i1,i2+1,i3),mapVertexIDs(i1, i2, i3),mapVertexIDs(i1+1, i2, i3));
-// 		  elements(elementID, 0) = mapVertexIDs(i1,i2+1,i3);
-// 		  elements(elementID, 1) = mapVertexIDs(i1, i2, i3);
-// 		  elements(elementID, 2) = mapVertexIDs(i1+1, i2, i3);
-		}
-	      else // quadrilateral
-		{
+              if ( mapVertexIDs(i1, i2, i3) == mapVertexIDs(i1+1, i2, i3) )
+                { 
+                  assignTri(elements,elementID,sj,mapVertexIDs(i1,i2,i3),mapVertexIDs(i1+1, i2+1, i3),mapVertexIDs(i1, i2+1, i3));
+//                elements(elementID, 0) = mapVertexIDs(i1,i2,i3);
+//                elements(elementID, 1) = mapVertexIDs(i1+1, i2+1, i3);
+//                elements(elementID, 2) = mapVertexIDs(i1, i2+1, i3);
+                } 
+              else if ( mapVertexIDs(i1, i2, i3) == mapVertexIDs(i1, i2+1, i3) )
+                {
+                  assignTri(elements,elementID,sj,mapVertexIDs(i1,i2,i3),mapVertexIDs(i1+1, i2, i3),mapVertexIDs(i1+1, i2+1, i3));
+//                elements(elementID, 0) = mapVertexIDs(i1,i2,i3);
+//                elements(elementID, 1) = mapVertexIDs(i1+1, i2, i3);
+//                elements(elementID, 2) = mapVertexIDs(i1+1, i2+1, i3);
+                }
+              else if (mapVertexIDs(i1+1, i2, i3) == mapVertexIDs(i1+1, i2+1, i3) )
+                {
+                  assignTri(elements,elementID,sj,mapVertexIDs(i1+1,i2,i3),mapVertexIDs(i1, i2+1, i3),mapVertexIDs(i1, i2, i3));
+//                elements(elementID, 0) = mapVertexIDs(i1+1,i2,i3);
+//                elements(elementID, 1) = mapVertexIDs(i1, i2+1, i3);
+//                elements(elementID, 2) = mapVertexIDs(i1, i2, i3);
+                }
+              else if (mapVertexIDs(i1, i2+1, i3) == mapVertexIDs(i1+1, i2+1, i3) )
+                {
+                  assignTri(elements,elementID,sj,mapVertexIDs(i1,i2+1,i3),mapVertexIDs(i1, i2, i3),mapVertexIDs(i1+1, i2, i3));
+//                elements(elementID, 0) = mapVertexIDs(i1,i2+1,i3);
+//                elements(elementID, 1) = mapVertexIDs(i1, i2, i3);
+//                elements(elementID, 2) = mapVertexIDs(i1+1, i2, i3);
+                }
+              else // quadrilateral
+                {
                   if( preferTriangles )
-		  {
-		    assignTri(elements,elementID,sj,mapVertexIDs(i1, i2, i3),mapVertexIDs(i1+1, i2, i3),mapVertexIDs(i1+1, i2+1, i3));
-// 		    elements(elementID, 0) = mapVertexIDs(i1, i2, i3);
-// 		    elements(elementID, 1) = mapVertexIDs(i1+1, i2, i3);
-// 		    elements(elementID, 2) = mapVertexIDs(i1+1, i2+1, i3);
+                  {
+                    assignTri(elements,elementID,sj,mapVertexIDs(i1, i2, i3),mapVertexIDs(i1+1, i2, i3),mapVertexIDs(i1+1, i2+1, i3));
+//                  elements(elementID, 0) = mapVertexIDs(i1, i2, i3);
+//                  elements(elementID, 1) = mapVertexIDs(i1+1, i2, i3);
+//                  elements(elementID, 2) = mapVertexIDs(i1+1, i2+1, i3);
                     elementID++;
-		    elembdy(elementID) = elembdy(elementID-1);
-		    assignTri(elements,elementID,sj,mapVertexIDs(i1, i2, i3),mapVertexIDs(i1+1, i2+1, i3),mapVertexIDs(i1, i2+1, i3));
-// 		    elements(elementID, 0) = mapVertexIDs(i1, i2, i3);
+                    elembdy(elementID) = elembdy(elementID-1);
+                    assignTri(elements,elementID,sj,mapVertexIDs(i1, i2, i3),mapVertexIDs(i1+1, i2+1, i3),mapVertexIDs(i1, i2+1, i3));
+//                  elements(elementID, 0) = mapVertexIDs(i1, i2, i3);
 //                     elements(elementID, 1) = mapVertexIDs(i1+1, i2+1, i3);
-// 		    elements(elementID, 2) = mapVertexIDs(i1, i2+1, i3);	      
-		  }
-		  else
-		  {
-		    assignQuad(elements,elementID,sj,mapVertexIDs(i1, i2, i3),mapVertexIDs(i1+1, i2, i3),
-			       mapVertexIDs(i1+1, i2+1, i3),mapVertexIDs(i1, i2+1, i3));
-// 		    elements(elementID, 0) = mapVertexIDs(i1, i2, i3);
-// 		    elements(elementID, 1) = mapVertexIDs(i1+1, i2, i3);
-// 		    elements(elementID, 2) = mapVertexIDs(i1+1, i2+1, i3);
-// 		    elements(elementID, 3) = mapVertexIDs(i1, i2+1, i3);	      
-		  }
-		}
-	      
-	      elementID++;
-	    } // if ( mask !=0 )
-	} // i1
+//                  elements(elementID, 2) = mapVertexIDs(i1, i2+1, i3);              
+                  }
+                  else
+                  {
+                    assignQuad(elements,elementID,sj,mapVertexIDs(i1, i2, i3),mapVertexIDs(i1+1, i2, i3),
+                               mapVertexIDs(i1+1, i2+1, i3),mapVertexIDs(i1, i2+1, i3));
+//                  elements(elementID, 0) = mapVertexIDs(i1, i2, i3);
+//                  elements(elementID, 1) = mapVertexIDs(i1+1, i2, i3);
+//                  elements(elementID, 2) = mapVertexIDs(i1+1, i2+1, i3);
+//                  elements(elementID, 3) = mapVertexIDs(i1, i2+1, i3);              
+                  }
+                }
+              
+              elementID++;
+            } // if ( mask !=0 )
+        } // i1
     } // i2
   //  elements.display();
   return elementID;
@@ -2414,18 +2414,18 @@ static int getNumberOfDuplicatedNodes( const intArray & element )
     {
       int current = element(n);
       for ( int n2=0; n2<element.getLength(0); n2++ )
-	if ( n != n2 && current == element(n2) ) 
-	  {
-	    count++;
-	    break;
-	  }
+        if ( n != n2 && current == element(n2) ) 
+          {
+            count++;
+            break;
+          }
     }
 
   return count;
 }
 
 static bool assembledHexahedron( intArray &tempElement, const intArray &elements, 
-				 const int &elementID)
+                                 const int &elementID)
 {
 
   // check to make sure none of the nodes are duplicated
@@ -2444,7 +2444,7 @@ static bool assembledHexahedron( intArray &tempElement, const intArray &elements
 }
 
 static bool assembledTriPrism( const intArray &tempElement, const intArray &elements, 
-			       const int &elementID)
+                               const int &elementID)
 {
   bool result = true;
 
@@ -2460,90 +2460,90 @@ static bool assembledTriPrism( const intArray &tempElement, const intArray &elem
        tempElement(4) != tempElement(0) )
     {
       setElement(tempElement(0), tempElement(2), tempElement(3), tempElement(4), 
-		 tempElement(6), tempElement(7), -1            ,  -1           ,
-		 elements, elementID);
+                 tempElement(6), tempElement(7), -1            ,  -1           ,
+                 elements, elementID);
     }
   else if ( tempElement(4) == tempElement(0) && tempElement(5) == tempElement(1) &&
-	    tempElement(0) != tempElement(1) )
+            tempElement(0) != tempElement(1) )
     {
       setElement(tempElement(1), tempElement(6), tempElement(2), tempElement(0), 
-		 tempElement(7), tempElement(3), -1            ,  -1           ,
-		 elements, elementID);
+                 tempElement(7), tempElement(3), -1            ,  -1           ,
+                 elements, elementID);
     }
   // face 1 is degenerate
   else if ( tempElement(2) == tempElement(3) && tempElement(6) == tempElement(7) &&
-	    tempElement(2) != tempElement(6) )
+            tempElement(2) != tempElement(6) )
     {
       setElement(tempElement(0), tempElement(1), tempElement(2), tempElement(4), 
-		 tempElement(5), tempElement(6), -1            ,  -1           ,
-		 elements, elementID);
+                 tempElement(5), tempElement(6), -1            ,  -1           ,
+                 elements, elementID);
     }
   else if ( tempElement(2) == tempElement(6) && tempElement(3) == tempElement(7) &&
-	    tempElement(2) != tempElement(3) )
+            tempElement(2) != tempElement(3) )
     {
       setElement(tempElement(5), tempElement(6), tempElement(1), tempElement(4), 
-		 tempElement(7), tempElement(0), -1            ,  -1           ,
-		 elements, elementID);
+                 tempElement(7), tempElement(0), -1            ,  -1           ,
+                 elements, elementID);
     }
   // face 2 is degnerate
   else if ( tempElement(4) == tempElement(7) && tempElement(5) == tempElement(6) &&
-	    tempElement(4) != tempElement(5) )
+            tempElement(4) != tempElement(5) )
     {
       setElement(tempElement(1), tempElement(5), tempElement(2), tempElement(0), 
-		 tempElement(4), tempElement(3), -1            ,  -1           ,
-		 elements, elementID);
+                 tempElement(4), tempElement(3), -1            ,  -1           ,
+                 elements, elementID);
     }
   else if ( tempElement(4) == tempElement(5) && tempElement(7) == tempElement(6) &&
-	    tempElement(4) != tempElement(7) )
+            tempElement(4) != tempElement(7) )
     {
       setElement(tempElement(3), tempElement(2), tempElement(6), tempElement(0), 
-		 tempElement(1), tempElement(5), -1            ,  -1           ,
-		 elements, elementID);
+                 tempElement(1), tempElement(5), -1            ,  -1           ,
+                 elements, elementID);
     }
   // face 3 is degnerate
   else if ( tempElement(0) == tempElement(1) && tempElement(3) == tempElement(2) &&
-	    tempElement(0) != tempElement(3) )
+            tempElement(0) != tempElement(3) )
     {
       setElement(tempElement(0), tempElement(4), tempElement(5), tempElement(3), 
-		 tempElement(7), tempElement(6), -1            ,  -1           ,
-		 elements, elementID);
+                 tempElement(7), tempElement(6), -1            ,  -1           ,
+                 elements, elementID);
     }
   else if ( tempElement(0) == tempElement(3) && tempElement(1) == tempElement(2) &&
-	    tempElement(0) != tempElement(1) )
+            tempElement(0) != tempElement(1) )
     {
       setElement(tempElement(0), tempElement(7), tempElement(4), tempElement(1), 
-		 tempElement(6), tempElement(5), -1            ,  -1           ,
-		 elements, elementID);
+                 tempElement(6), tempElement(5), -1            ,  -1           ,
+                 elements, elementID);
     }
   // face 4 is degnerate
   else if ( tempElement(1) == tempElement(5) && tempElement(2) == tempElement(6) &&
-	    tempElement(1) != tempElement(2) )
+            tempElement(1) != tempElement(2) )
     {
       setElement(tempElement(0), tempElement(4), tempElement(5), tempElement(3), 
-		 tempElement(7), tempElement(6), -1            ,  -1           ,
-		 elements, elementID);
+                 tempElement(7), tempElement(6), -1            ,  -1           ,
+                 elements, elementID);
     }
   else if ( tempElement(1) == tempElement(2) && tempElement(5) == tempElement(6) &&
-	    tempElement(1) != tempElement(5) )
+            tempElement(1) != tempElement(5) )
     {
       setElement(tempElement(0), tempElement(1), tempElement(3), tempElement(4), 
-		 tempElement(5), tempElement(7), -1            ,  -1           ,
-		 elements, elementID);
+                 tempElement(5), tempElement(7), -1            ,  -1           ,
+                 elements, elementID);
     }
   // face 5 is degnerate
   else if ( tempElement(0) == tempElement(4) && tempElement(3) == tempElement(7) &&
        tempElement(0) != tempElement(3) )
     {
       setElement(tempElement(2), tempElement(6), tempElement(7), tempElement(1), 
-		 tempElement(5), tempElement(4), -1            ,  -1           ,
-		 elements, elementID);
+                 tempElement(5), tempElement(4), -1            ,  -1           ,
+                 elements, elementID);
     }
   else if ( tempElement(0) == tempElement(3) && tempElement(4) == tempElement(7) &&
-	    tempElement(0) != tempElement(4) ) 
+            tempElement(0) != tempElement(4) ) 
     {
       setElement(tempElement(0), tempElement(1), tempElement(2), tempElement(4), 
-		 tempElement(5), tempElement(6), -1            ,  -1           ,
-		 elements, elementID);
+                 tempElement(5), tempElement(6), -1            ,  -1           ,
+                 elements, elementID);
     }
   else
     result = false;
@@ -2553,7 +2553,7 @@ static bool assembledTriPrism( const intArray &tempElement, const intArray &elem
 }
 
 static bool assembledPyramid( const intArray &tempElement, const intArray &elements, 
-			      const int &elementID)
+                              const int &elementID)
 {
   bool result = true;
 
@@ -2569,57 +2569,57 @@ static bool assembledPyramid( const intArray &tempElement, const intArray &eleme
     {
       // there are six possible orientations, one for each hex face
       if ( tempElement(0) == tempElement(3) && 
-	   tempElement(0) == tempElement(7) && 
-	   tempElement(0) == tempElement(4) )
-	{
-	  // axis=2, side=0 is degenerate
-	  setElement(tempElement(5), tempElement(6), tempElement(2), tempElement(1), tempElement(0),
-		     -1            , -1            , -1            , elements, elementID);
-	}
+           tempElement(0) == tempElement(7) && 
+           tempElement(0) == tempElement(4) )
+        {
+          // axis=2, side=0 is degenerate
+          setElement(tempElement(5), tempElement(6), tempElement(2), tempElement(1), tempElement(0),
+                     -1            , -1            , -1            , elements, elementID);
+        }
       else if ( tempElement(1) == tempElement(2) && 
-		tempElement(1) == tempElement(6) && 
-		tempElement(1) == tempElement(5) )
-	{
-	  // axis=2, side=1 is degenerate
-	  setElement(tempElement(0), tempElement(3), tempElement(7), tempElement(4), tempElement(1),
-		     -1            , -1            , -1            , elements, elementID);
-	}
+                tempElement(1) == tempElement(6) && 
+                tempElement(1) == tempElement(5) )
+        {
+          // axis=2, side=1 is degenerate
+          setElement(tempElement(0), tempElement(3), tempElement(7), tempElement(4), tempElement(1),
+                     -1            , -1            , -1            , elements, elementID);
+        }
       else if ( tempElement(0) == tempElement(1) && 
-		tempElement(0) == tempElement(2) && 
-		tempElement(0) == tempElement(3) )
-	{
-	  // axis=1, side=0 is degenerate
-	  setElement(tempElement(4), tempElement(7), tempElement(6), tempElement(5), tempElement(0),
-		     -1            , -1            , -1            , elements, elementID);
-	}
+                tempElement(0) == tempElement(2) && 
+                tempElement(0) == tempElement(3) )
+        {
+          // axis=1, side=0 is degenerate
+          setElement(tempElement(4), tempElement(7), tempElement(6), tempElement(5), tempElement(0),
+                     -1            , -1            , -1            , elements, elementID);
+        }
       else if ( tempElement(4) == tempElement(5) && 
-		tempElement(4) == tempElement(6) && 
-		tempElement(4) == tempElement(7) )
-	{
-	  // axis=1, side=1 is degenerate
-	  setElement(tempElement(0), tempElement(1), tempElement(2), tempElement(3), tempElement(4),
-		     -1            , -1            , -1            , elements, elementID);
-	}
+                tempElement(4) == tempElement(6) && 
+                tempElement(4) == tempElement(7) )
+        {
+          // axis=1, side=1 is degenerate
+          setElement(tempElement(0), tempElement(1), tempElement(2), tempElement(3), tempElement(4),
+                     -1            , -1            , -1            , elements, elementID);
+        }
       else if ( tempElement(0) == tempElement(1) && 
-		tempElement(0) == tempElement(5) && 
-		tempElement(0) == tempElement(4) )
-	{
-	  // axis=0, side=0 is degenerate
-	  setElement(tempElement(2), tempElement(6), tempElement(7), tempElement(3), tempElement(0),
-		     -1            , -1            , -1            , elements, elementID);
-	}
+                tempElement(0) == tempElement(5) && 
+                tempElement(0) == tempElement(4) )
+        {
+          // axis=0, side=0 is degenerate
+          setElement(tempElement(2), tempElement(6), tempElement(7), tempElement(3), tempElement(0),
+                     -1            , -1            , -1            , elements, elementID);
+        }
       else if ( tempElement(3) == tempElement(2) && 
-		tempElement(3) == tempElement(6) && 
-		tempElement(3) == tempElement(7) )
-	{
-	  // axis=0, side=1 is degenerate
-	  setElement(tempElement(0), tempElement(4), tempElement(5), tempElement(1), tempElement(3),
-		     -1            , -1            , -1            , elements, elementID);
-	}
+                tempElement(3) == tempElement(6) && 
+                tempElement(3) == tempElement(7) )
+        {
+          // axis=0, side=1 is degenerate
+          setElement(tempElement(0), tempElement(4), tempElement(5), tempElement(1), tempElement(3),
+                     -1            , -1            , -1            , elements, elementID);
+        }
       else
-	{
-	  result = false;
-	}
+        {
+          result = false;
+        }
     }
 
   return result;
@@ -2627,7 +2627,7 @@ static bool assembledPyramid( const intArray &tempElement, const intArray &eleme
 }
 
 static bool assembledTetrahedron( const intArray &tempElement, const intArray &elements, 
-				  const int &elementID)
+                                  const int &elementID)
 {
   bool result = true;
 
@@ -2639,64 +2639,64 @@ static bool assembledTetrahedron( const intArray &tempElement, const intArray &e
        tempElement(0) != tempElement(3) )
 
     setElement(tempElement(1), tempElement(4), tempElement(3), tempElement(0), 
-	       -1            , -1            , -1            , -1            ,
-	       elements, elementID);
+               -1            , -1            , -1            , -1            ,
+               elements, elementID);
   
   else if ( tempElement(1) != tempElement(0) &&
-	    tempElement(1) != tempElement(2) &&
-	    tempElement(1) != tempElement(5) )
+            tempElement(1) != tempElement(2) &&
+            tempElement(1) != tempElement(5) )
 
     setElement(tempElement(0), tempElement(2), tempElement(5), tempElement(1),
-	       -1            , -1            , -1            , -1            ,
-	       elements, elementID);
+               -1            , -1            , -1            , -1            ,
+               elements, elementID);
   
   else if ( tempElement(2) != tempElement(1) &&
-	    tempElement(2) != tempElement(3) &&
-	    tempElement(2) != tempElement(6) )
+            tempElement(2) != tempElement(3) &&
+            tempElement(2) != tempElement(6) )
 
     setElement(tempElement(1), tempElement(3), tempElement(6), tempElement(2),
-	       -1            , -1            , -1            , -1            ,
-	       elements, elementID);
+               -1            , -1            , -1            , -1            ,
+               elements, elementID);
 
   else if ( tempElement(3) != tempElement(2) &&
-	    tempElement(3) != tempElement(0) &&
-	    tempElement(3) != tempElement(7) )
+            tempElement(3) != tempElement(0) &&
+            tempElement(3) != tempElement(7) )
 
     setElement(tempElement(2), tempElement(0), tempElement(7), tempElement(3),
-	       -1            , -1            , -1            , -1            ,
-	       elements, elementID);
+               -1            , -1            , -1            , -1            ,
+               elements, elementID);
 
   else if ( tempElement(4) != tempElement(7) &&
-	    tempElement(4) != tempElement(5) &&
-	    tempElement(4) != tempElement(0) )
+            tempElement(4) != tempElement(5) &&
+            tempElement(4) != tempElement(0) )
 
     setElement(tempElement(0), tempElement(5), tempElement(7), tempElement(4),
-	       -1            , -1            , -1            , -1            ,
-	       elements, elementID);
+               -1            , -1            , -1            , -1            ,
+               elements, elementID);
 
   else if ( tempElement(5) != tempElement(4) &&
-	    tempElement(5) != tempElement(6) &&
-	    tempElement(5) != tempElement(1) )
+            tempElement(5) != tempElement(6) &&
+            tempElement(5) != tempElement(1) )
 
     setElement(tempElement(4), tempElement(1), tempElement(6), tempElement(5),
-	       -1            , -1            , -1            , -1            ,
-	       elements, elementID);
+               -1            , -1            , -1            , -1            ,
+               elements, elementID);
 
   else if ( tempElement(6) != tempElement(5) &&
-	    tempElement(6) != tempElement(7) &&
-	    tempElement(6) != tempElement(2) )
+            tempElement(6) != tempElement(7) &&
+            tempElement(6) != tempElement(2) )
 
     setElement(tempElement(2), tempElement(7), tempElement(5), tempElement(6),
-	       -1            , -1            , -1            , -1            ,
-	       elements, elementID);
+               -1            , -1            , -1            , -1            ,
+               elements, elementID);
 
   else if ( tempElement(7) != tempElement(6) &&
-	    tempElement(7) != tempElement(4) &&
-	    tempElement(7) != tempElement(3) )
+            tempElement(7) != tempElement(4) &&
+            tempElement(7) != tempElement(3) )
     
     setElement(tempElement(3), tempElement(4), tempElement(6), tempElement(7),
-	       -1            , -1            , -1            , -1            ,
-	       elements, elementID);
+               -1            , -1            , -1            , -1            ,
+               elements, elementID);
   
   else
     {
@@ -2708,8 +2708,8 @@ static bool assembledTetrahedron( const intArray &tempElement, const intArray &e
 }
 
 static int assembleElements3D(const Mapping & map, const intArray &mapVertexIDs, 
-			      const intArray &mask, intArray &elements, intArray &elembdy, 
-			      intArray &periodic, intArray &elemMap, bool preferTriangles,int ngc)
+                              const intArray &mask, intArray &elements, intArray &elembdy, 
+                              intArray &periodic, intArray &elemMap, bool preferTriangles,int ngc)
 {
 
   // assemble pyramids and hexahedra from mapping map into the array elements
@@ -2733,10 +2733,10 @@ static int assembleElements3D(const Mapping & map, const intArray &mapVertexIDs,
   for ( int a=0; a<3; a++ )
     {
       if ( per[a]!=Mapping::functionPeriodic ) // no need to add ghost cells on a branch cut.
-	{
-	  ib[a] -= numberOfGhostCells;
-	  ie[a] += numberOfGhostCells;
-	}
+        {
+          ib[a] -= numberOfGhostCells;
+          ie[a] += numberOfGhostCells;
+        }
     }
 
   const int nCells0 = ie[0] - ib[0] + 1;
@@ -2748,112 +2748,112 @@ static int assembleElements3D(const Mapping & map, const intArray &mapVertexIDs,
   for ( int i3=ib[2]; i3<=ie[2]; i3++ )
     {
       for ( int i2=ib[1]; i2<=ie[1]; i2++ )
-	{
-	  for ( int i1=ib[0]; i1<=ie[0]; i1++ )
-	    {
-	      if ( mask(i1,i2,i3)!=0 && mask(i1+1,i2,i3) !=0 && 
-		   mask(i1+1,i2+1,i3)!=0 && mask(i1,i2+1,i3)!=0 &&
-		   mask(i1,i2,i3+1)!=0 && mask(i1+1,i2,i3+1) !=0 && 
-		   mask(i1+1,i2+1,i3+1)!=0 && mask(i1,i2+1,i3+1)!=0 )
-		{
-		  intArray tempHex(maxNumberOfNodesPerElement);
-		  if ( sj>0. )
-		    {
-		      tempHex(0) = mapVertexIDs(i1  ,i2  ,i3  );
-		      tempHex(1) = mapVertexIDs(i1+1,i2  ,i3  );
-		      tempHex(2) = mapVertexIDs(i1+1,i2+1,i3  );
-		      tempHex(3) = mapVertexIDs(i1  ,i2+1,i3  );
-		      tempHex(4) = mapVertexIDs(i1  ,i2  ,i3+1);
-		      tempHex(5) = mapVertexIDs(i1+1,i2  ,i3+1);
-		      tempHex(6) = mapVertexIDs(i1+1,i2+1,i3+1);
-		      tempHex(7) = mapVertexIDs(i1  ,i2+1,i3+1);
-		    }
-		  else
-		    {
-		      tempHex(3) = mapVertexIDs(i1  ,i2  ,i3  );
-		      tempHex(2) = mapVertexIDs(i1+1,i2  ,i3  );
-		      tempHex(1) = mapVertexIDs(i1+1,i2+1,i3  );
-		      tempHex(0) = mapVertexIDs(i1  ,i2+1,i3  );
+        {
+          for ( int i1=ib[0]; i1<=ie[0]; i1++ )
+            {
+              if ( mask(i1,i2,i3)!=0 && mask(i1+1,i2,i3) !=0 && 
+                   mask(i1+1,i2+1,i3)!=0 && mask(i1,i2+1,i3)!=0 &&
+                   mask(i1,i2,i3+1)!=0 && mask(i1+1,i2,i3+1) !=0 && 
+                   mask(i1+1,i2+1,i3+1)!=0 && mask(i1,i2+1,i3+1)!=0 )
+                {
+                  intArray tempHex(maxNumberOfNodesPerElement);
+                  if ( sj>0. )
+                    {
+                      tempHex(0) = mapVertexIDs(i1  ,i2  ,i3  );
+                      tempHex(1) = mapVertexIDs(i1+1,i2  ,i3  );
+                      tempHex(2) = mapVertexIDs(i1+1,i2+1,i3  );
+                      tempHex(3) = mapVertexIDs(i1  ,i2+1,i3  );
+                      tempHex(4) = mapVertexIDs(i1  ,i2  ,i3+1);
+                      tempHex(5) = mapVertexIDs(i1+1,i2  ,i3+1);
+                      tempHex(6) = mapVertexIDs(i1+1,i2+1,i3+1);
+                      tempHex(7) = mapVertexIDs(i1  ,i2+1,i3+1);
+                    }
+                  else
+                    {
+                      tempHex(3) = mapVertexIDs(i1  ,i2  ,i3  );
+                      tempHex(2) = mapVertexIDs(i1+1,i2  ,i3  );
+                      tempHex(1) = mapVertexIDs(i1+1,i2+1,i3  );
+                      tempHex(0) = mapVertexIDs(i1  ,i2+1,i3  );
 
-		      tempHex(7) = mapVertexIDs(i1  ,i2  ,i3+1);
-		      tempHex(6) = mapVertexIDs(i1+1,i2  ,i3+1);
-		      tempHex(5) = mapVertexIDs(i1+1,i2+1,i3+1);
-		      tempHex(4) = mapVertexIDs(i1  ,i2+1,i3+1);
-		    }
+                      tempHex(7) = mapVertexIDs(i1  ,i2  ,i3+1);
+                      tempHex(6) = mapVertexIDs(i1+1,i2  ,i3+1);
+                      tempHex(5) = mapVertexIDs(i1+1,i2+1,i3+1);
+                      tempHex(4) = mapVertexIDs(i1  ,i2+1,i3+1);
+                    }
 
-		  // the following "assembled*( ... )" methods are compilation unit scoped and are defined above
-		  if ( ! assembledHexahedron(tempHex, elements, elementID) ) 
-		    if ( ! assembledTriPrism(tempHex, elements, elementID) )
-		      if ( ! assembledPyramid(tempHex, elements, elementID) )
-			if ( ! assembledTetrahedron(tempHex, elements, elementID) )
-			  throw "cannot recognize element type";
+                  // the following "assembled*( ... )" methods are compilation unit scoped and are defined above
+                  if ( ! assembledHexahedron(tempHex, elements, elementID) ) 
+                    if ( ! assembledTriPrism(tempHex, elements, elementID) )
+                      if ( ! assembledPyramid(tempHex, elements, elementID) )
+                        if ( ! assembledTetrahedron(tempHex, elements, elementID) )
+                          throw "cannot recognize element type";
 
-		  if ( i1<xa0 || i1>xb0 || i2<xa1 || i2>xb1 || i3<xa2 || i3>xb2 )
-		    {
+                  if ( i1<xa0 || i1>xb0 || i2<xa1 || i2>xb1 || i3<xa2 || i3>xb2 )
+                    {
 
-		      if ( per[0]==Mapping::derivativePeriodic ||
-			   per[1]==Mapping::derivativePeriodic ||
-			   per[2]==Mapping::derivativePeriodic )
-			{
-			  periodic(elementID,0) = i1;
-			  periodic(elementID,1) = i2;
-			  periodic(elementID,2) = i3;		      
-			  //			  cout<<"PERIODIC MATCH "<<i1<<"  "<<i2<<"  "<<i3<<" to ";
-			}
-		      
-		      elembdy(elementID) = 0x1; // this is a ghost element
-		      // ah, but is it periodic?
-		      bool isCorner = true;
-		      if ( per[0] == Mapping::derivativePeriodic )
-			{
-			  if ( i1<xa0 )
-			    periodic(elementID,0) = i1+nCells0-1-numberOfGhostCells;
-			  else if ( i1>xb0 )
-			    periodic(elementID,0) = i1-nCells0+1+numberOfGhostCells;
-			  else 
-			    isCorner = false;
-			}
-		      else 
-			isCorner = false;
-		      
-		      if ( per[1] == Mapping::derivativePeriodic )
-			{
-			  if ( i2<xa1 )
-			    periodic(elementID,1) = i2+nCells1-1-numberOfGhostCells;
-			  else if ( i2>xb1 )
-			    periodic(elementID,1) = i2-nCells1+1+numberOfGhostCells;
-			  else 
-			    isCorner = false;
-			}
-		      else 
-			isCorner = false;
+                      if ( per[0]==Mapping::derivativePeriodic ||
+                           per[1]==Mapping::derivativePeriodic ||
+                           per[2]==Mapping::derivativePeriodic )
+                        {
+                          periodic(elementID,0) = i1;
+                          periodic(elementID,1) = i2;
+                          periodic(elementID,2) = i3;                 
+                          //                      cout<<"PERIODIC MATCH "<<i1<<"  "<<i2<<"  "<<i3<<" to ";
+                        }
+                      
+                      elembdy(elementID) = 0x1; // this is a ghost element
+                      // ah, but is it periodic?
+                      bool isCorner = true;
+                      if ( per[0] == Mapping::derivativePeriodic )
+                        {
+                          if ( i1<xa0 )
+                            periodic(elementID,0) = i1+nCells0-1-numberOfGhostCells;
+                          else if ( i1>xb0 )
+                            periodic(elementID,0) = i1-nCells0+1+numberOfGhostCells;
+                          else 
+                            isCorner = false;
+                        }
+                      else 
+                        isCorner = false;
+                      
+                      if ( per[1] == Mapping::derivativePeriodic )
+                        {
+                          if ( i2<xa1 )
+                            periodic(elementID,1) = i2+nCells1-1-numberOfGhostCells;
+                          else if ( i2>xb1 )
+                            periodic(elementID,1) = i2-nCells1+1+numberOfGhostCells;
+                          else 
+                            isCorner = false;
+                        }
+                      else 
+                        isCorner = false;
 
-		      if ( per[2] == Mapping::derivativePeriodic )
-			{
-			  if ( i3<xa2 )
-			    periodic(elementID,2) = i3+nCells2-1-numberOfGhostCells;
-			  else if ( i3>xb2 )
-			    periodic(elementID,2) = i3-nCells2+1+numberOfGhostCells;
-			  else 
-			    isCorner = false;
-			}
-		      else 
-			isCorner = false;
+                      if ( per[2] == Mapping::derivativePeriodic )
+                        {
+                          if ( i3<xa2 )
+                            periodic(elementID,2) = i3+nCells2-1-numberOfGhostCells;
+                          else if ( i3>xb2 )
+                            periodic(elementID,2) = i3-nCells2+1+numberOfGhostCells;
+                          else 
+                            isCorner = false;
+                        }
+                      else 
+                        isCorner = false;
 
-// 		      if ( per[0]==Mapping::derivativePeriodic ||
-// 			   per[1]==Mapping::derivativePeriodic ||
-// 			   per[2]==Mapping::derivativePeriodic )
-// 			cout<<periodic(elementID,0)<<"  "<<periodic(elementID,1)<<"  "<<periodic(elementID,2)<<endl;
+//                    if ( per[0]==Mapping::derivativePeriodic ||
+//                         per[1]==Mapping::derivativePeriodic ||
+//                         per[2]==Mapping::derivativePeriodic )
+//                      cout<<periodic(elementID,0)<<"  "<<periodic(elementID,1)<<"  "<<periodic(elementID,2)<<endl;
 
-		      if ( isCorner ) 
-			cout<<"matched corner "<<i1<<" "<<i2<<" "<<i3<<" to "<<periodic(elementID,0)<<" "<<periodic(elementID,1)<<" "<<periodic(elementID,2)<<endl;
-		    }
+                      if ( isCorner ) 
+                        cout<<"matched corner "<<i1<<" "<<i2<<" "<<i3<<" to "<<periodic(elementID,0)<<" "<<periodic(elementID,1)<<" "<<periodic(elementID,2)<<endl;
+                    }
 
-		  elemMap(i1,i2,i3) = elementID;
-		  elementID++;
-		} // if ( mask != 0)
-	    } // i1
-	} // i2
+                  elemMap(i1,i2,i3) = elementID;
+                  elementID++;
+                } // if ( mask != 0)
+            } // i1
+        } // i2
     } // i3
   return elementID;
 }
@@ -2920,55 +2920,55 @@ buildFromAMapping( Mapping & map, intArray &maskin /* = Overture::nullIntArray()
       I2 = Range(-numberOfGhostCells,map.getGridDimensions(1)-1+numberOfGhostCells);
       // if ( map.getRangeDimension()==3 ) // *wdh* 070414
       if ( map.getDomainDimension()==3 )
-	I3 = Range(-numberOfGhostCells,map.getGridDimensions(2)-1+numberOfGhostCells);
+        I3 = Range(-numberOfGhostCells,map.getGridDimensions(2)-1+numberOfGhostCells);
       else
-	I3 = Range(0,0);
+        I3 = Range(0,0);
 
 
       //      const realArray & mappingVertices = map.getGrid();
       realArray x;
 
       if( includeGhostElements )
-	{
-	  // If we include ghost elements we must re-evaluate the mapping
-	  // ************* fix this -- only compute ghost values *************
-	  real dr[3]={1.,1.,1.}; 
-	  int axis;
-	  for( axis=axis1; axis<domainDimension; axis++ )
-	    {
-	      dr[axis]=1./max(map.getGridDimensions(axis)-1,1);
-	      cout<<"DR "<<dr[axis]<<endl;
-	    }
-	  
-	  x.redim(I1,I2,I3,rangeDimension);
-	  realArray r(I1,I2,I3,domainDimension);
-	  int i1,i2,i3;
-	  for( i3=I3.getBase(); i3<=I3.getBound(); i3++ )
-	    {
-	      for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-		r(I1,i2,i3,0).seqAdd(dr[axis1]*I1.getBase(),dr[axis1]);
-	      if( domainDimension>1 )
-		{
-		  for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-		    r(i1,I2,i3,1).seqAdd(dr[axis2]*I2.getBase(),dr[axis2]);
-		}
-	    }
-	  if( domainDimension>2 )
-	    {
-	      for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-		for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-		  r(i1,i2,I3,2).seqAdd(dr[axis3]*I3.getBase(),dr[axis3]);
-	    }
-	  map.mapGrid(r,x);
-	  
-	}
+        {
+          // If we include ghost elements we must re-evaluate the mapping
+          // ************* fix this -- only compute ghost values *************
+          real dr[3]={1.,1.,1.}; 
+          int axis;
+          for( axis=axis1; axis<domainDimension; axis++ )
+            {
+              dr[axis]=1./max(map.getGridDimensions(axis)-1,1);
+              cout<<"DR "<<dr[axis]<<endl;
+            }
+          
+          x.redim(I1,I2,I3,rangeDimension);
+          realArray r(I1,I2,I3,domainDimension);
+          int i1,i2,i3;
+          for( i3=I3.getBase(); i3<=I3.getBound(); i3++ )
+            {
+              for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
+                r(I1,i2,i3,0).seqAdd(dr[axis1]*I1.getBase(),dr[axis1]);
+              if( domainDimension>1 )
+                {
+                  for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+                    r(i1,I2,i3,1).seqAdd(dr[axis2]*I2.getBase(),dr[axis2]);
+                }
+            }
+          if( domainDimension>2 )
+            {
+              for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
+                for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+                  r(i1,i2,I3,2).seqAdd(dr[axis3]*I3.getBase(),dr[axis3]);
+            }
+          map.mapGrid(r,x);
+          
+        }
 
       const realArray &mappingVertices = includeGhostElements ? x : map.getGrid();
 
       int boundaryConds[2][3];
       for ( axis=0; axis<rangeDimension; axis++ )
-	for ( side=0; side<2; side++ )
-	  boundaryConds[side][axis] = map.getBoundaryCondition(side,axis);
+        for ( side=0; side<2; side++ )
+          boundaryConds[side][axis] = map.getBoundaryCondition(side,axis);
 
       // vertex and element ID counters
       int vertexID = 0;
@@ -2980,30 +2980,30 @@ buildFromAMapping( Mapping & map, intArray &maskin /* = Overture::nullIntArray()
       //   this will be adjusted if coordinate singularities or  periodic boundaries are present.
       int numberOfNodesMax = 1;
       for (axis=0; axis<domainDimension; axis++)
- 	numberOfNodesMax *= mappingVertices.getLength(axis);
+        numberOfNodesMax *= mappingVertices.getLength(axis);
 
       node.redim(numberOfNodesMax, rangeDimension);
       node = 0.0;
       //IntegerArray mapVertexIDs;
 #if 0
       mapVertexIDs.redim(mappingVertices.getLength(0), 
-			 mappingVertices.getLength(1), 
-			 mappingVertices.getLength(2));
+                         mappingVertices.getLength(1), 
+                         mappingVertices.getLength(2));
 
       if ( mask.getLength(0) == 0 ) 
-	{
-	  mask.redim(mappingVertices.getLength(0), 
-		     mappingVertices.getLength(1), 
-		     mappingVertices.getLength(2));
-	  mask = 1;
-	}
+        {
+          mask.redim(mappingVertices.getLength(0), 
+                     mappingVertices.getLength(1), 
+                     mappingVertices.getLength(2));
+          mask = 1;
+        }
 #else
       mapVertexIDs.redim(I1,I2,I3);
       if ( mask.getLength(0) == 0 )
-	{
-	  mask.redim(I1,I2,I3);
-	  mask = 1;
-	}
+        {
+          mask.redim(I1,I2,I3);
+          mask = 1;
+        }
 #endif
 
       mapVertexIDs = -1;
@@ -3011,10 +3011,10 @@ buildFromAMapping( Mapping & map, intArray &maskin /* = Overture::nullIntArray()
       // determine the number of elements in the UnstructuredMapping
       numberOfElements = 1;
       for (axis=0; axis<domainDimension; axis++)
-	numberOfElements *= mappingVertices.getLength(axis)-1;//map.getGridDimensions(axis)-1;
+        numberOfElements *= mappingVertices.getLength(axis)-1;//map.getGridDimensions(axis)-1;
 
       if( preferTriangles )
-	numberOfElements*= domainDimension==2 ? 2 : 12;   // ***wdh: fix this for 3D***
+        numberOfElements*= domainDimension==2 ? 2 : 12;   // ***wdh: fix this for 3D***
 
       cout<<"MAXNNODE "<<numberOfElements<<"  "<<maxNumberOfNodesPerElement<<endl;
       element.redim(numberOfElements, maxNumberOfNodesPerElement);
@@ -3030,254 +3030,254 @@ buildFromAMapping( Mapping & map, intArray &maskin /* = Overture::nullIntArray()
       int i1,i2,i3;
 
       for (axis=0; axis<3; axis++)
-	{
-	  is[axis].redim(domainDimension, 2);
-	  ie[axis].redim(domainDimension, 2);
-	  is[axis] = 0;
-	  ie[axis] = 0;
-	  if (axis<domainDimension) 
-	    {
-	      for (int ax2=0; ax2<domainDimension; ax2++)
-		{
-		  if (axis!=ax2)
-		    {
-		      if ( map.getIsPeriodic(ax2)==functionPeriodic )
-			{
-			  ie[axis](ax2, 0) = map.getGridDimensions(axis)-1;
-			  ie[axis](ax2, 1) = map.getGridDimensions(axis)-1;
-			}
-		      else
-			{
-			  is[axis](ax2, 0) = -numberOfGhostCells;
-			  is[axis](ax2, 1) = -numberOfGhostCells;
-			  ie[axis](ax2, 0) = map.getGridDimensions(axis)-1+numberOfGhostCells;
-			  ie[axis](ax2, 1) = map.getGridDimensions(axis)-1+numberOfGhostCells;
-			}
-		    }
-		  else
-		    {
-		      if ( map.getIsPeriodic(axis)==functionPeriodic )
-			{
-			  is[axis](ax2, 1) = map.getGridDimensions(axis)-1;
-			  ie[axis](ax2, 1) = map.getGridDimensions(axis)-1; 
-			}
-		      else
-			{
-			  is[axis](ax2,0) = -numberOfGhostCells;
-			  ie[axis](ax2,0) = -numberOfGhostCells;
-			  is[axis](ax2, 1) = map.getGridDimensions(axis)-1+numberOfGhostCells;
-			  ie[axis](ax2, 1) = map.getGridDimensions(axis)-1+numberOfGhostCells; 
-			}
-		    }
-		} // ax2
-	    } 	  
-	} // axis
+        {
+          is[axis].redim(domainDimension, 2);
+          ie[axis].redim(domainDimension, 2);
+          is[axis] = 0;
+          ie[axis] = 0;
+          if (axis<domainDimension) 
+            {
+              for (int ax2=0; ax2<domainDimension; ax2++)
+                {
+                  if (axis!=ax2)
+                    {
+                      if ( map.getIsPeriodic(ax2)==functionPeriodic )
+                        {
+                          ie[axis](ax2, 0) = map.getGridDimensions(axis)-1;
+                          ie[axis](ax2, 1) = map.getGridDimensions(axis)-1;
+                        }
+                      else
+                        {
+                          is[axis](ax2, 0) = -numberOfGhostCells;
+                          is[axis](ax2, 1) = -numberOfGhostCells;
+                          ie[axis](ax2, 0) = map.getGridDimensions(axis)-1+numberOfGhostCells;
+                          ie[axis](ax2, 1) = map.getGridDimensions(axis)-1+numberOfGhostCells;
+                        }
+                    }
+                  else
+                    {
+                      if ( map.getIsPeriodic(axis)==functionPeriodic )
+                        {
+                          is[axis](ax2, 1) = map.getGridDimensions(axis)-1;
+                          ie[axis](ax2, 1) = map.getGridDimensions(axis)-1; 
+                        }
+                      else
+                        {
+                          is[axis](ax2,0) = -numberOfGhostCells;
+                          ie[axis](ax2,0) = -numberOfGhostCells;
+                          is[axis](ax2, 1) = map.getGridDimensions(axis)-1+numberOfGhostCells;
+                          ie[axis](ax2, 1) = map.getGridDimensions(axis)-1+numberOfGhostCells; 
+                        }
+                    }
+                } // ax2
+            }     
+        } // axis
 
       // // determine boundary vertex id's, checking for periodicity and coordinate singularities
 
       // perform this task by examining all the vertices on each side in each axis
       int itot=0, ising=0, iper=0, inorm=0;
       for (axis=0; axis<domainDimension; axis++)
-	{
-	  for (side=0; side<2; side++)
-	    {
+        {
+          for (side=0; side<2; side++)
+            {
 
-	      // check for a spherical singularity along a particular edge, if one exists, fix the node IDs to be the same
-	      // this is only performed if side == 1 since side==0 will already have assigned the needed
-	      // vertex id
-	      if ( side==1 &&
-		   map.getTypeOfCoordinateSingularity(0, axis) == Mapping::polarSingularity &&
-		   map.getTypeOfCoordinateSingularity(1, axis) == Mapping::polarSingularity )
-		{
-		  // spherical type singularity, it would be nice to know which direction the coordinate are collapsed
-		  if ( max(abs(mappingVertices(i1s(axis, 0), i2s(axis,0), i3s(axis,0),AXES)-mappingVertices(i1s(axis,1), i2s(axis,1), i3s(axis,1),AXES)))<10.*REAL_EPSILON )
-		    {
-		      // coordintate starts are singular
-		      
-		      // determine the non-singular direction (this is the one we keep constant)
-		      if (max(abs(mappingVertices(i1s(axis,0), i2s(axis,0), i3s(axis,0),AXES)-mappingVertices(i1e(axis,0), i2s(axis,0), i3s(axis,0),AXES)))>10.*REAL_EPSILON )
-			{
-			  i1 = i1s(axis,side);
-			  for ( i3=i3s(axis,side); i3<=i3e(axis,side); i3++ )
-			    for ( i2=i2s(axis,side); i2<=i2e(axis,side); i2++ )
-			      mapVertexIDs(i1, i2, i3) = mapVertexIDs(i1s(axis,0), i2s(axis,0), i3s(axis,0));
-			}
-		      else if (max(abs(mappingVertices(i1s(axis,0), i2s(axis,0), i3s(axis,0),AXES)-mappingVertices(i1s(axis,0), i2e(axis,0), i3s(axis,0),AXES)))>10.*REAL_EPSILON )
-			{
-			  i2 = i2s(axis,side);
-			  for ( i3=i3s(axis,side); i3<=i3e(axis,side); i3++ )
-			    for ( i1=i1s(axis,side); i1<=i1e(axis,side); i1++ )
-			      mapVertexIDs(i1, i2, i3) = mapVertexIDs(i1s(axis,0), i2s(axis,0), i3s(axis,0));
-			}
-		      else if (max(abs(mappingVertices(i1s(axis,0), i2s(axis,0), i3s(axis,0),AXES)-mappingVertices(i1s(axis,0), i2s(axis,0), i3e(axis,0),AXES)))>10.*REAL_EPSILON )
-			{
-			  i3 = i3s(axis,side);
-			  for ( i2=i2s(axis,side); i2<=i2e(axis,side); i2++ )
-			    for ( i1=i1s(axis,side); i1<=i1e(axis,side); i1++ )
-			      mapVertexIDs(i1, i2, i3) = mapVertexIDs(i1s(axis,0), i2s(axis,0), i3s(axis,0));
-			}
+              // check for a spherical singularity along a particular edge, if one exists, fix the node IDs to be the same
+              // this is only performed if side == 1 since side==0 will already have assigned the needed
+              // vertex id
+              if ( side==1 &&
+                   map.getTypeOfCoordinateSingularity(0, axis) == Mapping::polarSingularity &&
+                   map.getTypeOfCoordinateSingularity(1, axis) == Mapping::polarSingularity )
+                {
+                  // spherical type singularity, it would be nice to know which direction the coordinate are collapsed
+                  if ( max(abs(mappingVertices(i1s(axis, 0), i2s(axis,0), i3s(axis,0),AXES)-mappingVertices(i1s(axis,1), i2s(axis,1), i3s(axis,1),AXES)))<10.*REAL_EPSILON )
+                    {
+                      // coordintate starts are singular
+                      
+                      // determine the non-singular direction (this is the one we keep constant)
+                      if (max(abs(mappingVertices(i1s(axis,0), i2s(axis,0), i3s(axis,0),AXES)-mappingVertices(i1e(axis,0), i2s(axis,0), i3s(axis,0),AXES)))>10.*REAL_EPSILON )
+                        {
+                          i1 = i1s(axis,side);
+                          for ( i3=i3s(axis,side); i3<=i3e(axis,side); i3++ )
+                            for ( i2=i2s(axis,side); i2<=i2e(axis,side); i2++ )
+                              mapVertexIDs(i1, i2, i3) = mapVertexIDs(i1s(axis,0), i2s(axis,0), i3s(axis,0));
+                        }
+                      else if (max(abs(mappingVertices(i1s(axis,0), i2s(axis,0), i3s(axis,0),AXES)-mappingVertices(i1s(axis,0), i2e(axis,0), i3s(axis,0),AXES)))>10.*REAL_EPSILON )
+                        {
+                          i2 = i2s(axis,side);
+                          for ( i3=i3s(axis,side); i3<=i3e(axis,side); i3++ )
+                            for ( i1=i1s(axis,side); i1<=i1e(axis,side); i1++ )
+                              mapVertexIDs(i1, i2, i3) = mapVertexIDs(i1s(axis,0), i2s(axis,0), i3s(axis,0));
+                        }
+                      else if (max(abs(mappingVertices(i1s(axis,0), i2s(axis,0), i3s(axis,0),AXES)-mappingVertices(i1s(axis,0), i2s(axis,0), i3e(axis,0),AXES)))>10.*REAL_EPSILON )
+                        {
+                          i3 = i3s(axis,side);
+                          for ( i2=i2s(axis,side); i2<=i2e(axis,side); i2++ )
+                            for ( i1=i1s(axis,side); i1<=i1e(axis,side); i1++ )
+                              mapVertexIDs(i1, i2, i3) = mapVertexIDs(i1s(axis,0), i2s(axis,0), i3s(axis,0));
+                        }
 
-		    }
-		  else if ( max(abs(mappingVertices(i1e(axis,0), i2e(axis,0), i3e(axis,0),AXES)-mappingVertices(i1e(axis,1), i2e(axis,1), i3e(axis,1),AXES)))<10.*REAL_EPSILON )
-		    {
-		      // coordinate ends are singular
-		      // determine the non-singular direction (this is the one we keep constant)
-		      if (max(abs(mappingVertices(i1e(axis,0), i2e(axis,0), i3e(axis,0),AXES)-mappingVertices(i1s(axis,0), i2e(axis,0), i3e(axis,0),AXES)))>10.*REAL_EPSILON )
-			{
-			  i1 = i1e(axis,side);
-			  for ( i3=i3s(axis,side); i3<=i3e(axis,side); i3++ )
-			    for ( i2=i2s(axis,side); i2<=i2e(axis,side); i2++ )
-			      mapVertexIDs(i1, i2, i3) = mapVertexIDs(i1e(axis,0), i2e(axis,0), i3e(axis,0));
-			}
-		      else if (max(abs(mappingVertices(i1e(axis,0), i2e(axis,0), i3e(axis,0),AXES)-mappingVertices(i1e(axis,0), i2s(axis,0), i3e(axis,0),AXES)))>10.*REAL_EPSILON )
-			{
-			  i2 = i2e(axis,side);
-			  for ( i3=i3s(axis,side); i3<=i3e(axis,side); i3++ )
-			    for ( i1=i1s(axis,side); i1<=i1e(axis,side); i1++ )
-			      mapVertexIDs(i1, i2, i3) = mapVertexIDs(i1e(axis,0), i2e(axis,0), i3e(axis,0));
-			}
-		      else if (max(abs(mappingVertices(i1e(axis,0), i2e(axis,0), i3e(axis,0),AXES)-mappingVertices(i1e(axis,0), i2e(axis,0), i3s(axis,0),AXES)))>10.*REAL_EPSILON )
-			{
-			  i3 = i3e(axis,side);
-			  for ( i2=i2s(axis,side); i2<=i2e(axis,side); i2++ )
-			    for ( i1=i1s(axis,side); i1<=i1e(axis,side); i1++ )
-			      mapVertexIDs(i1, i2, i3) = mapVertexIDs(i1e(axis,0), i2e(axis,0), i3e(axis,0));
-			}
-		    }
-		}
+                    }
+                  else if ( max(abs(mappingVertices(i1e(axis,0), i2e(axis,0), i3e(axis,0),AXES)-mappingVertices(i1e(axis,1), i2e(axis,1), i3e(axis,1),AXES)))<10.*REAL_EPSILON )
+                    {
+                      // coordinate ends are singular
+                      // determine the non-singular direction (this is the one we keep constant)
+                      if (max(abs(mappingVertices(i1e(axis,0), i2e(axis,0), i3e(axis,0),AXES)-mappingVertices(i1s(axis,0), i2e(axis,0), i3e(axis,0),AXES)))>10.*REAL_EPSILON )
+                        {
+                          i1 = i1e(axis,side);
+                          for ( i3=i3s(axis,side); i3<=i3e(axis,side); i3++ )
+                            for ( i2=i2s(axis,side); i2<=i2e(axis,side); i2++ )
+                              mapVertexIDs(i1, i2, i3) = mapVertexIDs(i1e(axis,0), i2e(axis,0), i3e(axis,0));
+                        }
+                      else if (max(abs(mappingVertices(i1e(axis,0), i2e(axis,0), i3e(axis,0),AXES)-mappingVertices(i1e(axis,0), i2s(axis,0), i3e(axis,0),AXES)))>10.*REAL_EPSILON )
+                        {
+                          i2 = i2e(axis,side);
+                          for ( i3=i3s(axis,side); i3<=i3e(axis,side); i3++ )
+                            for ( i1=i1s(axis,side); i1<=i1e(axis,side); i1++ )
+                              mapVertexIDs(i1, i2, i3) = mapVertexIDs(i1e(axis,0), i2e(axis,0), i3e(axis,0));
+                        }
+                      else if (max(abs(mappingVertices(i1e(axis,0), i2e(axis,0), i3e(axis,0),AXES)-mappingVertices(i1e(axis,0), i2e(axis,0), i3s(axis,0),AXES)))>10.*REAL_EPSILON )
+                        {
+                          i3 = i3e(axis,side);
+                          for ( i2=i2s(axis,side); i2<=i2e(axis,side); i2++ )
+                            for ( i1=i1s(axis,side); i1<=i1e(axis,side); i1++ )
+                              mapVertexIDs(i1, i2, i3) = mapVertexIDs(i1e(axis,0), i2e(axis,0), i3e(axis,0));
+                        }
+                    }
+                }
 
-	      // now check for the general polar singularity and periodic boundary cases
-	      for (i3 = i3s(axis, side); i3<=i3e(axis,side); i3++)
-		{
-		  for (i2 = i2s(axis, side); i2<=i2e(axis,side); i2++)
-		    {
-		      for (i1 = i1s(axis, side); i1<=i1e(axis,side); i1++)
-			{
-			  if ( mapVertexIDs(i1,i2,i3)==-1 && mask(i1,i2,i3) != 0 ) // do not alter if already set
-			    {
-			      // Assignment to node(vertexID, AXES) is not performed outside the if statements
-			      // since the if test controls which nodes are copied over.  For example,
-			      // the periodicity test prevents the copy of nodes on the '1' side of a periodic boundary.
+              // now check for the general polar singularity and periodic boundary cases
+              for (i3 = i3s(axis, side); i3<=i3e(axis,side); i3++)
+                {
+                  for (i2 = i2s(axis, side); i2<=i2e(axis,side); i2++)
+                    {
+                      for (i1 = i1s(axis, side); i1<=i1e(axis,side); i1++)
+                        {
+                          if ( mapVertexIDs(i1,i2,i3)==-1 && mask(i1,i2,i3) != 0 ) // do not alter if already set
+                            {
+                              // Assignment to node(vertexID, AXES) is not performed outside the if statements
+                              // since the if test controls which nodes are copied over.  For example,
+                              // the periodicity test prevents the copy of nodes on the '1' side of a periodic boundary.
 
-			      // off edge spherical singularity id assignments
-			      // // we may no longer need these first two cases in the if statement
-			      if ( max(abs(mappingVertices(i1,i2,i3,AXES)-mappingVertices(i1s(axis,side), i2s(axis,side), i3s(axis, side), AXES)))<10.*REAL_EPSILON && 
-					mapVertexIDs(i1s(axis,side), i2s(axis,side), i3s(axis,side))!=-1)
-				{
-				  mapVertexIDs(i1,i2,i3) = mapVertexIDs(i1s(axis,side), i2s(axis,side), i3s(axis,side));
-				}
-			      else if ( max(abs(mappingVertices(i1,i2,i3,AXES)-mappingVertices(i1e(axis,side), i2e(axis,side), i3e(axis, side), AXES)))<10.*REAL_EPSILON && 
-					mapVertexIDs(i1e(axis,side), i2e(axis,side), i3e(axis,side))!=-1)
-				{
-				  mapVertexIDs(i1,i2,i3) = mapVertexIDs(i1e(axis,side), i2e(axis,side), i3e(axis,side));
-				}
-			      else if ( max(abs(mappingVertices(i1,i2,i3,AXES)-mappingVertices(i1e(axis,side%1), i2e(axis,side%1), i3e(axis, side%1), AXES)))<10.*REAL_EPSILON && 
-					mapVertexIDs(i1e(axis,side%1), i2e(axis,side%1), i3e(axis,side%1))!=-1)
-				{
-				  mapVertexIDs(i1,i2,i3) = mapVertexIDs(i1e(axis,side%1), i2e(axis,side%1), i3e(axis,side%1));
-				}
-			      // polar singularity node id assignments
-			      else if ( map.getTypeOfCoordinateSingularity(side,axis) == Mapping::polarSingularity )
-				{
-				  // this will be different depending on the axis of the singularity, we need an option
-				  // for each axis
-				  if ( max(abs(mappingVertices(i1,i2,i3,AXES)-mappingVertices(i1s(axis,side), i2, i3, AXES)))<10.*REAL_EPSILON && axis!=axis1) 
-				    {
-				      if ( mapVertexIDs(i1e(axis,side), i2, i3)!=-1 )
-					mapVertexIDs(i1,i2,i3) =  mapVertexIDs(i1e(axis,side), i2, i3);
-				      else if ( i1 == i1s(axis,side) && mapVertexIDs(i1s(side,axis), i2, i3)==-1)
-					{
-					  mapVertexIDs(i1,i2,i3) = vertexID;
-					  for ( int a=0; a<rangeDimension; a++ ) 
-					    node(vertexID, a) = mappingVertices(i1,i2,i3, a);
-					  vertexID++;
-					}
-				      else
-					mapVertexIDs(i1,i2,i3) = mapVertexIDs(i1s(axis,side), i2, i3);
-				      
-				    }
-				  else if ( max(abs(mappingVertices(i1,i2,i3,AXES)-mappingVertices(i1, i2s(axis, side), i3, AXES)))<10.*REAL_EPSILON && axis!=axis2) 
-				    {
-				      if ( mapVertexIDs(i1, i2e(axis,side), i3)!=-1 )
-					  mapVertexIDs(i1,i2,i3) =  mapVertexIDs(i1, i2e(axis,side), i3);
-				      else if ( i2 == i2s(axis,side) && mapVertexIDs(i1, i2s(axis,side), i3)==-1 )
-					{
-					  mapVertexIDs(i1,i2,i3) = vertexID;
-					  
-					  for ( int a=0; a<rangeDimension; a++ ) 
-					    node(vertexID, a) = mappingVertices(i1,i2,i3, a);
-					  vertexID++;
-					  					  
-					}
-				      else
-					mapVertexIDs(i1,i2,i3) = mapVertexIDs(i1, i2s(axis,side), i3);
+                              // off edge spherical singularity id assignments
+                              // // we may no longer need these first two cases in the if statement
+                              if ( max(abs(mappingVertices(i1,i2,i3,AXES)-mappingVertices(i1s(axis,side), i2s(axis,side), i3s(axis, side), AXES)))<10.*REAL_EPSILON && 
+                                        mapVertexIDs(i1s(axis,side), i2s(axis,side), i3s(axis,side))!=-1)
+                                {
+                                  mapVertexIDs(i1,i2,i3) = mapVertexIDs(i1s(axis,side), i2s(axis,side), i3s(axis,side));
+                                }
+                              else if ( max(abs(mappingVertices(i1,i2,i3,AXES)-mappingVertices(i1e(axis,side), i2e(axis,side), i3e(axis, side), AXES)))<10.*REAL_EPSILON && 
+                                        mapVertexIDs(i1e(axis,side), i2e(axis,side), i3e(axis,side))!=-1)
+                                {
+                                  mapVertexIDs(i1,i2,i3) = mapVertexIDs(i1e(axis,side), i2e(axis,side), i3e(axis,side));
+                                }
+                              else if ( max(abs(mappingVertices(i1,i2,i3,AXES)-mappingVertices(i1e(axis,side%1), i2e(axis,side%1), i3e(axis, side%1), AXES)))<10.*REAL_EPSILON && 
+                                        mapVertexIDs(i1e(axis,side%1), i2e(axis,side%1), i3e(axis,side%1))!=-1)
+                                {
+                                  mapVertexIDs(i1,i2,i3) = mapVertexIDs(i1e(axis,side%1), i2e(axis,side%1), i3e(axis,side%1));
+                                }
+                              // polar singularity node id assignments
+                              else if ( map.getTypeOfCoordinateSingularity(side,axis) == Mapping::polarSingularity )
+                                {
+                                  // this will be different depending on the axis of the singularity, we need an option
+                                  // for each axis
+                                  if ( max(abs(mappingVertices(i1,i2,i3,AXES)-mappingVertices(i1s(axis,side), i2, i3, AXES)))<10.*REAL_EPSILON && axis!=axis1) 
+                                    {
+                                      if ( mapVertexIDs(i1e(axis,side), i2, i3)!=-1 )
+                                        mapVertexIDs(i1,i2,i3) =  mapVertexIDs(i1e(axis,side), i2, i3);
+                                      else if ( i1 == i1s(axis,side) && mapVertexIDs(i1s(side,axis), i2, i3)==-1)
+                                        {
+                                          mapVertexIDs(i1,i2,i3) = vertexID;
+                                          for ( int a=0; a<rangeDimension; a++ ) 
+                                            node(vertexID, a) = mappingVertices(i1,i2,i3, a);
+                                          vertexID++;
+                                        }
+                                      else
+                                        mapVertexIDs(i1,i2,i3) = mapVertexIDs(i1s(axis,side), i2, i3);
+                                      
+                                    }
+                                  else if ( max(abs(mappingVertices(i1,i2,i3,AXES)-mappingVertices(i1, i2s(axis, side), i3, AXES)))<10.*REAL_EPSILON && axis!=axis2) 
+                                    {
+                                      if ( mapVertexIDs(i1, i2e(axis,side), i3)!=-1 )
+                                          mapVertexIDs(i1,i2,i3) =  mapVertexIDs(i1, i2e(axis,side), i3);
+                                      else if ( i2 == i2s(axis,side) && mapVertexIDs(i1, i2s(axis,side), i3)==-1 )
+                                        {
+                                          mapVertexIDs(i1,i2,i3) = vertexID;
+                                          
+                                          for ( int a=0; a<rangeDimension; a++ ) 
+                                            node(vertexID, a) = mappingVertices(i1,i2,i3, a);
+                                          vertexID++;
+                                                                                  
+                                        }
+                                      else
+                                        mapVertexIDs(i1,i2,i3) = mapVertexIDs(i1, i2s(axis,side), i3);
 
-				    }
-				  else if ( max(abs(mappingVertices(i1,i2,i3,AXES)-mappingVertices(i1, i2, i3s(axis, side), AXES)))<10.*REAL_EPSILON && axis!=axis3)
-				    {
-				      if ( mapVertexIDs(i1, i2, i3e(axis,side) )!=-1 )
-					  mapVertexIDs(i1,i2,i3) =  mapVertexIDs(i1, i2, i3e(axis,side));
-				      else if ( i3 == i3s(axis,side) && mapVertexIDs(i1, i2, i3s(axis,side))==-1 )
-					{
-					  mapVertexIDs(i1,i2,i3) = vertexID;
-					  for ( int a=0; a<rangeDimension; a++ ) 
-					    node(vertexID, a) = mappingVertices(i1,i2,i3, a);
-					  vertexID++;
-					}
-				      else
-					mapVertexIDs(i1,i2,i3) = mapVertexIDs(i1, i2, i3s(axis,side));
+                                    }
+                                  else if ( max(abs(mappingVertices(i1,i2,i3,AXES)-mappingVertices(i1, i2, i3s(axis, side), AXES)))<10.*REAL_EPSILON && axis!=axis3)
+                                    {
+                                      if ( mapVertexIDs(i1, i2, i3e(axis,side) )!=-1 )
+                                          mapVertexIDs(i1,i2,i3) =  mapVertexIDs(i1, i2, i3e(axis,side));
+                                      else if ( i3 == i3s(axis,side) && mapVertexIDs(i1, i2, i3s(axis,side))==-1 )
+                                        {
+                                          mapVertexIDs(i1,i2,i3) = vertexID;
+                                          for ( int a=0; a<rangeDimension; a++ ) 
+                                            node(vertexID, a) = mappingVertices(i1,i2,i3, a);
+                                          vertexID++;
+                                        }
+                                      else
+                                        mapVertexIDs(i1,i2,i3) = mapVertexIDs(i1, i2, i3s(axis,side));
 
-				    }
-				  else
-				    {
-				      throw "confused polar singularity";
-				    }
-				  ising++;
-				}
+                                    }
+                                  else
+                                    {
+                                      throw "confused polar singularity";
+                                    }
+                                  ising++;
+                                }
                               // *wdh this next stuff only seems to work for functionPeriodic
-			      // *wdh* 020517 else if ( map.getIsPeriodic(axis)!=Mapping::notPeriodic ) 
-			      else if ( map.getIsPeriodic(axis)==Mapping::functionPeriodic ) 
-				{
-				  // periodic boundary node id assignment
-				  if (side==0)
-				    {
-				      // if this boundary is periodic, set the vertex array for both ends
-				      int axoff[3];
-				      for ( int a1=0; a1<3; a1++) 
-					if ( axis==a1 )
-					  axoff[a1] = ie[a1](axis, 1);
-					else
-					  axoff[a1] = is[a1](axis, side);
-				      
-				      // check to make sure the other end has not been assigned by some other axis, side
-				      if ( mapVertexIDs(axoff[0]+i1, axoff[1]+i2, axoff[2]+i3) != -1 )
-					mapVertexIDs(i1,i2,i3) = mapVertexIDs(axoff[0]+i1, axoff[1]+i2, axoff[2]+i3);
-				      else
-					{ // no id existed at the other end of the periodic boundary, create a new ID
-					  mapVertexIDs(i1,i2,i3) = vertexID;
-					  mapVertexIDs(axoff[0]+i1, axoff[1]+i2, axoff[2]+i3) = vertexID;
-					  for ( int a=0; a<rangeDimension; a++ ) node(vertexID, a) = mappingVertices(i1,i2,i3, a);
-					  vertexID++;
-					}
-				      iper++;
-				    }
-				}
-			      else 
-				{
-				  // otherwise we have a normal vertex, set and advance the vertexID
-				  for ( int a=0; a<rangeDimension; a++ ) node(vertexID, a) = mappingVertices(i1,i2,i3, a);
-				  mapVertexIDs(i1,i2,i3) = vertexID;
-				  inorm++;
-				  vertexID++;
-				}
-			    } // if (mapVertexIDs(i1,i2,i3) == -1
+                              // *wdh* 020517 else if ( map.getIsPeriodic(axis)!=Mapping::notPeriodic ) 
+                              else if ( map.getIsPeriodic(axis)==Mapping::functionPeriodic ) 
+                                {
+                                  // periodic boundary node id assignment
+                                  if (side==0)
+                                    {
+                                      // if this boundary is periodic, set the vertex array for both ends
+                                      int axoff[3];
+                                      for ( int a1=0; a1<3; a1++) 
+                                        if ( axis==a1 )
+                                          axoff[a1] = ie[a1](axis, 1);
+                                        else
+                                          axoff[a1] = is[a1](axis, side);
+                                      
+                                      // check to make sure the other end has not been assigned by some other axis, side
+                                      if ( mapVertexIDs(axoff[0]+i1, axoff[1]+i2, axoff[2]+i3) != -1 )
+                                        mapVertexIDs(i1,i2,i3) = mapVertexIDs(axoff[0]+i1, axoff[1]+i2, axoff[2]+i3);
+                                      else
+                                        { // no id existed at the other end of the periodic boundary, create a new ID
+                                          mapVertexIDs(i1,i2,i3) = vertexID;
+                                          mapVertexIDs(axoff[0]+i1, axoff[1]+i2, axoff[2]+i3) = vertexID;
+                                          for ( int a=0; a<rangeDimension; a++ ) node(vertexID, a) = mappingVertices(i1,i2,i3, a);
+                                          vertexID++;
+                                        }
+                                      iper++;
+                                    }
+                                }
+                              else 
+                                {
+                                  // otherwise we have a normal vertex, set and advance the vertexID
+                                  for ( int a=0; a<rangeDimension; a++ ) node(vertexID, a) = mappingVertices(i1,i2,i3, a);
+                                  mapVertexIDs(i1,i2,i3) = vertexID;
+                                  inorm++;
+                                  vertexID++;
+                                }
+                            } // if (mapVertexIDs(i1,i2,i3) == -1
 
-			  itot++;
-			} // i1
-		    } // i2
-		} // i3
-	    } // side
-	} // axis
+                          itot++;
+                        } // i1
+                    } // i2
+                } // i3
+            } // side
+        } // axis
 
       int startOfNonBdyVerts = vertexID;
 
@@ -3286,41 +3286,41 @@ buildFromAMapping( Mapping & map, intArray &maskin /* = Overture::nullIntArray()
       int ibases[3];
       int ibounds[3];
       for (axis=0; axis<3; axis++)
-	{
-	  if (axis>=domainDimension)
-	    {
-	      ibases[axis] = 0;
-	      ibounds[axis] = 0;
-	    }
-	  else
-	    {
-	      if ( map.getIsPeriodic(axis)==functionPeriodic )
-		{
-		  ibases[axis] = 1;
-		  ibounds[axis] = map.getGridDimensions(axis)-2;
-		}
-	      else
-		{
-		  ibases[axis] = 1-numberOfGhostCells;
-		  ibounds[axis] = map.getGridDimensions(axis)-2+numberOfGhostCells;
-		}
-	    }
-	}
+        {
+          if (axis>=domainDimension)
+            {
+              ibases[axis] = 0;
+              ibounds[axis] = 0;
+            }
+          else
+            {
+              if ( map.getIsPeriodic(axis)==functionPeriodic )
+                {
+                  ibases[axis] = 1;
+                  ibounds[axis] = map.getGridDimensions(axis)-2;
+                }
+              else
+                {
+                  ibases[axis] = 1-numberOfGhostCells;
+                  ibounds[axis] = map.getGridDimensions(axis)-2+numberOfGhostCells;
+                }
+            }
+        }
 
       for (i3=ibases[2]; i3<=ibounds[2]; i3++)
-	{
-	  for (i2=ibases[1]; i2<=ibounds[1]; i2++)
-	    {
-	      for (i1=ibases[0]; i1<=ibounds[0]; i1++)
-		{
-		  if ( mask(i1,i2,i3) != 0 )
-		    { 
-		      for ( int a=0; a<rangeDimension; a++ ) node(vertexID, a) = mappingVertices(i1,i2,i3, a);
-		      mapVertexIDs(i1,i2,i3) = vertexID++;
-		    }
-		} // i1
-	    } // i2
-	} // i3
+        {
+          for (i2=ibases[1]; i2<=ibounds[1]; i2++)
+            {
+              for (i1=ibases[0]; i1<=ibounds[0]; i1++)
+                {
+                  if ( mask(i1,i2,i3) != 0 )
+                    { 
+                      for ( int a=0; a<rangeDimension; a++ ) node(vertexID, a) = mappingVertices(i1,i2,i3, a);
+                      mapVertexIDs(i1,i2,i3) = vertexID++;
+                    }
+                } // i1
+            } // i2
+        } // i3
 
       // define all the elements, making triangles/tetrahedra for boundary elements that
       //    have coordinate singularities and quadrilaterals/hexahedra for the rest
@@ -3335,11 +3335,11 @@ buildFromAMapping( Mapping & map, intArray &maskin /* = Overture::nullIntArray()
       //      elembdy = -1;
 
       if (domainDimension==2)
-	numberOfElements = assembleElements2D(map, mapVertexIDs, mask, element, elembdy, preferTriangles,numberOfGhostCells); // this method is compilation unit scoped and is defined above
+        numberOfElements = assembleElements2D(map, mapVertexIDs, mask, element, elembdy, preferTriangles,numberOfGhostCells); // this method is compilation unit scoped and is defined above
       else
-	{
-	  numberOfElements = assembleElements3D(map, mapVertexIDs, mask, element, elembdy, periodic, elemMap, preferTriangles,numberOfGhostCells); // this method is compilation unit scoped and is defined above
-	}
+        {
+          numberOfElements = assembleElements3D(map, mapVertexIDs, mask, element, elembdy, periodic, elemMap, preferTriangles,numberOfGhostCells); // this method is compilation unit scoped and is defined above
+        }
 
       element.resize(numberOfElements, maxNumberOfNodesPerElement);
 
@@ -3350,31 +3350,31 @@ buildFromAMapping( Mapping & map, intArray &maskin /* = Overture::nullIntArray()
 
       Range R(0,numberOfNodes-1);
       for( axis=0; axis<rangeDimension; axis++ )
-	{
-	  setRangeBound(Start,axis,min(node(R,axis)));
-	  setRangeBound(End  ,axis,max(node(R,axis)));
-	}
+        {
+          setRangeBound(Start,axis,min(node(R,axis)));
+          setRangeBound(End  ,axis,max(node(R,axis)));
+        }
 
       //      buildConnectivityLists();
       // kkc set up the new connectivity
       if ( domainDimension==3 )
-	{
-	  specifyEntity(Region,element);
-	}
+        {
+          specifyEntity(Region,element);
+        }
       else if ( domainDimension==2 )
-	specifyEntity(Face,element);
+        specifyEntity(Face,element);
 
       UnstructuredMapping::EntityTypeEnum cellType = EntityTypeEnum(domainDimension);
       std::string ghostTag = string("Ghost ")+EntityTypeStrings[cellType].c_str();
       std::string perTag = string("periodic ")+EntityTypeStrings[cellType].c_str();
       for ( int e=0; e<numberOfElements; e++ )
-	{
-	  if ( elembdy(e) )
-	    setAsGhost(cellType,e);
-	  if ( periodic(e,0)>-1 )
-	    addTag(cellType,e,perTag,(void*)elemMap(periodic(e,0),periodic(e,1),periodic(e,2)));
+        {
+          if ( elembdy(e) )
+            setAsGhost(cellType,e);
+          if ( periodic(e,0)>-1 )
+            addTag(cellType,e,perTag,(void*)elemMap(periodic(e,0),periodic(e,1),periodic(e,2)));
 
-	}
+        }
 
       entityCapacity[Vertex] = entitySize[Vertex] = node.getLength(0);
       if ( entityMasks[Vertex] ) delete entityMasks[Vertex];
@@ -3385,20 +3385,20 @@ buildFromAMapping( Mapping & map, intArray &maskin /* = Overture::nullIntArray()
       
       if ( includeGhostElements )
       {
-	for ( int v=0; v<startOfNonBdyVerts; v++ )
-	{
-	  if ( !isGhost(Vertex,v) )
-	    setAsGhost(Vertex,v);
-	}
+        for ( int v=0; v<startOfNonBdyVerts; v++ )
+        {
+          if ( !isGhost(Vertex,v) )
+            setAsGhost(Vertex,v);
+        }
       }
       else
       {
-	for ( int v=0; v<startOfNonBdyVerts; v++ )
-	{
-	  if ( !hasTag(Vertex,v,bdyvTag) )
-	    addTag(Vertex,v,bdyvTag,0);
-	}
-	
+        for ( int v=0; v<startOfNonBdyVerts; v++ )
+        {
+          if ( !hasTag(Vertex,v,bdyvTag) )
+            addTag(Vertex,v,bdyvTag,0);
+        }
+        
       }
       
       tagBoundaryEntities(*this);
@@ -3453,7 +3453,7 @@ printConnectivity( FILE *file /* stdout */ )
   for( int f=0; f<numberOfFaces; f++ )
   {
     fprintf(file,"face %i: nodes (%i,%i) next to elements %i and %i\n",f,face(f,0),face(f,1),
-	    faceElements(f,0),faceElements(f,1));
+            faceElements(f,0),faceElements(f,1));
   }
   
 
@@ -3488,36 +3488,36 @@ checkConnectivity( bool printResults /* =true */,
       const int n0=element(e,0), n1=element(e,1), n2=element(e,2);
       if( n0<0 || n0>=numberOfNodes || n1<0 || n1>=numberOfNodes || n2<0 || n2>=numberOfNodes )
       {
-	printf("checkConnectivity:ERROR for element e=%i, nodes=(%i,%i,%i). "
-	       "Node numbers out of range, numberOfNodes=%i\n",e,n0,n1,n2,numberOfNodes);
-	numberOfErrors++; errorFound=true;
+        printf("checkConnectivity:ERROR for element e=%i, nodes=(%i,%i,%i). "
+               "Node numbers out of range, numberOfNodes=%i\n",e,n0,n1,n2,numberOfNodes);
+        numberOfErrors++; errorFound=true;
       }
       const int f0=ef(e,0), f1=ef(e,1), f2=ef(e,2);    // faces on this element
       if( f0<0 || f0>=numberOfFaces || f1<0 || f1>=numberOfFaces || f2<0 || f2>=numberOfFaces )
       {
-	printf("checkConnectivity:ERROR for element e=%i, faces=(%i,%i,%i). "
-	       "Face numbers out of range, numberOfFaces=%i\n",e,f0,f1,f2,numberOfNodes);
-	numberOfErrors++; errorFound=true;
+        printf("checkConnectivity:ERROR for element e=%i, faces=(%i,%i,%i). "
+               "Face numbers out of range, numberOfFaces=%i\n",e,f0,f1,f2,numberOfNodes);
+        numberOfErrors++; errorFound=true;
       }
       else if( !(
-	(face(f0,0)==n0 || face(f0,0)==n1) && (face(f0,1)==n0 || face(f0,1)==n1) && face(f0,0)!=face(f0,1) &&
-	(face(f1,0)==n1 || face(f1,0)==n2) && (face(f1,1)==n1 || face(f1,1)==n2) && face(f1,0)!=face(f1,1) &&
-	(face(f2,0)==n2 || face(f2,0)==n0) && (face(f2,1)==n2 || face(f2,1)==n0) && face(f2,0)!=face(f2,1) ))
+        (face(f0,0)==n0 || face(f0,0)==n1) && (face(f0,1)==n0 || face(f0,1)==n1) && face(f0,0)!=face(f0,1) &&
+        (face(f1,0)==n1 || face(f1,0)==n2) && (face(f1,1)==n1 || face(f1,1)==n2) && face(f1,0)!=face(f1,1) &&
+        (face(f2,0)==n2 || face(f2,0)==n0) && (face(f2,1)==n2 || face(f2,1)==n0) && face(f2,0)!=face(f2,1) ))
       {
-	printf("checkConnectivity:ERROR for element e=%i, nodes=(%i,%i,%i) faces=(%i,%i,%i).\n"
-	       "   Some faces have nodes that do not belong to the element\n"
-	       "   face=%i:nodes=(%i,%i)  face=%i:nodes=(%i,%i) face=%i:nodes=(%i,%i)\n",
-	       e,n0,n1,n2,f0,f1,f2,
-	       f0,face(f0,0),face(f0,1),f1,face(f1,0),face(f1,1),f2,face(f2,0),face(f2,1));
-	numberOfErrors++; errorFound=true;
+        printf("checkConnectivity:ERROR for element e=%i, nodes=(%i,%i,%i) faces=(%i,%i,%i).\n"
+               "   Some faces have nodes that do not belong to the element\n"
+               "   face=%i:nodes=(%i,%i)  face=%i:nodes=(%i,%i) face=%i:nodes=(%i,%i)\n",
+               e,n0,n1,n2,f0,f1,f2,
+               f0,face(f0,0),face(f0,1),f1,face(f1,0),face(f1,1),f2,face(f2,0),face(f2,1));
+        numberOfErrors++; errorFound=true;
       }
       if( errorFound && pBadElements!=0 )
       {
-	if( numberOfBadElements>badElements.getBound(0) )
-	  badElements.resize(max(numberOfBadElements+10,numberOfBadElements*2));
+        if( numberOfBadElements>badElements.getBound(0) )
+          badElements.resize(max(numberOfBadElements+10,numberOfBadElements*2));
       
-	badElements(numberOfBadElements)=e;
-	numberOfBadElements++;
+        badElements(numberOfBadElements)=e;
+        numberOfBadElements++;
       }
     
     }
@@ -3532,55 +3532,55 @@ checkConnectivity( bool printResults /* =true */,
       const int numNodes=getNumberOfNodesThisElement(e);
       for( nn=0; nn<numNodes; nn++ )
       {
-	const int n0=element(e,nn);
-	if( n0<0 || n0>=numberOfNodes )
-	{
-	  printf("checkConnectivity:ERROR for element e=%i, node number %i is out of range."
-		 " numberOfNodes=%i\n",e,n0,numberOfNodes);
-	  numberOfErrors++; errorFound=true;
-	}
+        const int n0=element(e,nn);
+        if( n0<0 || n0>=numberOfNodes )
+        {
+          printf("checkConnectivity:ERROR for element e=%i, node number %i is out of range."
+                 " numberOfNodes=%i\n",e,n0,numberOfNodes);
+          numberOfErrors++; errorFound=true;
+        }
       }
       const int numFaces=getNumberOfFacesThisElement(e);
       for( int ff=0; ff<numFaces; ff++ )
       {
-	const int f0=ef(e,0);
-	if( f0<0 || f0>=numberOfFaces )
-	{
-	  printf("checkConnectivity:ERROR for element e=%i, face %i is out of range. "
-		 "numberOfFaces=%i\n",e,f0,numberOfNodes);
-	  numberOfErrors++; errorFound=true;
-	}
+        const int f0=ef(e,0);
+        if( f0<0 || f0>=numberOfFaces )
+        {
+          printf("checkConnectivity:ERROR for element e=%i, face %i is out of range. "
+                 "numberOfFaces=%i\n",e,f0,numberOfNodes);
+          numberOfErrors++; errorFound=true;
+        }
         // check that the nodes that make up each face are found on the element.
         const int numberNodesPerFace=getNumberOfNodesThisFace(f0);
-	int numFound=0;
-	for( int nf=0; nf<numberNodesPerFace; nf++ )
-	{
-	  int nf0=face(f0,nf);
-	  for( nn=0; nn<numNodes; nn++ )
-	  {
-	    if( nf0==element(e,nn) ) numFound++;
-	  }
-	}
-	if( numFound!=numberNodesPerFace )
-	{
-	  printf("checkConnectivity:ERROR for element e=%i, nodes=(",e);
-	  for( nn=0; nn<numNodes; nn++ )
+        int numFound=0;
+        for( int nf=0; nf<numberNodesPerFace; nf++ )
+        {
+          int nf0=face(f0,nf);
+          for( nn=0; nn<numNodes; nn++ )
+          {
+            if( nf0==element(e,nn) ) numFound++;
+          }
+        }
+        if( numFound!=numberNodesPerFace )
+        {
+          printf("checkConnectivity:ERROR for element e=%i, nodes=(",e);
+          for( nn=0; nn<numNodes; nn++ )
             printf("%i,",element(e,nn));
-	  printf("). face=%i with nodes=(",f0);
-	  for( nn=0; nn<numberNodesPerFace; nn++ )
+          printf("). face=%i with nodes=(",f0);
+          for( nn=0; nn<numberNodesPerFace; nn++ )
             printf("%i,",face(f0,nn));
           printf(") does not match the nodes in the element!\n");
-	  numberOfErrors++; errorFound=true;
-	}
+          numberOfErrors++; errorFound=true;
+        }
       }
 
       if( errorFound && pBadElements!=0 )
       {
-	if( numberOfBadElements>badElements.getBound(0) )
-	  badElements.resize(max(numberOfBadElements+10,numberOfBadElements*2));
+        if( numberOfBadElements>badElements.getBound(0) )
+          badElements.resize(max(numberOfBadElements+10,numberOfBadElements*2));
       
-	badElements(numberOfBadElements)=e;
-	numberOfBadElements++;
+        badElements(numberOfBadElements)=e;
+        numberOfBadElements++;
       }
     
     }
@@ -3597,35 +3597,35 @@ checkConnectivity( bool printResults /* =true */,
 
       if( e>=0 )
       {
-	if( e>numberOfElements )
-	{
+        if( e>numberOfElements )
+        {
           printf("checkConnectivity:ERROR in faceElements face f=%i, element=%i is too big, numberOfElements=%i\n",
-		 f,e, numberOfElements);
+                 f,e, numberOfElements);
           numberOfErrors++;
-	}
-	bool faceFound=false;
+        }
+        bool faceFound=false;
         const int nef=getNumberOfFacesThisElement(e);
-	for( int ff=0; ff<nef; ff++ )
-	{
-	  if( ef(e,ff)==f )
-	  {
-	    faceFound=true;
-	    break;
-	  }
-	}
-	
+        for( int ff=0; ff<nef; ff++ )
+        {
+          if( ef(e,ff)==f )
+          {
+            faceFound=true;
+            break;
+          }
+        }
+        
         // if( !( ef(e,0)==f || ef(e,1)==f || ef(e,2)==f ) )
-	if( !faceFound )
-	{
+        if( !faceFound )
+        {
           // periodic grids will not pass this test! *** fix this ***
           if( isPeriodic[0]==notPeriodic && isPeriodic[1]==notPeriodic )
-	  {
-	    printf("checkConnectivity:ERROR in faceElements for face f=%i, element=%i does not have a face f\n",
-		   f,e);
-	    numberOfErrors++;
-	  }
-	  
-	}
+          {
+            printf("checkConnectivity:ERROR in faceElements for face f=%i, element=%i does not have a face f\n",
+                   f,e);
+            numberOfErrors++;
+          }
+          
+        }
       }
     }
   }
@@ -3676,7 +3676,7 @@ printStatistics(FILE *file /* =stdout */ )
     if( timingName[i]!="" )    
       fprintf(file,"%s%s%10.2e  %10.2e  %7.3f\n",(const char*)timingName[i],
          (const char*)dots(0,max(0,int(nSpace-timingName[i].length()))),
-	  timing[i],timing[i]/numberOfNodes,100.*timing[i]/timing[totalTime]);
+          timing[i],timing[i]/numberOfNodes,100.*timing[i]/timing[totalTime]);
 
 
   return 0;
@@ -3715,7 +3715,7 @@ buildUnstructuredGrid( Mapping & map, int numberOfGridPoints[2] )
     r(I1,i2,1)=i2/real(ny-1);
   for( i1=0; i1<nx; i1++ )
     r(i1,I2,0)=i1/real(nx-1);
-	
+        
   map.mapGrid(r,x);
   
   // ::display(x,"x");
@@ -3740,7 +3740,7 @@ buildUnstructuredGrid( Mapping & map, int numberOfGridPoints[2] )
   triangleParameters.setMaximumArea(maximumArea);
   
   printf("buildUnstructuredGrid: nx=%i ny=%i averageArcLength[0]=%e, averageArcLength[1]=%e, maximumArea=%e \n",
-	 nx,ny,averageArcLength[0],averageArcLength[1],maximumArea);
+         nx,ny,averageArcLength[0],averageArcLength[1],maximumArea);
 
   // Choose nodes and faces from the boundary points of the arclength array
 
@@ -3797,7 +3797,7 @@ buildUnstructuredGrid( Mapping & map, int numberOfGridPoints[2] )
     for( int i=0; i<numberOfTriangles; i++ )
     {
       printf(" triangle %i: nodes=(%i,%i,%i) neighbours=(%i,%i,%i)\n",
-	     i,elements(i,0),elements(i,1),elements(i,2),neighbours(i,0),neighbours(i,1),neighbours(i,2));
+             i,elements(i,0),elements(i,1),elements(i,2),neighbours(i,0),neighbours(i,1),neighbours(i,2));
     }
   }
   
@@ -3817,7 +3817,7 @@ buildUnstructuredGrid( Mapping & map, int numberOfGridPoints[2] )
   numberOfFaces=triangleGridGenerator.getNumberOfEdges();
   numberOfBoundaryFaces=triangleGridGenerator.getNumberOfBoundaryEdges();
   setNodesElementsAndNeighbours(nodes,elements,neighbours,
-					      numberOfFaces,numberOfBoundaryFaces);
+                                              numberOfFaces,numberOfBoundaryFaces);
 
 
 
@@ -3963,18 +3963,18 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
     for( i3=I3.getBase(); i3<=I3.getBound(); i3++ )
     {
       for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-	r(I1,i2,i3,0).seqAdd(dr[axis1]*I1.getBase(),dr[axis1]);
+        r(I1,i2,i3,0).seqAdd(dr[axis1]*I1.getBase(),dr[axis1]);
       if( domainDimension>1 )
       {
-	for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-	  r(i1,I2,i3,1).seqAdd(dr[axis2]*I2.getBase(),dr[axis2]);
+        for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+          r(i1,I2,i3,1).seqAdd(dr[axis2]*I2.getBase(),dr[axis2]);
       }
     }
     if( domainDimension>2 )
     {
       for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-	for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-	  r(i1,i2,I3,2).seqAdd(dr[axis3]*I3.getBase(),dr[axis3]);
+        for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+          r(i1,i2,I3,2).seqAdd(dr[axis3]*I3.getBase(),dr[axis3]);
     }
     map.mapGrid(r,x);
 
@@ -4015,8 +4015,8 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
       bool collapsedEdge[2][3];
       real averageArclength[2];
       collapsedEdge[0][0] = collapsedEdge[1][0] =
-	collapsedEdge[0][1] = collapsedEdge[1][1] = 
-	collapsedEdge[0][2] = collapsedEdge[1][2] = false;
+        collapsedEdge[0][1] = collapsedEdge[1][1] = 
+        collapsedEdge[0][2] = collapsedEdge[1][2] = false;
 
       map.determineResolution(numberOfGridPoints,collapsedEdge,averageArclength,elementDensityTolerance );
 
@@ -4027,46 +4027,46 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
 
       if( !leftCollapsed && !rightCollapsed && !bottomCollapsed && !topCollapsed )
       {
-	// check the corners to see that they are nearly square -- if not build an unstructured mapping directly
-	// since the boundary curves are probably poorly behaved near corners.
-	int nx=xBound0+1, ny=xBound1+1;
-	real v0[3], v1[3];
-	v0[2] = v1[2] = 0;
-	bool cuspFound=false;
-	for( int m=0; m<4; m++ )
-	{
-	  i1=m==0 ? 0 : m==1 ? nx-1 : m==2 ? nx-1 : 0;
-	  i2=m==0 ? 0 : m==1 ?    0 : m==2 ? ny-1 : ny-1;
-	  int is1=m==0 ? 1 : m==1 ? -1 : m==2 ? -1 : 1;
-	  int is2=m==0 ? 1 : m==1 ?  1 : m==2 ? -1 : -1;
-	
-	  if ( rangeDimension==3 )
-	  {
-	    v0[0]=x(i1+is1,i2,0,0)-x(i1,i2,0,0), v0[1]=x(i1+is1,i2,0,1)-x(i1,i2,0,1), v0[2]=x(i1+is1,i2,0,2)-x(i1,i2,0,2); 
-	    v1[0]=x(i1,i2+is2,0,0)-x(i1,i2,0,0), v1[1]=x(i1,i2+is2,0,1)-x(i1,i2,0,1), v1[2]=x(i1,i2+is2,0,2)-x(i1,i2,0,2); 
-	  }
-	  else
-	  {
-	    v0[0]=x(i1+is1,i2,0,0)-x(i1,i2,0,0), v0[1]=x(i1+is1,i2,0,1)-x(i1,i2,0,1);
-	    v1[0]=x(i1,i2+is2,0,0)-x(i1,i2,0,0), v1[1]=x(i1,i2+is2,0,1)-x(i1,i2,0,1);
-	  }
-	  real v0Norm=v0[0]*v0[0]+v0[1]*v0[1]+v0[2]*v0[2];
-	  real v1Norm=v1[0]*v1[0]+v1[1]*v1[1]+v1[2]*v1[2];
-	
-	  real dot = (v0[0]*v1[0]+v0[1]*v1[1]+v0[2]*v1[2])/max( REAL_MIN*100.,SQRT(v0Norm*v1Norm ));
-	  // printf(" Check for cusp : v0=(%8.2e,%8.2e,%8.2e) v1=(%8.2e,%8.2e,%8.2e) (i1,i2)=(%i,%i) dot=%e\n",
-	  //         v0[0],v0[1],v0[2], v1[0],v1[1],v1[2], i1,i2,dot);
-	  if( fabs(dot) >.98 )
-	  {
-	    cuspFound=true;
-	    printf(" cusp found at (i1,i2)=(%i,%i) dot=%e\n",i1,i2,dot);
-	  }
-	}
-	if( cuspFound )
-	{
-	  buildUnstructuredGrid(map, numberOfGridPoints );
-	  return 0;
-	}
+        // check the corners to see that they are nearly square -- if not build an unstructured mapping directly
+        // since the boundary curves are probably poorly behaved near corners.
+        int nx=xBound0+1, ny=xBound1+1;
+        real v0[3], v1[3];
+        v0[2] = v1[2] = 0;
+        bool cuspFound=false;
+        for( int m=0; m<4; m++ )
+        {
+          i1=m==0 ? 0 : m==1 ? nx-1 : m==2 ? nx-1 : 0;
+          i2=m==0 ? 0 : m==1 ?    0 : m==2 ? ny-1 : ny-1;
+          int is1=m==0 ? 1 : m==1 ? -1 : m==2 ? -1 : 1;
+          int is2=m==0 ? 1 : m==1 ?  1 : m==2 ? -1 : -1;
+        
+          if ( rangeDimension==3 )
+          {
+            v0[0]=x(i1+is1,i2,0,0)-x(i1,i2,0,0), v0[1]=x(i1+is1,i2,0,1)-x(i1,i2,0,1), v0[2]=x(i1+is1,i2,0,2)-x(i1,i2,0,2); 
+            v1[0]=x(i1,i2+is2,0,0)-x(i1,i2,0,0), v1[1]=x(i1,i2+is2,0,1)-x(i1,i2,0,1), v1[2]=x(i1,i2+is2,0,2)-x(i1,i2,0,2); 
+          }
+          else
+          {
+            v0[0]=x(i1+is1,i2,0,0)-x(i1,i2,0,0), v0[1]=x(i1+is1,i2,0,1)-x(i1,i2,0,1);
+            v1[0]=x(i1,i2+is2,0,0)-x(i1,i2,0,0), v1[1]=x(i1,i2+is2,0,1)-x(i1,i2,0,1);
+          }
+          real v0Norm=v0[0]*v0[0]+v0[1]*v0[1]+v0[2]*v0[2];
+          real v1Norm=v1[0]*v1[0]+v1[1]*v1[1]+v1[2]*v1[2];
+        
+          real dot = (v0[0]*v1[0]+v0[1]*v1[1]+v0[2]*v1[2])/max( REAL_MIN*100.,SQRT(v0Norm*v1Norm ));
+          // printf(" Check for cusp : v0=(%8.2e,%8.2e,%8.2e) v1=(%8.2e,%8.2e,%8.2e) (i1,i2)=(%i,%i) dot=%e\n",
+          //         v0[0],v0[1],v0[2], v1[0],v1[1],v1[2], i1,i2,dot);
+          if( fabs(dot) >.98 )
+          {
+            cuspFound=true;
+            printf(" cusp found at (i1,i2)=(%i,%i) dot=%e\n",i1,i2,dot);
+          }
+        }
+        if( cuspFound )
+        {
+          buildUnstructuredGrid(map, numberOfGridPoints );
+          return 0;
+        }
       
       }
 
@@ -4081,9 +4081,9 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
 //        const real dr0=1./real(numberOfGridPoints0-1);
 //        const real dr1=1./real(numberOfGridPoints1-1);
 //        for( i1=0; i1<numberOfGridPoints0; i1++ )
-//  	r(i1,I2,0)=i1*dr0;
+//      r(i1,I2,0)=i1*dr0;
 //        for( i2=0; i2<numberOfGridPoints1; i2++ )
-//  	r(I1,i2,1)=i2*dr1;
+//      r(I1,i2,1)=i2*dr1;
 //        node.redim(I1,I2,rangeDimension);
 //        map.mapGrid(r,node);
 
@@ -4096,16 +4096,16 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
 
       if( includeGhostElements )
       {
-	if( periodic[0]!=functionPeriodic ) // no need to add ghost cells on a branch cut.
-	{
-	  xBase0-=numberOfGhostCells;
-	  xBound0+=numberOfGhostCells;
-	}
-	if( periodic[1]!=functionPeriodic )
-	{
-	  xBase1-=numberOfGhostCells;
-	  xBound1+=numberOfGhostCells;
-	}
+        if( periodic[0]!=functionPeriodic ) // no need to add ghost cells on a branch cut.
+        {
+          xBase0-=numberOfGhostCells;
+          xBound0+=numberOfGhostCells;
+        }
+        if( periodic[1]!=functionPeriodic )
+        {
+          xBase1-=numberOfGhostCells;
+          xBound1+=numberOfGhostCells;
+        }
       }
       xDim0=xBound0-xBase0+1;
       xDim1=xBound1-xBase1+1;
@@ -4119,19 +4119,19 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
       int i1,i2,i3;
       for( i3=I3.getBase(); i3<=I3.getBound(); i3++ )
       {
-	for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-	  r(I1,i2,i3,0).seqAdd(dr[axis1]*I1.getBase(),dr[axis1]);
-	if( domainDimension>1 )
-	{
-	  for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-	    r(i1,I2,i3,1).seqAdd(dr[axis2]*I2.getBase(),dr[axis2]);
-	}
+        for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
+          r(I1,i2,i3,0).seqAdd(dr[axis1]*I1.getBase(),dr[axis1]);
+        if( domainDimension>1 )
+        {
+          for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+            r(i1,I2,i3,1).seqAdd(dr[axis2]*I2.getBase(),dr[axis2]);
+        }
       }
       if( domainDimension>2 )
       {
-	for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-	  for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-	    r(i1,i2,I3,2).seqAdd(dr[axis3]*I3.getBase(),dr[axis3]);
+        for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
+          for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+            r(i1,i2,I3,2).seqAdd(dr[axis3]*I3.getBase(),dr[axis3]);
       }
       map.mapGrid(r,node);
 
@@ -4151,45 +4151,45 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
 
       // check for collapsed edges  *** this fails for periodic directions.
       int n00=0, n10=numberOfGridPoints0-1, n11=numberOfGridPoints0*numberOfGridPoints1-1, 
-	n01=n11-(numberOfGridPoints0-1);
+        n01=n11-(numberOfGridPoints0-1);
   
       real distBottom,distTop,distLeft,distRight;
       if( rangeDimension==3 )
       {
-	distBottom = SQR(node(n10,0)-node(n00,0))+SQR(node(n10,1)-node(n00,1))+SQR(node(n10,2)-node(n00,2));
-	distTop    = SQR(node(n11,0)-node(n01,0))+SQR(node(n11,1)-node(n01,1))+SQR(node(n11,2)-node(n01,2));
-	distLeft   = SQR(node(n01,0)-node(n00,0))+SQR(node(n01,1)-node(n00,1))+SQR(node(n01,2)-node(n00,2));
-	distRight  = SQR(node(n11,0)-node(n10,0))+SQR(node(n11,1)-node(n10,1))+SQR(node(n11,2)-node(n10,2));
+        distBottom = SQR(node(n10,0)-node(n00,0))+SQR(node(n10,1)-node(n00,1))+SQR(node(n10,2)-node(n00,2));
+        distTop    = SQR(node(n11,0)-node(n01,0))+SQR(node(n11,1)-node(n01,1))+SQR(node(n11,2)-node(n01,2));
+        distLeft   = SQR(node(n01,0)-node(n00,0))+SQR(node(n01,1)-node(n00,1))+SQR(node(n01,2)-node(n00,2));
+        distRight  = SQR(node(n11,0)-node(n10,0))+SQR(node(n11,1)-node(n10,1))+SQR(node(n11,2)-node(n10,2));
       }
       else
       {
-	distBottom = SQR(node(n10,0)-node(n00,0))+SQR(node(n10,1)-node(n00,1));
-	distTop    = SQR(node(n11,0)-node(n01,0))+SQR(node(n11,1)-node(n01,1));
-	distLeft   = SQR(node(n01,0)-node(n00,0))+SQR(node(n01,1)-node(n00,1));
-	distRight  = SQR(node(n11,0)-node(n10,0))+SQR(node(n11,1)-node(n10,1));
+        distBottom = SQR(node(n10,0)-node(n00,0))+SQR(node(n10,1)-node(n00,1));
+        distTop    = SQR(node(n11,0)-node(n01,0))+SQR(node(n11,1)-node(n01,1));
+        distLeft   = SQR(node(n01,0)-node(n00,0))+SQR(node(n01,1)-node(n00,1));
+        distRight  = SQR(node(n11,0)-node(n10,0))+SQR(node(n11,1)-node(n10,1));
       }
   
       if( min(distBottom,distTop,distLeft,distRight) < epsx )
       {
-	printf("***UnstructuredMapping::buildFromARegularMapping:WARNING: one side is collapsed."
-	       " distBottom=%e ,distTop=%e,distLeft=%e,distRight=%e \n",distBottom,distTop,distLeft,distRight);
-	if( distBottom< epsx )
-	{
-	  bottomCollapsed=true;
-	  printf("***UnstructuredMapping::buildFromARegularMapping:WARNING: bottom is collapsed\n");
-	}
-	else if(   distTop<epsx )
-	{
-	  topCollapsed=true;
-	}
-	else if( distLeft<epsx )
-	{
-	  leftCollapsed=true;
-	}
-	else
-	{
-	  rightCollapsed=true;
-	}
+        printf("***UnstructuredMapping::buildFromARegularMapping:WARNING: one side is collapsed."
+               " distBottom=%e ,distTop=%e,distLeft=%e,distRight=%e \n",distBottom,distTop,distLeft,distRight);
+        if( distBottom< epsx )
+        {
+          bottomCollapsed=true;
+          printf("***UnstructuredMapping::buildFromARegularMapping:WARNING: bottom is collapsed\n");
+        }
+        else if(   distTop<epsx )
+        {
+          topCollapsed=true;
+        }
+        else if( distLeft<epsx )
+        {
+          leftCollapsed=true;
+        }
+        else
+        {
+          rightCollapsed=true;
+        }
       }
 
     }
@@ -4249,9 +4249,9 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
      
       numberOfGhostElements=4*(numberOfCellsDirection0+numberOfCellsDirection1-2);
       if( periodic[0]==functionPeriodic )
-	numberOfGhostElements-=4*(numberOfCellsDirection1-1);
+        numberOfGhostElements-=4*(numberOfCellsDirection1-1);
       if( periodic[1]==functionPeriodic )
-	numberOfGhostElements-=4*(numberOfCellsDirection0-1);
+        numberOfGhostElements-=4*(numberOfCellsDirection0-1);
       
       if( ghostElements==NULL )
         ghostElements=new intArray ;
@@ -4281,126 +4281,126 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
       int i2p= periodic[1]==functionPeriodic ? (i2+1) % numberOfCellsDirection1 : i2+1;  // wrap for periodic grids
       for( i1=xBase0; i1<xBound0; i1++ )
       {
-	int i1p= periodic[0]==functionPeriodic ? (i1+1) % numberOfCellsDirection0 : i1+1; 
-	// convert each quad into two triangles.
-	//
-	//         X-----------X
-	//         |  e1     / |
-	//      |  |       /   |
-	//      f2 |     f2    |
-	//      |  |   /       |
-	//      v  | /    e0   |
-	//         X-----------X
-	//             - f0 ->
-	e0=e;
-	element(e0,0)=offset+LOCAL_NODE_NUMBER(i1,i2);
-	element(e0,1)=offset+LOCAL_NODE_NUMBER(i1p,i2);
-	element(e0,2)=offset+LOCAL_NODE_NUMBER(i1p,i2p);
-	e++;
-	e1=e;
-	element(e1,0)=offset+LOCAL_NODE_NUMBER(i1,i2);
-	element(e1,1)=offset+LOCAL_NODE_NUMBER(i1p,i2p);
-	element(e1,2)=offset+LOCAL_NODE_NUMBER(i1,i2p);
-	e++;
+        int i1p= periodic[0]==functionPeriodic ? (i1+1) % numberOfCellsDirection0 : i1+1; 
+        // convert each quad into two triangles.
+        //
+        //         X-----------X
+        //         |  e1     / |
+        //      |  |       /   |
+        //      f2 |     f2    |
+        //      |  |   /       |
+        //      v  | /    e0   |
+        //         X-----------X
+        //             - f0 ->
+        e0=e;
+        element(e0,0)=offset+LOCAL_NODE_NUMBER(i1,i2);
+        element(e0,1)=offset+LOCAL_NODE_NUMBER(i1p,i2);
+        element(e0,2)=offset+LOCAL_NODE_NUMBER(i1p,i2p);
+        e++;
+        e1=e;
+        element(e1,0)=offset+LOCAL_NODE_NUMBER(i1,i2);
+        element(e1,1)=offset+LOCAL_NODE_NUMBER(i1p,i2p);
+        element(e1,2)=offset+LOCAL_NODE_NUMBER(i1,i2p);
+        e++;
 
-	if( includeGhostElements &&
-	    (i1<xa0 || i1>=xb0 || i2<xa1 ||  i2>=xb1 ) )
-	{
+        if( includeGhostElements &&
+            (i1<xa0 || i1>=xb0 || i2<xa1 ||  i2>=xb1 ) )
+        {
           if( includeGhostElements )
-	  {
-	    (*elementMask)(e0)=-1;            // this is a ghost element
+          {
+            (*elementMask)(e0)=-1;            // this is a ghost element
             (*ghostElements)(eg,0)=e0;
             eg++;
-	    (*elementMask)(e1)=-1;            // this is a ghost element
+            (*elementMask)(e1)=-1;            // this is a ghost element
             (*ghostElements)(eg,0)=e1;
             eg++;
-	    assert( eg<=numberOfGhostElements );
+            assert( eg<=numberOfGhostElements );
 
             // For periodic ghost elements we remember the periodic image element
             if( periodic[0]==Mapping::derivativePeriodic )
-	    {
+            {
               if( i1<xa0 )
-	      {
+              {
                 (*elementMask)(e0)=-(e0  + 2*(numberOfCellsDirection0-2)) -2;  // subtract 2 so value is always < -1 
                 (*elementMask)(e1)=-(e1  + 2*(numberOfCellsDirection0-2)) -2;  // subtract 2 so value is always < -1 
-		// printf(" left: e0=%i ep=%i numberOfCellsDirection0=%i\n",e0,-(*elementMask)(e0)-2,numberOfCellsDirection0);
-	      }
-	      else if( i1>=xb0 )
-	      {
+                // printf(" left: e0=%i ep=%i numberOfCellsDirection0=%i\n",e0,-(*elementMask)(e0)-2,numberOfCellsDirection0);
+              }
+              else if( i1>=xb0 )
+              {
                 (*elementMask)(e0)=-(e0   - 2*(numberOfCellsDirection0-2)) -2;
                 (*elementMask)(e1)=-(e1   - 2*(numberOfCellsDirection0-2)) -2;
-	      }
-	    }
-	    if( periodic[1]==Mapping::derivativePeriodic )
-	    {
-	      if( i2<xa1 )
-	      {
+              }
+            }
+            if( periodic[1]==Mapping::derivativePeriodic )
+            {
+              if( i2<xa1 )
+              {
                 (*elementMask)(e0)=-(e0  + 2*numberOfCellsDirection0*(numberOfCellsDirection1-2)) -2;
                 (*elementMask)(e1)=-(e1  + 2*numberOfCellsDirection0*(numberOfCellsDirection1-2)) -2;
-	      }
+              }
               else if( i2>=xb1 )
-	      {
+              {
                 (*elementMask)(e0)=-(e0  - 2*numberOfCellsDirection0*(numberOfCellsDirection1-2)) -2;
                 (*elementMask)(e1)=-(e1  - 2*numberOfCellsDirection0*(numberOfCellsDirection1-2)) -2;
-	      }
-	      
+              }
+              
               if( periodic[0]==Mapping::derivativePeriodic && (i2<xa1 || i2>=xb1) && (i1<xa0 || i1>=xb0) )
-	      {
-		// corner : and periodic in both directions
+              {
+                // corner : and periodic in both directions
                 if( i1<xa0 )
-		{
+                {
                   (*elementMask)(e0)+= -2*(numberOfCellsDirection0-2);
                   (*elementMask)(e1)+= -2*(numberOfCellsDirection0-2);
                   // printf(" corner: e0=%i ep=%i\n",e0,-(*elementMask)(e0)+2);
-		}
-		else
-		{
+                }
+                else
+                {
                   (*elementMask)(e0)+= +2*(numberOfCellsDirection0-2);
                   (*elementMask)(e1)+= +2*(numberOfCellsDirection0-2);
-		}
-		
-	      }
-	    }
-	  }
-	}
+                }
+                
+              }
+            }
+          }
+        }
 
 
-	face(f,0)=element(e0,0);   // face on bottom of e0
-	face(f,1)=element(e0,1);
+        face(f,0)=element(e0,0);   // face on bottom of e0
+        face(f,1)=element(e0,1);
         if( includeGhostElements && (i1<xa0 || i1>=xb0 || i2<xa1  ) )
           (*faceMask)(f)=-1;
 
-	faceElements(f,0)=e0;
-	if( i2==xBase1 )
-	{
-	  faceElements(f,1)= periodic[1]==functionPeriodic ? e0+ 2*numberOfCellsDirection0*(numberOfCellsDirection1-1)+1 :
-	    max(e0-2*numberOfCellsDirection0+1,-1);  // -1 == no neighbouring element
-	  // faceElements(f,1)=max(e0-2*numberOfCellsDirection0+1,-1);  // -1 == no neighbouring element
-	}
-	else
-	  faceElements(f,1)=e0-2*numberOfCellsDirection0+1;  // -1 == no neighbouring element
-	f++;
+        faceElements(f,0)=e0;
+        if( i2==xBase1 )
+        {
+          faceElements(f,1)= periodic[1]==functionPeriodic ? e0+ 2*numberOfCellsDirection0*(numberOfCellsDirection1-1)+1 :
+            max(e0-2*numberOfCellsDirection0+1,-1);  // -1 == no neighbouring element
+          // faceElements(f,1)=max(e0-2*numberOfCellsDirection0+1,-1);  // -1 == no neighbouring element
+        }
+        else
+          faceElements(f,1)=e0-2*numberOfCellsDirection0+1;  // -1 == no neighbouring element
+        f++;
 
-	face(f,0)=element(e0,2);  // diagonal face
-	face(f,1)=element(e0,0);
+        face(f,0)=element(e0,2);  // diagonal face
+        face(f,1)=element(e0,0);
         if( includeGhostElements && (i1<xa0 || i1>=xb0 || i2<xa1 || i2>=xb1 ) )
           (*faceMask)(f)=-1;
 
-	faceElements(f,0)=e0;
-	faceElements(f,1)=e1;
-	f++;
+        faceElements(f,0)=e0;
+        faceElements(f,1)=e1;
+        f++;
 
-	face(f,0)=element(e1,2);    // face to the left of e1
-	face(f,1)=element(e1,0);
+        face(f,0)=element(e1,2);    // face to the left of e1
+        face(f,1)=element(e1,0);
         if( includeGhostElements && (i1<xa0 || i2<xa1 || i2>=xb1 ) )
           (*faceMask)(f)=-1;
 
-	faceElements(f,0)=e1;
-	if( i1==xBase0 )
-	  faceElements(f,1)= periodic[0]==functionPeriodic ? e0+ 2*numberOfCellsDirection0-2 : -1;
-	else
-	  faceElements(f,1)= e1-3;
-	f++;
+        faceElements(f,0)=e1;
+        if( i1==xBase0 )
+          faceElements(f,1)= periodic[0]==functionPeriodic ? e0+ 2*numberOfCellsDirection0-2 : -1;
+        else
+          faceElements(f,1)= e1-3;
+        f++;
 
       }
     }
@@ -4413,7 +4413,7 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
       face(f,0)=element(e0,1);   // face to right of e0 (order NB)
       face(f,1)=element(e0,2);
       if( includeGhostElements && periodic[0]!=functionPeriodic )
-	(*faceMask)(f)=-1;
+        (*faceMask)(f)=-1;
 
       faceElements(f,0)=e0;
       faceElements(f,1)= periodic[0]==functionPeriodic ? e0-2*numberOfCellsDirection0+3: -1;
@@ -4430,7 +4430,7 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
       face(f,0)=element(e0,1);   // face above e0    (order NB)    
       face(f,1)=element(e0,2);
       if( includeGhostElements  && periodic[1]!=functionPeriodic)
-	(*faceMask)(f)=-1;
+        (*faceMask)(f)=-1;
 
       faceElements(f,0)=e0;
       faceElements(f,1)= periodic[1]==functionPeriodic ? e0-2*numberOfCellsDirection0*(numberOfCellsDirection1-1)-1 :  -1;
@@ -4446,133 +4446,133 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
     {
       if( bottomCollapsed || topCollapsed ) 
       {
-	int m1,m2,nc,fn,fs;
-	if( bottomCollapsed )
-	{
-	  i2=xBase1;
-	  m1=2, m2=1;
-	  nc = offset+LOCAL_NODE_NUMBER(xBase0,i2-1);  // collapsed node.
-	  fn=0; fs=3;                           // neighbouring face
-	}
-	else
-	{
-	  i2=xBound1;
-	  m1=1, m2=2;
-	  nc = offset+LOCAL_NODE_NUMBER(xBase0,i2+1);  // collapsed node.
-	  fn=topFaceStart; fs=1;
-	}
+        int m1,m2,nc,fn,fs;
+        if( bottomCollapsed )
+        {
+          i2=xBase1;
+          m1=2, m2=1;
+          nc = offset+LOCAL_NODE_NUMBER(xBase0,i2-1);  // collapsed node.
+          fn=0; fs=3;                           // neighbouring face
+        }
+        else
+        {
+          i2=xBound1;
+          m1=1, m2=2;
+          nc = offset+LOCAL_NODE_NUMBER(xBase0,i2+1);  // collapsed node.
+          fn=topFaceStart; fs=1;
+        }
       
-	bFace1=f;
-	for( i1=xBase0; i1<xBound0; i1++ )
-	{
-	  e0=e;
-	  element(e0, 0)=offset+LOCAL_NODE_NUMBER(i1,i2);
-	  element(e0,m1)=offset+LOCAL_NODE_NUMBER(i1+1,i2);
-	  element(e0,m2)=offset+nc;
+        bFace1=f;
+        for( i1=xBase0; i1<xBound0; i1++ )
+        {
+          e0=e;
+          element(e0, 0)=offset+LOCAL_NODE_NUMBER(i1,i2);
+          element(e0,m1)=offset+LOCAL_NODE_NUMBER(i1+1,i2);
+          element(e0,m2)=offset+nc;
 
-	  e++;
+          e++;
 
-	  if( topCollapsed && i1==xBase0 )
-	  {
-	    // reverse order of nodes on first element so that each boundary node will
-	    // appear as the first entry in the face array : i.e.  bndry nodes are face(.,0)
-	    face(f,0)=element(e0,m2);     // face to collapsed node m2==collapsed node
-	    face(f,1)=element(e0,0);
-	  }
-	  else
-	  {
-	    face(f,0)=element(e0,0);     // face to collapsed node
-	    face(f,1)=element(e0,m2);
-	  }
-	
-	  faceElements(f,0)=e0;
-	  faceElements(f,1)=i1==xBase0 ? -1 : e0-1;  // -1 == no neighbouring element
-	  f++;
+          if( topCollapsed && i1==xBase0 )
+          {
+            // reverse order of nodes on first element so that each boundary node will
+            // appear as the first entry in the face array : i.e.  bndry nodes are face(.,0)
+            face(f,0)=element(e0,m2);     // face to collapsed node m2==collapsed node
+            face(f,1)=element(e0,0);
+          }
+          else
+          {
+            face(f,0)=element(e0,0);     // face to collapsed node
+            face(f,1)=element(e0,m2);
+          }
+        
+          faceElements(f,0)=e0;
+          faceElements(f,1)=i1==xBase0 ? -1 : e0-1;  // -1 == no neighbouring element
+          f++;
 
-	  faceElements(fn,1)=e0;     fn+=fs;  // face adjacent to existing elements
+          faceElements(fn,1)=e0;     fn+=fs;  // face adjacent to existing elements
 
-	}
-	bFace2=f;
-	if( bottomCollapsed )
-	{
-	  face(f,0)=element(e0,m2);   
-	  face(f,1)=element(e0,m1);
-	}
-	else
-	{
-	  face(f,0)=element(e0,m1);   
-	  face(f,1)=element(e0,m2);
-	}
+        }
+        bFace2=f;
+        if( bottomCollapsed )
+        {
+          face(f,0)=element(e0,m2);   
+          face(f,1)=element(e0,m1);
+        }
+        else
+        {
+          face(f,0)=element(e0,m1);   
+          face(f,1)=element(e0,m2);
+        }
       
-	faceElements(f,0)=e0;
-	faceElements(f,1)=-1;
-	f++;
+        faceElements(f,0)=e0;
+        faceElements(f,1)=-1;
+        f++;
 
       
       }
       else
       { // left or right collapsed.
 
-	int m1,m2,nc,fn,fs;
-	if( leftCollapsed )
-	{
-	  i1=xBase0;
-	  m1=1, m2=2;
-	  nc = offset+LOCAL_NODE_NUMBER(i1-1,xBase1);  // collapsed node.
-	  fn=2; fs=3*numberOfCellsDirection0;                   // neighbouring face
-	}
-	else
-	{
-	  i1=xBound0;
-	  m1=2, m2=1;
-	  nc = offset+LOCAL_NODE_NUMBER(i1+1,xBase1);  // collapsed node.
-	  fn=rightFaceStart; fs=1;
-	}
+        int m1,m2,nc,fn,fs;
+        if( leftCollapsed )
+        {
+          i1=xBase0;
+          m1=1, m2=2;
+          nc = offset+LOCAL_NODE_NUMBER(i1-1,xBase1);  // collapsed node.
+          fn=2; fs=3*numberOfCellsDirection0;                   // neighbouring face
+        }
+        else
+        {
+          i1=xBound0;
+          m1=2, m2=1;
+          nc = offset+LOCAL_NODE_NUMBER(i1+1,xBase1);  // collapsed node.
+          fn=rightFaceStart; fs=1;
+        }
       
-	bFace1=f;
-	for( i2=xBase1; i2<xBound1; i2++ )
-	{
-	  e0=e;
-	  element(e0, 0)=offset+LOCAL_NODE_NUMBER(i1,i2);
-	  element(e0,m1)=offset+LOCAL_NODE_NUMBER(i1,i2+1);
-	  element(e0,m2)=offset+nc;
+        bFace1=f;
+        for( i2=xBase1; i2<xBound1; i2++ )
+        {
+          e0=e;
+          element(e0, 0)=offset+LOCAL_NODE_NUMBER(i1,i2);
+          element(e0,m1)=offset+LOCAL_NODE_NUMBER(i1,i2+1);
+          element(e0,m2)=offset+nc;
 
-	  e++;
+          e++;
 
-	  if( leftCollapsed && i2==xBase1 )
-	  {
-	    // reverse order of nodes in first face (see explanation above)
-	    face(f,0)=element(e0,m2);     // face to collapsed node
-	    face(f,1)=element(e0,0);
-	  }
-	  else
-	  {
-	    face(f,0)=element(e0,0);     // face to collapsed node
-	    face(f,1)=element(e0,m2);
-	  }
-	
-	  faceElements(f,0)=e0;
-	  faceElements(f,1)=i2==xBase1 ? -1 : e0-1;  // -1 == no neighbouring element
-	  f++;
+          if( leftCollapsed && i2==xBase1 )
+          {
+            // reverse order of nodes in first face (see explanation above)
+            face(f,0)=element(e0,m2);     // face to collapsed node
+            face(f,1)=element(e0,0);
+          }
+          else
+          {
+            face(f,0)=element(e0,0);     // face to collapsed node
+            face(f,1)=element(e0,m2);
+          }
+        
+          faceElements(f,0)=e0;
+          faceElements(f,1)=i2==xBase1 ? -1 : e0-1;  // -1 == no neighbouring element
+          f++;
 
-	  faceElements(fn,1)=e0;     fn+=fs;  // face adjacent to existing elements
+          faceElements(fn,1)=e0;     fn+=fs;  // face adjacent to existing elements
 
-	}
-	bFace2=f;
-	if( rightCollapsed )
-	{
-	  face(f,0)=element(e0,m2);   
-	  face(f,1)=element(e0,m1);
-	}
-	else
-	{
-	  face(f,0)=element(e0,m1);   
-	  face(f,1)=element(e0,m2);
-	}
+        }
+        bFace2=f;
+        if( rightCollapsed )
+        {
+          face(f,0)=element(e0,m2);   
+          face(f,1)=element(e0,m1);
+        }
+        else
+        {
+          face(f,0)=element(e0,m1);   
+          face(f,1)=element(e0,m2);
+        }
       
-	faceElements(f,0)=e0;
-	faceElements(f,1)=-1;
-	f++;
+        faceElements(f,0)=e0;
+        faceElements(f,1)=-1;
+        f++;
       }
     
     }
@@ -4603,9 +4603,9 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
     {
       for( i1=xBase0; i1<xBound0; i1++ )
       {
-	bdyFace(bdyFcnt) = 3*(i1-xBase0);
-	bdyFaceTags(bdyFcnt) = boundaryConds[0][1];
-	bdyFcnt++;
+        bdyFace(bdyFcnt) = 3*(i1-xBase0);
+        bdyFaceTags(bdyFcnt) = boundaryConds[0][1];
+        bdyFcnt++;
       }
     }
     else if( bottomCollapsed )
@@ -4617,9 +4617,9 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
     {
       for( i2=xBase1; i2<xBound1; i2++ )
       {
-	bdyFace(bdyFcnt) = rightFaceStart+i2-xBase1;
-	bdyFaceTags(bdyFcnt) = boundaryConds[1][0];
-	bdyFcnt++;
+        bdyFace(bdyFcnt) = rightFaceStart+i2-xBase1;
+        bdyFaceTags(bdyFcnt) = boundaryConds[1][0];
+        bdyFcnt++;
       }
     }
     else if( rightCollapsed )
@@ -4632,9 +4632,9 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
     {
       for( i1=xBase0; i1<xBound0; i1++ )
       {
-	bdyFace(bdyFcnt) = topFaceEnd;
-	bdyFaceTags(bdyFcnt) = boundaryConds[1][1];
-	bdyFcnt++;  topFaceEnd--;
+        bdyFace(bdyFcnt) = topFaceEnd;
+        bdyFaceTags(bdyFcnt) = boundaryConds[1][1];
+        bdyFcnt++;  topFaceEnd--;
       }
     }
     else if( topCollapsed )
@@ -4647,10 +4647,10 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
       int leftFaceEnd=3*numberOfCellsDirection0*(numberOfCellsDirection1-1)+3-1;
       for( i2=xBase1; i2<xBound1; i2++ )
       {
-	bdyFace(bdyFcnt) = leftFaceEnd;
-	bdyFaceTags(bdyFcnt) = boundaryConds[0][0];
-	bdyFcnt++;
-	leftFaceEnd-=3*numberOfCellsDirection0;
+        bdyFace(bdyFcnt) = leftFaceEnd;
+        bdyFaceTags(bdyFcnt) = boundaryConds[0][0];
+        bdyFcnt++;
+        leftFaceEnd-=3*numberOfCellsDirection0;
       }  
     }
     else if( leftCollapsed )
@@ -4745,124 +4745,124 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
       int i2p= periodic[1]==functionPeriodic ? (i2+1) % numberOfCellsDirection1 : i2+1;  // wrap for periodic grids
       for( i1=xBase0; i1<xBound0; i1++ )
       {
-	int i1p= periodic[0]==functionPeriodic ? (i1+1) % numberOfCellsDirection0 : i1+1; 
-	// convert each quad into a quad
-	//
-	//         X-----------X
-	//         |           |
-	//      |  |           |
-	//      f2 |    e0     |
-	//      |  |           |
-	//      v  |           |
-	//         X-----------X
-	//             - f0 ->
-	e0=e;
-	element(e0,0)=offset+LOCAL_NODE_NUMBER(i1,i2);
-	element(e0,1)=offset+LOCAL_NODE_NUMBER(i1p,i2);
-	element(e0,2)=offset+LOCAL_NODE_NUMBER(i1p,i2p);
-	element(e0,3)=offset+LOCAL_NODE_NUMBER(i1,i2p);
-	e++;
-	
-	face(f,0)=element(e0,0);   // face on bottom of e0
-	face(f,1)=element(e0,1);
+        int i1p= periodic[0]==functionPeriodic ? (i1+1) % numberOfCellsDirection0 : i1+1; 
+        // convert each quad into a quad
+        //
+        //         X-----------X
+        //         |           |
+        //      |  |           |
+        //      f2 |    e0     |
+        //      |  |           |
+        //      v  |           |
+        //         X-----------X
+        //             - f0 ->
+        e0=e;
+        element(e0,0)=offset+LOCAL_NODE_NUMBER(i1,i2);
+        element(e0,1)=offset+LOCAL_NODE_NUMBER(i1p,i2);
+        element(e0,2)=offset+LOCAL_NODE_NUMBER(i1p,i2p);
+        element(e0,3)=offset+LOCAL_NODE_NUMBER(i1,i2p);
+        e++;
+        
+        face(f,0)=element(e0,0);   // face on bottom of e0
+        face(f,1)=element(e0,1);
 
-	faceElements(f,0)=e0;
+        faceElements(f,0)=e0;
         if( includeGhostElements && (i1<xa0 || i1>=xb0 || i2<xa1  ) )
           (*faceMask)(f)=-1;
 
-	if( includeGhostElements &&
-	    (i1<xa0 || i1>=xb0 || i2<xa1 ||  i2>=xb1 ) )
-	{
+        if( includeGhostElements &&
+            (i1<xa0 || i1>=xb0 || i2<xa1 ||  i2>=xb1 ) )
+        {
           if( includeGhostElements )
-	  {
-	    (*elementMask)(e0)=-1;            // this is a ghost element
+          {
+            (*elementMask)(e0)=-1;            // this is a ghost element
             (*ghostElements)(eg,0)=e0;
             eg++;
-	    
+            
 
             // For periodic ghost elements we remember the periodic image element
             if( periodic[0]==derivativePeriodic )
-	    {
+            {
               if( i1<xa0 )
-	      {
+              {
                 (*elementMask)(e0)=-(e0+ numberOfCellsDirection0-2) -2;  // subtract 2 so value is always < -1 
-		// printf(" left: e0=%i ep=%i numberOfCellsDirection0=%i\n",e0,-(*elementMask)(e0)-2,numberOfCellsDirection0);
-	      }
-	      else if( i1>=xb0 )	      
+                // printf(" left: e0=%i ep=%i numberOfCellsDirection0=%i\n",e0,-(*elementMask)(e0)-2,numberOfCellsDirection0);
+              }
+              else if( i1>=xb0 )              
                 (*elementMask)(e0)=-(e0- numberOfCellsDirection0+2) -2;
-	    }
-	    if( periodic[1]==derivativePeriodic )
-	    {
-	      if( i2<xa1 )
+            }
+            if( periodic[1]==derivativePeriodic )
+            {
+              if( i2<xa1 )
                 (*elementMask)(e0)=-(e0+ numberOfCellsDirection0*(numberOfCellsDirection1-2)) -2;
               else if( i2>=xb1 )
                 (*elementMask)(e0)=-(e0- numberOfCellsDirection0*(numberOfCellsDirection1-2)) -2;
 
               if( periodic[0]==derivativePeriodic && (i2<xa1 ||  i2>=xb1) &&
                   (i1<xa0 || i1>=xb0 ) )
-	      {
-		// corner : and periodic in both directions
+              {
+                // corner : and periodic in both directions
                 if( i1<xa0 )
-		{
+                {
                   (*elementMask)(e0)+= -(numberOfCellsDirection0-2);
                   // printf(" corner: e0=%i ep=%i\n",e0,-(*elementMask)(e0)+2);
-		}
-		else
+                }
+                else
                   (*elementMask)(e0)+= +(numberOfCellsDirection0-2);
-	      }
-	    }
-	  }
-	}
+              }
+            }
+          }
+        }
 //          int ep= (*elementMask)(e0);
-//  	ep=-ep-2;
-//  	assert( ep<numberOfElements );
-	
+//      ep=-ep-2;
+//      assert( ep<numberOfElements );
+        
 
-	if( i2==xBase1 )
-	{
+        if( i2==xBase1 )
+        {
           if( periodic[1]==functionPeriodic )
-	  {
-	    faceElements(f,1)=  e0+ numberOfCellsDirection0*(numberOfCellsDirection1-1);
-	  }
-	  else
-	  {
-	    faceElements(f,1)=-1;  // -1 == no neighbouring element
+          {
+            faceElements(f,1)=  e0+ numberOfCellsDirection0*(numberOfCellsDirection1-1);
+          }
+          else
+          {
+            faceElements(f,1)=-1;  // -1 == no neighbouring element
             bdyFace(bdyFcnt)=f; bdyFcnt++;
-	  }
-	  
-	}
-	else
-	  faceElements(f,1)=e0-numberOfCellsDirection0;  
-	f++;
+          }
+          
+        }
+        else
+          faceElements(f,1)=e0-numberOfCellsDirection0;  
+        f++;
 
-	//	face(f,0)=element(e0,3);    // face to the left of e0
-	//	face(f,1)=element(e0,0);
-	face(f,0)=element(e0,3);    // face to the left of e0
-	face(f,1)=element(e0,0);
+        //      face(f,0)=element(e0,3);    // face to the left of e0
+        //      face(f,1)=element(e0,0);
+        face(f,0)=element(e0,3);    // face to the left of e0
+        face(f,1)=element(e0,0);
         if( includeGhostElements && (i1<xa0 || i2<xa1 ||  i2>=xb1 ) )
           (*faceMask)(f)=-1;
 
 
-	faceElements(f,0)=e0;
-	if( i1==xBase0 )
-	{
+        faceElements(f,0)=e0;
+        if( i1==xBase0 )
+        {
           if( periodic[0]==functionPeriodic )
-	    faceElements(f,1)= e0+ numberOfCellsDirection0-1;
+            faceElements(f,1)= e0+ numberOfCellsDirection0-1;
           else
-	  {
-	    faceElements(f,1)= -1;
-	    bdyFace(bdyFcnt)=f; bdyFcnt++;
-	  }
-	}
-	else
-	  faceElements(f,1)= e0-1;
-	f++;
+          {
+            faceElements(f,1)= -1;
+            bdyFace(bdyFcnt)=f; bdyFcnt++;
+          }
+        }
+        else
+          faceElements(f,1)= e0-1;
+        f++;
 
         if( i1==xBound0-1 )
-	{
+        {
           // add a face on the far right side
-	  face(f,0)=element(e0,1);  
-	  face(f,1)=element(e0,2);
+          face(f,0)=element(e0,1);  
+          face(f,1)=element(e0,2);
           if( includeGhostElements )
             (*faceMask)(f)=-1;
 
@@ -4870,19 +4870,19 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
           if( periodic[0]==functionPeriodic )
             faceElements(f,1)=e0-numberOfCellsDirection0+1;
           else
-	  {
+          {
             faceElements(f,1)=-1;
-	    bdyFace(bdyFcnt)=f; bdyFcnt++;
-	  }
+            bdyFace(bdyFcnt)=f; bdyFcnt++;
+          }
           f++;
-	}
+        }
 
 #if 1
         if( i2==xBound1-1 )
-	{
-	  // add a face on the top
-	  face(f,0)=element(e0,2);  
-	  face(f,1)=element(e0,3);
+        {
+          // add a face on the top
+          face(f,0)=element(e0,2);  
+          face(f,1)=element(e0,3);
           if( includeGhostElements )
             (*faceMask)(f)=-1;
 
@@ -4890,34 +4890,34 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
           if( periodic[1]==functionPeriodic )
             faceElements(f,1)=e0-numberOfCellsDirection0*(numberOfCellsDirection1-1);
           else
-	  {
+          {
             faceElements(f,1)=-1;
-	    bdyFace(bdyFcnt)=f; bdyFcnt++;
-	  }
+            bdyFace(bdyFcnt)=f; bdyFcnt++;
+          }
           f++;
-	}
+        }
 #endif
 
       }
     }
 //     for ( i1=xBase0; i1<xBound0; i1++ )
 //       {
-// 	// add a face on the top
-// 	e0 = e;
-// 	face(f,0)=element(e0,2);  
-// 	face(f,1)=element(e0,3);
-// 	if( includeGhostElements )
-// 	  (*faceMask)(f)=-1;
-	
-// 	faceElements(f,0)=e0;
-// 	if( periodic[1]==functionPeriodic )
-// 	  faceElements(f,1)=e0-numberOfCellsDirection0*(numberOfCellsDirection1-1);
-// 	else
-// 	  {
+//      // add a face on the top
+//      e0 = e;
+//      face(f,0)=element(e0,2);  
+//      face(f,1)=element(e0,3);
+//      if( includeGhostElements )
+//        (*faceMask)(f)=-1;
+        
+//      faceElements(f,0)=e0;
+//      if( periodic[1]==functionPeriodic )
+//        faceElements(f,1)=e0-numberOfCellsDirection0*(numberOfCellsDirection1-1);
+//      else
+//        {
 //             faceElements(f,1)=-1;
-// 	    bdyFace(bdyFcnt)=f; bdyFcnt++;
-// 	  }
-// 	f++;
+//          bdyFace(bdyFcnt)=f; bdyFcnt++;
+//        }
+//      f++;
 //       }
 
     assert( bdyFcnt==numberOfBoundaryFaces );
@@ -4951,7 +4951,7 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
     
     if( debug & 4 )
       printf("Bndy face %i is face=%i adjacent elements = (%i,%i) \n",i,bdyFace(i),
-	     faceElements(bdyFace(i),0),faceElements(bdyFace(i),1));
+             faceElements(bdyFace(i),0),faceElements(bdyFace(i),1));
   }
 
 
@@ -4984,10 +4984,10 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
       real dot = nv1[0]*nv2[0]+nv1[1]*nv2[1]+nv1[2]*nv2[2];
       if( dot<0. )
       {
-	printf("**WARNING** normals on elements %i and %i are in opposite directions\n",e0,e1);
+        printf("**WARNING** normals on elements %i and %i are in opposite directions\n",e0,e1);
 
         // try flipping the diagonal
-	//        n3    f2    n2
+        //        n3    f2    n2
         //         X-----------X
         //         |  e1     / |
         //         |       /   |
@@ -4996,7 +4996,7 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
         //         | /    e0   |
         //      n0 X-----f0----X n1
         // 
-	//        n3    f2    n2
+        //        n3    f2    n2
         //         X-----------X
         //         |\          |
         //         |  \   e1   |
@@ -5008,13 +5008,13 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
         int n1=element(e0,1);
         int n3=element(e1,2);
 
-	// element(e0,0)=n0;
-	// element(e0,1)=n1; 
-	element(e0,2)=n3;
+        // element(e0,0)=n0;
+        // element(e0,1)=n1; 
+        element(e0,2)=n3;
 
-	element(e1,0)=n1;
-	// element(e1,1)=n2;
-	// element(e1,2)=n3;
+        element(e1,0)=n1;
+        // element(e1,1)=n2;
+        // element(e1,2)=n3;
 
         int f=ef(e0,2);
 
@@ -5023,9 +5023,9 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
         int f2=ef(e1,1);
         int f3=ef(e1,2);
 
-	face(f,0)=n1;
-	face(f,1)=n3;
-	
+        face(f,0)=n1;
+        face(f,1)=n3;
+        
         ef(e0,0)=f0;
         ef(e0,1)=f;
         ef(e0,2)=f3;
@@ -5035,26 +5035,26 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
         ef(e1,2)=f;
 
         if( faceElements(f3,0)==e1 )
-	  faceElements(f3,0)=e0;
+          faceElements(f3,0)=e0;
         else
-	  faceElements(f3,1)=e0;
+          faceElements(f3,1)=e0;
 
         if( faceElements(f1,0)==e0 )
-	  faceElements(f1,0)=e1;
+          faceElements(f1,0)=e1;
         else
-	  faceElements(f1,1)=e1;
+          faceElements(f1,1)=e1;
 
-	getNormal( e0,nv1 );
-	getNormal( e1,nv2 );
-	real dot = nv1[0]*nv2[0]+nv1[1]*nv2[1]+nv1[2]*nv2[2];
-	if( dot<0. )
-	{
-	  printf("**ERROR** normals are STILL wrong after flipping the diagonal\n");
-	}
-	else
-	{
-	  printf("----> Normals are ok after flipping the diagonal\n");
-	}
+        getNormal( e0,nv1 );
+        getNormal( e1,nv2 );
+        real dot = nv1[0]*nv2[0]+nv1[1]*nv2[1]+nv1[2]*nv2[2];
+        if( dot<0. )
+        {
+          printf("**ERROR** normals are STILL wrong after flipping the diagonal\n");
+        }
+        else
+        {
+          printf("----> Normals are ok after flipping the diagonal\n");
+        }
       
       }
     }
@@ -5093,7 +5093,7 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
   if ( nodeMask )
     for ( int n=0; n<numberOfNodes; n++ )
       if ( (*nodeMask)(n)<0 )
-	setAsGhost(Vertex,n);
+        setAsGhost(Vertex,n);
 
 
   char *faceElementOrient = new char[2*numberOfFaces];
@@ -5111,13 +5111,13 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
       faceElemCompressed(nfc) = faceElements(f,0);
       faceElementOrient[nfc] = 0x1;
       if ( faceElements(f,1)>-1 )
-	{
-	  faceElemCompressed(nfc+1) = faceElements(f,1);
-	  faceElementOrient[nfc+1] = 0x0;
-	  nfc+=2;
-	}
+        {
+          faceElemCompressed(nfc+1) = faceElements(f,1);
+          faceElementOrient[nfc+1] = 0x0;
+          nfc+=2;
+        }
       else
-	nfc++;
+        nfc++;
       
       faceElemOffset(f+1) = nfc;
     }
@@ -5128,15 +5128,15 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
     {
       int fe=0;
       while ( fe<maxNumberOfNodesPerElement && (*elementFaces)(e,fe)>-1 )
-	{
-	  int f = (*elementFaces)(e,fe);
-	  if ( face(f,0)==element(e,fe) )//faceElements(f,0)==e )
-	    elementFaceOrient[e*maxNumberOfNodesPerElement + fe] = 0x1;
-	  else
-	    elementFaceOrient[e*maxNumberOfNodesPerElement + fe] = 0x0;
+        {
+          int f = (*elementFaces)(e,fe);
+          if ( face(f,0)==element(e,fe) )//faceElements(f,0)==e )
+            elementFaceOrient[e*maxNumberOfNodesPerElement + fe] = 0x1;
+          else
+            elementFaceOrient[e*maxNumberOfNodesPerElement + fe] = 0x0;
 
-	  fe++;
-	}
+          fe++;
+        }
     }
 
   if ( domainDimension==3 )
@@ -5147,36 +5147,36 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
       specifyConnectivity(Region, Face, *elementFaces,elementFaceOrient);
 
       if ( includeGhostElements )
-	{
-	  for ( int f=0; f<numberOfFaces; f++ )
-	    if ( (*faceMask)(f)<0 )
-	      setAsGhost(Face, f);
-	  
-	  for ( int e=0; e<numberOfElements; e++ )
-	    if ( (*elementMask)(e)<0 )
-	      {
-		setAsGhost(Region, e);
-		int ep = -(*elementMask)(e)-2;
-		if ( ep>=0 )
-		  {
-		    void *tagData = (void*)ep;
-		    addTag(Region,e,std::string("periodic ")+EntityTypeStrings[int(Region)].c_str(),tagData);
-		  }
-	      }
-	}
+        {
+          for ( int f=0; f<numberOfFaces; f++ )
+            if ( (*faceMask)(f)<0 )
+              setAsGhost(Face, f);
+          
+          for ( int e=0; e<numberOfElements; e++ )
+            if ( (*elementMask)(e)<0 )
+              {
+                setAsGhost(Region, e);
+                int ep = -(*elementMask)(e)-2;
+                if ( ep>=0 )
+                  {
+                    void *tagData = (void*)ep;
+                    addTag(Region,e,std::string("periodic ")+EntityTypeStrings[int(Region)].c_str(),tagData);
+                  }
+              }
+        }
     }
   else if ( domainDimension==2 )
     {
       if ( element.getLength(1)<4 )
-	{
-	  intArray nElem(element.getLength(0),4);
-	  nElem = -1;
-	  Range R1(element.getLength(0)), R2(element.getLength(1));
-	  nElem(R1,R2) = element(R1,R2);
-	  specifyEntity(Face, nElem);
-	}
+        {
+          intArray nElem(element.getLength(0),4);
+          nElem = -1;
+          Range R1(element.getLength(0)), R2(element.getLength(1));
+          nElem(R1,R2) = element(R1,R2);
+          specifyEntity(Face, nElem);
+        }
       else
-	specifyEntity(Face,element);
+        specifyEntity(Face,element);
 
       specifyEntity(Edge,face);
 
@@ -5184,32 +5184,32 @@ buildFromARegularMapping( Mapping & map, ElementType elementTypePreferred /* =tr
       specifyConnectivity(Face,Edge, *elementFaces,elementFaceOrient);
 
       if ( includeGhostElements )
-	{
-	  for ( int f=0; f<numberOfFaces; f++ )
-	    if ( (*faceMask)(f)<0 )
-	      setAsGhost(Edge, f);
-	  
-	  for ( int e=0; e<numberOfElements; e++ )
-	    if ( (*elementMask)(e)<0 )
-	      {
-		setAsGhost(Face, e);
-		int ep = -(*elementMask)(e)-2;
-		if ( ep>=0 )
-		  {
-		    void *tagData = (void*)ep;
-		    addTag(Face,e,std::string("periodic ")+EntityTypeStrings[int(Face)].c_str(),tagData);
-		  }
-	      }
-	}
+        {
+          for ( int f=0; f<numberOfFaces; f++ )
+            if ( (*faceMask)(f)<0 )
+              setAsGhost(Edge, f);
+          
+          for ( int e=0; e<numberOfElements; e++ )
+            if ( (*elementMask)(e)<0 )
+              {
+                setAsGhost(Face, e);
+                int ep = -(*elementMask)(e)-2;
+                if ( ep>=0 )
+                  {
+                    void *tagData = (void*)ep;
+                    addTag(Face,e,std::string("periodic ")+EntityTypeStrings[int(Face)].c_str(),tagData);
+                  }
+              }
+        }
 
       // set up the edge->vertex orientation array
       adjacencyOrientation[ Edge ][ Vertex ] = new char[ 2*numberOfFaces ];
 
       for ( int f=0; f<numberOfFaces; f++ )
-	{
-	  adjacencyOrientation[ Edge ][ Vertex ] [ 2*f ] = 0x1;
-	  adjacencyOrientation[ Edge ][ Vertex ] [ 2*f +1 ] = 0x0;
-	}
+        {
+          adjacencyOrientation[ Edge ][ Vertex ] [ 2*f ] = 0x1;
+          adjacencyOrientation[ Edge ][ Vertex ] [ 2*f +1 ] = 0x0;
+        }
     }
 
   // these were copied in setConnectivity
@@ -5392,47 +5392,47 @@ get( const GenericDataBase & dir, const aString & name)
     subDir.get(numberOfTags,"numberOfTags");
     if ( numberOfTags ) 
       {
-	aString *tagNames = new aString[numberOfTags];
-	
-	subDir.get(tagNames,"tagNames", numberOfTags);
-	intSerialArray tagdata;//(numberOfTags,3); // 0-type, 1-index, 2-data, 3-copiesData, 4-datasize
-	subDir.get(tagdata,"tagData");
-	assert(tagdata.getLength(0)==numberOfTags);
-	//	tagdata.display("GET TAGDATA");
-	for ( int i=0; i<numberOfTags; i++ )
-	  {
-	    std::string tmp = tagNames[i].c_str();
-	    assert(tmp.length());
-	    string::size_type sloc = tmp.find("__ws__");
-	    //	    if ( sloc!=string::npos )
-	    //	      tmp.replace(sloc,6," ");
-	    while ( (sloc=tmp.find("__ws__"))!=string::npos )
-	      tmp.replace(sloc,6," ");
+        aString *tagNames = new aString[numberOfTags];
+        
+        subDir.get(tagNames,"tagNames", numberOfTags);
+        intSerialArray tagdata;//(numberOfTags,3); // 0-type, 1-index, 2-data, 3-copiesData, 4-datasize
+        subDir.get(tagdata,"tagData");
+        assert(tagdata.getLength(0)==numberOfTags);
+        //      tagdata.display("GET TAGDATA");
+        for ( int i=0; i<numberOfTags; i++ )
+          {
+            std::string tmp = tagNames[i].c_str();
+            assert(tmp.length());
+            string::size_type sloc = tmp.find("__ws__");
+            //      if ( sloc!=string::npos )
+            //        tmp.replace(sloc,6," ");
+            while ( (sloc=tmp.find("__ws__"))!=string::npos )
+              tmp.replace(sloc,6," ");
 
-	    string tagNm = tmp.c_str();
-	    //	    cout<<"adding tag '"<<tagNm<<"' to "<<EntityTypeStrings[tagdata(i,0)]<<"  "<<int(tagdata(i,1))<<endl;
-	    //	    cout<<tagdata(i,0)<<"  "<<tagdata(i,1)<<endl;
-	    
-	    addTag(EntityTypeEnum(tagdata(i,0)),int(tagdata(i,1)), tagNm,
-		   (void *)tagdata(i,2), (bool)tagdata(i,3),
-		   int(tagdata(i,4)));
-	  }	  
-	
-	// #if 0
-	// 	  GenericDataBase &tagDir = *subDir.virtualConstructor();
-	// 	  subDir.find(tagDir,tagNames[i],"Tag");
-	// 	  tagDir.get(tagNm,"tagName");
-	// 	  tagDir.get(tagEntityType,"tagEntityType");
-	// 	  tagDir.get(tagEntity,"tagEntity");
-	// 	  EntityTag tag;
-	// 	  tag.get(tagDir,tagNames[i]);//kkc	  tag.get(tagDir,tagNm);
-	// 	  //	  std::string tmp = tagNm.c_str();
-	// 	  //	  tmp.replace(tmp.find("__ws__"),6," ");
-	// 	  //	  tagNm = tmp.c_str();
-	// 	  addTag(UnstructuredMapping::EntityTypeEnum(tagEntityType),tagEntity,tagNm.c_str(),tag.getData(), tag.copiesData(), tag.getDataSize());
-	// 	  delete &tagDir;  // is this needed here?
-	// #endif
-	delete [] tagNames;
+            string tagNm = tmp.c_str();
+            //      cout<<"adding tag '"<<tagNm<<"' to "<<EntityTypeStrings[tagdata(i,0)]<<"  "<<int(tagdata(i,1))<<endl;
+            //      cout<<tagdata(i,0)<<"  "<<tagdata(i,1)<<endl;
+            
+            addTag(EntityTypeEnum(tagdata(i,0)),int(tagdata(i,1)), tagNm,
+                   (void *)tagdata(i,2), (bool)tagdata(i,3),
+                   int(tagdata(i,4)));
+          }       
+        
+        // #if 0
+        //        GenericDataBase &tagDir = *subDir.virtualConstructor();
+        //        subDir.find(tagDir,tagNames[i],"Tag");
+        //        tagDir.get(tagNm,"tagName");
+        //        tagDir.get(tagEntityType,"tagEntityType");
+        //        tagDir.get(tagEntity,"tagEntity");
+        //        EntityTag tag;
+        //        tag.get(tagDir,tagNames[i]);//kkc       tag.get(tagDir,tagNm);
+        //        //      std::string tmp = tagNm.c_str();
+        //        //      tmp.replace(tmp.find("__ws__"),6," ");
+        //        //      tagNm = tmp.c_str();
+        //        addTag(UnstructuredMapping::EntityTypeEnum(tagEntityType),tagEntity,tagNm.c_str(),tag.getData(), tag.copiesData(), tag.getDataSize());
+        //        delete &tagDir;  // is this needed here?
+        // #endif
+        delete [] tagNames;
       }
     
   }
@@ -5443,12 +5443,12 @@ get( const GenericDataBase & dir, const aString & name)
   if ( domainDimension==3 )
     {
       specifyEntity(Region,element);
-      //	  specifyEntity(Face,face);
+      //          specifyEntity(Face,face);
     }
   else if ( domainDimension==2 )
     {
       specifyEntity(Face,element);
-      //	  specifyEntity(Edge,face);
+      //          specifyEntity(Edge,face);
     }
   
   entityCapacity[Vertex] = entitySize[Vertex] = node.getLength(0);
@@ -5533,71 +5533,71 @@ put( GenericDataBase & dir, const aString & name) const
   if ( dumpTagsToHDF ) {
     int numberOfTags = 0;
     for ( std::map<IDTuple, std::list<EntityTag*>, std::less<IDTuple> >::const_iterator i=entityTags.begin();
-	  i!=entityTags.end(); i++ )
+          i!=entityTags.end(); i++ )
       for ( std::list<EntityTag*>::const_iterator t=i->second.begin(); t!=i->second.end(); t++ ) numberOfTags++;
 
     subDir.put(numberOfTags,"numberOfTags");
 
     if ( numberOfTags ) 
       {
-	aString *tagNames = new aString[numberOfTags];
-	int tn=0;
-	for ( std::map<IDTuple, std::list<EntityTag*>, std::less<IDTuple> >::const_iterator i=entityTags.begin();
-	      i!=entityTags.end(); i++ )
-	  for ( list<EntityTag*>::const_iterator t=i->second.begin(); t!=i->second.end(); t++,tn++ ) 
-	    {
-	      //	      sPrintF(tagNames[tn],"%s_%d_%d",(*t)->getName().c_str(),i->first.et,i->first.e);
-	      tagNames[tn] = (*t)->getName();
-	      std::string tmp = tagNames[tn].c_str();
-	      assert(tmp.length());
-	      string::size_type sloc = tmp.find(" ");
-	      while ( (sloc=tmp.find(" "))!=string::npos )
-		tmp.replace(sloc,1,"__ws__");
+        aString *tagNames = new aString[numberOfTags];
+        int tn=0;
+        for ( std::map<IDTuple, std::list<EntityTag*>, std::less<IDTuple> >::const_iterator i=entityTags.begin();
+              i!=entityTags.end(); i++ )
+          for ( list<EntityTag*>::const_iterator t=i->second.begin(); t!=i->second.end(); t++,tn++ ) 
+            {
+              //              sPrintF(tagNames[tn],"%s_%d_%d",(*t)->getName().c_str(),i->first.et,i->first.e);
+              tagNames[tn] = (*t)->getName();
+              std::string tmp = tagNames[tn].c_str();
+              assert(tmp.length());
+              string::size_type sloc = tmp.find(" ");
+              while ( (sloc=tmp.find(" "))!=string::npos )
+                tmp.replace(sloc,1,"__ws__");
 
-	      tagNames[tn] = tmp.c_str();
-	    }
+              tagNames[tn] = tmp.c_str();
+            }
 
-	subDir.put(tagNames,"tagNames",numberOfTags);
+        subDir.put(tagNames,"tagNames",numberOfTags);
 
-	intSerialArray tagdata(numberOfTags,5); // 0-type, 1-index, 2-data, 3-copiesData, 4-datasize
-	numberOfTags=0;
-	for ( std::map<IDTuple, std::list<EntityTag*>, std::less<IDTuple> >::const_iterator i=entityTags.begin();
-	      i!=entityTags.end(); i++ )
-	  for ( std::list<EntityTag*>::const_iterator t=i->second.begin(); t!=i->second.end(); t++ ) 
-	    {
-	      tagdata(numberOfTags,0) = i->first.et;
-	      tagdata(numberOfTags,1) = i->first.e;
-	      
+        intSerialArray tagdata(numberOfTags,5); // 0-type, 1-index, 2-data, 3-copiesData, 4-datasize
+        numberOfTags=0;
+        for ( std::map<IDTuple, std::list<EntityTag*>, std::less<IDTuple> >::const_iterator i=entityTags.begin();
+              i!=entityTags.end(); i++ )
+          for ( std::list<EntityTag*>::const_iterator t=i->second.begin(); t!=i->second.end(); t++ ) 
+            {
+              tagdata(numberOfTags,0) = i->first.et;
+              tagdata(numberOfTags,1) = i->first.e;
+              
               // *wdh* intptr_t is an integer type that can hold a pointer (in stdint.h)
-	      tagdata(numberOfTags,2) = (intptr_t)(*t)->getData();  
-	      tagdata(numberOfTags,3) = (*t)->copiesData();
-	      tagdata(numberOfTags,4) = (*t)->getDataSize();
-	      numberOfTags++;
-	    }
+              tagdata(numberOfTags,2) = (intptr_t)(*t)->getData();  
+              tagdata(numberOfTags,3) = (*t)->copiesData();
+              tagdata(numberOfTags,4) = (*t)->getDataSize();
+              numberOfTags++;
+            }
 
-	subDir.put(tagdata,"tagData");
+        subDir.put(tagdata,"tagData");
 
 #if 0
-	tn=0;
-	for ( std::map<IDTuple, std::list<EntityTag*>, std::less<IDTuple> >::const_iterator i=entityTags.begin();
-	      i!=entityTags.end(); i++ )
-	  for ( list<EntityTag*>::const_iterator t=i->second.begin(); t!=i->second.end(); t++,tn++ ) 
-	    {
-	      sPrintF(tagNames[tn],"%s_%d_%d",(*t)->getName().c_str(),i->first.et,i->first.e);
-	      std::string tmp = tagNames[tn].c_str();
-	      tmp.replace(tmp.find(" "),1,"__ws__");
-	      tagNames[tn] = tmp.c_str();
-	      GenericDataBase &tagDir = *subDir.virtualConstructor();
-	      subDir.create(tagDir,tagNames[tn],"Tag");
-	      tagDir.put((*t)->getName(),"tagName");
-	      tagDir.put(i->first.et,"tagEntityType");
-	      tagDir.put(i->first.e,"tagEntity");
-	      (*t)->put(tagDir,tagNames[tn]);
-	      delete &tagDir;
-	    }
+        tn=0;
+        for ( std::map<IDTuple, std::list<EntityTag*>, std::less<IDTuple> >::const_iterator i=entityTags.begin();
+              i!=entityTags.end(); i++ )
+          for ( list<EntityTag*>::const_iterator t=i->second.begin(); t!=i->second.end(); t++,tn++ ) 
+            {
+              sPrintF(tagNames[tn],"%s_%d_%d",(*t)->getName().c_str(),i->first.et,i->first.e);
+              std::string tmp = tagNames[tn].c_str();
+              tmp.replace(tmp.find(" "),1,"__ws__");
+              tagNames[tn] = tmp.c_str();
+              GenericDataBase &tagDir = *subDir.virtualConstructor();
+              subDir.create(tagDir,tagNames[tn],"Tag");
+              tagDir.put((*t)->getName(),"tagName");
+              tagDir.put(i->first.et,"tagEntityType");
+              tagDir.put(i->first.e,"tagEntity");
+              (*t)->put(tagDir,tagNames[tn]);
+              delete &tagDir;
+            }
 #endif
 
-	delete [] tagNames;
+        delete [] tagNames;
       }
   }
 
@@ -5663,9 +5663,9 @@ findBoundaryCurves(int & numberOfBoundaryCurves, Mapping **& boundaryCurves )
       int n0=face(f,m);
       assert( n0>=0  );
       if( nodeInfo(n0,0)==-1 )
-	nodeInfo(n0,0)=f;
+        nodeInfo(n0,0)=f;
       else
-	nodeInfo(n0,1)=f;
+        nodeInfo(n0,1)=f;
     }
   }
 
@@ -5736,29 +5736,29 @@ findBoundaryCurves(int & numberOfBoundaryCurves, Mapping **& boundaryCurves )
       // check if the curve has a corner in which case we split the curve
       if( i>curveStart(c)+2 )
       {
-	real t1[3],t2[3];
+        real t1[3],t2[3];
         // take the dot product of the tangents
-	t1[0]=x(i-2,0)-x(i-3,0), t1[1]=x(i-2,1)-x(i-3,1), t1[2]=x(i-2,2)-x(i-3,2);
-	t2[0]=x(i-1,0)-x(i-2,0), t2[1]=x(i-1,1)-x(i-2,1), t2[2]=x(i-1,2)-x(i-2,2);
+        t1[0]=x(i-2,0)-x(i-3,0), t1[1]=x(i-2,1)-x(i-3,1), t1[2]=x(i-2,2)-x(i-3,2);
+        t2[0]=x(i-1,0)-x(i-2,0), t2[1]=x(i-1,1)-x(i-2,1), t2[2]=x(i-1,2)-x(i-2,2);
 
         real dot=(t1[0]*t2[0]+t1[1]*t2[1]+t1[2]*t2[2])/
               max(REAL_MIN*10.,SQRT( (t1[0]*t1[0]+t1[1]*t1[1]+t1[2]*t1[2]) *
-				     (t2[0]*t2[0]+t2[1]*t2[1]+t2[2]*t2[2]) ));
-	
+                                     (t2[0]*t2[0]+t2[1]*t2[1]+t2[2]*t2[2]) ));
+        
         // printf(" n0=%i, dot=%8.2e\n",n0,dot);
-	
+        
         if( dot < cosCriticalAngle )
-	{
+        {
           // split the curve
            printf("split curve %i at i=%i node=%i\n",c,i,previousNode);
-	  
-	  assert( c<maxNumberOfCurves-1 );
-	  curveEnd(c)=i-2; 
-	  c++;
+          
+          assert( c<maxNumberOfCurves-1 );
+          curveEnd(c)=i-2; 
+          c++;
           curveStart(c)=i-2;    // note : corner point is on both curves
           firstNode(c)=previousNode;
-	}
-	
+        }
+        
       }
       
     }
@@ -5767,65 +5767,65 @@ findBoundaryCurves(int & numberOfBoundaryCurves, Mapping **& boundaryCurves )
       // this is a face we have already seen, this curve is finished.
       if( c==0 || i>curveEnd(c-1)+1 )  // skip 'curves' with no points.
       {
-	assert( c<maxNumberOfCurves-1 );
-	curveEnd(c)=i-1; 
+        assert( c<maxNumberOfCurves-1 );
+        curveEnd(c)=i-1; 
 
         bool curvesMatch = false;
         int c0=-1;
         // printf("Old face found - check for merging curve c=%i with node n0=%i\n",c,n0);
-	
-	for( int cc=0; cc<c; cc++ )
-	{
-	  if( firstNode(cc)==n0 )
-	  {
-	    c0=cc;
+        
+        for( int cc=0; cc<c; cc++ )
+        {
+          if( firstNode(cc)==n0 )
+          {
+            c0=cc;
             break;
-	  }
-	}
+          }
+        }
         if( c0!=-1 )
-	{
-	  // this curve joins to the first pt  of curve c0 -- merge the two if there is not a corner.
+        {
+          // this curve joins to the first pt  of curve c0 -- merge the two if there is not a corner.
           // printf("merge curves %i and %i \n",c,c0);
-	  
-	  n0 = face(f,0)==n0 ? face(f,1) : face(f,0);
-	  x(i,Rx)=node(n0,Rx);
+          
+          n0 = face(f,0)==n0 ? face(f,1) : face(f,0);
+          x(i,Rx)=node(n0,Rx);
 
-	  // check if the curve has a corner in which case we split the curve
+          // check if the curve has a corner in which case we split the curve
           bool cornerFound=false;
-   	  if( i>curveStart(c)+1 )  // we need at least 3 consecutive pts
-	  {
-	    real t1[3],t2[3];
-	    // take the dot product of the tangents
-	    t1[0]=x(i-1,0)-x(i-2,0), t1[1]=x(i-1,1)-x(i-2,1), t1[2]=x(i-1,2)-x(i-2,2);
-	    t2[0]=x(i  ,0)-x(i-1,0), t2[1]=x(i  ,1)-x(i-1,1), t2[2]=x(i  ,2)-x(i-1,2);
+          if( i>curveStart(c)+1 )  // we need at least 3 consecutive pts
+          {
+            real t1[3],t2[3];
+            // take the dot product of the tangents
+            t1[0]=x(i-1,0)-x(i-2,0), t1[1]=x(i-1,1)-x(i-2,1), t1[2]=x(i-1,2)-x(i-2,2);
+            t2[0]=x(i  ,0)-x(i-1,0), t2[1]=x(i  ,1)-x(i-1,1), t2[2]=x(i  ,2)-x(i-1,2);
 
-	    real dot=(t1[0]*t2[0]+t1[1]*t2[1]+t1[2]*t2[2])/
+            real dot=(t1[0]*t2[0]+t1[1]*t2[1]+t1[2]*t2[2])/
               max(REAL_MIN*10.,SQRT( (t1[0]*t1[0]+t1[1]*t1[1]+t1[2]*t1[2]) *
-				     (t2[0]*t2[0]+t2[1]*t2[1]+t2[2]*t2[2]) ));
-	    if( dot < cosCriticalAngle )
-	      cornerFound=true;
-	  }
-	  if( !cornerFound )
-	  {
-	    Range I(curveStart(c0)+1,curveEnd(c0));
-	    x(I+curveEnd(c)-curveStart(c0),Rx)=x(I,Rx);
-	    curveEnd(c)+=curveEnd(c0)-curveStart(c0);
-	    Range C(c0,c-1);
+                                     (t2[0]*t2[0]+t2[1]*t2[1]+t2[2]*t2[2]) ));
+            if( dot < cosCriticalAngle )
+              cornerFound=true;
+          }
+          if( !cornerFound )
+          {
+            Range I(curveStart(c0)+1,curveEnd(c0));
+            x(I+curveEnd(c)-curveStart(c0),Rx)=x(I,Rx);
+            curveEnd(c)+=curveEnd(c0)-curveStart(c0);
+            Range C(c0,c-1);
 
-	    curveStart(C)=curveStart(C+1);  // remove curve c0
-	    curveEnd(C)  =curveEnd(C+1);
+            curveStart(C)=curveStart(C+1);  // remove curve c0
+            curveEnd(C)  =curveEnd(C+1);
 
             firstNode(c0)=-1;  // do not merge again.
-	  }
-	  else
-	    { // kkc 090408 start a new curve since we did not merge the first and last one
-	      c++; // note that this need to be done so that curveStart(c)=i below does not mess up the last curve segment in a periodic multi-segment curve
-	    }
-	}
+          }
+          else
+            { // kkc 090408 start a new curve since we did not merge the first and last one
+              c++; // note that this need to be done so that curveStart(c)=i below does not mess up the last curve segment in a periodic multi-segment curve
+            }
+        }
         else
-	{
-  	  c++;  // start a new boundary curve
-	}
+        {
+          c++;  // start a new boundary curve
+        }
         curveStart(c)=i;
       }
       
@@ -5834,15 +5834,15 @@ findBoundaryCurves(int & numberOfBoundaryCurves, Mapping **& boundaryCurves )
       f=-1;
       for( int b=0; b<numberOfBoundaryFaces; b++ )
       {
-	//kkc 090403 faceMask is an array over ALL the faces...	if( faceMask(b)==0 )
-	if( faceMask(bf(b))==0 )
-	{
-	  f=bf(b);
-	  break;
-	}
+        //kkc 090403 faceMask is an array over ALL the faces... if( faceMask(b)==0 )
+        if( faceMask(bf(b))==0 )
+        {
+          f=bf(b);
+          break;
+        }
       } 
       if( f==-1 )
-	done=true;
+        done=true;
 
       n0=face(f,0);
       firstNode(c)=n0;
@@ -5877,13 +5877,13 @@ findBoundaryCurves(int & numberOfBoundaryCurves, Mapping **& boundaryCurves )
 
       if( x(c0,0)==x(curveEnd(c),0) && x(c0,1)==x(curveEnd(c),1) && x(c0,2)==x(curveEnd(c),2) )
       {
-	spline.setIsPeriodic(0,Mapping::functionPeriodic);
-	printf("Boundary curve %i is periodic \n",c);
+        spline.setIsPeriodic(0,Mapping::functionPeriodic);
+        printf("Boundary curve %i is periodic \n",c);
       }
       else
       {
-	printf("Boundary curve %i is not periodic diffs=(%e,%e,%e)\n",c,
-	       x(c0,0)-x(curveEnd(c),0),x(c0,1)-x(curveEnd(c),1),x(c0,2)-x(curveEnd(c),2));
+        printf("Boundary curve %i is not periodic diffs=(%e,%e,%e)\n",c,
+               x(c0,0)-x(curveEnd(c),0),x(c0,1)-x(curveEnd(c),1),x(c0,2)-x(curveEnd(c),2));
       }
       
 
@@ -6123,32 +6123,32 @@ FEZComputeElementTypes()
   {
     where (nCount == 3) 
       {
-	elementType = int(triangle);
+        elementType = int(triangle);
       }
     otherwise ()
       {
-	elementType = int(quadrilateral);
+        elementType = int(quadrilateral);
       }
   } else {
     where(nCount == 4)
       {
-	elementType = int(tetrahedron);
+        elementType = int(tetrahedron);
       }
     elsewhere(nCount == 5)
       {
-	elementType = int(pyramid);
+        elementType = int(pyramid);
       }
     elsewhere(nCount == 6)
       {
-	elementType = int(triPrism);
+        elementType = int(triPrism);
       }
     elsewhere(nCount == 8)
       {
-	elementType = int(hexahedron);
+        elementType = int(hexahedron);
       }
     otherwise()
       {
-	elementType = int(other);
+        elementType = int(other);
       }
   } 
   return 0;
@@ -6210,21 +6210,21 @@ FEZComputeElementTypes()
 
 //       const intArray & gface = unstructuredMeshes[g].getFaces();
 //       for ( int fb=0; fb<unstructuredMeshes[g].getNumberOfBoundaryFaces(); fb++ )
-// 	{
-// 	  int f = unstructuredMeshes[g].getBoundaryFace(fb);
-// 	  int bcnum = unstructuredMeshes[g].getBoundaryFaceTag(fb);
-// 	  for ( int fv=0; fv<unstructuredMeshes[g].getNumberOfNodesThisFace(f); fv++ )
-// 	    {
-// 	      int nn=0;
-// 	      while ( nn<domainDimension && 
-// 		      gridVertexBC[g](gface(f,fv),nn)!=INT_MAX &&
-// 		      gridVertexBC[g](gface(f,fv),nn)!=bcnum ) 
-// 		{
-// 		  nn++;
-// 		}
-// 	      gridVertexBC[g](gface(f,fv),nn) = bcnum;
-// 	    }
-// 	}
+//      {
+//        int f = unstructuredMeshes[g].getBoundaryFace(fb);
+//        int bcnum = unstructuredMeshes[g].getBoundaryFaceTag(fb);
+//        for ( int fv=0; fv<unstructuredMeshes[g].getNumberOfNodesThisFace(f); fv++ )
+//          {
+//            int nn=0;
+//            while ( nn<domainDimension && 
+//                    gridVertexBC[g](gface(f,fv),nn)!=INT_MAX &&
+//                    gridVertexBC[g](gface(f,fv),nn)!=bcnum ) 
+//              {
+//                nn++;
+//              }
+//            gridVertexBC[g](gface(f,fv),nn) = bcnum;
+//          }
+//      }
 //     }
 
 //   node.redim(maxNumberOfVertices, numberOfDimensions);
@@ -6269,26 +6269,26 @@ FEZComputeElementTypes()
 
 //       int i1,i2,i3;
 //       for ( i3=I3.getBase(); i3<=I3.getBound(); i3++ )
-// 	{
-// 	  for ( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-// 	    {
-// 	      for ( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-// 		{
-// 		  int vertex;
-// 		  if ( (vertex = gridVertexMappings[g](i1,i2,i3)) != -1 )
-// 		    { // if the vertex has not been blanked out give it a global id
-// 		      if ( globalVertexIDMapping[g](vertex) == -1 )
-// 			{ // but set a new id only if the vertex has not already been set
-// 			  globalVertexIDMapping[g](vertex) = globalVertexIDCounter;
-// 			  globalIndexMapping(globalVertexIDCounter,0) = g;
-// 			  globalIndexMapping(globalVertexIDCounter,1) = vertex;
-// 			  node(globalVertexIDCounter, AXES) = uNodes(vertex, AXES);
-// 			  globalVertexIDCounter++;
-// 			}
-// 		    }
-// 		} // i1
-// 	    } // i2
-// 	} // i3
+//      {
+//        for ( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
+//          {
+//            for ( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+//              {
+//                int vertex;
+//                if ( (vertex = gridVertexMappings[g](i1,i2,i3)) != -1 )
+//                  { // if the vertex has not been blanked out give it a global id
+//                    if ( globalVertexIDMapping[g](vertex) == -1 )
+//                      { // but set a new id only if the vertex has not already been set
+//                        globalVertexIDMapping[g](vertex) = globalVertexIDCounter;
+//                        globalIndexMapping(globalVertexIDCounter,0) = g;
+//                        globalIndexMapping(globalVertexIDCounter,1) = vertex;
+//                        node(globalVertexIDCounter, AXES) = uNodes(vertex, AXES);
+//                        globalVertexIDCounter++;
+//                      }
+//                  }
+//              } // i1
+//          } // i2
+//      } // i3
       
 //     } // g
 
@@ -6301,19 +6301,19 @@ FEZComputeElementTypes()
 //       const intArray &uElem = uMap.getElements();
 
 //       for ( int e=0; e<uMap.getNumberOfElements(); e++ )
-// 	{
-// 	  for ( int v=0; v<maxNumberOfNodesPerElement; v++ )
-// 	    {
-// 	      if (uElem(e,v)!=-1)
-// 		element(globalElementCounter, v) = globalVertexIDMapping[g](uElem(e, v));
-// 	      else
-// 		element(globalElementCounter, v) = -1;
+//      {
+//        for ( int v=0; v<maxNumberOfNodesPerElement; v++ )
+//          {
+//            if (uElem(e,v)!=-1)
+//              element(globalElementCounter, v) = globalVertexIDMapping[g](uElem(e, v));
+//            else
+//              element(globalElementCounter, v) = -1;
 
-// 	    }
-// 	  // tag the element by the grid number it came from
-// 	  tags(globalElementCounter) = g;
-// 	  globalElementCounter++;
-// 	}
+//          }
+//        // tag the element by the grid number it came from
+//        tags(globalElementCounter) = g;
+//        globalElementCounter++;
+//      }
 //     }
 
 //   numberOfNodes = globalVertexIDCounter;
@@ -6336,21 +6336,21 @@ FEZComputeElementTypes()
 //       int f=getBoundaryFace(fb);
 //       bool foundBC = false;
 //       for ( int testbcvert=0; testbcvert<domainDimension && !foundBC; testbcvert++ )
-// 	{
-// 	  int tbc = gridVertexBC[globalIndexMapping(face(f,0),0)](globalIndexMapping(face(f,0),1),testbcvert);
-// 	  foundBC = true;
-// 	  for ( int fn=1; foundBC && fn<getNumberOfNodesThisFace(f); fn++ )
-// 	    {
-// 	      foundBC = false;
-// 	      for ( int tbcv=0; tbcv<domainDimension && !foundBC; tbcv++ )
-// 		{
-// 		  foundBC = 
-// 		    tbc==gridVertexBC[globalIndexMapping(face(f,fn),0)](globalIndexMapping(face(f,fn),1),tbcv);
-// 		}
-// 	    }
-// 	  if ( foundBC )
-// 	    bdyFaceTags(fb) = tbc;
-// 	}
+//      {
+//        int tbc = gridVertexBC[globalIndexMapping(face(f,0),0)](globalIndexMapping(face(f,0),1),testbcvert);
+//        foundBC = true;
+//        for ( int fn=1; foundBC && fn<getNumberOfNodesThisFace(f); fn++ )
+//          {
+//            foundBC = false;
+//            for ( int tbcv=0; tbcv<domainDimension && !foundBC; tbcv++ )
+//              {
+//                foundBC = 
+//                  tbc==gridVertexBC[globalIndexMapping(face(f,fn),0)](globalIndexMapping(face(f,fn),1),tbcv);
+//              }
+//          }
+//        if ( foundBC )
+//          bdyFaceTags(fb) = tbc;
+//      }
 //     }
 
 //   delete [] gridVertexMappings;
@@ -6391,11 +6391,11 @@ createNodeElementList(intArray &nodeElementList)
   for ( e=0; e<numberOfElements; e++ )
     for ( n=0; n<getNumberOfNodesThisElement(e); n++ )
       {
-	int nn = nodeOffset(element(e,n))+nodeCounter(element(e,n));
-	
-	nodeElementList(nn,0) = e;
-	nodeElementList(nn,1) = n;
-	nodeCounter(element(e,n))++;
+        int nn = nodeOffset(element(e,n))+nodeCounter(element(e,n));
+        
+        nodeElementList(nn,0) = e;
+        nodeElementList(nn,1) = n;
+        nodeCounter(element(e,n))++;
       }
 
   //nodeElementList.display("nodeElementList");
@@ -6570,46 +6570,46 @@ update( MappingInformation & mapInfo )
     if( answer=="set nodes" )
     { 
       gi.inputString(line,sPrintF(buff,"Enter the domain and range dimensions (2 or 3) (default=%i,%i): ",
-				  domainDimension,rangeDimension));
+                                  domainDimension,rangeDimension));
       if( line!="" )
       {
         int dd=2, rd=2;
         sScanF(line,"%i %i",&dd, &rd);
         if( rd!=2 && rd!=3 )
-	{
-	  printf("Invalid value %i for the range dimension! \n",rd);
-	  continue;
-	}
+        {
+          printf("Invalid value %i for the range dimension! \n",rd);
+          continue;
+        }
         if( dd!=2 && dd!=3 )
-	{
-	  printf("Invalid value %i for the domain dimension! \n",dd);
-	  continue;
-	}
-	domainDimension=dd;
-	rangeDimension=rd;
+        {
+          printf("Invalid value %i for the domain dimension! \n",dd);
+          continue;
+        }
+        domainDimension=dd;
+        rangeDimension=rd;
       }
       
       RealArray values;
       int numberSpecified = gi.getValues("Enter nodes x1 y1 x2 y2 ...",values);
       if( numberSpecified>0 )
       {
-	numberOfNodes=numberSpecified/rangeDimension;
+        numberOfNodes=numberSpecified/rangeDimension;
         setGridDimensions( axis1,numberOfNodes );  
 
-	values.resize(numberSpecified);
-	values.reshape(rangeDimension,numberOfNodes);
-	node.redim(numberOfNodes,rangeDimension);
-	node = 0.0;
-	for( axis=0; axis<rangeDimension; axis++ )
-	  for( int i=0; i<numberOfNodes; i++ )
-	    node(i,axis)=values(axis,i);
+        values.resize(numberSpecified);
+        values.reshape(rangeDimension,numberOfNodes);
+        node.redim(numberOfNodes,rangeDimension);
+        node = 0.0;
+        for( axis=0; axis<rangeDimension; axis++ )
+          for( int i=0; i<numberOfNodes; i++ )
+            node(i,axis)=values(axis,i);
 
-	Range R(0,numberOfNodes-1), Rx(0,rangeDimension-1);
-	for( axis=0; axis<rangeDimension; axis++ )
-	{
-	  setRangeBound(Start,axis,min(node(R,axis)));
-	  setRangeBound(End  ,axis,max(node(R,axis)));
-	}
+        Range R(0,numberOfNodes-1), Rx(0,rangeDimension-1);
+        for( axis=0; axis<rangeDimension; axis++ )
+        {
+          setRangeBound(Start,axis,min(node(R,axis)));
+          setRangeBound(End  ,axis,max(node(R,axis)));
+        }
         plotObject=TRUE;
 
       }
@@ -6622,7 +6622,7 @@ update( MappingInformation & mapInfo )
       // *wdh* added back to Kyle's changes. Is this ok?? 
       gi.inputString(line,sPrintF(buff,
            "Enter the number of nodes per element (max over all elements) (default=%i): ",
-				  maxNumberOfNodesPerElement));
+                                  maxNumberOfNodesPerElement));
       if( line!="" )
         sScanF(line,"%i",&maxNumberOfNodesPerElement);
 
@@ -6635,27 +6635,27 @@ update( MappingInformation & mapInfo )
 
       if( numberSpecified>0 )
       {
-	numberOfElements=numberSpecified/maxNumberOfNodesPerElement;
-	values.resize(numberSpecified);
+        numberOfElements=numberSpecified/maxNumberOfNodesPerElement;
+        values.resize(numberSpecified);
 
-	values.reshape(maxNumberOfNodesPerElement,numberOfElements);
+        values.reshape(maxNumberOfNodesPerElement,numberOfElements);
 
-	element.redim(1,numberOfElements,maxNumberOfNodesPerElement);
+        element.redim(1,numberOfElements,maxNumberOfNodesPerElement);
         Range R=numberOfElements;
         for( int n=0; n<maxNumberOfNodesPerElement; n++ )
-	{
+        {
 #ifndef USE_PPP
           element(0,R,n)=values(n,R);
 #else
-	  for( int i=R.getBase(); i<=R.getBound(); i++ )
+          for( int i=R.getBase(); i<=R.getBound(); i++ )
             element(0,i,n)=values(n,i);
 #endif
-	}
+        }
         element.reshape(R,maxNumberOfNodesPerElement);
-	// element.display("element");
-	//setNodesAndConnectivity(node, element, domainDimension);
-	buildConnectivityLists();
-	
+        // element.display("element");
+        //setNodesAndConnectivity(node, element, domainDimension);
+        buildConnectivityLists();
+        
       }
     }
     else if( answer=="save data in a file" )
@@ -6665,14 +6665,14 @@ update( MappingInformation & mapInfo )
       {
         printf("The format of the file is\n"
               "domainDimension rangeDimension numberOfNodes numberOfElements maxNumberOfNodesPerElement\n"
-	       "x0 y0 z0  (or just x0 y0 in 2D \n"
-	       "x1 y1 z1 \n"
+               "x0 y0 z0  (or just x0 y0 in 2D \n"
+               "x1 y1 z1 \n"
                " ...     \n"
-	       "xn yn zn \n"
+               "xn yn zn \n"
                "m0 n0 l0  (node numbers for element 0)\n"
                "m1 n1 l1 \n"
                "  ...    \n");
-	put(line);
+        put(line);
       }
       continue;
     }
@@ -6715,15 +6715,15 @@ update( MappingInformation & mapInfo )
       real x,y,z;
       for( int m=0; m<numberOfNodes; m++ )
       {
-	getLineFromFile( fp,buff,buffSize );
-	sScanF(buff,"%i %e %e %e",&n,&x,&y,&z);
+        getLineFromFile( fp,buff,buffSize );
+        sScanF(buff,"%i %e %e %e",&n,&x,&y,&z);
         // fscanf(fp,"%i %e %e %e",&n,&x,&y,&z);
 
-	// printF(" node: n=%i (x,y,z)=(%g,%g,%g)\n",n,x,y,z);
+        // printF(" node: n=%i (x,y,z)=(%g,%g,%g)\n",n,x,y,z);
 
-	n--;
+        n--;
         assert( n>=0 && n<numberOfNodes );
-	xyz(n,0)=x; xyz(n,1)=y; xyz(n,2)=z;
+        xyz(n,0)=x; xyz(n,1)=y; xyz(n,2)=z;
       }
       
       
@@ -6737,17 +6737,17 @@ update( MappingInformation & mapInfo )
       int n1,n2,n3;
       for( int m=0; m<numberOfElements; m++ )
       {
-	getLineFromFile( fp,buff,buffSize );
+        getLineFromFile( fp,buff,buffSize );
       
-	sScanF(buff,"%i %i %s %i %i %i",&n,&dum1,elementName,&n1,&n2,&n3);
-	// printF(" element: n=%i name=%s (n1,n2,n3)=(%i,%i,%i)\n",n,elementName,n1,n2,n3);
-	n--; n1--; n2--; n3--;
+        sScanF(buff,"%i %i %s %i %i %i",&n,&dum1,elementName,&n1,&n2,&n3);
+        // printF(" element: n=%i name=%s (n1,n2,n3)=(%i,%i,%i)\n",n,elementName,n1,n2,n3);
+        n--; n1--; n2--; n3--;
         assert( n>=0 && n<numberOfElements );
         assert( n1>=0 && n1<numberOfNodes );
         assert( n2>=0 && n2<numberOfNodes );
         assert( n3>=0 && n3<numberOfNodes );
 
-	elems(n,0)=n1; elems(n,1)=n2; elems(n,2)=n3;
+        elems(n,0)=n1; elems(n,1)=n2; elems(n,2)=n3;
       }
 
       fclose(fp);
@@ -6799,15 +6799,15 @@ update( MappingInformation & mapInfo )
       real xShift=0., yShift=0., zShift=0.;
       if( rangeDimension==2 )
       {
-	gi.inputString(line,sPrintF(buff,"Enter xShift, yShift (default=(%e,%e)): ",
-				    xShift,yShift));
-	if( line!="" ) sScanF(line,"%e %e",&xShift,&yShift);
+        gi.inputString(line,sPrintF(buff,"Enter xShift, yShift (default=(%e,%e)): ",
+                                    xShift,yShift));
+        if( line!="" ) sScanF(line,"%e %e",&xShift,&yShift);
       }
       else
       {
-	gi.inputString(line,sPrintF(buff,"Enter xShift, yShift, zShift (default=(%e,%e,%e)): ",
-				    xShift,yShift,zShift));
-	if( line!="" ) sScanF(line,"%e %e %e",&xShift,&yShift,&zShift);
+        gi.inputString(line,sPrintF(buff,"Enter xShift, yShift, zShift (default=(%e,%e,%e)): ",
+                                    xShift,yShift,zShift));
+        if( line!="" ) sScanF(line,"%e %e %e",&xShift,&yShift,&zShift);
       }
       shift(xShift,yShift,zShift);
 
@@ -6830,15 +6830,15 @@ update( MappingInformation & mapInfo )
       else
       {
         gi.inputString(line,sPrintF(buff,"Enter rotation angle(degrees) and axis to rotate about(0,1, or 2)"
-				    "(default=(%e,%i)): ",rotationAngle,rotationAxis));
+                                    "(default=(%e,%i)): ",rotationAngle,rotationAxis));
         if( line!="" ) sScanF(line,"%e %i",&rotationAngle,&rotationAxis);
-	if( rotationAxis<0 || rotationAxis>2 )
-	{
-	  cout << "Invalid rotation axis = " << rotationAxis << endl;
-	  continue;
-	}
+        if( rotationAxis<0 || rotationAxis>2 )
+        {
+          cout << "Invalid rotation axis = " << rotationAxis << endl;
+          continue;
+        }
         gi.inputString(line,sPrintF(buff,"Enter the point to rotate around (default=%e,%e,%e): ",
-				    centerOfRotation[0],centerOfRotation[1],centerOfRotation[2]));
+                                    centerOfRotation[0],centerOfRotation[1],centerOfRotation[2]));
         if( line!="" ) sScanF(line,"%e %e %e",&centerOfRotation[0],&centerOfRotation[1],
                               &centerOfRotation[2]);
       }
@@ -6878,8 +6878,8 @@ update( MappingInformation & mapInfo )
       gi.inputString(line,sPrintF(buff,"Enter tolerance (current=%e)",elementDensityTolerance));
       if( line!="" )
       {
-	sScanF(line,"%e",&elementDensityTolerance);
-	printf("element density tolerance = %e\n",elementDensityTolerance);
+        sScanF(line,"%e",&elementDensityTolerance);
+        printf("element density tolerance = %e\n",elementDensityTolerance);
       }
     }
     else if( answer=="stitching tolerance" )
@@ -6890,8 +6890,8 @@ update( MappingInformation & mapInfo )
       gi.inputString(line,sPrintF(buff,"Enter tolerance (current=%e)",defaultTolerance));
       if( line!="" )
       {
-	sScanF(line,"%e",&stitchingTolerance);
-	printf("stitching tolerance = %e\n",stitchingTolerance);
+        sScanF(line,"%e",&stitchingTolerance);
+        printf("stitching tolerance = %e\n",stitchingTolerance);
       }
     }
     else if( answer=="absolute stitching tolerance" )
@@ -6900,13 +6900,13 @@ update( MappingInformation & mapInfo )
       gi.inputString(line,sPrintF(buff,"Enter tolerance (current=%e)",absoluteStitchingTolerance));
       if( line!="" )
       {
-	sScanF(line,"%e",&absoluteStitchingTolerance);
-	printf("absolute stitching tolerance = %e\n",absoluteStitchingTolerance);
+        sScanF(line,"%e",&absoluteStitchingTolerance);
+        printf("absolute stitching tolerance = %e\n",absoluteStitchingTolerance);
       }
     }
     else if ( answer=="check" )
       {
-	verifyUnstructuredConnectivity( *this, true );
+        verifyUnstructuredConnectivity( *this, true );
       }
     else if( answer=="build from a mapping" )
     {
@@ -6918,48 +6918,48 @@ update( MappingInformation & mapInfo )
       menu2[num]="";   // null string terminates the menu
       for( ;; )
       {
-	int mapNumber = gi.getMenuItem(menu2,line);
+        int mapNumber = gi.getMenuItem(menu2,line);
         if( mapNumber<0 )
-	{
-	  printf("UnstructuredMapping::ERROR:unknown mapping to turn into a UnstructuredMapping!\n");
-	  gi.stopReadingCommandFile();
-	}
-	else if( mapInfo.mappingList[mapNumber].mapPointer==this )
-	{
-	  cout << "UnstructuredMapping::ERROR: you cannot use this mapping, this would be recursive!\n";
-	  continue;
-	}
-	else
-	{
+        {
+          printf("UnstructuredMapping::ERROR:unknown mapping to turn into a UnstructuredMapping!\n");
+          gi.stopReadingCommandFile();
+        }
+        else if( mapInfo.mappingList[mapNumber].mapPointer==this )
+        {
+          cout << "UnstructuredMapping::ERROR: you cannot use this mapping, this would be recursive!\n";
+          continue;
+        }
+        else
+        {
           Mapping & map = mapInfo.mappingList[mapNumber].getMapping();
-	  referenceMapping=&map;
-	  
+          referenceMapping=&map;
+          
           if( map.getClassName()=="TrimmedMapping" )
-	  {
+          {
 //             if( false )
-// 	    {
-// 	      // get the mask for a trimmed mapping.
-// 	      MappingParameters mapParams;
-// 	      map.getGrid(mapParams);
-// 	      mapParams.mask.reshape(map.getGridDimensions(0),map.getGridDimensions(1));
-// 	      // ::display(mapParams.mask,"mask from trimmed mapping","%3i");
-// 	      buildFromAMapping( map,mapParams.mask );
-// 	    }
-// 	    else
-	    {
-	      TrimmedMapping & trim = (TrimmedMapping&)map;
-	      *this =  trim.getTriangulation();
-	    }
-	    
-	  }
+//          {
+//            // get the mask for a trimmed mapping.
+//            MappingParameters mapParams;
+//            map.getGrid(mapParams);
+//            mapParams.mask.reshape(map.getGridDimensions(0),map.getGridDimensions(1));
+//            // ::display(mapParams.mask,"mask from trimmed mapping","%3i");
+//            buildFromAMapping( map,mapParams.mask );
+//          }
+//          else
+            {
+              TrimmedMapping & trim = (TrimmedMapping&)map;
+              *this =  trim.getTriangulation();
+            }
+            
+          }
           else if( map.getClassName()=="CompositeSurface" )
-	  {
-	    buildFromACompositeSurface( (CompositeSurface &)map );
-	  }
-	  else if( map.getDomainDimension()==2 && ( map.getRangeDimension()==2 || preferTriangles) )
-	  {
+          {
+            buildFromACompositeSurface( (CompositeSurface &)map );
+          }
+          else if( map.getDomainDimension()==2 && ( map.getRangeDimension()==2 || preferTriangles) )
+          {
             // elementDensityTolerance=0.;
-	    
+            
 
             buildFromARegularMapping( map, (preferTriangles? triangle : quadrilateral) );
 
@@ -6968,12 +6968,12 @@ update( MappingInformation & mapInfo )
             UnstructuredMappingIterator iter;
             int ne=0;
             printf(" *begin(Region)=%i, *end(Region)=%i\n",*begin(Region),*end(Region));
-	    
+            
             for( iter=begin(Region); iter!=end(Region); iter++ )
- 	    {
- 	      printf(" Element %i is valid \n",*iter);
+            {
+              printf(" Element %i is valid \n",*iter);
               ne++;
- 	    }
+            }
             printf("Using iterators: there are %i regions\n",ne);
             for( iter=begin(Face); iter!=end(Face); iter++ )
               ne++;
@@ -6982,53 +6982,53 @@ update( MappingInformation & mapInfo )
             bool includeGhost=true;
             ne=0;
             for( iter=begin(Region,includeGhost); iter!=end(Region,includeGhost); iter++ )
- 	    {
- 	      printf(" Include ghost: Element %i is valid \n",*iter);
+            {
+              printf(" Include ghost: Element %i is valid \n",*iter);
               ne++;
- 	    }
+            }
             printf("Using iterators: there are %i regions with ghost elements\n",ne);
             ne=0;
             for( iter=begin(Face,includeGhost); iter!=end(Face,includeGhost); iter++ )
- 	    {
- 	      // printf(" Include ghost: Face %i is valid \n",*iter);
+            {
+              // printf(" Include ghost: Face %i is valid \n",*iter);
               ne++;
- 	    }
+            }
             printf("Using iterators: there are %i faces with ghost elements\n",ne);
-	    
-	    if ( ghostElements )
-	      {
-		const int numberOfGhostElements=ghostElements->getLength(0);
-		int n,m,e,ep;
-		for( n=0; n<numberOfGhostElements; n++ )
-		  {
-		    e=(*ghostElements)(n);
-		    m = (*elementMask)(e);
-		    ep = -m-2;
-		    if( ep>=0 )
-		      {
-			// this is a periodic point with periodic element 
-			printf(" Element e=%i has periodic image ep=%i\n",e,ep);
-		      }
-		  }
-	      }
-	    
+            
+            if ( ghostElements )
+              {
+                const int numberOfGhostElements=ghostElements->getLength(0);
+                int n,m,e,ep;
+                for( n=0; n<numberOfGhostElements; n++ )
+                  {
+                    e=(*ghostElements)(n);
+                    m = (*elementMask)(e);
+                    ep = -m-2;
+                    if( ep>=0 )
+                      {
+                        // this is a periodic point with periodic element 
+                        printf(" Element e=%i has periodic image ep=%i\n",e,ep);
+                      }
+                  }
+              }
+            
 
-	  }
-	  else
-	  {
-	    buildFromAMapping( map );
-	  }
-	  
+          }
+          else
+          {
+            buildFromAMapping( map );
+          }
+          
           plotObject=true;
           mappingHasChanged();
 
-	  if( domainDimension==2 ) // && rangeDimension==3 )
-	    parameters.set(GI_PLOT_UNS_EDGES,true);
+          if( domainDimension==2 ) // && rangeDimension==3 )
+            parameters.set(GI_PLOT_UNS_EDGES,true);
           if( rangeDimension==2 )
-	    parameters.set(GI_PLOT_UNS_FACES,true);
+            parameters.set(GI_PLOT_UNS_FACES,true);
 
           break;
-	}
+        }
       }
       delete [] menu2;
     }
@@ -7048,41 +7048,41 @@ update( MappingInformation & mapInfo )
 
 //       for( ;; )
 //       {
-// 	int mapNumber = gi.getMenuItem(menu2,line);
+//      int mapNumber = gi.getMenuItem(menu2,line);
 //         gi.indexInCascadingMenu( mapNumber,mappingListStart,mappingListEnd);
 
 //         if( mapNumber<0 )
-// 	{
-// 	  printf("UnstructuredMapping::ERROR:unknown mapping to turn into a UnstructuredMapping!\n");
-// 	  gi.stopReadingCommandFile();
-// 	}
-// 	else if( mapInfo.mappingList[mapNumber].mapPointer==this )
-// 	{
-// 	  cout << "UnstructuredMapping::ERROR: you cannot use this mapping, this would be recursive!\n";
-// 	  continue;
-// 	}
-// 	else
-// 	{
+//      {
+//        printf("UnstructuredMapping::ERROR:unknown mapping to turn into a UnstructuredMapping!\n");
+//        gi.stopReadingCommandFile();
+//      }
+//      else if( mapInfo.mappingList[mapNumber].mapPointer==this )
+//      {
+//        cout << "UnstructuredMapping::ERROR: you cannot use this mapping, this would be recursive!\n";
+//        continue;
+//      }
+//      else
+//      {
 //           Mapping & map = mapInfo.mappingList[mapNumber].getMapping();
-// 	  referenceMapping=&map;
-	  
+//        referenceMapping=&map;
+          
 //           if( map.getClassName()=="CompositeSurface" )
-// 	  {
-// 	    buildCompositeTopology( (CompositeSurface &)map, this );
-// 	  }
-// 	  else
-// 	  {
+//        {
+//          buildCompositeTopology( (CompositeSurface &)map, this );
+//        }
+//        else
+//        {
 //             printf("Sorry: this is not a composite surface");
-// 	  }
-	  
+//        }
+          
 //           plotObject=TRUE;
 //           mappingHasChanged();
 
-// 	  if( domainDimension==2 && rangeDimension==3 )
-// 	    parameters.set(GI_PLOT_UNS_EDGES,true);
+//        if( domainDimension==2 && rangeDimension==3 )
+//          parameters.set(GI_PLOT_UNS_EDGES,true);
 
 //           break;
-// 	}
+//      }
 //       }
 //       delete [] menu2;
 //     }
@@ -7099,25 +7099,25 @@ update( MappingInformation & mapInfo )
       for( ;; )
       {
         gi.inputString(answer,"Enter a point to project");
-	if( answer=="" )
+        if( answer=="" )
           break;
         else
-	{
-	  sScanF(answer,"%e %e %e",&x(0,0),&x(0,1),&x(0,2));
-	  
+        {
+          sScanF(answer,"%e %e %e",&x(0,0),&x(0,1),&x(0,2));
+          
 
           x0(0,Rx)=x(0,Rx);
-//	  subSurfaceIndex=-1;
-	  
+//        subSurfaceIndex=-1;
+          
           project(x,mpParams);
 
           x2(0,Rx)=x0(0,Rx);
-	  x2(1,Rx)=x(0,Rx);
-	  gi.plotPoints(x2,parameters);
+          x2(1,Rx)=x(0,Rx);
+          gi.plotPoints(x2,parameters);
 
           printf("Pt (%e,%e,%e) was projected to (%e,%e,%e) \n",x0(0,0),x0(0,1),x0(0,2), x(0,0),x(0,1),x(0,2));
 
-	}
+        }
 
       }
       
@@ -7139,7 +7139,7 @@ update( MappingInformation & mapInfo )
 
 // *this doesn't work for some reason* *wdh* 030825
 //        aString windowButtons[][2] = {{"Done"},
-//  				    {""}};
+//                                  {""}};
 //        interface.setUserButtons(windowButtons);
 
       interface.setWindowTitle("Query An Element");
@@ -7150,50 +7150,50 @@ update( MappingInformation & mapInfo )
       
       for( ;; )
       {
-	gi.getAnswer(answer,"pick a point", select);
+        gi.getAnswer(answer,"pick a point", select);
         if( answer=="exit" || answer=="done" )
           break;
-	if (select.active == 1)
-	{
-	  printf("A point was picked!\n");
-	  printf("Window coordinates: %e, %e\n", select.r[0], select.r[1]);
-	  if (select.nSelect)
-	  {
-	    printf("World coordinates: %e, %e, %e\n", select.x[0], select.x[1], select.x[2]);
+        if (select.active == 1)
+        {
+          printf("A point was picked!\n");
+          printf("Window coordinates: %e, %e\n", select.r[0], select.r[1]);
+          if (select.nSelect)
+          {
+            printf("World coordinates: %e, %e, %e\n", select.x[0], select.x[1], select.x[2]);
 
             x(0,0)=select.x[0], x(0,1)=select.x[1], x(0,2)=select.x[2];
-	    
-	    x0(0,Rx)=x(0,Rx);
-	    elementIndex=-1;
-	  
-	    project(x,mpParams);
+            
+            x0(0,Rx)=x(0,Rx);
+            elementIndex=-1;
+          
+            project(x,mpParams);
 
-	    x2(0,Rx)=x0(0,Rx);
-	    x2(1,Rx)=x(0,Rx);
-	    // gi.plotPoints(x2,parameters);
+            x2(0,Rx)=x0(0,Rx);
+            x2(1,Rx)=x(0,Rx);
+            // gi.plotPoints(x2,parameters);
 
-	    printf("Pt (%e,%e,%e) was projected to (%e,%e,%e) \n",x0(0,0),x0(0,1),x0(0,2), x(0,0),x(0,1),x(0,2));
+            printf("Pt (%e,%e,%e) was projected to (%e,%e,%e) \n",x0(0,0),x0(0,1),x0(0,2), x(0,0),x(0,1),x(0,2));
             int e=elementIndex(0);
             if( e>=0 && e<numberOfElements )
-	    {
+            {
               int f0=ef(e,0), f1=ef(e,1), f2=ef(e,2);
-	      int ae0 = faceElements(f0,0)==e ? faceElements(f0,1) : faceElements(f0,0);
-	      int ae1 = faceElements(f1,0)==e ? faceElements(f1,1) : faceElements(f1,0);
-	      int ae2 = faceElements(f2,0)==e ? faceElements(f2,1) : faceElements(f2,0);
+              int ae0 = faceElements(f0,0)==e ? faceElements(f0,1) : faceElements(f0,0);
+              int ae1 = faceElements(f1,0)==e ? faceElements(f1,1) : faceElements(f1,0);
+              int ae2 = faceElements(f2,0)==e ? faceElements(f2,1) : faceElements(f2,0);
               printf("Element e=%i, nodes=(%i,%i,%i), faces=(%i,%i,%i) adj elements=(%i,%i,%i) sub-surface=%i \n",
                      e,element(e,0),element(e,1),element(e,2),
                      f0,f1,f2,ae0,ae1,ae2,tags(e));
               printf(" face f0=%i nodes=(%i,%i) e=(%i,%i), f1=%i nodes=(%i,%i) e=(%i,%i), f2=%i nodes=(%i,%i) e=(%i,%i)\n",
-		     f0,face(f0,0),face(f0,1),faceElements(f0,0),faceElements(f0,1),
+                     f0,face(f0,0),face(f0,1),faceElements(f0,0),faceElements(f0,1),
                      f1,face(f1,0),face(f1,1),faceElements(f1,0),faceElements(f1,1),
                      f2,face(f2,0),face(f2,1),faceElements(f2,0),faceElements(f2,1));
-	    }
-	    else
-	    {
-	      printf("Invalid element=%i\n",e);
-	    }
-	  }
-	}
+            }
+            else
+            {
+              printf("Invalid element=%i\n",e);
+            }
+          }
+        }
       }
       gi.popGUI();
     }
@@ -7212,15 +7212,15 @@ update( MappingInformation & mapInfo )
       int b;
       for( b=0; b<numberOfBoundaryCurves; b++ )
       {
-	aString colour = gi.getColourName(b);
+        aString colour = gi.getColourName(b);
         parameters.set(GI_MAPPING_COLOUR,colour);
         parameters.set(GraphicsParameters::curveLineWidth,4.);
         // gi.erase();
         // boundaryCurves[b]->update(mapInfo);
-	
+        
         if( b==numberOfBoundaryCurves-1 )
-	  parameters.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);          
-	PlotIt::plot(gi,*boundaryCurves[b],parameters);
+          parameters.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);          
+        PlotIt::plot(gi,*boundaryCurves[b],parameters);
       }
       parameters.set(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
       parameters.set(GI_MAPPING_COLOUR,"red");
@@ -7242,9 +7242,9 @@ update( MappingInformation & mapInfo )
     }
     else if (answer=="expand ghost boundary")
       {
-	expandGhostBoundary();
-	eraseUnstructuredMapping(gi);
-	plotObject =true;
+        expandGhostBoundary();
+        eraseUnstructuredMapping(gi);
+        plotObject =true;
       }
     else if( answer=="show parameters" )
     {
@@ -7286,7 +7286,7 @@ update( MappingInformation & mapInfo )
       if( referenceMapping==NULL || referenceMapping->getClassName()!="CompositeSurface" )
       {
         printf("There is no CompositeSurface as a reference Mapping\n");
-	continue;
+        continue;
       }
 
       CompositeSurface & cs = *((CompositeSurface*)referenceMapping);
@@ -7295,53 +7295,53 @@ update( MappingInformation & mapInfo )
       gi.erase();
       aString menu[]=
       {
-	"choose a sub-surface",
+        "choose a sub-surface",
         "exit",
         ""
       };
       for( ;; )
       {
         int s=-1;
-	gi.getMenuItem(menu,answer,"");
-	if( answer=="choose a sub-surface" )
-	{
-	  gi.inputString(answer,sPrintF(line,"Enter a sub-surface s in [%i,%i]",0,cs.numberOfSubSurfaces()-1));
-	  if( answer=="" )
-	    break;
-	  else
-	  {
-	    sScanF(answer,"%i",&s);
-	  }
-	}
-	else if( answer=="exit" )
-	  break;
-	
-	if( s>=0 && s<cs.numberOfSubSurfaces() )
-	{
-	  printf("plot sub-surface s=%i \n",s);
-	  
-	  Mapping & map = cs[s];
-	  if( map.getClassName()=="TrimmedMapping" )
-	  {
-	    printf("Subsurface %i is a TrimmedMapping\n",s);
-	  }
+        gi.getMenuItem(menu,answer,"");
+        if( answer=="choose a sub-surface" )
+        {
+          gi.inputString(answer,sPrintF(line,"Enter a sub-surface s in [%i,%i]",0,cs.numberOfSubSurfaces()-1));
+          if( answer=="" )
+            break;
+          else
+          {
+            sScanF(answer,"%i",&s);
+          }
+        }
+        else if( answer=="exit" )
+          break;
+        
+        if( s>=0 && s<cs.numberOfSubSurfaces() )
+        {
+          printf("plot sub-surface s=%i \n",s);
+          
+          Mapping & map = cs[s];
+          if( map.getClassName()=="TrimmedMapping" )
+          {
+            printf("Subsurface %i is a TrimmedMapping\n",s);
+          }
 
-	  if( cs[s].getClassName()=="TrimmedMapping" )
-	  {
-	    TrimmedMapping & trim = (TrimmedMapping&)cs[s];
-	    Mapping & subSurface = trim.getTriangulation();
+          if( cs[s].getClassName()=="TrimmedMapping" )
+          {
+            TrimmedMapping & trim = (TrimmedMapping&)cs[s];
+            Mapping & subSurface = trim.getTriangulation();
             PlotIt::plot(gi,subSurface,parameters);
-	  }
-	  else
-	  {
-	    UnstructuredMapping subSurface;
-	    subSurface.setPreferTriangles();
-	    subSurface.setElementDensityTolerance(elementDensityTolerance);
-	    subSurface.buildFromARegularMapping(cs[s]);
+          }
+          else
+          {
+            UnstructuredMapping subSurface;
+            subSurface.setPreferTriangles();
+            subSurface.setElementDensityTolerance(elementDensityTolerance);
+            subSurface.buildFromARegularMapping(cs[s]);
             PlotIt::plot(gi,subSurface,parameters); 
-	  }
+          }
 
-	}
+        }
       }
       
     }
@@ -7393,7 +7393,7 @@ update( MappingInformation & mapInfo )
 EntityTag & 
 UnstructuredMapping::
 addTag( const UnstructuredMapping::EntityTypeEnum entityType, const int entityIndex, const std::string tagName,
-	const void *tagData, const bool copyTag, const int tagSize )
+        const void *tagData, const bool copyTag, const int tagSize )
 //===========================================================================
 /// \brief  
 ///     add an EntityTag to a specific entity in the mesh
@@ -7424,7 +7424,7 @@ addTag( const UnstructuredMapping::EntityTypeEnum entityType, const int entityIn
 int 
 UnstructuredMapping::
 deleteTag( const UnstructuredMapping::EntityTypeEnum entityType, const int entityIndex, 
-	   const EntityTag &tagToDelete )
+           const EntityTag &tagToDelete )
 //===========================================================================
 /// \brief  
 ///     delete an EntityTag from the mesh
@@ -7441,7 +7441,7 @@ deleteTag( const UnstructuredMapping::EntityTypeEnum entityType, const int entit
 int 
 UnstructuredMapping::
 deleteTag( const UnstructuredMapping::EntityTypeEnum entityType, const int entityIndex, 
-	   const std::string tagToDelete )
+           const std::string tagToDelete )
 //===========================================================================
 /// \brief  
 ///     delete an EntityTag from the mesh
@@ -7453,22 +7453,22 @@ deleteTag( const UnstructuredMapping::EntityTypeEnum entityType, const int entit
 {
 
   //  for ( entity_tag_iterator i=entity_tag_begin(entityType, entityIndex); 
-  //	i!=entity_tag_end(entityType, entityIndex); i++ )
+  //    i!=entity_tag_end(entityType, entityIndex); i++ )
   
   entity_tag_iterator i=entity_tag_begin(entityType, entityIndex);
   while ( i!=entity_tag_end(entityType,entityIndex) )
     {
       if ( (*i)->getName() == tagToDelete )
-	{
-	  IDTuple ID(entityType, entityIndex);
-	  if ( maintainsTagEntities && tagEntities[tagToDelete].size()>0 )
-	    tagEntities[tagToDelete].erase(std::find(tagEntities[tagToDelete].begin(), tagEntities[tagToDelete].end(),ID));
+        {
+          IDTuple ID(entityType, entityIndex);
+          if ( maintainsTagEntities && tagEntities[tagToDelete].size()>0 )
+            tagEntities[tagToDelete].erase(std::find(tagEntities[tagToDelete].begin(), tagEntities[tagToDelete].end(),ID));
 
-	  delete *i;
-	  *i=NULL;
-	  entityTags[ID].erase(i);
-	  return 0;
-	}
+          delete *i;
+          *i=NULL;
+          entityTags[ID].erase(i);
+          return 0;
+        }
       i++;
     }
   // error, could not find the tag
@@ -7489,7 +7489,7 @@ hasTag( const UnstructuredMapping::EntityTypeEnum entityType, const int entityIn
 {
   // kkc what was I thinking?  return bool(entityTags[IDTuple(entityType,entityIndex)].size());
   for ( entity_tag_iterator i=entity_tag_begin(entityType, entityIndex);
-	i != entity_tag_end(entityType, entityIndex); i++ )
+        i != entity_tag_end(entityType, entityIndex); i++ )
     if ( (*i)->getName()== tag )
       return true;
 
@@ -7499,7 +7499,7 @@ hasTag( const UnstructuredMapping::EntityTypeEnum entityType, const int entityIn
 EntityTag &
 UnstructuredMapping::
 getTag( const UnstructuredMapping::EntityTypeEnum entityType, 
-	const int entityIndex, const std::string tagName)
+        const int entityIndex, const std::string tagName)
 //===========================================================================
 /// \brief  
 ///     obtain a reference to a tag on a specific entity
@@ -7511,7 +7511,7 @@ getTag( const UnstructuredMapping::EntityTypeEnum entityType,
 //===========================================================================
 {
   for ( entity_tag_iterator i=entity_tag_begin(entityType, entityIndex);
-	i != entity_tag_end(entityType, entityIndex); i++ )
+        i != entity_tag_end(entityType, entityIndex); i++ )
     if ( (*i)->getName()== tagName )
       return **i;
   
@@ -7522,7 +7522,7 @@ getTag( const UnstructuredMapping::EntityTypeEnum entityType,
 void * 
 UnstructuredMapping::
 getTagData( const UnstructuredMapping::EntityTypeEnum entityType, const int entityIndex, 
-	    const std::string tag )
+            const std::string tag )
 //===========================================================================
 /// \brief  
 ///     obtain the the data in a tag
@@ -7541,8 +7541,8 @@ getTagData( const UnstructuredMapping::EntityTypeEnum entityType, const int enti
 int 
 UnstructuredMapping::
 setTagData( const UnstructuredMapping::EntityTypeEnum entityType, const int entityIndex, 
-	    const std::string tagName, 
-	    const void *data, const bool copyData, const int tagSize )
+            const std::string tagName, 
+            const void *data, const bool copyData, const int tagSize )
 //===========================================================================
 /// \brief  
 ///     set the data in an existing tag
@@ -7577,13 +7577,13 @@ maintainTagToEntityMap( bool v )
   if ( v )
     {
       if ( !maintainsTagEntities )
-	{
-	  // build the mapping from tags to thier entites
-	  for ( std::map<IDTuple, std::list<EntityTag*>, std::less<IDTuple> >::iterator i=entityTags.begin();
-		i!=entityTags.end(); i++ )
-	    for ( entity_tag_iterator tag=i->second.begin(); tag!=i->second.end(); tag++ )
-	      tagEntities[(*tag)->getName()].push_back(i->first);
-	}
+        {
+          // build the mapping from tags to thier entites
+          for ( std::map<IDTuple, std::list<EntityTag*>, std::less<IDTuple> >::iterator i=entityTags.begin();
+                i!=entityTags.end(); i++ )
+            for ( entity_tag_iterator tag=i->second.begin(); tag!=i->second.end(); tag++ )
+              tagEntities[(*tag)->getName()].push_back(i->first);
+        }
     }
   else
     if ( maintainsTagEntities ) // destroy the mapping
@@ -7639,16 +7639,16 @@ entitiesAreEquivalent(EntityTypeEnum type, int entity, ArraySimple<int> &vertice
   for ( int v=1; v<nV; v++ )
     {
       if ( entIdx(entity,v)<minV1 )
-	{
-	  minV1 = entIdx(entity,v);
-	  minV1Idx = v;
-	}
+        {
+          minV1 = entIdx(entity,v);
+          minV1Idx = v;
+        }
 
       if ( vertices(v)<minV2 )
-	{
-	  minV2 = vertices(v);
-	  minV2Idx = v;
-	}
+        {
+          minV2 = vertices(v);
+          minV2Idx = v;
+        }
     }
    
   // FALSE : minimum vertex index does not match
@@ -7664,7 +7664,7 @@ entitiesAreEquivalent(EntityTypeEnum type, int entity, ArraySimple<int> &vertice
     {
       matches = true;
       for ( int v=0; v<nV && matches; v++ )
-	matches = entIdx(entity, (minV1Idx+v)%nV)==vertices((nV+minV2Idx-v)%nV);
+        matches = entIdx(entity, (minV1Idx+v)%nV)==vertices((nV+minV2Idx-v)%nV);
     }
 
   return matches;
@@ -7726,7 +7726,7 @@ setBC(EntityTypeEnum type, int entity, int bc)
     {
       deleteTag(type,entity,bcs);
       if ( entityMasks[type] )
-	(*entityMasks[type])(entity) &= BCEntity;
+        (*entityMasks[type])(entity) &= BCEntity;
     }
 }
 
@@ -7791,78 +7791,78 @@ buildEntity(EntityTypeEnum type, bool rebuild /*=false*/, bool keepDownward /*=t
     {
       // later we may allow construction using connectivity info
       if ( (!entities[Face]) && (!entities[Region]) )
-	return false;
+        return false;
       
       deleteConnectivity(Edge);
       entities[Edge] = new intArray;
 
       int nedges=0;
       if ( entities[Region] )
-	{
-	  int mv = maxVerticesInEntity(Region);
-	  nedges = constructEdgeEntityFromEntity(*entities[Edge], downward, adjacencyOrientation[Region][Edge], 
-						 upwardIDX, upwardOffset, adjacencyOrientation[Vertex][Edge],
-						 *entities[Region], size(Region), mv, size(Vertex)-1, int(Region));
+        {
+          int mv = maxVerticesInEntity(Region);
+          nedges = constructEdgeEntityFromEntity(*entities[Edge], downward, adjacencyOrientation[Region][Edge], 
+                                                 upwardIDX, upwardOffset, adjacencyOrientation[Vertex][Edge],
+                                                 *entities[Region], size(Region), mv, size(Vertex)-1, int(Region));
 
-	  if ( keepDownward )
-	    {
-	      indexLists[Region][Edge] = new intArray;;
-	      indexLists[Region][Edge]->reference(downward);
-	    }
-	  else
-	    {
-	      delete [] adjacencyOrientation[Region][Edge];
-	      adjacencyOrientation[Region][Edge] = 0;
-	    }
+          if ( keepDownward )
+            {
+              indexLists[Region][Edge] = new intArray;;
+              indexLists[Region][Edge]->reference(downward);
+            }
+          else
+            {
+              delete [] adjacencyOrientation[Region][Edge];
+              adjacencyOrientation[Region][Edge] = 0;
+            }
 
-	  if ( keepUpward )
-	    {
-	      indexLists[Vertex][Edge] = new intArray;
-	      upwardOffsets[Vertex][Edge] = new intArray;
-	      
-	      indexLists[Vertex][Edge]->reference(upwardIDX);
-	      upwardOffsets[Vertex][Edge]->reference(upwardOffset);
-	    }
-	  else
-	    {
-	      delete [] adjacencyOrientation[Vertex][Edge];
-	      adjacencyOrientation[Vertex][Edge] = 0;
-	    }
+          if ( keepUpward )
+            {
+              indexLists[Vertex][Edge] = new intArray;
+              upwardOffsets[Vertex][Edge] = new intArray;
+              
+              indexLists[Vertex][Edge]->reference(upwardIDX);
+              upwardOffsets[Vertex][Edge]->reference(upwardOffset);
+            }
+          else
+            {
+              delete [] adjacencyOrientation[Vertex][Edge];
+              adjacencyOrientation[Vertex][Edge] = 0;
+            }
 
-	}
+        }
       else
-	{
-	  int mv = maxVerticesInEntity(Face);
-	  nedges = constructEdgeEntityFromEntity(*entities[Edge], downward, adjacencyOrientation[Face][Edge], 
-						 upwardIDX, upwardOffset, adjacencyOrientation[Vertex][Edge],
-						 *entities[Face], size(Face), mv, size(Vertex)-1,int(Face));
+        {
+          int mv = maxVerticesInEntity(Face);
+          nedges = constructEdgeEntityFromEntity(*entities[Edge], downward, adjacencyOrientation[Face][Edge], 
+                                                 upwardIDX, upwardOffset, adjacencyOrientation[Vertex][Edge],
+                                                 *entities[Face], size(Face), mv, size(Vertex)-1,int(Face));
 
-	  if ( keepDownward )
-	    {
-	      indexLists[Face][Edge] = new intArray;;
-	      indexLists[Face][Edge]->reference(downward);
-	    }
-	  else
-	    {
-	      delete [] adjacencyOrientation[Face][Edge];
-	      adjacencyOrientation[Face][Edge] = 0;
-	    }
+          if ( keepDownward )
+            {
+              indexLists[Face][Edge] = new intArray;;
+              indexLists[Face][Edge]->reference(downward);
+            }
+          else
+            {
+              delete [] adjacencyOrientation[Face][Edge];
+              adjacencyOrientation[Face][Edge] = 0;
+            }
 
-	  if ( keepUpward )
-	    {
-	      indexLists[Vertex][Edge] = new intArray;
-	      upwardOffsets[Vertex][Edge] = new intArray;
-	      
-	      indexLists[Vertex][Edge]->reference(upwardIDX);
-	      upwardOffsets[Vertex][Edge]->reference(upwardOffset);
-	    }
-	  else
-	    {
-	      delete [] adjacencyOrientation[Vertex][Edge];
-	      adjacencyOrientation[Vertex][Edge] = 0;
-	    }
+          if ( keepUpward )
+            {
+              indexLists[Vertex][Edge] = new intArray;
+              upwardOffsets[Vertex][Edge] = new intArray;
+              
+              indexLists[Vertex][Edge]->reference(upwardIDX);
+              upwardOffsets[Vertex][Edge]->reference(upwardOffset);
+            }
+          else
+            {
+              delete [] adjacencyOrientation[Vertex][Edge];
+              adjacencyOrientation[Vertex][Edge] = 0;
+            }
 
-	}
+        }
 
    
       entityCapacity[Edge] = entitySize[Edge] = nedges;
@@ -7870,32 +7870,32 @@ buildEntity(EntityTypeEnum type, bool rebuild /*=false*/, bool keepDownward /*=t
 
       // vertices do have an "orientation" relative to thier edges, the lowest vertex index is +ive
       if ( adjacencyOrientation[Edge][Vertex]!=0 )
-	delete [] adjacencyOrientation[Edge][Vertex];
+        delete [] adjacencyOrientation[Edge][Vertex];
       
       adjacencyOrientation[Edge][Vertex] = new char[2*capacity(Edge)];
       for ( int e=0; e<size(Edge); e++ )
-	{
-	  if ( (*entities[Edge])(e,0)<(*entities[Edge])(e,1) )
-	    {
-	      (adjacencyOrientation[Edge][Vertex])[e]=0x1;
-	      (adjacencyOrientation[Edge][Vertex])[e+size(Edge)]=0x0;
-	    }
-	  else
-	    {
-	      (adjacencyOrientation[Edge][Vertex])[e]=0x0;
-	      (adjacencyOrientation[Edge][Vertex])[e+size(Edge)]=0x1;
-	    }
-	}
-	  
+        {
+          if ( (*entities[Edge])(e,0)<(*entities[Edge])(e,1) )
+            {
+              (adjacencyOrientation[Edge][Vertex])[e]=0x1;
+              (adjacencyOrientation[Edge][Vertex])[e+size(Edge)]=0x0;
+            }
+          else
+            {
+              (adjacencyOrientation[Edge][Vertex])[e]=0x0;
+              (adjacencyOrientation[Edge][Vertex])[e+size(Edge)]=0x1;
+            }
+        }
+          
 
       // link to the old connectivity
       if ( !edge.getLength(0) )
-	edge.reference(*entities[Edge]);
+        edge.reference(*entities[Edge]);
 
       // *wdh* 040221 --- This next line was causing problems but is now fixed in setNodesAndConnectivity
       if ( !face.getLength(0) )
-	if ( domainDimension==2 )
-	  face.reference(edge);
+        if ( domainDimension==2 )
+          face.reference(edge);
 
       break;
     }
@@ -7908,40 +7908,40 @@ buildEntity(EntityTypeEnum type, bool rebuild /*=false*/, bool keepDownward /*=t
       entities[Face] = new intArray;
 
       int nfaces = constructFaceEntityFromRegion(*entities[Face], downward, adjacencyOrientation[Region][Face], 
-						 upwardIDX, upwardOffset, adjacencyOrientation[Face][Region],
-						 *entities[Region], size(Region), maxNumberOfNodesPerFace, size(Vertex)-1);
+                                                 upwardIDX, upwardOffset, adjacencyOrientation[Face][Region],
+                                                 *entities[Region], size(Region), maxNumberOfNodesPerFace, size(Vertex)-1);
 
       entityCapacity[Face] = entitySize[Face] = nfaces;
       entityCapacity[Face] = entities[Face]->getLength(0);
 
       if ( keepDownward )
-	{
-	  indexLists[Region][Face] = new intArray;
-	  indexLists[Region][Face]->reference(downward);
-	}
+        {
+          indexLists[Region][Face] = new intArray;
+          indexLists[Region][Face]->reference(downward);
+        }
       else
-	{
-	  delete [] adjacencyOrientation[Region][Face];
-	  adjacencyOrientation[Region][Face] = 0;
-	}
+        {
+          delete [] adjacencyOrientation[Region][Face];
+          adjacencyOrientation[Region][Face] = 0;
+        }
 
       if ( keepUpward )
-	{
-	  indexLists[Face][Region] = new intArray;
-	  upwardOffsets[Face][Region] = new intArray;
-	  
-	  indexLists[Face][Region]->reference(upwardIDX);
-	  upwardOffsets[Face][Region]->reference(upwardOffset);
-	}
+        {
+          indexLists[Face][Region] = new intArray;
+          upwardOffsets[Face][Region] = new intArray;
+          
+          indexLists[Face][Region]->reference(upwardIDX);
+          upwardOffsets[Face][Region]->reference(upwardOffset);
+        }
       else
-	{
-	  delete [] adjacencyOrientation[Face][Region];
-	  adjacencyOrientation[Face][Region] = 0;
-	}
+        {
+          delete [] adjacencyOrientation[Face][Region];
+          adjacencyOrientation[Face][Region] = 0;
+        }
 
       // link to the old connectivity
       if ( !face.getLength(0) ) 
-	face.reference(*entities[Face]);
+        face.reference(*entities[Face]);
 
       break;
     }
@@ -7959,7 +7959,7 @@ buildEntity(EntityTypeEnum type, bool rebuild /*=false*/, bool keepDownward /*=t
       entityMasks[type]->resize(capacity(type));
     else
       {
-	entityMasks[type] = new intArray(capacity(type));
+        entityMasks[type] = new intArray(capacity(type));
       }
     *entityMasks[type] = 0;
   }
@@ -8025,7 +8025,7 @@ buildConnectivity(EntityTypeEnum from, EntityTypeEnum to, bool rebuild)
       if ( !entities[to] ) return false; // we don't have enough information
 
       if ( !indexLists[to][from] )
-	buildConnectivity(to,from,true);
+        buildConnectivity(to,from,true);
 
       indexLists[from][to] = new intArray;
       upwardOffsets[from][to] = new intArray;
@@ -8033,28 +8033,28 @@ buildConnectivity(EntityTypeEnum from, EntityTypeEnum to, bool rebuild)
       intArray &downward = from==Vertex ? *entities[to] : *indexLists[to][from];
 
       constructUpwardAdjacenciesFromDownward(*indexLists[from][to], *upwardOffsets[from][to], adjacencyOrientation[from][to], 
-					     downward, adjacencyOrientation[to][from], size(from));
+                                             downward, adjacencyOrientation[to][from], size(from));
 
       if ( false && from==Edge )
-	{
-	  UnstructuredMappingIterator e,e_end;
-	  UnstructuredMappingAdjacencyIterator ef,ef_end,fe,fe_end;
-	  e_end = end(Edge);
-	  for ( e=begin(Edge); e!=e_end; e++ )
-	    {
-	      cout<<"Edge : "<<*e<<endl;
-	      ef_end = adjacency_end(e,Face);
-	      for ( ef=adjacency_begin(e,Face); ef!=ef_end; ef++ )
-		{
-		  cout<<"  "<<*ef<<"  orient = "<<ef.orientation()<<endl;
-		  cout<<"  reverse : ";
-		  fe_end = adjacency_end(ef,Edge);
-		  for ( fe=adjacency_begin(ef,Edge); fe!=fe_end; fe++ )
-		    if ( *fe==*e ) cout<<"  "<<*fe<<" orient="<<fe.orientation();
-		  cout<<endl;
-		}
-	    }
-	}
+        {
+          UnstructuredMappingIterator e,e_end;
+          UnstructuredMappingAdjacencyIterator ef,ef_end,fe,fe_end;
+          e_end = end(Edge);
+          for ( e=begin(Edge); e!=e_end; e++ )
+            {
+              cout<<"Edge : "<<*e<<endl;
+              ef_end = adjacency_end(e,Face);
+              for ( ef=adjacency_begin(e,Face); ef!=ef_end; ef++ )
+                {
+                  cout<<"  "<<*ef<<"  orient = "<<ef.orientation()<<endl;
+                  cout<<"  reverse : ";
+                  fe_end = adjacency_end(ef,Edge);
+                  for ( fe=adjacency_begin(ef,Edge); fe!=fe_end; fe++ )
+                    if ( *fe==*e ) cout<<"  "<<*fe<<" orient="<<fe.orientation();
+                  cout<<endl;
+                }
+            }
+        }
 
       return true;
     }
@@ -8075,53 +8075,53 @@ buildConnectivity(EntityTypeEnum from, EntityTypeEnum to, bool rebuild)
       if ( !entities[Face] || rebuild ) buildEntity(Face, rebuild, true);
       
       if ( to==Edge )
-	{
-	  if ( entities[Region] )
-	    {
-	      intArray dumA, dumA2;
-	      char *dumC=0;
+        {
+          if ( entities[Region] )
+            {
+              intArray dumA, dumA2;
+              char *dumC=0;
 
-	      indexLists[from][to] = new intArray;
-	      int ok =constructFace2EdgeFromRegions(*indexLists[from][to], adjacencyOrientation[from][to],
-						    dumA, dumA2, dumC, *indexLists[Region][Edge], adjacencyOrientation[Region][Edge],
-						    *indexLists[Region][Face],
-						    *entities[Face], *entities[Edge], *entities[Region], size(Region), size(Face), size(Vertex));
-	      assert(ok==0);
-	      if ( dumC ) delete [] dumC;
+              indexLists[from][to] = new intArray;
+              int ok =constructFace2EdgeFromRegions(*indexLists[from][to], adjacencyOrientation[from][to],
+                                                    dumA, dumA2, dumC, *indexLists[Region][Edge], adjacencyOrientation[Region][Edge],
+                                                    *indexLists[Region][Face],
+                                                    *entities[Face], *entities[Edge], *entities[Region], size(Region), size(Face), size(Vertex));
+              assert(ok==0);
+              if ( dumC ) delete [] dumC;
 
-	    }
-	  else
-	    buildEntity(Edge, true, true, true);
-	}
+            }
+          else
+            buildEntity(Edge, true, true, true);
+        }
       // XXX else add generic downward builder here!
       break;
     }
   case Region:
     {
       if ( !entities[Region] )
-	return false;
+        return false;
 
       switch(to) {
       case Vertex:
-	{
-	  /// we always have this if there are Regions
-	  break;
-	}
+        {
+          /// we always have this if there are Regions
+          break;
+        }
       case Edge:
-	{
-	  if ( !entities[Edge] || rebuild ) buildEntity(Edge, rebuild, true);
+        {
+          if ( !entities[Edge] || rebuild ) buildEntity(Edge, rebuild, true);
 
-	  // XXX else add generic downward builder here!
-	  break;
-	}
+          // XXX else add generic downward builder here!
+          break;
+        }
       case Face:
-	{
-	  if ( !entities[Face] || rebuild ) buildEntity(Face, rebuild, true);
-	  // XXX else add generic downward builder here!
-	  break;
-	}
+        {
+          if ( !entities[Face] || rebuild ) buildEntity(Face, rebuild, true);
+          // XXX else add generic downward builder here!
+          break;
+        }
       default:
-	return false;
+        return false;
       }
 
       break;
@@ -8140,7 +8140,7 @@ buildConnectivity(EntityTypeEnum from, EntityTypeEnum to, bool rebuild)
 bool 
 UnstructuredMapping::
 specifyConnectivity(const EntityTypeEnum from, const EntityTypeEnum to, const intArray &index, 
-		    const char *orientation, const intArray &offset)
+                    const char *orientation, const intArray &offset)
 {
   deleteConnectivity(from,to);
 
@@ -8200,17 +8200,17 @@ deleteConnectivity(EntityTypeEnum type)
   for ( EntityTypeEnum et=Vertex; et<=Region; et=EntityTypeEnum(++i_et))
     {
       if ( et<type )
-	{
-	  if (indexLists[type][et]) delete indexLists[type][et];
-	  indexLists[type][et] = 0;
-	}
+        {
+          if (indexLists[type][et]) delete indexLists[type][et];
+          indexLists[type][et] = 0;
+        }
       else
-	{
-	  if (indexLists[type][et]) delete indexLists[type][et];
-	  if (upwardOffsets[type][et]) delete upwardOffsets[type][et];
-	  
-	  indexLists[type][et] = upwardOffsets[type][et] = 0;
-	}
+        {
+          if (indexLists[type][et]) delete indexLists[type][et];
+          if (upwardOffsets[type][et]) delete upwardOffsets[type][et];
+          
+          indexLists[type][et] = upwardOffsets[type][et] = 0;
+        }
 
       if ( adjacencyOrientation[type][et] ) delete [] adjacencyOrientation[type][et];
       adjacencyOrientation[type][et] = 0;
@@ -8219,14 +8219,14 @@ deleteConnectivity(EntityTypeEnum type)
   if ( entities[type] ) 
     {
       for ( int e=0; e<size(type); e++ )
-	{
-	  entity_tag_iterator tg=entity_tag_begin(type,e);
-	  while( tg!=entity_tag_end(type,e) )
-	    {
-	      deleteTag(type,e,**tg);
-	      tg = entity_tag_begin(type,e);
-	    }
-	}
+        {
+          entity_tag_iterator tg=entity_tag_begin(type,e);
+          while( tg!=entity_tag_end(type,e) )
+            {
+              deleteTag(type,e,**tg);
+              tg = entity_tag_begin(type,e);
+            }
+        }
 
       delete entities[type];
       entities[type] = 0;
@@ -8254,7 +8254,7 @@ deleteConnectivity()
   maintainTagToEntityMap(false);
   
   for ( int eti=int(UnstructuredMapping::Vertex); 
-	eti<(UnstructuredMapping::Mesh); eti++ )
+        eti<(UnstructuredMapping::Mesh); eti++ )
     {
       
       UnstructuredMapping::EntityTypeEnum et=UnstructuredMapping::EntityTypeEnum(eti);
@@ -8262,15 +8262,15 @@ deleteConnectivity()
       
      if ( size((EntityTypeEnum)eti) )
        for ( it = begin(et); it!=end(et); it++ )
-	 {
-	   entity_tag_iterator tagit=entity_tag_begin(et,*it);
-	   while ( tagit!=entity_tag_end(et,*it) )
-	     {
-	       entity_tag_iterator tag2delete = tagit;
-	       deleteTag(et, *it, (*tag2delete)->getName());
-	       tagit = entity_tag_begin(et,*it);
-	     }
-	 }
+         {
+           entity_tag_iterator tagit=entity_tag_begin(et,*it);
+           while ( tagit!=entity_tag_end(et,*it) )
+             {
+               entity_tag_iterator tag2delete = tagit;
+               deleteTag(et, *it, (*tag2delete)->getName());
+               tagit = entity_tag_begin(et,*it);
+             }
+         }
     }
   
   entity_tag_iterator tagit=entity_tag_begin(Mesh,0);
@@ -8293,7 +8293,7 @@ expandGhostBoundary( int bc /*=-1*/ )
   EntityTypeEnum boundingEntityType = EntityTypeEnum(domainDimension-1);
 
   if ( !size(boundingEntityType) ) buildEntity(boundingEntityType);
-					     
+                                             
   //    (*entities[domainDimension]).display("entities before ghost");
 
   maintainTagToEntityMap(true);
@@ -8327,7 +8327,7 @@ expandGhostBoundary( int bc /*=-1*/ )
   if ( !nNewCells )
     {
       cout<<"ERROR : UnstructuredMapping::expandGhostBoundaries : there are no "<<
-	EntityTypeStrings[int(boundingEntityType)]<<" entities bounding the mesh "<<endl;
+        EntityTypeStrings[int(boundingEntityType)]<<" entities bounding the mesh "<<endl;
       return;
     }
   
@@ -8352,148 +8352,148 @@ expandGhostBoundary( int bc /*=-1*/ )
   tag_entity_iterator tag_bdy_end = tag_entity_end(bdyEntTag);
   int nadded = 0;
   for ( tag_entity_iterator bdy=tag_entity_begin(bdyEntTag);
-	bdy!=tag_bdy_end; bdy++ )
+        bdy!=tag_bdy_end; bdy++ )
     {
       bool okToExtrude = true;
       if ( bc != -1 )
-	{
-	  vert_end = adjacency_end(bdy->et, bdy->e, Vertex);
-	  for ( vert=adjacency_begin(bdy->et, bdy->e, Vertex); okToExtrude && vert!=vert_end; vert++ )
-	    okToExtrude = getBC(Vertex,*vert)==bc;
-	}
+        {
+          vert_end = adjacency_end(bdy->et, bdy->e, Vertex);
+          for ( vert=adjacency_begin(bdy->et, bdy->e, Vertex); okToExtrude && vert!=vert_end; vert++ )
+            okToExtrude = getBC(Vertex,*vert)==bc;
+        }
 
       // first compute the normal and average edge length
 
       // get the sign for the normal from the adjacency information
       if ( okToExtrude )
-	{
-	  UnstructuredMappingAdjacencyIterator adj = adjacency_begin(bdy->et, bdy->e, EntityTypeEnum(domainDimension));
-	  int signForNormal = adj.orientation();
+        {
+          UnstructuredMappingAdjacencyIterator adj = adjacency_begin(bdy->et, bdy->e, EntityTypeEnum(domainDimension));
+          int signForNormal = adj.orientation();
 
-	  normal = 0;
-	  real step = 1;
-	  int nv=0;
-	  real fac=.5;
-	  if ( rangeDimension==2 )
-	    {
-	      const intArray &edg = getEntities(Edge);
-	      normal[0] = (node(edg(bdy->e,1),1)-node(edg(bdy->e,0),1));
-	      normal[1] = -(node(edg(bdy->e,1),0)-node(edg(bdy->e,0),0));
-	      step = fac*sqrt(ASmag2(normal));
-	      nv=2;
-	    }
-	  else if ( domainDimension==3 )
-	    {
-	      fac=.15;
-	      vert_end = adjacency_end(bdy->et, bdy->e, Vertex);
-	      ArraySimpleFixed<real,3,1,1,1> xc;
-	      xc = 0;
-	      nv = 0;
-	      for ( vert=adjacency_begin(bdy->et, bdy->e, Vertex); vert!=vert_end; vert++ )
-		{
-		  for ( int a=0; a<rangeDimension; a++ )
-		    fv[nv][a] = node(*vert,a);
-		  nv++;
-		}
+          normal = 0;
+          real step = 1;
+          int nv=0;
+          real fac=.5;
+          if ( rangeDimension==2 )
+            {
+              const intArray &edg = getEntities(Edge);
+              normal[0] = (node(edg(bdy->e,1),1)-node(edg(bdy->e,0),1));
+              normal[1] = -(node(edg(bdy->e,1),0)-node(edg(bdy->e,0),0));
+              step = fac*sqrt(ASmag2(normal));
+              nv=2;
+            }
+          else if ( domainDimension==3 )
+            {
+              fac=.15;
+              vert_end = adjacency_end(bdy->et, bdy->e, Vertex);
+              ArraySimpleFixed<real,3,1,1,1> xc;
+              xc = 0;
+              nv = 0;
+              for ( vert=adjacency_begin(bdy->et, bdy->e, Vertex); vert!=vert_end; vert++ )
+                {
+                  for ( int a=0; a<rangeDimension; a++ )
+                    fv[nv][a] = node(*vert,a);
+                  nv++;
+                }
 
-	      if ( nv==3 )
-		{
-		  normal = areaNormal3D(fv[0],fv[1],fv[2]);
-		}
-	      else
-		{
-		  normal = areaNormal3D(fv[0],fv[1],fv[2]);
+              if ( nv==3 )
+                {
+                  normal = areaNormal3D(fv[0],fv[1],fv[2]);
+                }
+              else
+                {
+                  normal = areaNormal3D(fv[0],fv[1],fv[2]);
 
-		  ArraySimpleFixed<real,3,1,1,1> n2 = areaNormal3D(fv[2],fv[3],fv[0]);
-		  for ( int a=0; a<rangeDimension; a++ )
-		    normal[a] = n2[a] + normal[a];
-		}
-	  
-	      step = fac*sqrt(sqrt(ASmag2(normal))/real(nv));
-	    }
-	  else if ( rangeDimension==3 && domainDimension==2 )
-	    {
-	      cout<<"ERROR : UnstructuredMapping::expandGhostBoundary : does not work for surfaces "<<endl;
-	    }
+                  ArraySimpleFixed<real,3,1,1,1> n2 = areaNormal3D(fv[2],fv[3],fv[0]);
+                  for ( int a=0; a<rangeDimension; a++ )
+                    normal[a] = n2[a] + normal[a];
+                }
+          
+              step = fac*sqrt(sqrt(ASmag2(normal))/real(nv));
+            }
+          else if ( rangeDimension==3 && domainDimension==2 )
+            {
+              cout<<"ERROR : UnstructuredMapping::expandGhostBoundary : does not work for surfaces "<<endl;
+            }
 
-	  real nmag = sqrt(ASmag2(normal));
-	  
-	  for ( int a=0; a<rangeDimension; a++ )
-	    normal[a] *= signForNormal*step/nmag;
+          real nmag = sqrt(ASmag2(normal));
+          
+          for ( int a=0; a<rangeDimension; a++ )
+            normal[a] *= signForNormal*step/nmag;
 
-	  // make the entity and vertices 
-	  newEnt=-1;
-	  vert_end = adjacency_end(bdy->et, bdy->e, Vertex);
-	  int n=0;
-	  for ( vert=adjacency_begin(bdy->et, bdy->e, Vertex); vert!=vert_end; vert++ )
-	    {
-	      if ( hasTag(Vertex,*vert,extrudedVertexTag) )
-		{
-		  IDForVertex = getTagData(Vertex,*vert,extrudedVertexTag);
-		  for ( int a=0; a<rangeDimension; a++ )
-		    node(intptr_t(IDForVertex),a) = node(intptr_t(IDForVertex),a) + normal[a];
+          // make the entity and vertices 
+          newEnt=-1;
+          vert_end = adjacency_end(bdy->et, bdy->e, Vertex);
+          int n=0;
+          for ( vert=adjacency_begin(bdy->et, bdy->e, Vertex); vert!=vert_end; vert++ )
+            {
+              if ( hasTag(Vertex,*vert,extrudedVertexTag) )
+                {
+                  IDForVertex = getTagData(Vertex,*vert,extrudedVertexTag);
+                  for ( int a=0; a<rangeDimension; a++ )
+                    node(intptr_t(IDForVertex),a) = node(intptr_t(IDForVertex),a) + normal[a];
 
-		  if ( bc!=-1 )
-		    setBC( Vertex, intptr_t(IDForVertex), bc );
-		}
-	      else
-		{
-		  if (rangeDimension==2)
-		    IDForVertex = (void*)addVertex(node(*vert,0)+normal[0],node(*vert,1)+normal[1]);
-		  else
-		    IDForVertex = (void*)addVertex(node(*vert,0)+normal[0],node(*vert,1)+normal[1],node(*vert,2)+normal[2]);
+                  if ( bc!=-1 )
+                    setBC( Vertex, intptr_t(IDForVertex), bc );
+                }
+              else
+                {
+                  if (rangeDimension==2)
+                    IDForVertex = (void*)addVertex(node(*vert,0)+normal[0],node(*vert,1)+normal[1]);
+                  else
+                    IDForVertex = (void*)addVertex(node(*vert,0)+normal[0],node(*vert,1)+normal[1],node(*vert,2)+normal[2]);
 
-		  //		  cout<<"ADDED VERTEX "<<(int)IDForVertex<<endl;
-		  addTag(Vertex,*vert,extrudedVertexTag,IDForVertex);
-		  setAsGhost(Vertex,(intptr_t)IDForVertex);
-		  addTag(Vertex,(intptr_t)IDForVertex,newBdyVertTag,0);
-		  //	      addTag(Vertex,(int)IDForVertex,"ghost "+bdyVertTag,0);
-		}
+                  //              cout<<"ADDED VERTEX "<<(int)IDForVertex<<endl;
+                  addTag(Vertex,*vert,extrudedVertexTag,IDForVertex);
+                  setAsGhost(Vertex,(intptr_t)IDForVertex);
+                  addTag(Vertex,(intptr_t)IDForVertex,newBdyVertTag,0);
+                  //          addTag(Vertex,(int)IDForVertex,"ghost "+bdyVertTag,0);
+                }
 
-	      //	  newEnt(n) = *vert;
-	      if ( signForNormal<0 )
-		{
-		  if ( domainDimension==2 )
-		    {
-		      newEnt(n) = *vert;
-		      newEnt(2*nv-1-n) = intptr_t(IDForVertex);
-		    }
-		  else
-		    {
-		      newEnt(n) = intptr_t(IDForVertex);
-		      newEnt(n+nv) = *vert;
-		      //		      newEnt((nv-n)%nv) = *vert;
-		      //		      newEnt(nv+(nv-n)%nv) = int(IDForVertex);
-		    }
-		}
-	      else
-		{
-	      
-		  if ( domainDimension==2 )
-		    {
-		      newEnt((nv-n+1)%nv) = *vert;
-		      newEnt(2*nv-1-(nv-n+1)%nv) = intptr_t(IDForVertex);
-		    }
-		  else
-		    {
-		      newEnt(n) = *vert;
-		      newEnt(n+nv) = intptr_t(IDForVertex);
-		    }
-		}
-	  
-	      n++;
-	    }
+              //          newEnt(n) = *vert;
+              if ( signForNormal<0 )
+                {
+                  if ( domainDimension==2 )
+                    {
+                      newEnt(n) = *vert;
+                      newEnt(2*nv-1-n) = intptr_t(IDForVertex);
+                    }
+                  else
+                    {
+                      newEnt(n) = intptr_t(IDForVertex);
+                      newEnt(n+nv) = *vert;
+                      //                      newEnt((nv-n)%nv) = *vert;
+                      //                      newEnt(nv+(nv-n)%nv) = int(IDForVertex);
+                    }
+                }
+              else
+                {
+              
+                  if ( domainDimension==2 )
+                    {
+                      newEnt((nv-n+1)%nv) = *vert;
+                      newEnt(2*nv-1-(nv-n+1)%nv) = intptr_t(IDForVertex);
+                    }
+                  else
+                    {
+                      newEnt(n) = *vert;
+                      newEnt(n+nv) = intptr_t(IDForVertex);
+                    }
+                }
+          
+              n++;
+            }
 
-	  int newEntIndex = addEntity(EntityTypeEnum(domainDimension), newEnt);
-	  //cout<<"new entity has id "<<newEntIndex<<endl<<newEnt<<endl;
-	  nadded++;
-	  setAsGhost(EntityTypeEnum(domainDimension), newEntIndex);
+          int newEntIndex = addEntity(EntityTypeEnum(domainDimension), newEnt);
+          //cout<<"new entity has id "<<newEntIndex<<endl<<newEnt<<endl;
+          nadded++;
+          setAsGhost(EntityTypeEnum(domainDimension), newEntIndex);
 
-	  //      addTag(EntityTypeEnum(domainDimension), newEntIndex, std::string("ghost ")+entTag,0);
-	  
-	  //      cout<<"size of entity storage "<<(*entities[domainDimension]).getLength(0)<<endl;;
+          //      addTag(EntityTypeEnum(domainDimension), newEntIndex, std::string("ghost ")+entTag,0);
+          
+          //      cout<<"size of entity storage "<<(*entities[domainDimension]).getLength(0)<<endl;;
       
-	}
+        }
     }
   //    (*entities[domainDimension]).display("entities");
   cout<<"NENTS ADDED = "<<nadded<<endl;
@@ -8501,17 +8501,17 @@ expandGhostBoundary( int bc /*=-1*/ )
     {
       int oldSize = tags.getLength(0);
       if ( oldSize )
-	{
-	  tags.resize( oldSize + nadded ); 
-	  Range R(oldSize,oldSize+nadded-1);
-	  tags(R) = -1;
-	}
+        {
+          tags.resize( oldSize + nadded ); 
+          Range R(oldSize,oldSize+nadded-1);
+          tags(R) = -1;
+        }
       else
-	{
-	  // *wdh* 060529 tags.resize( size(domainDimension) );
-	  tags.resize( size(EntityTypeEnum(domainDimension)) );
-	  tags = -1;
-	}
+        {
+          // *wdh* 060529 tags.resize( size(domainDimension) );
+          tags.resize( size(EntityTypeEnum(domainDimension)) );
+          tags = -1;
+        }
     }
 
   // for now, force a rebuild of the connectivity when needed next (so, what happens to the tags...)
@@ -8523,7 +8523,7 @@ expandGhostBoundary( int bc /*=-1*/ )
       tag_entity_iterator ei = tag_entity_begin(tag);
 
       while( (ei=tag_entity_begin(tag)) != tag_entity_end(tag) )
-	if ( deleteTag(ei->et,ei->e,tag) ) abort();
+        if ( deleteTag(ei->et,ei->e,tag) ) abort();
       //      deleteConnectivity(EntityTypeEnum(e));
     }
 
@@ -8549,40 +8549,40 @@ expandGhostBoundary( int bc /*=-1*/ )
   tag_entity_iterator bdy_end = tag_entity_end("ghost "+tagPrefix+EntityTypeStrings[domainDimension].c_str());
   int nbdy=0;
   for ( tag_entity_iterator bdy=tag_entity_begin("ghost "+tagPrefix+EntityTypeStrings[domainDimension].c_str());
-	bdy!=bdy_end; bdy++ )
+        bdy!=bdy_end; bdy++ )
     {
       for ( int d=domainDimension-1; d>0; d-- )
-	{
-	  adj_end = adjacency_end(bdy->et, bdy->e,EntityTypeEnum(d));
-	  for ( adj=adjacency_begin(bdy->et, bdy->e,EntityTypeEnum(d));
-		adj!=adj_end;
-		adj++ )
-	    {
-	      bool isBdy=true;
-	      bool isGhost=false;
-	      vert_end = adjacency_end(EntityTypeEnum(d), *adj,Vertex);
-	      for ( vert=adjacency_begin(EntityTypeEnum(d), *adj,Vertex);
-		    vert!=vert_end;
-		    vert++ )
-		if ( hasTag(Vertex, *vert, "ghost "+bdyVertTag) )
-		  isGhost = true;
-		else
-		  isBdy = false;
+        {
+          adj_end = adjacency_end(bdy->et, bdy->e,EntityTypeEnum(d));
+          for ( adj=adjacency_begin(bdy->et, bdy->e,EntityTypeEnum(d));
+                adj!=adj_end;
+                adj++ )
+            {
+              bool isBdy=true;
+              bool isGhost=false;
+              vert_end = adjacency_end(EntityTypeEnum(d), *adj,Vertex);
+              for ( vert=adjacency_begin(EntityTypeEnum(d), *adj,Vertex);
+                    vert!=vert_end;
+                    vert++ )
+                if ( hasTag(Vertex, *vert, "ghost "+bdyVertTag) )
+                  isGhost = true;
+                else
+                  isBdy = false;
 
-	      if ( isGhost && !hasTag(EntityTypeEnum(d), *adj, std::string("Ghost ")+EntityTypeStrings[EntityTypeEnum(d)].c_str()) )
-		setAsGhost(EntityTypeEnum(d),*adj);
-	      
-	      if ( isBdy )
-		{	
-		  std::string tag = "ghost "+tagPrefix+EntityTypeStrings[d].c_str();
-		  if ( !hasTag(EntityTypeEnum(d), *adj, tag) )
-		    addTag(EntityTypeEnum(d), *adj, tag,0);
-		  nbdy++;
-		}
+              if ( isGhost && !hasTag(EntityTypeEnum(d), *adj, std::string("Ghost ")+EntityTypeStrings[EntityTypeEnum(d)].c_str()) )
+                setAsGhost(EntityTypeEnum(d),*adj);
+              
+              if ( isBdy )
+                {       
+                  std::string tag = "ghost "+tagPrefix+EntityTypeStrings[d].c_str();
+                  if ( !hasTag(EntityTypeEnum(d), *adj, tag) )
+                    addTag(EntityTypeEnum(d), *adj, tag,0);
+                  nbdy++;
+                }
 
-	      
-	    }
-	} 
+              
+            }
+        } 
     } 
 #endif
 
@@ -8601,24 +8601,24 @@ expandGhostBoundary( int bc /*=-1*/ )
       UnstructuredMappingAdjacencyIterator bit,bit_end;
       bit_end=adjacency_end(ei->et, ei->e, boundingEntityType);
       for ( bit=adjacency_begin(ei->et, ei->e, boundingEntityType); bit!=bit_end; bit++ )
-	{
-	  UnstructuredMappingAdjacencyIterator tmpi;
-	  tmpi = adjacency_begin(bit, EntityTypeEnum(domainDimension));
-	  int nadj = tmpi.nAdjacent();
+        {
+          UnstructuredMappingAdjacencyIterator tmpi;
+          tmpi = adjacency_begin(bit, EntityTypeEnum(domainDimension));
+          int nadj = tmpi.nAdjacent();
 
-// 	  cout<<"nadj = "<<nadj<<endl;
-// 	  while (tmpi!=adjacency_end(bit,EntityTypeEnum(domainDimension)))
-// 	    {
-// 	      cout<<"edge("<<*bit<<") face is "<<*tmpi<<endl;
-// 	      tmpi++;
-// 	    }
-	  if ( !hasTag(boundingEntityType, *bit, newBdyEntTag) && nadj==1 )
-	    {
-	      addTag(boundingEntityType,*bit,newBdyEntTag,0);
-	      //	      cout<<"shoul dhave added a "<<newBdyEntTag<<" at "<<*bit<<endl;
-	      nbdye++;
-	    }
-	}
+//        cout<<"nadj = "<<nadj<<endl;
+//        while (tmpi!=adjacency_end(bit,EntityTypeEnum(domainDimension)))
+//          {
+//            cout<<"edge("<<*bit<<") face is "<<*tmpi<<endl;
+//            tmpi++;
+//          }
+          if ( !hasTag(boundingEntityType, *bit, newBdyEntTag) && nadj==1 )
+            {
+              addTag(boundingEntityType,*bit,newBdyEntTag,0);
+              //              cout<<"shoul dhave added a "<<newBdyEntTag<<" at "<<*bit<<endl;
+              nbdye++;
+            }
+        }
     }
   cout<<"NEW BDY VERTS("<<newBdyVertTag<<") = "<<nbdyv<<endl;
   cout<<"NEW BDY ENTS("<<newBdyEntTag<<") = "<<nbdye<<" umap says "<<tagEntities[newBdyEntTag].size()<<endl;
@@ -8657,7 +8657,7 @@ reserve(EntityTypeEnum type, int amt)
   else
     {
       if ( !entities[type] )
-	entities[type] = new intArray;
+        entities[type] = new intArray;
 
       entities[int(type)]->resize(amt, maxVerticesInEntity(type));
       entityCapacity[int(type)] = entities[int(type)]->getLength(0);

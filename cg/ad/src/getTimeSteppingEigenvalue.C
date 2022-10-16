@@ -92,7 +92,7 @@ getTimeSteppingEigenvalue(MappedGrid & mg,
   {
     OV_ABORT(" Cgad::getTimeSteppingEigenvalue:ERROR:advectVar not created! ");
   }
-  realArray & advectVar = variableDiffusivity ? (*pAdvectVar)[grid] : Overture::nullRealDistributedArray(); 
+  realArray & advectVar = variableAdvection ? (*pAdvectVar)[grid] : Overture::nullRealDistributedArray(); 
   OV_GET_SERIAL_ARRAY_CONDITIONAL(real,advectVar,advectVarLocal,variableAdvection);
 
   const int orderOfAccuracy=parameters.dbase.get<int >("orderOfAccuracy");
@@ -168,6 +168,16 @@ getTimeSteppingEigenvalue(MappedGrid & mg,
         {
           if( variableAdvection )
           {
+            // RealArray t1(I1,I2,I3), t2(I1,I2,I3);
+            // ::display(advectVarLocal(I1,I2,I3,0),"advectVarLocal(I1,I2,I3,0)");
+            // ::display(advectVarLocal(I1,I2,I3,1),"advectVarLocal(I1,I2,I3,1)");
+
+            // t1 = advectVarLocal(I1,I2,I3,0)*RX(0,0);
+            // t2 = advectVarLocal(I1,I2,I3,1)*RX(0,1);
+            // ::display(t1,"t1");
+            // ::display(t2,"t2");
+            // t1 = t1 + t2;
+
             a1 = advectVarLocal(I1,I2,I3,0)*RX(0,0) + advectVarLocal(I1,I2,I3,1)*RX(0,1);
             b1 = advectVarLocal(I1,I2,I3,0)*RX(1,0) + advectVarLocal(I1,I2,I3,1)*RX(1,1);
           }

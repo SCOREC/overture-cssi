@@ -52,31 +52,39 @@ echo to terminal 0
 # 
 $grid="twoSquaresInterfacee1.order2.hdf"; $domain1="leftDomain"; $domain2="rightDomain"; 
 $tFinal=10.; $tPlot=.1; $show = " "; $debug=0; $cfl=.9; $ghost=0; $show=""; $dtMax=.1; 
-$solver="yale";  $go="halt"; $dtMax=.1; $coupled=1; $tz="poly"; $uMin=1; $uMax=-1; 
+$solver="yale";  $go="halt"; $dtMax=.1; $coupled=1; $tz="poly"; $uMin=1; $uMax=-1; $fx=2.; 
 $ncc=0; $mcc=1;  # for concentric cylinders
 $known="";   # [planeInterface|annulusInterface]
+$caseName="doubleRectangleDL1KL1DR1KR1"; 
 # $ts="fe";            # mp solver
 # $tsd="forward Euler"; $numberOfCorrections=0;  # domain solver
 $ts="pc"; $numberOfCorrections=1;
-$degreex1=2; $degreet1=2; $a1=0.; $b1=0.; 
-$degreex2=2; $degreet2=2; $a2=0.; $b2=0.; 
-$kappa1=.1; $kappa2=.1; 
-$ktc1=-1.; $ktc2=-1.;   # by default set ktc equal to kappa
-$itol=1.e-4; $iOmega=1.; $useNewInterfaceTransfer=0; $useChamp=0; 
+$degreex1=2; $degreet1=2; 
+$degreex2=2; $degreet2=2; 
+$kappa1=.1; $ktc1=-1.; $advx1=0.; $advy1=0.; $advz1=0.;
+$kappa2=.1; $ktc2=-1.; $advx2=0.; $advy2=0.; $advz2=0.;   # note: by default set ktc equal to kappa
+$implicitAdvection=1; # needed for BDF 
+$varCoeff=""; # radial 
+$itol=1.e-4; $iOmega=1.; $useNewInterfaceTransfer=0; $useChamp=0; $projectT=0; 
 $useMultiStage=0; # if =1 use new multistage algorithm and request data when needed
 $p1=1.; $p2=1.;   # Optimized champ parameters for domain1 and domain2
-$useNewStep=0; $bdfOrder=2;
+$useNewStep=0; $bdfOrder=2; $orderInTime=2; 
 #
 # ----------------------------- get command line arguments ---------------------------------------
-GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal, "bg=s"=>\$backGround,"known=s"=>\$known,\
+GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal, "bg=s"=>\$backGround,"known=s"=>\$known,"caseName=s"=>\$caseName,\
  "tp=f"=>\$tPlot, "solver=s"=>\$solver, "tz=s"=>\$tz,"degreex1=i"=>\$degreex1, "degreet1=i"=>\$degreet1,\
  "degreex2=i"=>\$degreex2, "degreet2=i"=>\$degreet2,"show=s"=>\$show,"ts=s"=>\$ts,"go=s"=>\$go,\
  "debug=i"=>\$debug,"nc=i"=> \$numberOfCorrections,"iOmega=f"=>\$iOmega,"noplot=s"=>\$noplot,"itol=f"=>\$itol,"iTol=f"=>\$itol,\
  "kappa1=f"=>\$kappa1,"kappa2=f"=>\$kappa2,"ktc1=f"=>\$ktc1,"ktc2=f"=>\$ktc2,"coupled=i"=>\$coupled,\
  "useNewInterfaceTransfer=i"=>\$useNewInterfaceTransfer,"useMultiStage=i"=>\$useMultiStage,"useChamp=i"=>\$useChamp,\
  "uMin=f"=>\$uMin,"uMax=f"=>\$uMax,"dtMax=f"=>\$dtMax,"domain1=s"=>\$domain1,"domain2=s"=>\$domain2,\
- "ncc=i"=>\$ncc, "mcc=i"=>\$mcc,"p1=f"=>\$p1,"p2=f"=>\$p2,"bdfOrder=i"=>\$bdfOrder );
+ "ncc=i"=>\$ncc, "mcc=i"=>\$mcc,"p1=f"=>\$p1,"p2=f"=>\$p2,"bdfOrder=i"=>\$bdfOrder,"projectT=i"=>\$projectT,"fx=f"=>\$fx,\
+ "orderInTime=i"=>\$orderInTime,\
+ "advx1=f"=>\$advx1,"advy1=f"=>\$advy1,"advz1=f"=>\$advz1,\
+ "advx2=f"=>\$advx2,"advy2=f"=>\$advy2,"advz2=f"=>\$advz2,"varCoeff=s"=>\$varCoeff\
+  );
 # -------------------------------------------------------------------------------------------------
+if( $ts eq "bdf" ){ $orderInTime=$bdfOrder; }
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $ts eq "fe" ){ $ts="forward Euler";  $tsd="forward Euler"; }
 if( $ts eq "be" ){ $ts="backward Euler"; $tsd="backward Euler"; }
@@ -94,6 +102,7 @@ if( $tz eq "poly" ){ $tz="turn on twilight zone\n turn on polynomial"; }
 if( $tz eq "trig" ){ $tz="turn on twilight zone\n turn on trigonometric"; $uMin=-1; $uMax=1.; }
 if( $known ne "" ){ $tz="turn off twilight zone"; }
 # 
+$fy=$fx; $fz=$fx; $ft=$fx; # for trig tz
 #
 # ---- specfiy the composite grid ----
 $grid
@@ -105,27 +114,31 @@ $domainName=$domain1; $solverName="solidA";
 # Initial conditions for cgad are $ic.  Extra commands for cgad are called "$commands"
 $commands="#"; 
 $amp=.1; $sr=-1.; $si=1.; $ky=1.; $c1=.01; $c2=1.; $option=0; # c1*exp(alpha*x) + c2*exp(-alpha*x), option=0 : left side
-if( $known eq "planeInterfaceMode" ){ $ic="OBIC:known solution"; $commands=" OBTZ:user defined known solution\n plane interface mode\n $amp $sr $si $ky $c1 $c2 $kappa1 $ktc1 $kappa2 $ktc2 $option\n done\n OBIC:known solution"; }
+if( $known eq "planeInterfaceMode" ){ $ic="OBIC:known solution"; $commands=" OBTZ:user defined known solution\n plane interface mode\n $option $amp $sr $si $ky $c1 $c2 $kappa1 $ktc1 $kappa2 $ktc2 $advx1 $advy1 $advz1 $advx2 $advy2 $advz2\n done\n OBIC:known solution"; }
 # gi.inputString(answer,"Enter n, m, amp, a, b, c, D1,K1, D2, K2, option, for the exact solution");
 $ampcc=1.; $acc=.5; $bcc=1.; $ccc=1.5; $option=0; 
 if( $known eq "concentricCylinders" ){ $ic="OBIC:known solution"; $commands=" OBTZ:user defined known solution\n concentric cylinders\n $ncc $mcc $ampcc $acc $bcc $ccc $kappa1 $ktc1 $kappa2 $ktc2 $option\n done\n OBIC:known solution"; }   
-if( $known eq "planeInterfaceMode" || $known eq "concentricCylinders" ){ $assignKnown=1; }else{ $assignKnown=0; }
+if( $known eq "doubleAnnulus" ){ $ic="OBIC:known solution"; $commands=" OBTZ:user defined known solution\n double annulus\n $caseName\n done\n OBIC:known solution"; }   
+if( $known eq "doubleRectangle" ){ $ic="OBIC:known solution"; $commands=" OBTZ:user defined known solution\n double rectangle\n $caseName\n done\n OBIC:known solution"; }   
+if( $known eq "planeInterfaceMode" || $known eq "concentricCylinders" || $known eq "doubleAnnulus" ){ $assignKnown=1; }else{ $assignKnown=0; }
 # 
 $bc = "all=dirichletBoundaryCondition\n bcNumber100=mixedBoundaryCondition, mixedDerivative(0.*t+1.*t.n=0.)\n bcNumber100=heatFluxInterface";
-$kappa=$kappa1; $ktc=$ktc1; $degreeSpace=$degreex1; $degreeTime=$degreet1; $a=$a1; $b=$b1;
+$kappa=$kappa1; $ktc=$ktc1; $degreeSpace=$degreex1; $degreeTime=$degreet1; $advx=$advx1; $advy=$advy1; $advz=$advz1; 
 # Change the optimized Champ parameter
-$commands .= "\n OBPDE:champ parameters\n -1 -1 -1 $p1\n done";
+if( $useChamp eq 1 ){ $commands .= "\n OBPDE:champ parameters\n -1 -1 -1 $p1\n done"; }
+if( $varCoeff eq "radial" ){ $commands .= "\n OBPDE:user defined coefficients\n radial advection\n $advx1 $advy1\n done"; }
 include $ENV{CG}/mp/cmd/adDomain.h
 # pause
 # ------- start new domain ---------- 
 $domainName=$domain2; $solverName="solidB"; 
 $option=1; # right side 
-if( $known eq "planeInterfaceMode" ){ $ic="OBIC:known solution"; $commands=" OBTZ:user defined known solution\n plane interface mode\n $amp $sr $si $ky $c1 $c2 $kappa1 $ktc1 $kappa2 $ktc2 $option\n done\n OBIC:known solution"; }
+if( $known eq "planeInterfaceMode" ){ $ic="OBIC:known solution"; $commands=" OBTZ:user defined known solution\n plane interface mode\n $option $amp $sr $si $ky $c1 $c2 $kappa1 $ktc1 $kappa2 $ktc2 $advx1 $advy1 $advz1 $advx2 $advy2 $advz2\n done\n OBIC:known solution"; }
 if( $known eq "concentricCylinders" ){ $ic="OBIC:known solution"; $commands=" OBTZ:user defined known solution\n concentric cylinders\n $ncc $mcc $ampcc $acc $bcc $ccc  $kappa1 $ktc1 $kappa2 $ktc2 $option\n done\n OBIC:known solution"; }   
 $bc = "all=dirichletBoundaryCondition\n bcNumber100=mixedBoundaryCondition, mixedDerivative(0.*t+1.*t.n=0.)\n bcNumber100=heatFluxInterface";
-$kappa=$kappa2; $ktc=$ktc2; $degreeSpace=$degreex2; $degreeTime=$degreet2; $a=$a2; $b=$b2; 
+$kappa=$kappa2; $ktc=$ktc2; $degreeSpace=$degreex2; $degreeTime=$degreet2; $advx=$advx2; $advy=$advy2; $advz=$advz2;
 # Change the optimized Champ parameter
-$commands .= "\n OBPDE:champ parameters\n -1 -1 -1 $p2\n done";
+if( $useChamp eq 1 ){ $commands .= "\n OBPDE:champ parameters\n -1 -1 -1 $p2\n done"; }
+if( $varCoeff eq "radial" ){ $commands .= "\n OBPDE:user defined coefficients\n radial advection\n $advx2 $advy2\n done"; }
 include $ENV{CG}/mp/cmd/adDomain.h
 # 
  continue
@@ -137,6 +150,7 @@ include $ENV{CG}/mp/cmd/adDomain.h
   OBPDE:interface omega $iOmega
   OBPDE:solve coupled interface equations $coupled
   OBPDE:use new interface transfer $useNewInterfaceTransfer
+  OBPDE:project interface temperature $projectT
   boundary conditions...
     # turn on CHAMP CHT interface codnitions: 
     apply champ interface conditions $useChamp

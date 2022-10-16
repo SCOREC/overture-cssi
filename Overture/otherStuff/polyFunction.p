@@ -27,8 +27,11 @@ $laplace="";
 @assignX = ();
 
 # ----- compute up till fourth-derivatives in x, y, and z *wdh* Feb 2, 2017 ----
-$maxXDerivative=4; if( $maxXDerivative>$degree ){ $maxXDerivative=$degree; }
-$maxDerivative=4; if( $maxDerivative>$degree ){ $maxDerivative=$degree; }
+# $maxXDerivative=4; if( $maxXDerivative>$degree ){ $maxXDerivative=$degree; }
+# $maxDerivative=4; if( $maxDerivative>$degree ){ $maxDerivative=$degree; }
+# ----- compute up till sixth-derivatives in x, y, and z *wdh* Feb 5, 2022 ----
+$maxXDerivative=6; if( $maxXDerivative>$degree ){ $maxXDerivative=$degree; }
+$maxDerivative=6; if( $maxDerivative>$degree ){ $maxDerivative=$degree; }
 # old $maxDerivative=2; if( $maxDerivative>$degree ){ $maxDerivative=$degree; }
 
 for( $dx=0; $dx<=$maxXDerivative; $dx++ ) # x derivatives
@@ -158,7 +161,7 @@ for( $n1=0; $n1<=$degree; $n1++ ) # loop over powers of x
               if( length($poly)> $maxLength )
               {
                 printf(" split line... nd=$nd, dx=$dx dy=$dy dz=$dz (splitLength=$splitLength)\n");
-		$poly = $poly . ")\n rrr=(rrr";
+                $poly = $poly . ")\n rrr=(rrr";
                 $maxLength=$maxLength+$splitLength;
               }
 
@@ -175,9 +178,9 @@ for( $n1=0; $n1<=$degree; $n1++ ) # loop over powers of x
               }
               
 
-	    }
-	  }
-	}
+            }
+          }
+        }
       }
     }
 #  printf("\n");

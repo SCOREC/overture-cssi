@@ -91,10 +91,10 @@ createMappings( MappingInformation & mapInfo )
   dialog.setExitCommand("exit", "exit");
 
   // aString opCmd[] =   {"parameterize by chord length",
-  //  		       "parameterize by index (uniform)",
-  //  		       ""}; //
+  //                   "parameterize by index (uniform)",
+  //                   ""}; //
   // int parOption =  (parameterizationType==parameterizeByChordLength ? 0 : 
-  //  		    parameterizationType==parameterizeByIndex ? 1 : 2);
+  //                parameterizationType==parameterizeByIndex ? 1 : 2);
   // dialog.addOptionMenu("1D Mappings:", opCmd,opCmd,parOption);
 
 
@@ -112,7 +112,7 @@ createMappings( MappingInformation & mapInfo )
                     "check mapping",
                     "plot mapping quality",
                     "help",
-		    ""};
+                    ""};
 
   int numberOfPushButtons=0;;  // number of entries in cmds
   while( cmds[numberOfPushButtons] != "" ){ numberOfPushButtons++; } //  count number of commands
@@ -124,7 +124,7 @@ createMappings( MappingInformation & mapInfo )
   //                         "plot sub curves",
   //                         "plot points on curves",
   //                         "use robust inverse",
-  // 			  ""};
+  //                      ""};
   // int tbState[10];
   // tbState[0] = plotControlPoints;
   // tbState[1] = plotCurve;
@@ -212,37 +212,37 @@ createMappings( MappingInformation & mapInfo )
 //                    "<builder",
                     "user defined 1",
 //                    ">change",
-		    //  "change a mapping",
+                    //  "change a mapping",
                     // "copy a mapping",
                     // "delete a mapping",
                     ">data base",
-		    "open a data-base",
-		    "get from the data-base",
-		    "get all mappings from the data-base",
-		    "put to the data-base",
-		    "close the data-base",
+                    "open a data-base",
+                    "get from the data-base",
+                    "get all mappings from the data-base",
+                    "put to the data-base",
+                    "close the data-base",
                     // "<>read from file",
                     //   "read plot3d file",
                     //   "read iges file",
                     //   "read overlapping grid file",
                     //   "read grids from a show file",
-		    //   "read ingrid style file",
-		    //   "read ply polygonal file",
-  		    //   "read stl file",
-		    //   "read rap model",
+                    //   "read ingrid style file",
+                    //   "read ply polygonal file",
+                    //   "read stl file",
+                    //   "read rap model",
                     // "<>save to a file",
                     //   "save plot3d file",
-		    //   "save ingrid file",
+                    //   "save ingrid file",
                     // "<view mappings",
                     // "check mapping",
                     // "plot mapping quality",
                     // ">parameters",
-		    //   "debug",
-  		    //   "resolution factor for triangulations",
+                    //   "debug",
+                    //   "resolution factor for triangulations",
                     "<open graphics",
                     "get geometric properties",
-		    "erase",
-		    "exit this menu",
+                    "erase",
+                    "exit this menu",
                     "" };
 
   aString help[] = {
@@ -285,11 +285,11 @@ createMappings( MappingInformation & mapInfo )
                     "read iges file       : ",
                     "read overlapping grid file: import all mappings that are in an overlapping grid file",
                     "read grids from a show file: import all mappings that are in one grid found in a show file",
-		    "read ingrid style file : read an unstructured mapping from an ingrid file",
-		    "read ply polygonal file : read an unstructured mapping from a PLY format file",
+                    "read ingrid style file : read an unstructured mapping from an ingrid file",
+                    "read ply polygonal file : read an unstructured mapping from a PLY format file",
                     "read rap model",
                     "save plot3d file     : save a mapping in plot3d format",
-		    "save ingrid file     : save a mapping in ingrid format",
+                    "save ingrid file     : save a mapping in ingrid format",
                     " ",
                     "change a mapping     : ",
                     "copy a mapping       : ",
@@ -300,8 +300,8 @@ createMappings( MappingInformation & mapInfo )
                     "plot mapping quality : plot mapping quality indicators",
                     "open graphics        : open a graphics window if it is not already open.",
                     "get geometric properties : determine properties such as the volume, surface area etc.",
-		    "erase",
-		    "exit this menu",
+                    "erase",
+                    "exit this menu",
                     "" };
 
   dialog.buildPopup(menu);
@@ -315,9 +315,9 @@ createMappings( MappingInformation & mapInfo )
   if( true )
   {
     aString cmds[] = {"line",
-		      "stretching function",
-		      "spline (1D)",
-		      ""};
+                      "stretching function",
+                      "spline (1D)",
+                      ""};
 
     numberOfPushButtons=0;;  // number of entries in cmds
     while( cmds[numberOfPushButtons] != "" ){ numberOfPushButtons++; } //  count number of commands
@@ -332,21 +332,21 @@ createMappings( MappingInformation & mapInfo )
   if( true )
   {
     aString cmds[] = {"airfoil",
-		      "annulus",
-		      "circle or ellipse",
-		      "dataPointMapping",
-		      "filamentMapping",
-		      "line (2D)",
-		      "nurbs (curve)",
-		      "quadratic (curve)",
-		      "rectangle",
-		      "rocket (2D)",
-		      "polynomial",
-		      "smoothedPolygon",
-		      "spline",
-		      "tfi",
-		      "unstructured",
-		      ""};
+                      "annulus",
+                      "circle or ellipse",
+                      "dataPointMapping",
+                      "filamentMapping",
+                      "line (2D)",
+                      "nurbs (curve)",
+                      "quadratic (curve)",
+                      "rectangle",
+                      "rocket (2D)",
+                      "polynomial",
+                      "smoothedPolygon",
+                      "spline",
+                      "tfi",
+                      "unstructured",
+                      ""};
 
     numberOfPushButtons=0;;  // number of entries in cmds
     while( cmds[numberOfPushButtons] != "" ){ numberOfPushButtons++; } //  count number of commands
@@ -361,22 +361,22 @@ createMappings( MappingInformation & mapInfo )
   if( true )
   {
     aString cmds[] = {"box",
-		      "cylinder",
-		      "circle or ellipse (3D)",
-		      "composite surface",
-		      "crossSection",
-		      "dataPointMapping",
-		      "line (3D)",
-		      "lofted surface",
-		      "nurbs (surface)",
-		      "plane or rhombus",
-		      "quadratic (surface)",
-		      "rocket (3D)",
-		      "sphere",
-		      "spline (3D)",
-		      "tfi",
-		      "unstructured",
-		      ""};
+                      "cylinder",
+                      "circle or ellipse (3D)",
+                      "composite surface",
+                      "crossSection",
+                      "dataPointMapping",
+                      "line (3D)",
+                      "lofted surface",
+                      "nurbs (surface)",
+                      "plane or rhombus",
+                      "quadratic (surface)",
+                      "rocket (3D)",
+                      "sphere",
+                      "spline (3D)",
+                      "tfi",
+                      "unstructured",
+                      ""};
 
     numberOfPushButtons=0;;  // number of entries in cmds
     while( cmds[numberOfPushButtons] != "" ){ numberOfPushButtons++; } //  count number of commands
@@ -408,7 +408,7 @@ createMappings( MappingInformation & mapInfo )
                     "stretch coordinates",
                     "sweep",
                     "trimmed mapping",
-		      ""};
+                      ""};
 
     numberOfPushButtons=0;;  // number of entries in cmds
     while( cmds[numberOfPushButtons] != "" ){ numberOfPushButtons++; } //  count number of commands
@@ -426,11 +426,11 @@ createMappings( MappingInformation & mapInfo )
                       "read iges file",
                       "read overlapping grid file",
                       "read grids from a show file",
-		      "read ingrid style file",
-		      "read ply polygonal file",
-  		      "read stl file",
-		      "read rap model",
-		      ""};
+                      "read ingrid style file",
+                      "read ply polygonal file",
+                      "read stl file",
+                      "read rap model",
+                      ""};
 
     numberOfPushButtons=0;;  // number of entries in cmds
     while( cmds[numberOfPushButtons] != "" ){ numberOfPushButtons++; } //  count number of commands
@@ -445,8 +445,8 @@ createMappings( MappingInformation & mapInfo )
   if( true )
   {
     aString cmds[] = {"save plot3d file",
-		      "save ingrid file",
-		      ""};
+                      "save ingrid file",
+                      ""};
 
     numberOfPushButtons=0;;  // number of entries in cmds
     while( cmds[numberOfPushButtons] != "" ){ numberOfPushButtons++; } //  count number of commands
@@ -711,9 +711,9 @@ createMappings( MappingInformation & mapInfo )
     else if( answer=="rocket (2D)" || answer=="rocket (3D)" )
     {
       if( answer=="rocket (2D)" )
-	mapPointer=new RocketMapping(2);
+        mapPointer=new RocketMapping(2);
       else
-	mapPointer=new RocketMapping(3);
+        mapPointer=new RocketMapping(3);
 
       mapPointer->incrementReferenceCount();
       mapPointer->update(mapInfo);
@@ -803,8 +803,8 @@ createMappings( MappingInformation & mapInfo )
       int num=mapInfo.mappingList.getLength();
       if( num<=0 )
       {
-	printF("There are no mappings available! \n");
-	continue;
+        printF("There are no mappings available! \n");
+        continue;
       }
 
       aString *menu2 = new aString[num+2];
@@ -812,7 +812,7 @@ createMappings( MappingInformation & mapInfo )
       menu2[i++]="!geometric";
       int mappingListStart=i;
       for( int j=0; j<num; j++ )
-	menu2[i++]=mapInfo.mappingList[j].getName(Mapping::mappingName);
+        menu2[i++]=mapInfo.mappingList[j].getName(Mapping::mappingName);
       int mappingListEnd=i-1;
       menu2[i]="";   // null string terminates the menu
 
@@ -828,7 +828,7 @@ createMappings( MappingInformation & mapInfo )
         // Here is the mapping to be used
         mapPointer=mapInfo.mappingList[map].mapPointer;
         Mapping & map = *mapPointer;
-	
+        
         printF("use mapping %s \n",(const char *) map.getName(Mapping::mappingName));
 
         RealArray rvalues; 
@@ -843,10 +843,10 @@ createMappings( MappingInformation & mapInfo )
                " total volume=%8.2e, Cells: (min,ave,max)=(%8.2e,%8.2e,%8.2e) \n"
                " Centre of mass = (%10.4e,%10.4e,%10.4e)\n"
                "**************************************************************\n",
-	       (const char*)map.getName(Mapping::mappingName),
+               (const char*)map.getName(Mapping::mappingName),
                ivalues(0),ivalues(1),ivalues(2),
                rvalues(0),rvalues(1),rvalues(2),rvalues(3),
-	       rvalues(4),rvalues(5),rvalues(6));
+               rvalues(4),rvalues(5),rvalues(6));
 //     rvalues( 7)=momentOfInertial(0,0);
 //     rvalues( 8)=momentOfInertial(0,1);
 //     rvalues( 9)=momentOfInertial(0,2);
@@ -868,8 +868,8 @@ createMappings( MappingInformation & mapInfo )
       int num=mapInfo.mappingList.getLength();
       if( num<=0 )
       {
-	printF("There are no mappings available! \n");
-	continue;
+        printF("There are no mappings available! \n");
+        continue;
       }
 
       aString *menu2 = new aString[num+2];
@@ -877,7 +877,7 @@ createMappings( MappingInformation & mapInfo )
       menu2[i++]="!change a mapping";
       int mappingListStart=i;
       for( int j=0; j<num; j++ )
-	menu2[i++]=mapInfo.mappingList[j].getName(Mapping::mappingName);
+        menu2[i++]=mapInfo.mappingList[j].getName(Mapping::mappingName);
       int mappingListEnd=i-1;
       menu2[i]="";   // null string terminates the menu
 
@@ -903,8 +903,8 @@ createMappings( MappingInformation & mapInfo )
       int num=mapInfo.mappingList.getLength();
       if( num<=0 )
       {
-	printF("There are no mappings available! \n");
-	continue;
+        printF("There are no mappings available! \n");
+        continue;
       }
 
       aString *menu2 = new aString[num+3];
@@ -912,7 +912,7 @@ createMappings( MappingInformation & mapInfo )
       menu2[i++]="!copy a mapping";
       int mappingListStart=i;
       for( int j=0; j<num; j++ )
-	menu2[i++]=mapInfo.mappingList[j].getName(Mapping::mappingName);
+        menu2[i++]=mapInfo.mappingList[j].getName(Mapping::mappingName);
       int mappingListEnd=i-1;
       menu2[i++]="none"; 
       menu2[i]="";   // null string terminates the menu
@@ -926,15 +926,15 @@ createMappings( MappingInformation & mapInfo )
 
       if( map>=0 && answer2!="none" )
       {
-	// Here is the mapping to be rotated/scaled etc.
-	mapPointer=mapInfo.mappingList[map].mapPointer;
+        // Here is the mapping to be rotated/scaled etc.
+        mapPointer=mapInfo.mappingList[map].mapPointer;
         printF("copy and edit mapping %s \n",(const char *) mapPointer->getName(Mapping::mappingName));
-	
-	Mapping *newMapping;
-	newMapping=mapPointer->make(mapPointer->getClassName());  // make this mapping type
-	(ReferenceCounting&)*newMapping=(ReferenceCounting&)*mapPointer;  // deep copy, call virtual =
-	mapInfo.mappingList.addElement(*newMapping); 
-	newMapping->update(mapInfo);
+        
+        Mapping *newMapping;
+        newMapping=mapPointer->make(mapPointer->getClassName());  // make this mapping type
+        (ReferenceCounting&)*newMapping=(ReferenceCounting&)*mapPointer;  // deep copy, call virtual =
+        mapInfo.mappingList.addElement(*newMapping); 
+        newMapping->update(mapInfo);
       }
       else if( map<0 )
       {
@@ -947,8 +947,8 @@ createMappings( MappingInformation & mapInfo )
       int num=mapInfo.mappingList.getLength();
       if( num<=0 )
       {
-	printF("There are no mappings available! \n");
-	continue;
+        printF("There are no mappings available! \n");
+        continue;
       }
 
       aString *menu2 = new aString[num+3];
@@ -956,7 +956,7 @@ createMappings( MappingInformation & mapInfo )
       menu2[i++]="!delete a mapping";
       int mappingListStart=i;
       for( int j=0; j<num; j++ )
-	menu2[i++]=mapInfo.mappingList[j].getName(Mapping::mappingName);
+        menu2[i++]=mapInfo.mappingList[j].getName(Mapping::mappingName);
       int mappingListEnd=i-1;
       menu2[i++]="none"; 
       menu2[i]="";   // null string terminates the menu
@@ -970,7 +970,7 @@ createMappings( MappingInformation & mapInfo )
 
       if( map>=0 && answer2!="none" )
       {
-	mapPointer=mapInfo.mappingList[map].mapPointer;
+        mapPointer=mapInfo.mappingList[map].mapPointer;
         printF("delete mapping %s \n",(const char *) mapPointer->getName(Mapping::mappingName));
         mapInfo.mappingList.deleteElement(map);  // delete the mapping
       }
@@ -984,7 +984,7 @@ createMappings( MappingInformation & mapInfo )
     {
       if( dataBaseIsOpen )
       {
-	gi.outputString("closing the data base that is already open");
+        gi.outputString("closing the data base that is already open");
         root.unmount();
         dataBaseIsOpen=FALSE;
       }
@@ -1003,19 +1003,19 @@ createMappings( MappingInformation & mapInfo )
       {
 // check if the file exists
         if ( (root.mount(fileName,"W")==-1) )
-	{
-	  gi.outputString("The data base file couldn't be opened");    
-	  dataBaseIsOpen=FALSE;
-	}
+        {
+          gi.outputString("The data base file couldn't be opened");    
+          dataBaseIsOpen=FALSE;
+        }
       }
       else if( choice==2 )
       {
 // check if the file exists
         if ( (root.mount(fileName,"R")==-1) )
-	{
-	  gi.outputString("The data base file couldn't be opened");    
-	  dataBaseIsOpen=FALSE;
-	}
+        {
+          gi.outputString("The data base file couldn't be opened");    
+          dataBaseIsOpen=FALSE;
+        }
       }
       else
         dataBaseIsOpen=FALSE;
@@ -1025,135 +1025,135 @@ createMappings( MappingInformation & mapInfo )
       if( dataBaseIsOpen )
       {
         int maxNumber=50;  // first guess
-	int num, actualNumber;	
-	aString *mapNames = NULL;
+        int num, actualNumber;  
+        aString *mapNames = NULL;
         int i;
         for( i=0; i<=1; i++ )
-	{
+        {
           mapNames=new aString [maxNumber];  
 
-  	  num = root.find(mapNames,"Mapping",50,actualNumber);
+          num = root.find(mapNames,"Mapping",50,actualNumber);
           if( actualNumber>num )
-	  { // try again with more elements in mapNames[]
-	    maxNumber=actualNumber+1;
-	    delete [] mapNames;
-	  }
+          { // try again with more elements in mapNames[]
+            maxNumber=actualNumber+1;
+            delete [] mapNames;
+          }
           else
             break;
-	}
-	printF("Number of mappings found=%i\n",num);
+        }
+        printF("Number of mappings found=%i\n",num);
 
         aString *menu2 = new aString[num+3];
-	i=0;
-	menu2[i++]="!get from a data-base";
-	int mappingListStart=i;
-	for( int j=0; j<num; j++ )
-	  menu2[i++]=mapNames[j];
-	int mappingListEnd=i-1;
-	menu2[i++]="none"; 
-	menu2[i]="";   // null string terminates the menu
+        i=0;
+        menu2[i++]="!get from a data-base";
+        int mappingListStart=i;
+        for( int j=0; j<num; j++ )
+          menu2[i++]=mapNames[j];
+        int mappingListEnd=i-1;
+        menu2[i++]="none"; 
+        menu2[i]="";   // null string terminates the menu
 
-	gi.buildCascadingMenu( menu2,mappingListStart,mappingListEnd );
+        gi.buildCascadingMenu( menu2,mappingListStart,mappingListEnd );
 
-	int map = gi.getMenuItem(menu2,answer2,"get which mapping?");
-	delete [] menu2;
+        int map = gi.getMenuItem(menu2,answer2,"get which mapping?");
+        delete [] menu2;
 
-	gi.indexInCascadingMenu( map,mappingListStart,mappingListEnd);
+        gi.indexInCascadingMenu( map,mappingListStart,mappingListEnd);
 
-	if( map>=0 && answer2!="none" )
-	{
-	  MappingRC *newMapping= new MappingRC();
-	  newMapping->get(root,mapNames[map]);  // this will "make" the correct type of Mapping
-	  mapInfo.mappingList.addElement(*newMapping); 
-	}
-	else if( map<0 )
-	  gi.outputString("Error: unknown mapping name!");
+        if( map>=0 && answer2!="none" )
+        {
+          MappingRC *newMapping= new MappingRC();
+          newMapping->get(root,mapNames[map]);  // this will "make" the correct type of Mapping
+          mapInfo.mappingList.addElement(*newMapping); 
+        }
+        else if( map<0 )
+          gi.outputString("Error: unknown mapping name!");
 
         delete [] mapNames;
       }
       else
-	gi.outputString("You must open a data-base first");
+        gi.outputString("You must open a data-base first");
     }
     else if( answer=="get all mappings from the data-base" )
     {
       if( dataBaseIsOpen )
       {
         real time0=getCPU();
-	aString mapNames[50];  // **** fix this *****
-	int num, actualNumber;
-	num = root.find(mapNames,"Mapping",50,actualNumber);
-	printF("Number of mappings found=%i\n",num);
+        aString mapNames[50];  // **** fix this *****
+        int num, actualNumber;
+        num = root.find(mapNames,"Mapping",50,actualNumber);
+        printF("Number of mappings found=%i\n",num);
 
-	for( int i=0; i<num; i++ )
-	{
-	  MappingRC *newMapping= new MappingRC();
-	  newMapping->get(root,mapNames[i]);  // this will "make" the correct type of Mapping
-	  mapInfo.mappingList.addElement(*newMapping); 
-	}
+        for( int i=0; i<num; i++ )
+        {
+          MappingRC *newMapping= new MappingRC();
+          newMapping->get(root,mapNames[i]);  // this will "make" the correct type of Mapping
+          mapInfo.mappingList.addElement(*newMapping); 
+        }
 
-	printF("Time to read mappings = %8.2e\n",getCPU()-time0);
+        printF("Time to read mappings = %8.2e\n",getCPU()-time0);
       }
       else
-	gi.outputString("You must open a data-base first");
+        gi.outputString("You must open a data-base first");
     }
     else if( answer=="put to the data-base" )
     {
       if( dataBaseIsOpen )
       {
-	int num=mapInfo.mappingList.getLength();
+        int num=mapInfo.mappingList.getLength();
         aString *menu2 = new aString[num+3];
-	int i=0;
-	menu2[i++]="!put to the data-base";
-	int mappingListStart=i;
-	for( int j=0; j<num; j++ )
-	  menu2[i++]=mapInfo.mappingList[j].getName(Mapping::mappingName);
-	int mappingListEnd=i-1;
-	menu2[i++]="none"; 
-	menu2[i]="";   // null string terminates the menu
+        int i=0;
+        menu2[i++]="!put to the data-base";
+        int mappingListStart=i;
+        for( int j=0; j<num; j++ )
+          menu2[i++]=mapInfo.mappingList[j].getName(Mapping::mappingName);
+        int mappingListEnd=i-1;
+        menu2[i++]="none"; 
+        menu2[i]="";   // null string terminates the menu
 
-	gi.buildCascadingMenu( menu2,mappingListStart,mappingListEnd );
+        gi.buildCascadingMenu( menu2,mappingListStart,mappingListEnd );
 
-	int map = gi.getMenuItem(menu2,answer2,"put which mapping?");
-	delete [] menu2;
+        int map = gi.getMenuItem(menu2,answer2,"put which mapping?");
+        delete [] menu2;
 
-	gi.indexInCascadingMenu( map,mappingListStart,mappingListEnd);
+        gi.indexInCascadingMenu( map,mappingListStart,mappingListEnd);
 
-	if( map>=0 && answer2!="none" )
-	{
-	  MappingRC & mapping = mapInfo.mappingList[map];
-	  mapping.put(root,mapping.getName(Mapping::mappingName));  // put the mapping
-	}
-	else if( map<0 )
-	  gi.outputString("Error: unknown mapping name!");
+        if( map>=0 && answer2!="none" )
+        {
+          MappingRC & mapping = mapInfo.mappingList[map];
+          mapping.put(root,mapping.getName(Mapping::mappingName));  // put the mapping
+        }
+        else if( map<0 )
+          gi.outputString("Error: unknown mapping name!");
       }
       else
-	gi.outputString("You must open a data-base first");
+        gi.outputString("You must open a data-base first");
     }
     else if( answer=="close the data-base" )
     {
       if( dataBaseIsOpen )
       {
-	root.unmount();
-	dataBaseIsOpen=FALSE;
+        root.unmount();
+        dataBaseIsOpen=FALSE;
       }
       else
-	gi.outputString("There is no data-base open");
+        gi.outputString("There is no data-base open");
     }
     else if( answer=="save plot3d file" )
     {
       int num=mapInfo.mappingList.getLength();
       aString *menu2 = new aString[num+2];
       for( int i=0; i<num; i++ )
-	menu2[i]=mapInfo.mappingList[i].getName(Mapping::mappingName);
+        menu2[i]=mapInfo.mappingList[i].getName(Mapping::mappingName);
       menu2[num]="none"; 
       menu2[num+1]="";   // null string terminates the menu
       int mapNumber = gi.getMenuItem(menu2,answer2,"save which mapping?");
       delete [] menu2;
       if( mapNumber>=0 && answer2!="none" )
       {
-	Mapping & map = mapInfo.mappingList[mapNumber].getMapping();
+        Mapping & map = mapInfo.mappingList[mapNumber].getMapping();
 
-	DataFormats::writePlot3d(map);
+        DataFormats::writePlot3d(map);
       }
     }
     else if( answer=="save ingrid file" )
@@ -1161,16 +1161,16 @@ createMappings( MappingInformation & mapInfo )
       int num=mapInfo.mappingList.getLength();
       aString *menu2 = new aString[num+2];
       for( int i=0; i<num; i++ )
-	menu2[i]=mapInfo.mappingList[i].getName(Mapping::mappingName);
+        menu2[i]=mapInfo.mappingList[i].getName(Mapping::mappingName);
       menu2[num]="none"; 
       menu2[num+1]="";   // null string terminates the menu
       int mapNumber = gi.getMenuItem(menu2,answer2,"save which mapping?");
       delete [] menu2;
       if( mapNumber>=0 && answer2!="none" )
       {
-	Mapping & map = mapInfo.mappingList[mapNumber].getMapping();
+        Mapping & map = mapInfo.mappingList[mapNumber].getMapping();
 
-	DataFormats::writeIngrid(map);
+        DataFormats::writeIngrid(map);
       }
     }
     else if( answer=="read iges file" )
@@ -1220,23 +1220,23 @@ createMappings( MappingInformation & mapInfo )
       if (modelFileName.length() > 0 && modelFileName != " " && db.mount(modelFileName,"R") == 0)
       {
         CompositeSurface & model = *new CompositeSurface();  model.incrementReferenceCount();
-	model.get(db,"Rap model");          // get the model from data base
+        model.get(db,"Rap model");          // get the model from data base
 
-	CompositeSurface sGrids;
-	CompositeSurface vGrids;
-	sGrids.get(db,"Rap surface grids"); // get the surface grids
-	vGrids.get(db,"Rap volume grids"); // get the surface grids
-	db.unmount();                       // close the data base
+        CompositeSurface sGrids;
+        CompositeSurface vGrids;
+        sGrids.get(db,"Rap surface grids"); // get the surface grids
+        vGrids.get(db,"Rap volume grids"); // get the surface grids
+        db.unmount();                       // close the data base
         mapInfo.mappingList.addElement(model);
 
-	for ( int s=0; s<sGrids.numberOfSubSurfaces(); s++ )
-	  mapInfo.mappingList.addElement(sGrids[s]);
+        for ( int s=0; s<sGrids.numberOfSubSurfaces(); s++ )
+          mapInfo.mappingList.addElement(sGrids[s]);
 
-	for ( int v=0; v<sGrids.numberOfSubSurfaces(); v++ )
-	  mapInfo.mappingList.addElement(vGrids[v]);
+        for ( int v=0; v<sGrids.numberOfSubSurfaces(); v++ )
+          mapInfo.mappingList.addElement(vGrids[v]);
 
-	model.decrementReferenceCount();
-	
+        model.decrementReferenceCount();
+        
       }
     }
     else if( answer=="view Mappings..." || 
@@ -1256,7 +1256,7 @@ createMappings( MappingInformation & mapInfo )
       delete [] menu2;
       if( mapNumber<0 )
       {
-	printF("unknown mapping to check!\n");
+        printF("unknown mapping to check!\n");
       }
       else if( answer2!="none" )
       {
@@ -1275,7 +1275,7 @@ createMappings( MappingInformation & mapInfo )
       delete [] menu2;
       if( mapNumber<0 )
       {
-	printF("unknown mapping to plot quality!\n");
+        printF("unknown mapping to plot quality!\n");
       }
       else if( answer2!="none" )
       {
@@ -1297,18 +1297,18 @@ createMappings( MappingInformation & mapInfo )
 
       if( triangleResolutionFactor<0. || triangleResolutionFactor>100. )
       {
-	printF("ERROR: triangleResolutionFactor=%e should be larger than zero and less than 100\n");
+        printF("ERROR: triangleResolutionFactor=%e should be larger than zero and less than 100\n");
       }
       else
       {
         // adjust the minimum angle for triangulations -- the smaller this value the fewer triangles needed
-	TrimmedMapping::defaultMinAngleForTriangulation=min(20.,20./triangleResolutionFactor);
+        TrimmedMapping::defaultMinAngleForTriangulation=min(20.,20./triangleResolutionFactor);
         // adjust the elementDensityTolerance, num-grid pts is related to curvature/elementDensityTolerance
-	TrimmedMapping::defaultElementDensityToleranceForTriangulation= .05*triangleResolutionFactor;
+        TrimmedMapping::defaultElementDensityToleranceForTriangulation= .05*triangleResolutionFactor;
         printF(" *** Now using minAngleForTriangulation=%8.2e and elementDensityTolerance=%8.2e\n",
-	       TrimmedMapping::defaultMinAngleForTriangulation,
+               TrimmedMapping::defaultMinAngleForTriangulation,
                TrimmedMapping::defaultElementDensityToleranceForTriangulation);
-	
+        
       }
     }
 
@@ -1324,18 +1324,18 @@ createMappings( MappingInformation & mapInfo )
 
       if( triangleResolutionFactor<0. || triangleResolutionFactor>100. )
       {
-	printF("ERROR: triangleResolutionFactor=%e should be larger than zero and less than 100\n");
+        printF("ERROR: triangleResolutionFactor=%e should be larger than zero and less than 100\n");
       }
       else
       {
         // adjust the minimum angle for triangulations -- the smaller this value the fewer triangles needed
-	TrimmedMapping::defaultMinAngleForTriangulation=min(20.,20./triangleResolutionFactor);
+        TrimmedMapping::defaultMinAngleForTriangulation=min(20.,20./triangleResolutionFactor);
         // adjust the elementDensityTolerance, num-grid pts is related to curvature/elementDensityTolerance
-	TrimmedMapping::defaultElementDensityToleranceForTriangulation= .05*triangleResolutionFactor;
+        TrimmedMapping::defaultElementDensityToleranceForTriangulation= .05*triangleResolutionFactor;
         printF(" *** Now using minAngleForTriangulation=%8.2e and elementDensityTolerance=%8.2e\n",
-	       TrimmedMapping::defaultMinAngleForTriangulation,
+               TrimmedMapping::defaultMinAngleForTriangulation,
                TrimmedMapping::defaultElementDensityToleranceForTriangulation);
-	
+        
       }
       
     }

@@ -112,7 +112,7 @@ operator=(const CompositeGrid& x)
     else
     {
       CompositeGrid& y =
-	*(CompositeGrid*)x.virtualConstructor();
+        *(CompositeGrid*)x.virtualConstructor();
       reference(y); delete &y;
     } // end if
     master=x.master;
@@ -239,32 +239,32 @@ changeInterpolationWidth( int width )
       const int iBase=il.getBase(0), iBound=il.getBound(0);
       for( int i=iBase; i<=iBound; i++ )
       {
-	int oldWidth=vWidth(i);
-	if( width < oldWidth )
-	{
-	  vWidth(i)=width;  // new width
+        int oldWidth=vWidth(i);
+        if( width < oldWidth )
+        {
+          vWidth(i)=width;  // new width
 
-	  int gridi = ig(i);   // **** could vectorize this loop since list is sorted by interpolee
-	  MappedGrid & cgridi = (*this)[gridi];
+          int gridi = ig(i);   // **** could vectorize this loop since list is sorted by interpolee
+          MappedGrid & cgridi = (*this)[gridi];
 
-	  for( int axis=axis1; axis<numberOfDimensions(); axis++ ) 
-	  {
-	    indexPosition=il(i,axis);
-	    relativeOffset=ci(i,axis)/cgridi.gridSpacing(axis)+cgridi.indexRange(Start,axis);
-	    // for 3-pt interpolation : 0<= px <=3 and normally .5<= px <= 2.5 if centred.
-	    px= cgridi.isCellCentered(axis)  ? relativeOffset-indexPosition-.5  : relativeOffset-indexPosition;
+          for( int axis=axis1; axis<numberOfDimensions(); axis++ ) 
+          {
+            indexPosition=il(i,axis);
+            relativeOffset=ci(i,axis)/cgridi.gridSpacing(axis)+cgridi.indexRange(Start,axis);
+            // for 3-pt interpolation : 0<= px <=3 and normally .5<= px <= 2.5 if centred.
+            px= cgridi.isCellCentered(axis)  ? relativeOffset-indexPosition-.5  : relativeOffset-indexPosition;
 
-	    //......interpolation width less than maximum allowed
-	    if( px > width/2. )
-	    {
-	      // we need to increase the interpoleeLocation
-	      int ipx=min(int(px-(width-2)/2.),oldWidth-width);
-	      il(i,axis)+=ipx;
+            //......interpolation width less than maximum allowed
+            if( px > width/2. )
+            {
+              // we need to increase the interpoleeLocation
+              int ipx=min(int(px-(width-2)/2.),oldWidth-width);
+              il(i,axis)+=ipx;
 
-	      // printf("grid=%i, i=%i gridi=%i, axis=%i px=%8.2e shift=%i\n",g,i,gridi,axis,px,ipx);
-	    }
-	  }
-	}
+              // printf("grid=%i, i=%i gridi=%i, axis=%i px=%8.2e shift=%i\n",g,i,gridi,axis,px,ipx);
+            }
+          }
+        }
       }
     }
   } // end for g
@@ -356,8 +356,8 @@ get( const GenericDataBase& db,
       // printF("INFO: CompositeGrid::get: level=%i numberOfComponentGrids=%i\n",l,cgl.numberOfComponentGrids());
       for( int grid=0; grid<cgl.numberOfComponentGrids(); grid++ )
       {
-  	const int masterGridNumber = cgl.gridNumber(grid); // here is the grid number in the master list of grids
-  	gdl[grid]=gridDistributionList[masterGridNumber];
+        const int masterGridNumber = cgl.gridNumber(grid); // here is the grid number in the master list of grids
+        gdl[grid]=gridDistributionList[masterGridNumber];
       }
     }
   }
@@ -531,7 +531,7 @@ add(Mapping & map)
     for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
       for( int side=Start; side<=End; side++ )
       {
-	g.setNumberOfGhostPoints(side,axis,mg.numberOfGhostPoints(side,axis));
+        g.setNumberOfGhostPoints(side,axis,mg.numberOfGhostPoints(side,axis));
         // printf("CompositeGrid::add: set ghsot points to %i\n",mg.numberOfGhostPoints(side,axis));
       }
     
@@ -658,7 +658,7 @@ deleteGrid(const IntegerArray & gridsToDelete )
   if( newNumberOfGrids<0 )
   {
     printf("CompositeGrid::deleteGrid:ERROR:trying to delete %i grids, but the collection only has %i grids\n",
-	   numberToDelete,numberOfGrids());
+           numberToDelete,numberOfGrids());
     return 1;
   }
   if( min(gridsToDelete)<0 || max(gridsToDelete)>=numberOfGrids() )
@@ -729,14 +729,14 @@ deleteGrid(const IntegerArray & gridsToDelete, const IntegerArray & gridsToSave 
     for( i=0; i<3; i++ )
       for( j=0; j<2; j++ )
       for( k=0; k<newNumberOfGrids; k++ )
-	maximumHoleCuttingDistance(i,j,k)=maximumHoleCuttingDistance(i,j,gridsToSave(k));       
+        maximumHoleCuttingDistance(i,j,k)=maximumHoleCuttingDistance(i,j,gridsToSave(k));       
 
 
     for( j=0; j<newNumberOfGrids; j++ )
       for( k=0; k<newNumberOfGrids; k++ )
       {
-	mayCutHoles(j,k)=mayCutHoles(gridsToSave(j),gridsToSave(k));
-	sharedSidesMayCutHoles(j,k)=sharedSidesMayCutHoles(gridsToSave(j),gridsToSave(k));
+        mayCutHoles(j,k)=mayCutHoles(gridsToSave(j),gridsToSave(k));
+        sharedSidesMayCutHoles(j,k)=sharedSidesMayCutHoles(gridsToSave(j),gridsToSave(k));
       }
     
     for( int l=0; l<numberOfMultigridLevels(); l++ )
@@ -748,22 +748,22 @@ deleteGrid(const IntegerArray & gridsToDelete, const IntegerArray & gridsToSave 
       {
         for( j=0; j<newNumberOfGrids; j++ )
         for( k=0; k<newNumberOfGrids; k++ )
-	{
-	  interpolationWidth(i,j,k,l)=interpolationWidth(i,gridsToSave(j),gridsToSave(k),l);
-	  interpolationOverlap(i,j,k,l)=interpolationOverlap(i,gridsToSave(j),gridsToSave(k),l);
-	}
-	for( j=0; j<newNumberOfGrids; j++ )
-	{
-	  multigridCoarseningRatio(i,j,l)=multigridCoarseningRatio(i,gridsToSave(j),l);
-	  multigridProlongationWidth(i,j,l)=multigridProlongationWidth(i,gridsToSave(j),l);
-	  multigridRestrictionWidth (i,j,l)=multigridRestrictionWidth(i,gridsToSave(j),l);
-	}
+        {
+          interpolationWidth(i,j,k,l)=interpolationWidth(i,gridsToSave(j),gridsToSave(k),l);
+          interpolationOverlap(i,j,k,l)=interpolationOverlap(i,gridsToSave(j),gridsToSave(k),l);
+        }
+        for( j=0; j<newNumberOfGrids; j++ )
+        {
+          multigridCoarseningRatio(i,j,l)=multigridCoarseningRatio(i,gridsToSave(j),l);
+          multigridProlongationWidth(i,j,l)=multigridProlongationWidth(i,gridsToSave(j),l);
+          multigridRestrictionWidth (i,j,l)=multigridRestrictionWidth(i,gridsToSave(j),l);
+        }
       }
       for( j=0; j<newNumberOfGrids; j++ )
       for( k=0; k<newNumberOfGrids; k++ )
       {
-	interpolationPreference(j,k,l)=interpolationPreference(gridsToSave(j),gridsToSave(k),l);
-	mayInterpolate(j,k,l)=mayInterpolate(gridsToSave(j),gridsToSave(k),l);
+        interpolationPreference(j,k,l)=interpolationPreference(gridsToSave(j),gridsToSave(k),l);
+        mayInterpolate(j,k,l)=mayInterpolate(gridsToSave(j),gridsToSave(k),l);
       }
       
     }
@@ -787,9 +787,9 @@ deleteGrid(const IntegerArray & gridsToDelete, const IntegerArray & gridsToSave 
 //
 Integer CompositeGrid::
 addRefinement(const IntegerArray& range,  // The indexRange of the refinement grid.
-	      const IntegerArray& factor, // The refinement factor w.r.t. level-1.
-	      const Integer&      level,  // The refinement level number.
-	      const Integer       k)     // The index of an ancestor of the refinement.
+              const IntegerArray& factor, // The refinement factor w.r.t. level-1.
+              const Integer&      level,  // The refinement level number.
+              const Integer       k)     // The index of an ancestor of the refinement.
 {
   Range G=numberOfComponentGrids();  // original number of grids
   
@@ -884,8 +884,8 @@ numberOfPossibleMultigridLevels() const
       int pow2=0;
       while( ( n % 2 )==0 && n>minimumNumberOfCellsOnCoarseGrid )
       {
-	pow2++;
-	n/=2;
+        pow2++;
+        n/=2;
       }
       maxLevels=min(maxLevels,pow2);
     }
@@ -1001,11 +1001,11 @@ sizeOf(FILE *file /* = NULL */, bool returnSizeOfReference /* = false */ ) const
       if( g<variableInterpolationWidth.getLength() )
         size+=variableInterpolationWidth[g].elementCount()*sizeof(int);
 //      if( g<interpoleePoint.getLength() )
-//	size+=interpoleePoint[g].elementCount()*sizeof(int);
+//      size+=interpoleePoint[g].elementCount()*sizeof(int);
       if( g<interpoleeLocation.getLength() )
-	size+=interpoleeLocation[g].elementCount()*sizeof(int);
+        size+=interpoleeLocation[g].elementCount()*sizeof(int);
       if( g<interpolationPoint.getLength() )
-	size+=interpolationPoint[g].elementCount()*sizeof(int);
+        size+=interpolationPoint[g].elementCount()*sizeof(int);
 //       if( g<interpolationCondition.getLength() )
 //         size+=interpolationCondition[g].elementCount()*sizeof(real);
     }
@@ -1025,19 +1025,19 @@ sizeOf(FILE *file /* = NULL */, bool returnSizeOfReference /* = false */ ) const
     if( boundaryAdjustment.getNumberOfElements() ) 
     {
       for( int k1=0; k1<numberOfBaseGrids(); k1++ )  // switched to base grids 040316
-	for( int k2=0; k2<numberOfBaseGrids(); k2++ )
-	{
-	  BoundaryAdjustmentArray& bA12 = boundaryAdjustment(k1,k2);
-	  if( bA12.getNumberOfElements()>0 ) 
-	  {
-	    for( int axis=0; axis<numberOfDimensions(); axis++ )
-	    for( int side=0; side<=1; side++ )
-	    {
-	      BoundaryAdjustment& bA = bA12(side,axis);
+        for( int k2=0; k2<numberOfBaseGrids(); k2++ )
+        {
+          BoundaryAdjustmentArray& bA12 = boundaryAdjustment(k1,k2);
+          if( bA12.getNumberOfElements()>0 ) 
+          {
+            for( int axis=0; axis<numberOfDimensions(); axis++ )
+            for( int side=0; side<=1; side++ )
+            {
+              BoundaryAdjustment& bA = bA12(side,axis);
               size+=bA.sizeOf();
-	    }
-	  }
-	}
+            }
+          }
+        }
     }
   }
   
@@ -1116,33 +1116,33 @@ setOverlapParameters()
     {
       for (int k2=0; k2<numberOfGrids(); k2++) 
       {
-	interpolationIsImplicit(k1,k2,l) = true;
+        interpolationIsImplicit(k1,k2,l) = true;
 
         int axis;
-	for( axis=0; axis<numberOfDimensions(); axis++ )
-	{
-	  interpolationWidth(axis,k1,k2,l)              =3;
-	  interpolationOverlap(axis,k1,k2,l)            = .5;
-	  multigridCoarseningRatio(axis,k1,l)           = 2;
-	  multigridProlongationWidth(axis,k1,l)         = 3;
-	  multigridRestrictionWidth(axis,k1,l)          = 3;
-	}
-	// note: may cut holes does not have multigrid levels.
-	mayCutHoles(k1,k2)=TRUE;   
-	sharedSidesMayCutHoles(k1,k2)=FALSE;
+        for( axis=0; axis<numberOfDimensions(); axis++ )
+        {
+          interpolationWidth(axis,k1,k2,l)              =3;
+          interpolationOverlap(axis,k1,k2,l)            = .5;
+          multigridCoarseningRatio(axis,k1,l)           = 2;
+          multigridProlongationWidth(axis,k1,l)         = 3;
+          multigridRestrictionWidth(axis,k1,l)          = 3;
+        }
+        // note: may cut holes does not have multigrid levels.
+        mayCutHoles(k1,k2)=TRUE;   
+        sharedSidesMayCutHoles(k1,k2)=FALSE;
       
-	for( axis=numberOfDimensions(); axis<3; axis++ )
-	{
-	  interpolationWidth(axis,k1,k2,l)              =1;
-	  interpolationOverlap(axis,k1,k2,l)            = -.5;
-	  multigridCoarseningRatio(axis,k1,l)           = 1;
-	  multigridProlongationWidth(axis,k1,l)         = 1;
-	  multigridRestrictionWidth(axis,k1,l)          = 1;
-	}
+        for( axis=numberOfDimensions(); axis<3; axis++ )
+        {
+          interpolationWidth(axis,k1,k2,l)              =1;
+          interpolationOverlap(axis,k1,k2,l)            = -.5;
+          multigridCoarseningRatio(axis,k1,l)           = 1;
+          multigridProlongationWidth(axis,k1,l)         = 1;
+          multigridRestrictionWidth(axis,k1,l)          = 1;
+        }
       
-	interpolationPreference(k1,k2,l)           = k1;
-	mayInterpolate(k1,k2,l)                    = true;
-	  
+        interpolationPreference(k1,k2,l)           = k1;
+        mayInterpolate(k1,k2,l)                    = true;
+          
       } // for k2
     }
   }
@@ -1180,33 +1180,33 @@ setOverlapParameters(CompositeGrid & cg)
     {
       for (int k2=0; k2<numberOfGridsToSet; k2++) 
       {
-	interpolationIsImplicit(k1,k2,l) = cg.interpolationIsImplicit(k1,k2,l);
+        interpolationIsImplicit(k1,k2,l) = cg.interpolationIsImplicit(k1,k2,l);
 
         int axis;
-	for( axis=0; axis<numberOfDimensions(); axis++ )
-	{
-	  interpolationWidth(axis,k1,k2,l)              =cg.interpolationWidth(axis,k1,k2,l);
-	  interpolationOverlap(axis,k1,k2,l)            =cg.interpolationOverlap(axis,k1,k2,l);
-	  multigridCoarseningRatio(axis,k1,l)           =cg.multigridCoarseningRatio(axis,k1,l);
-	  multigridProlongationWidth(axis,k1,l)         =cg.multigridProlongationWidth(axis,k1,l);
-	  multigridRestrictionWidth(axis,k1,l)          =cg.multigridRestrictionWidth(axis,k1,l);
-	}
-	// note: may cut holes does not have multigrid levels.
-	mayCutHoles(k1,k2)=cg.mayCutHoles(k1,k2);
-	sharedSidesMayCutHoles(k1,k2)=cg.sharedSidesMayCutHoles(k1,k2);
+        for( axis=0; axis<numberOfDimensions(); axis++ )
+        {
+          interpolationWidth(axis,k1,k2,l)              =cg.interpolationWidth(axis,k1,k2,l);
+          interpolationOverlap(axis,k1,k2,l)            =cg.interpolationOverlap(axis,k1,k2,l);
+          multigridCoarseningRatio(axis,k1,l)           =cg.multigridCoarseningRatio(axis,k1,l);
+          multigridProlongationWidth(axis,k1,l)         =cg.multigridProlongationWidth(axis,k1,l);
+          multigridRestrictionWidth(axis,k1,l)          =cg.multigridRestrictionWidth(axis,k1,l);
+        }
+        // note: may cut holes does not have multigrid levels.
+        mayCutHoles(k1,k2)=cg.mayCutHoles(k1,k2);
+        sharedSidesMayCutHoles(k1,k2)=cg.sharedSidesMayCutHoles(k1,k2);
       
-	for( axis=numberOfDimensions(); axis<3; axis++ )
-	{
-	  interpolationWidth(axis,k1,k2,l)              =1;
-	  interpolationOverlap(axis,k1,k2,l)            = -.5;
-	  multigridCoarseningRatio(axis,k1,l)           = 1;
-	  multigridProlongationWidth(axis,k1,l)         = 1;
-	  multigridRestrictionWidth(axis,k1,l)          = 1;
-	}
+        for( axis=numberOfDimensions(); axis<3; axis++ )
+        {
+          interpolationWidth(axis,k1,k2,l)              =1;
+          interpolationOverlap(axis,k1,k2,l)            = -.5;
+          multigridCoarseningRatio(axis,k1,l)           = 1;
+          multigridProlongationWidth(axis,k1,l)         = 1;
+          multigridRestrictionWidth(axis,k1,l)          = 1;
+        }
       
-	interpolationPreference(k1,k2,l)           = cg.interpolationPreference(k1,k2,l);
-	mayInterpolate(k1,k2,l)                    = cg.mayInterpolate(k1,k2,l);
-	  
+        interpolationPreference(k1,k2,l)           = cg.interpolationPreference(k1,k2,l);
+        mayInterpolate(k1,k2,l)                    = cg.mayInterpolate(k1,k2,l);
+          
       } // for k2
     }
   }
@@ -1451,7 +1451,7 @@ ostream& operator<<(ostream& s, const CompositeGrid& g) {
 //
 CompositeGridData::
 CompositeGridData(const Integer numberOfDimensions_,
-		  const Integer numberOfComponentGrids_):
+                  const Integer numberOfComponentGrids_):
   GridCollectionData(numberOfDimensions_, numberOfComponentGrids_) 
 {
   className = "CompositeGridData";
@@ -1462,7 +1462,7 @@ CompositeGridData(const Integer numberOfDimensions_,
 
 CompositeGridData::
 CompositeGridData( const CompositeGridData& x,
-		   const CopyType           ct):
+                   const CopyType           ct):
   GridCollectionData() 
 {
   className = "CompositeGridData";
@@ -1670,55 +1670,55 @@ operator=(const CompositeGridData& x)
     {
       if( sameParallelDistribution && x.interpolationCoordinates.getLength()==interpolationCoordinates.getLength() )
       {
-	for( int g=0; g<interpolationCoordinates.getLength(); g++ )
-	  assign(interpolationCoordinates[g],x.interpolationCoordinates[g]);
+        for( int g=0; g<interpolationCoordinates.getLength(); g++ )
+          assign(interpolationCoordinates[g],x.interpolationCoordinates[g]);
       }
       else
-	interpolationCoordinates = x.interpolationCoordinates;
+        interpolationCoordinates = x.interpolationCoordinates;
     }
     if( x.interpoleeGrid.getLength() ) 
     {
       if( sameParallelDistribution && x.interpoleeGrid.getLength()==interpoleeGrid.getLength())
       {
-	for( int g=0; g<interpoleeGrid.getLength(); g++ )
-	  assign(interpoleeGrid[g],x.interpoleeGrid[g]);
+        for( int g=0; g<interpoleeGrid.getLength(); g++ )
+          assign(interpoleeGrid[g],x.interpoleeGrid[g]);
       }
       else
       {
-	interpoleeGrid         = x.interpoleeGrid;
+        interpoleeGrid         = x.interpoleeGrid;
       }
     } // end if
     if( x.variableInterpolationWidth.getLength() ) 
     {
       if( sameParallelDistribution && x.variableInterpolationWidth.getLength()==variableInterpolationWidth.getLength()) 
       {
-	for( int g=0; g<variableInterpolationWidth.getLength(); g++ )
-	  assign(variableInterpolationWidth[g],x.variableInterpolationWidth[g]);
+        for( int g=0; g<variableInterpolationWidth.getLength(); g++ )
+          assign(variableInterpolationWidth[g],x.variableInterpolationWidth[g]);
       }
       else
       {
-	variableInterpolationWidth=x.variableInterpolationWidth;
+        variableInterpolationWidth=x.variableInterpolationWidth;
       }
     } // end if
     if( x.interpoleeLocation.getLength() )
     {
       if( sameParallelDistribution && x.interpoleeLocation.getLength()==interpoleeLocation.getLength() )
       {
-	for( int g=0; g<interpoleeLocation.getLength(); g++ )
-	  assign(interpoleeLocation[g],x.interpoleeLocation[g]);
+        for( int g=0; g<interpoleeLocation.getLength(); g++ )
+          assign(interpoleeLocation[g],x.interpoleeLocation[g]);
       }
       else
-	interpoleeLocation       = x.interpoleeLocation;
+        interpoleeLocation       = x.interpoleeLocation;
     }
     if( x.interpolationPoint.getLength() )
     {
       if( sameParallelDistribution && x.interpolationPoint.getLength()==interpolationPoint.getLength() )
       {
-	for( int g=0; g<interpolationPoint.getLength(); g++ )
-	  assign(interpolationPoint[g],x.interpolationPoint[g]);
+        for( int g=0; g<interpolationPoint.getLength(); g++ )
+          assign(interpolationPoint[g],x.interpolationPoint[g]);
       }
       else
-	interpolationPoint       = x.interpolationPoint;
+        interpolationPoint       = x.interpolationPoint;
     }
 #endif // USE_STL
   }
@@ -1762,56 +1762,56 @@ operator=(const CompositeGridData& x)
       for( int g=gStart; g<numberOfComponentGrids; g++ )
       {
         // total number of interpolation points on grid g:
-	int ni = ParallelUtility::getSum(x.numberOfInterpolationPointsLocal(g)); 
-	// const int ni = ParallelUtility::getSum(interpolationPointLocal[g].getLength(0)); 
+        int ni = ParallelUtility::getSum(x.numberOfInterpolationPointsLocal(g)); 
+        // const int ni = ParallelUtility::getSum(interpolationPointLocal[g].getLength(0)); 
 
-	// printf("CGD=: grid=%i niLocal=%i ni=%i\n",g,x.numberOfInterpolationPointsLocal(g),ni);
+        // printf("CGD=: grid=%i niLocal=%i ni=%i\n",g,x.numberOfInterpolationPointsLocal(g),ni);
 
-	numberOfInterpolationPoints(g)=ni;
+        numberOfInterpolationPoints(g)=ni;
 
         interpolationPoint[g].partition(partition);
-	interpolationPoint[g].redim(ni,numberOfDimensions);
+        interpolationPoint[g].redim(ni,numberOfDimensions);
 
         interpoleeLocation[g].partition(partition);
-	interpoleeLocation[g].redim(ni,numberOfDimensions);
+        interpoleeLocation[g].redim(ni,numberOfDimensions);
 
         interpoleeGrid[g].partition(partition);
-	interpoleeGrid[g].redim(ni);
+        interpoleeGrid[g].redim(ni);
 
         variableInterpolationWidth[g].partition(partition);
-	variableInterpolationWidth[g].redim(ni);
+        variableInterpolationWidth[g].redim(ni);
 
-	interpolationCoordinates[g].partition(partition);
-	interpolationCoordinates[g].redim(ni,numberOfDimensions);
+        interpolationCoordinates[g].partition(partition);
+        interpolationCoordinates[g].redim(ni,numberOfDimensions);
 
- 	intSerialArray ip;  getLocalArrayWithGhostBoundaries(interpolationPoint[g],ip);
- 	intSerialArray il;  getLocalArrayWithGhostBoundaries(interpoleeLocation[g],il);
- 	intSerialArray ig;  getLocalArrayWithGhostBoundaries(interpoleeGrid[g],ig);
- 	intSerialArray vw;  getLocalArrayWithGhostBoundaries(variableInterpolationWidth[g],vw);
+        intSerialArray ip;  getLocalArrayWithGhostBoundaries(interpolationPoint[g],ip);
+        intSerialArray il;  getLocalArrayWithGhostBoundaries(interpoleeLocation[g],il);
+        intSerialArray ig;  getLocalArrayWithGhostBoundaries(interpoleeGrid[g],ig);
+        intSerialArray vw;  getLocalArrayWithGhostBoundaries(variableInterpolationWidth[g],vw);
         realSerialArray ci; getLocalArrayWithGhostBoundaries(interpolationCoordinates[g],ci);
 
-	Index Iv[2];
-	// Iv[0]=Range(interpolationPointLocal[g].getBase(0),interpolationPointLocal[g].getBound(0));
-	Iv[0]=Range(0,x.numberOfInterpolationPointsLocal(g)-1);
-	Iv[1]=Range(numberOfDimensions);
-	const int p0=ps(0);  // copy results to this processor
-	CopyArray::getAggregateArray( interpolationPointLocal[g], Iv, ip, p0);  // results go into ip
-	CopyArray::getAggregateArray( interpoleeLocationLocal[g], Iv, il, p0);  // results go into il
+        Index Iv[2];
+        // Iv[0]=Range(interpolationPointLocal[g].getBase(0),interpolationPointLocal[g].getBound(0));
+        Iv[0]=Range(0,x.numberOfInterpolationPointsLocal(g)-1);
+        Iv[1]=Range(numberOfDimensions);
+        const int p0=ps(0);  // copy results to this processor
+        CopyArray::getAggregateArray( interpolationPointLocal[g], Iv, ip, p0);  // results go into ip
+        CopyArray::getAggregateArray( interpoleeLocationLocal[g], Iv, il, p0);  // results go into il
 
-	// ::display(interpolationPointLocal[g],"interpolationPointLocal[g]");
-	
-	// ::display(ip," ip after copy from all processors");
-	// ::display(interpolationPoint[g].getLocalArray()," interpolationPoint[g]");
-	
-	CopyArray::getAggregateArray( interpolationCoordinatesLocal[g], Iv, ci, p0);
+        // ::display(interpolationPointLocal[g],"interpolationPointLocal[g]");
+        
+        // ::display(ip," ip after copy from all processors");
+        // ::display(interpolationPoint[g].getLocalArray()," interpolationPoint[g]");
+        
+        CopyArray::getAggregateArray( interpolationCoordinatesLocal[g], Iv, ci, p0);
 
         Iv[1]=0;
-	CopyArray::getAggregateArray( interpoleeGridLocal[g], Iv, ig, p0);
-	CopyArray::getAggregateArray( variableInterpolationWidthLocal[g], Iv, vw, p0);  // results go into vw
+        CopyArray::getAggregateArray( interpoleeGridLocal[g], Iv, ig, p0);
+        CopyArray::getAggregateArray( variableInterpolationWidthLocal[g], Iv, vw, p0);  // results go into vw
 
         // ::display(ig," ig after copy from all processors");
 
-	// ::display(interpoleeLocation[g]," interpoleeLocation[g] after copy from all processors");
+        // ::display(interpoleeLocation[g]," interpoleeLocation[g] after copy from all processors");
 
       }
     }
@@ -1980,11 +1980,11 @@ Integer CompositeGridData::get(
             int rt = dir.getDistributed(variableInterpolationWidth[i], thing_i);
             returnValue |= rt;
             if( rt!=0 )
-	    {
+            {
               printf("Giving default values for variableInterpolationWidth : %i\n",max(interpolationWidth));
               variableInterpolationWidth[i].redim(numberOfInterpolationPoints(i));
               variableInterpolationWidth[i]=max(interpolationWidth);
-	    }
+            }
         } // end if
         if (computedGeometry & THEinterpoleeLocation) {
             sprintf(thing_i,      "interpoleeLocation[%d]", i);
@@ -2023,25 +2023,25 @@ Integer CompositeGridData::get(
       dir.getDistributed(ugi,"hybridUVertex2GridIndex");
       intArray bfacem;
       dir.getDistributed(bfacem,"hybridBoundaryFaceMapping");
-	
+        
       intArray *gi2uvptr = new intArray[numberOfGrids-1];
       intArray *gv2uvptr = new intArray[numberOfGrids-1];
       aString buff;
       for ( int g=0; g<numberOfGrids-1; g++ ) 
       {
-	buff ="";
-	sPrintF(buff,"hybridGridIndex2UVertex[%d]",g);
-	dir.getDistributed(gi2uvptr[g],buff);
-	buff ="";
-	sPrintF(buff,"hybridGridVertex2UVertex[%d]",g);
-	dir.getDistributed(gv2uvptr[g],buff);
+        buff ="";
+        sPrintF(buff,"hybridGridIndex2UVertex[%d]",g);
+        dir.getDistributed(gi2uvptr[g],buff);
+        buff ="";
+        sPrintF(buff,"hybridGridVertex2UVertex[%d]",g);
+        dir.getDistributed(gv2uvptr[g],buff);
       }
 
       hybridConnectivity.setCompositeGridHybridConnectivity(unstructuredGridIndex,
-							    gi2uvptr,
-							    ugi,
-							    gv2uvptr,
-							    bfacem);
+                                                            gi2uvptr,
+                                                            ugi,
+                                                            gv2uvptr,
+                                                            bfacem);
     }
 
     // // //
@@ -2053,8 +2053,8 @@ Integer CompositeGridData::get(
     dir.get(surfaceStitchingSaved,"surfaceStitchingSaved");
     if ( surfaceStitchingSaved )
       {
-	surfaceStitching = new UnstructuredMapping;
-	surfaceStitching->get(dir, "surfaceStitching");
+        surfaceStitching = new UnstructuredMapping;
+        surfaceStitching->get(dir, "surfaceStitching");
       }
     // // // 
       
@@ -2104,10 +2104,10 @@ convertLocalInterpolationData()
     if( debug & 1 )
     {
       printf("myid=%i numberOfGrids0=%i, numberOfInterpolationPointsLocal.getLength(0)=%i\n",myid,numberOfGrids0,
-	     numberOfInterpolationPointsLocal.getLength(0));
+             numberOfInterpolationPointsLocal.getLength(0));
     
       printf("myid=%i numberOfGrids0=%i, numberOfInterpolationPoints.getLength(0)=%i\n",myid,numberOfGrids0,
-	     numberOfInterpolationPoints.getLength(0));
+             numberOfInterpolationPoints.getLength(0));
     
       // assert( numberOfInterpolationPointsLocal.getLength(0)==numberOfGrids0 );
 
@@ -2116,7 +2116,7 @@ convertLocalInterpolationData()
     }
     
     ParallelUtility::getSums(&numberOfInterpolationPointsLocal(baseGrid),
-			     &numberOfInterpolationPoints(baseGrid),numberOfLocalGrids);
+                             &numberOfInterpolationPoints(baseGrid),numberOfLocalGrids);
 
     
     initializePartition();
@@ -2131,51 +2131,51 @@ convertLocalInterpolationData()
       if( localInterpolationDataState==localInterpolationDataForAll || refinementLevelNumber(g)>0 )
       {
         // total number of interpolation points on this grid:
-	// int ni = ParallelUtility::getSum(numberOfInterpolationPointsLocal(g)); // ** use getSums
+        // int ni = ParallelUtility::getSum(numberOfInterpolationPointsLocal(g)); // ** use getSums
         int ni = numberOfInterpolationPoints(g);
         int niMax = ParallelUtility::getMaxValue(ni);
-	assert( ni==niMax );
+        assert( ni==niMax );
         assert( numberOfDimensions>0 && numberOfDimensions<4 );
         if( ni>0 )
-	{
+        {
           interpolationPoint[g].partition(partition);
           interpoleeLocation[g].partition(partition);
           interpolationCoordinates[g].partition(partition);
           variableInterpolationWidth[g].partition(partition);
           interpoleeGrid[g].partition(partition);
 
-	  interpolationPoint[g].redim(ni,numberOfDimensions);
-	  interpoleeLocation[g].redim(ni,numberOfDimensions);
+          interpolationPoint[g].redim(ni,numberOfDimensions);
+          interpoleeLocation[g].redim(ni,numberOfDimensions);
           interpolationCoordinates[g].redim(ni,numberOfDimensions);
-	  variableInterpolationWidth[g].redim(ni);
-	  interpoleeGrid[g].redim(ni);
+          variableInterpolationWidth[g].redim(ni);
+          interpoleeGrid[g].redim(ni);
 
-	  if( false && np==1 )
-	  { // on one processor we could just do this :
-	    interpolationPoint[g].getLocalArray()=interpolationPointLocal[g];
-	    interpoleeLocation[g].getLocalArray()=interpoleeLocationLocal[g];
-	    interpolationCoordinates[g].getLocalArray()=interpolationCoordinatesLocal[g];
-	    variableInterpolationWidth[g].getLocalArray()=variableInterpolationWidthLocal[g];
-	    interpoleeGrid[g].getLocalArray()=interpoleeGridLocal[g];
-	  }
-	}
+          if( false && np==1 )
+          { // on one processor we could just do this :
+            interpolationPoint[g].getLocalArray()=interpolationPointLocal[g];
+            interpoleeLocation[g].getLocalArray()=interpoleeLocationLocal[g];
+            interpolationCoordinates[g].getLocalArray()=interpolationCoordinatesLocal[g];
+            variableInterpolationWidth[g].getLocalArray()=variableInterpolationWidthLocal[g];
+            interpoleeGrid[g].getLocalArray()=interpoleeGridLocal[g];
+          }
+        }
         else
-	{
-	  interpolationPoint[g].redim(0);
-	  interpoleeLocation[g].redim(0);
+        {
+          interpolationPoint[g].redim(0);
+          interpoleeLocation[g].redim(0);
           interpolationCoordinates[g].redim(0);
-	  variableInterpolationWidth[g].redim(0);
-	  interpoleeGrid[g].redim(0);
-	  
-	}
-	
+          variableInterpolationWidth[g].redim(0);
+          interpoleeGrid[g].redim(0);
+          
+        }
+        
       }
 
       if( debug & 1  ) // **TEMP
       {
-	printF("CG:convertLocal g=%i interpoleeGrid[g]=[%i,%i][%i,%i]\n",g,
-	       interpoleeGrid[g].getBase(0),interpoleeGrid[g].getBound(0),
-	       interpoleeGrid[g].getBase(1),interpoleeGrid[g].getBound(1));
+        printF("CG:convertLocal g=%i interpoleeGrid[g]=[%i,%i][%i,%i]\n",g,
+               interpoleeGrid[g].getBase(0),interpoleeGrid[g].getBound(0),
+               interpoleeGrid[g].getBase(1),interpoleeGrid[g].getBound(1));
       }
 
 
@@ -2207,16 +2207,16 @@ convertLocalInterpolationData()
     {
       for( int g2=0; g2<numberOfComponentGrids; g2++ )
       {
-	int num = ise(0,g1,g2)>=0 ? ise(1,g1,g2)-ise(0,g1,g2)+1 : 0;
-		
-	// numInterpPerProc(g1,g2,myid)=num;
+        int num = ise(0,g1,g2)>=0 ? ise(1,g1,g2)-ise(0,g1,g2)+1 : 0;
+                
+        // numInterpPerProc(g1,g2,myid)=num;
         if( num>0 )
-	{
-	  numInterpPerProc.get(g1,g2,myid)=num;
-	  numberOfNonZeroEntries[myid]++;
-	}
-// 	if( debug & 1 && num>0 )
-// 	  printf("CG:put: numInterpPerProc(g1=%i,g2=%i,myid=%i)=%i\n",g1,g2,myid,num);
+        {
+          numInterpPerProc.get(g1,g2,myid)=num;
+          numberOfNonZeroEntries[myid]++;
+        }
+//      if( debug & 1 && num>0 )
+//        printf("CG:put: numInterpPerProc(g1=%i,g2=%i,myid=%i)=%i\n",g1,g2,myid,num);
       }
     }
 
@@ -2229,8 +2229,8 @@ convertLocalInterpolationData()
 //       int ngSq=numberOfComponentGrids*numberOfComponentGrids;
 //       for( int p=0; p<np; p++ )
 //       {
-// 	MPI_Sendrecv(&numInterpPerProc(0,0,myid), ngSq, MPI_INT, p, tag, 
-// 		     &numInterpPerProc(0,0,p   ), ngSq, MPI_INT, p, tag, OV_COMM, &status ); 
+//      MPI_Sendrecv(&numInterpPerProc(0,0,myid), ngSq, MPI_INT, p, tag, 
+//                   &numInterpPerProc(0,0,p   ), ngSq, MPI_INT, p, tag, OV_COMM, &status ); 
 //       }
 //     }
     
@@ -2242,8 +2242,8 @@ convertLocalInterpolationData()
       int tags=tag0+p, tagr=tag0+myid;
       if( myid!=p )
       {
-	MPI_Sendrecv(&numberOfNonZeroEntries[myid], 1, MPI_INT, p, tags, 
-		     &numberOfNonZeroEntries[p]   , 1, MPI_INT, p, tagr, OV_COMM, &status ); 
+        MPI_Sendrecv(&numberOfNonZeroEntries[myid], 1, MPI_INT, p, tags, 
+                     &numberOfNonZeroEntries[p]   , 1, MPI_INT, p, tagr, OV_COMM, &status ); 
       }
     }
     if( debug & 4 )
@@ -2270,15 +2270,15 @@ convertLocalInterpolationData()
     {
       for( int g2=0; g2<numberOfComponentGrids; g2++ )
       {
-	int num = ise(0,g1,g2)>=0 ? ise(1,g1,g2)-ise(0,g1,g2)+1 : 0;
+        int num = ise(0,g1,g2)>=0 ? ise(1,g1,g2)-ise(0,g1,g2)+1 : 0;
         if( num>0 )
-	{
+        {
           assert( k<numberOfNonZeroEntries[myid] );
-	  
-	  numInterpPerProcSparseIndex[myid][k]=(g1)+numberOfComponentGrids*(g2);
-	  numInterpPerProcSparseData[myid][k]=num;
+          
+          numInterpPerProcSparseIndex[myid][k]=(g1)+numberOfComponentGrids*(g2);
+          numInterpPerProcSparseData[myid][k]=num;
           k++;
-	}
+        }
       }
     }
     assert( k==numberOfNonZeroEntries[myid] );
@@ -2291,16 +2291,16 @@ convertLocalInterpolationData()
       if( p!=myid )
       {
         int tags=tag1+p, tagr=tag1+myid;
-	MPI_Sendrecv(numInterpPerProcSparseIndex[myid],numberOfNonZeroEntries[myid],MPI_INT, p, tags, 
-		     numInterpPerProcSparseIndex[p]   ,numberOfNonZeroEntries[p]   ,MPI_INT, p, tagr, OV_COMM, &status ); 
-	int num=0;
-	MPI_Get_count( &status, MPI_INT, &num );
-	assert( num==numberOfNonZeroEntries[p] );
+        MPI_Sendrecv(numInterpPerProcSparseIndex[myid],numberOfNonZeroEntries[myid],MPI_INT, p, tags, 
+                     numInterpPerProcSparseIndex[p]   ,numberOfNonZeroEntries[p]   ,MPI_INT, p, tagr, OV_COMM, &status ); 
+        int num=0;
+        MPI_Get_count( &status, MPI_INT, &num );
+        assert( num==numberOfNonZeroEntries[p] );
 
         tags=tag2+p, tagr=tag2+myid;
-	MPI_Sendrecv(numInterpPerProcSparseData[myid],numberOfNonZeroEntries[myid],MPI_INT, p, tags, 
-		     numInterpPerProcSparseData[p]   ,numberOfNonZeroEntries[p]   ,MPI_INT, p, tagr, OV_COMM, &status ); 	MPI_Get_count( &status, MPI_INT, &num );
-	assert( num==numberOfNonZeroEntries[p] );
+        MPI_Sendrecv(numInterpPerProcSparseData[myid],numberOfNonZeroEntries[myid],MPI_INT, p, tags, 
+                     numInterpPerProcSparseData[p]   ,numberOfNonZeroEntries[p]   ,MPI_INT, p, tagr, OV_COMM, &status );        MPI_Get_count( &status, MPI_INT, &num );
+        assert( num==numberOfNonZeroEntries[p] );
       }
       
     }
@@ -2308,16 +2308,16 @@ convertLocalInterpolationData()
     {
       for( int p=0; p<np; p++ )
       {
-	for( int k=0; k<numberOfNonZeroEntries[p]; k++ )
-	{
-	  printf("myid=%i received data from p=%i: k=%i index=%i data=%i\n",myid,p,k,numInterpPerProcSparseIndex[p][k],
-		 numInterpPerProcSparseData[p][k]);
-	}
+        for( int k=0; k<numberOfNonZeroEntries[p]; k++ )
+        {
+          printf("myid=%i received data from p=%i: k=%i index=%i data=%i\n",myid,p,k,numInterpPerProcSparseIndex[p][k],
+                 numInterpPerProcSparseData[p][k]);
+        }
       }
       if( debug & 1 )
       {
-	fflush(0);
-	Communication_Manager::Sync();
+        fflush(0);
+        Communication_Manager::Sync();
       }
     }
 
@@ -2327,23 +2327,23 @@ convertLocalInterpolationData()
       if( p!=myid )
       {
         // printf(" myid=%i: receive numberOfNonZeroEntries[p=%i]=%i\n",myid,p,numberOfNonZeroEntries[p]);
-	for( int k=0; k<numberOfNonZeroEntries[p]; k++ )
-	{
-	  int index = numInterpPerProcSparseIndex[p][k];
-	  int g2 = index/numberOfComponentGrids;
-	  int g1 = index-numberOfComponentGrids*(g2);
+        for( int k=0; k<numberOfNonZeroEntries[p]; k++ )
+        {
+          int index = numInterpPerProcSparseIndex[p][k];
+          int g2 = index/numberOfComponentGrids;
+          int g1 = index-numberOfComponentGrids*(g2);
 //           printf(" myid=%i: p=%i, k=%i index=%i (g1,g2)=(%i,%i) num=%i\n",myid,p,k,index,g1,g2,
 //                    numInterpPerProcSparseData[p][k]);
-	  
-	  assert( g1>=0 && g1<numberOfComponentGrids );
-	  assert( g2>=0 && g2<numberOfComponentGrids );
-	  assert( numInterpPerProcSparseData[p][k]>0 );
-	  
+          
+          assert( g1>=0 && g1<numberOfComponentGrids );
+          assert( g2>=0 && g2<numberOfComponentGrids );
+          assert( numInterpPerProcSparseData[p][k]>0 );
+          
           // assert( numInterpPerProc(g1,g2,p)==numInterpPerProcSparseData[p][k] ); // compare to old way
-	  
-	  // numInterpPerProc(g1,g2,p)=numInterpPerProcSparseData[p][k];
-	  numInterpPerProc.get(g1,g2,p)=numInterpPerProcSparseData[p][k];
-	}
+          
+          // numInterpPerProc(g1,g2,p)=numInterpPerProcSparseData[p][k];
+          numInterpPerProc.get(g1,g2,p)=numInterpPerProcSparseData[p][k];
+        }
       }
     }
     if( debug & 1 )
@@ -2367,15 +2367,15 @@ convertLocalInterpolationData()
     {
       for( int g1=0; g1<numberOfComponentGrids; g1++ )
       {
-	for( int g2=0; g2<numberOfComponentGrids; g2++ )
-	{
-	  for( int p=0; p<np; p++ )
-	  {
-	    int num=numInterpPerProc(g1,g2,p);
-	    if( num>0 )
-	      printf("CG:put:After: myid=%i numInterpPerProc(g1=%i,g2=%i,p=%i)=%i\n",myid,g1,g2,p,num);
-	  }
-	}
+        for( int g2=0; g2<numberOfComponentGrids; g2++ )
+        {
+          for( int p=0; p<np; p++ )
+          {
+            int num=numInterpPerProc(g1,g2,p);
+            if( num>0 )
+              printf("CG:put:After: myid=%i numInterpPerProc(g1=%i,g2=%i,p=%i)=%i\n",myid,g1,g2,p,num);
+          }
+        }
       }
       fflush(0);
       Communication_Manager::Sync();
@@ -2409,47 +2409,47 @@ convertLocalInterpolationData()
         // int i0=ise(0,g1,g2),  i1=ise(1,g1,g2); 
 
         int numDonorCumulative=0;  // accumulate number of interp points on this donor (for current g1)
-	for( int p=0; p<np; p++ )
-	{
-	  if( numInterpPerProc(g1,g2,p)>0 ) // processor p has values to send
-	  {
-	    // local:  i=i0,i0+1,...,i1
-	    // global: j=j0,j0+1,...,j1
-	    //   i0=ise(0,g1,g2),  i1=ise(1,g1,g2)
-	    //   j0 = sum_{g=0,..,g1-1} numberOfInterpolationPoints(g)  + sum_{g<g2,p<myid} numInterpPerProc(g1,g,p)
+        for( int p=0; p<np; p++ )
+        {
+          if( numInterpPerProc(g1,g2,p)>0 ) // processor p has values to send
+          {
+            // local:  i=i0,i0+1,...,i1
+            // global: j=j0,j0+1,...,j1
+            //   i0=ise(0,g1,g2),  i1=ise(1,g1,g2)
+            //   j0 = sum_{g=0,..,g1-1} numberOfInterpolationPoints(g)  + sum_{g<g2,p<myid} numInterpPerProc(g1,g,p)
           
-	    // local data i=i0,...,i1 should be copied to global data j0,...,j1
-	    //  interpolationPoint[g1](j,d) = interpolationPointLocal[g1](i,d)
+            // local data i=i0,...,i1 should be copied to global data j0,...,j1
+            //  interpolationPoint[g1](j,d) = interpolationPointLocal[g1](i,d)
 
             int i0 = 0, i1=0;
-	    int j0 = numInterpCumulative+numDonorCumulative; // global index 
+            int j0 = numInterpCumulative+numDonorCumulative; // global index 
             int j1 = j0+numInterpPerProc(g1,g2,p)-1;
-	    // printF(" g1=%i, g2=%i p=%i, local: [i0,i1]=[%i,%i], global: [j0,j1]=[%i,%i]\n",g1,g2,p,i0,i1,j0,j1);
-	    
-	    for( int p2=0; p2<np; p2++ )  // determine the processors that receieve the data
-	    {
-	      // ia,..,ib : data to send from proc. p to processor p2
+            // printF(" g1=%i, g2=%i p=%i, local: [i0,i1]=[%i,%i], global: [j0,j1]=[%i,%i]\n",g1,g2,p,i0,i1,j0,j1);
+            
+            for( int p2=0; p2<np; p2++ )  // determine the processors that receieve the data
+            {
+              // ia,..,ib : data to send from proc. p to processor p2
               // IndexBox box(0,1);
               // trouble here:
               intArray & ig =interpoleeGrid[g1];
-	      // printF(" ig : [%i,%i]\n",ig.getBase(0),ig.getBound(0));
-	      // CopyArray::getLocalArrayBox( p2, interpoleeGrid[g1], box ); // these could be pre-computed
-	      // CopyArray::getLocalArrayBox( p2, grid[g1].mask(), box ); // these could be pre-computed
+              // printF(" ig : [%i,%i]\n",ig.getBase(0),ig.getBound(0));
+              // CopyArray::getLocalArrayBox( p2, interpoleeGrid[g1], box ); // these could be pre-computed
+              // CopyArray::getLocalArrayBox( p2, grid[g1].mask(), box ); // these could be pre-computed
 
               // printF(" interpolationPoint[g1=%i]: p2=%i box=[%i,%i]\n",g1,p2,box.base(0),box.bound(0));
-	      
- 	      int ia=max(j0,box[p2].base(0)), ib=min(j1,box[p2].bound(0));
- 	      if( ib>=ia )
- 	      {
-		// printF(" g1=%i, g2=%i send %i values from processor p=%i to p2=%i\n",g1,g2,ib-ia+1,p,p2);
+              
+              int ia=max(j0,box[p2].base(0)), ib=min(j1,box[p2].bound(0));
+              if( ib>=ia )
+              {
+                // printF(" g1=%i, g2=%i send %i values from processor p=%i to p2=%i\n",g1,g2,ib-ia+1,p,p2);
 
- 		numToSend(p,p2)+=ib-ia+1;
-	      }
-	    }
-	  
-	  }
+                numToSend(p,p2)+=ib-ia+1;
+              }
+            }
+          
+          }
           numDonorCumulative+=numInterpPerProc(g1,g2,p);
-	} // end for p
+        } // end for p
 
         numInterpCumulative+=numDonorCumulative;
       } // end for g2
@@ -2541,51 +2541,51 @@ convertLocalInterpolationData()
         // int i0=ise(0,g1,g2),  i1=ise(1,g1,g2); 
 
         int numDonorCumulative=0;  // accumulate number of interp points on this donor (for current g1)
-	for( int p=0; p<np; p++ )
-	{
-	  if( numInterpPerProc(g1,g2,p)>0 ) // processor p has values to send
-	  {
-	    int j0 = numInterpCumulative+numDonorCumulative; // global index 
+        for( int p=0; p<np; p++ )
+        {
+          if( numInterpPerProc(g1,g2,p)>0 ) // processor p has values to send
+          {
+            int j0 = numInterpCumulative+numDonorCumulative; // global index 
             int j1 = j0+numInterpPerProc(g1,g2,p)-1;
-	    // printF(" g1=%i, g2=%i p=%i, local: [i0,i1]=[%i,%i], global: [j0,j1]=[%i,%i]\n",g1,g2,p,i0,i1,j0,j1);
-	    
-	    for( int p2=0; p2<np; p2++ )  // determine the processors that receieve the data
-	    {
-	      // ia,..,ib : data to send from proc. p to processor p2
- 	      int ia=max(j0,box[p2].base(0)), ib=min(j1,box[p2].bound(0));
- 	      if( ia<=ib && myid==p )
- 	      {
-		// printF(" g1=%i, g2=%i send %i values from processor p=%i to p2=%i\n",g1,g2,ib-ia+1,p,p2);
+            // printF(" g1=%i, g2=%i p=%i, local: [i0,i1]=[%i,%i], global: [j0,j1]=[%i,%i]\n",g1,g2,p,i0,i1,j0,j1);
+            
+            for( int p2=0; p2<np; p2++ )  // determine the processors that receieve the data
+            {
+              // ia,..,ib : data to send from proc. p to processor p2
+              int ia=max(j0,box[p2].base(0)), ib=min(j1,box[p2].bound(0));
+              if( ia<=ib && myid==p )
+              {
+                // printF(" g1=%i, g2=%i send %i values from processor p=%i to p2=%i\n",g1,g2,ib-ia+1,p,p2);
 
- 		 // numToSend(p,p2)+=ib-ia+1;
+                 // numToSend(p,p2)+=ib-ia+1;
 
                 int & k = numSent[p2]; 
                 assert( k<numToSend(myid,p2) );
-		assert( iLocal<=ip.getBound(0) );
-		
+                assert( iLocal<=ip.getBound(0) );
+                
                 for( int j=ia; j<=ib; j++ )
-		{
+                {
                   InterpolateData & data = sd[p2][k];
-		  for( int dir=0; dir<numberOfDimensions; dir++ )
-		  {
-		    data.ip[dir]=ip(iLocal,dir);
-		    data.il[dir]=il(iLocal,dir);
-		    data.ci[dir]=ci(iLocal,dir);
-		  }
+                  for( int dir=0; dir<numberOfDimensions; dir++ )
+                  {
+                    data.ip[dir]=ip(iLocal,dir);
+                    data.il[dir]=il(iLocal,dir);
+                    data.ci[dir]=ci(iLocal,dir);
+                  }
                   data.viw=viw(iLocal);
                   data.globalIndex=j;
                   data.grid=g1;
-		  data.donor=g2;
+                  data.donor=g2;
                   iLocal++;
-  		  k++;
-		}
-		
-	      }
-	    }
-	  
-	  }
+                  k++;
+                }
+                
+              }
+            }
+          
+          }
           numDonorCumulative+=numInterpPerProc(g1,g2,p);
-	} // end for p
+        } // end for p
 
         numInterpCumulative+=numDonorCumulative;
       } // end for g2
@@ -2619,8 +2619,8 @@ convertLocalInterpolationData()
     { // double check that the number of values received equals what we expected
       for( int p=0; p<np; p++ )
       {
-	int num=0;
-	MPI_Get_count( &receiveStatus[p], InterpolateDataType, &num );
+        int num=0;
+        MPI_Get_count( &receiveStatus[p], InterpolateDataType, &num );
         assert( num==numToSend(p,myid) );
       }
     }
@@ -2648,69 +2648,69 @@ convertLocalInterpolationData()
     {
       for( int k=0; k<numToSend(p,myid); k++ )
       {
-	InterpolateData & data = rd[p][k];
+        InterpolateData & data = rd[p][k];
 
-	int i = data.globalIndex;
-	int grid=data.grid;
-	int donor=data.donor;
-	assert( grid>=0 && grid<numberOfComponentGrids );
-	assert( donor>=0 && donor<numberOfComponentGrids );
-	
-// 	const IntegerArray & ip  = interpolationPoint[grid].getLocalArray();
-// 	const IntegerArray & il  = interpoleeLocation[grid].getLocalArray();
-// 	const IntegerArray & viw = variableInterpolationWidth[grid].getLocalArray();
-// 	const IntegerArray & ig  = interpoleeGrid[grid].getLocalArray();
-// 	const RealArray & ci  = interpolationCoordinates[grid].getLocalArray();
+        int i = data.globalIndex;
+        int grid=data.grid;
+        int donor=data.donor;
+        assert( grid>=0 && grid<numberOfComponentGrids );
+        assert( donor>=0 && donor<numberOfComponentGrids );
+        
+//      const IntegerArray & ip  = interpolationPoint[grid].getLocalArray();
+//      const IntegerArray & il  = interpoleeLocation[grid].getLocalArray();
+//      const IntegerArray & viw = variableInterpolationWidth[grid].getLocalArray();
+//      const IntegerArray & ig  = interpoleeGrid[grid].getLocalArray();
+//      const RealArray & ci  = interpolationCoordinates[grid].getLocalArray();
 
- 	const IntegerArray & ip  = ipa[grid];
- 	const IntegerArray & il  = ila[grid];
- 	const IntegerArray & viw = viwa[grid];
- 	const IntegerArray & ig  = iga[grid];
- 	const RealArray    & ci  = cia[grid];
+        const IntegerArray & ip  = ipa[grid];
+        const IntegerArray & il  = ila[grid];
+        const IntegerArray & viw = viwa[grid];
+        const IntegerArray & ig  = iga[grid];
+        const RealArray    & ci  = cia[grid];
 
-	// assert( i>=ip.getBase(0) && i<=ip.getBound(0) );
+        // assert( i>=ip.getBase(0) && i<=ip.getBound(0) );
         if( i<ip.getBase(0) || i>ip.getBound(0) || i>=numberOfInterpolationPoints(grid) )
-	{
-	  printf("CompositeGrid::put:ERROR unpacking interp data: i=%i is out of bounds! This should not happen!\n"
+        {
+          printf("CompositeGrid::put:ERROR unpacking interp data: i=%i is out of bounds! This should not happen!\n"
                  " i should be between ip.getBase(0)=%i and ip.getBound(0)=%i AND less than ni=%i\n"
                  " il.getBase(0)=%i and il.getBound(0)=%i\n"
                  " myid=%i, receiving data from p=%i, grid=%i, donor=%i, k=%i of a total of %i values to receive\n",
                  i,ip.getBase(0),ip.getBound(0),numberOfInterpolationPoints(grid),
                  il.getBase(0),il.getBound(0),myid,p,grid,donor,k,numToSend(p,myid));
-	  Overture::abort("error");
-	}
-	
-	if( debug & 2 )
-	{
-	  printf("myid=%i, p=%i: receive pt i=%i (global index) (grid,donor)=(%i,%i) ip=(%i,%i)\n",myid,p,
-		 i,grid,donor,data.ip[0],data.ip[1]);
-	}
-	ig(i)=donor;
-	viw(i)=data.viw;
+          Overture::abort("error");
+        }
+        
+        if( debug & 2 )
+        {
+          printf("myid=%i, p=%i: receive pt i=%i (global index) (grid,donor)=(%i,%i) ip=(%i,%i)\n",myid,p,
+                 i,grid,donor,data.ip[0],data.ip[1]);
+        }
+        ig(i)=donor;
+        viw(i)=data.viw;
 
         if( ig.getBase(0)!=ip.getBase(0) || ig.getBound(0)!=ip.getBound(0) )
-	{
-	  printf("CompositeGrid::put:ERROR array ig dos not match array ip!! This should not happen!\n"
+        {
+          printf("CompositeGrid::put:ERROR array ig dos not match array ip!! This should not happen!\n"
                  " ip=[%i,%i][%i,%i] il=[%i,%i][%i,%i] ig=[%i,%i] \n"
            " myid=%i, receiving data from p=%i, i=%i grid=%i, donor=%i, k=%i of a total of %i values to receive\n",
                  ip.getBase(0),ip.getBound(0),ip.getBase(1),ip.getBound(1),
                  il.getBase(0),il.getBound(0),il.getBase(1),il.getBound(1),
                  ig.getBase(0),ig.getBound(0),
                  myid,p,i,grid,donor,k,numToSend(p,myid));
-	  Overture::abort("error");
+          Overture::abort("error");
 
-	}
-	
+        }
+        
         assert( ig.getBase(0)==ip.getBase(0) && ig.getBound(0)==ip.getBound(0) );
         assert( ip.getBase(1)==0 && ip.getBound(1)==(numberOfDimensions-1) );
-	
-	for( int dir=0; dir<numberOfDimensions; dir++ )
-	{
-	  ip(i,dir)=data.ip[dir];
-	  il(i,dir)=data.il[dir];
-	  ci(i,dir)=data.ci[dir];
-	  
-	}
+        
+        for( int dir=0; dir<numberOfDimensions; dir++ )
+        {
+          ip(i,dir)=data.ip[dir];
+          il(i,dir)=data.il[dir];
+          ci(i,dir)=data.ci[dir];
+          
+        }
       }
     }
     if( debug & 1 )
@@ -2741,51 +2741,51 @@ convertLocalInterpolationData()
 #define numInterp(g,g2) pNumInterp[(g)+numberOfLocalGrids*(g2)]
       for( int g=baseGrid; g<numberOfGrids0; g++ )
       {
-	for( int g2=baseGrid; g2<numberOfGrids0; g2++ )
-	{
-	  if( ise(0,g,g2) >=0 )
-	    numInterpLocal(g-baseGrid,g2-baseGrid) = ise(1,g,g2)-ise(0,g,g2)+1;
-	  else
-	    numInterpLocal(g-baseGrid,g2-baseGrid) = 0;
-	}
+        for( int g2=baseGrid; g2<numberOfGrids0; g2++ )
+        {
+          if( ise(0,g,g2) >=0 )
+            numInterpLocal(g-baseGrid,g2-baseGrid) = ise(1,g,g2)-ise(0,g,g2)+1;
+          else
+            numInterpLocal(g-baseGrid,g2-baseGrid) = 0;
+        }
       }
       // Sum up values from local arrays     
       ParallelUtility::getSums( pNumInterpLocal, pNumInterp, numberOfLocalGrids*numberOfLocalGrids);
       for( int g=baseGrid; g<numberOfGrids0; g++ )
       {
-	int numSum=0; // running sum of interp. pts for grid g
-	for( int g2=baseGrid; g2<numberOfGrids0; g2++ )
-	{
+        int numSum=0; // running sum of interp. pts for grid g
+        for( int g2=baseGrid; g2<numberOfGrids0; g2++ )
+        {
 
           // printf(" convertLocalInterpolationData:Before ise(0:1,g=%i,g2=%i)=%i,%i\n",g,g2,ise(0,g,g2),ise(1,g,g2));
 
-	  if( numInterp(g-baseGrid,g2-baseGrid) > 0 )
-	  {
-	    ise(0,g,g2)=numSum;     // interp pts on grid g that have donors on g2 start here...
-	    numSum+=numInterp(g-baseGrid,g2-baseGrid);
-	    ise(1,g,g2)=numSum-1;   // ... and end here 
+          if( numInterp(g-baseGrid,g2-baseGrid) > 0 )
+          {
+            ise(0,g,g2)=numSum;     // interp pts on grid g that have donors on g2 start here...
+            numSum+=numInterp(g-baseGrid,g2-baseGrid);
+            ise(1,g,g2)=numSum-1;   // ... and end here 
             // When there are backup implicit interp pts on an explicit interp. grid, the implicit points are
             // located first in the list (to make it faster to interpolate by iteration).
             // In parallel we current do NOT do this. **FIX ME**
             // The implicit-by-iteration interpolator uses this next value so we need to set it.
-	    ise(2,g,g2)=numSum-1;   // do this for now, all points assumed implicit.  *wdh* 2012/07/05 
-	  }
-	  else
-	  {
+            ise(2,g,g2)=numSum-1;   // do this for now, all points assumed implicit.  *wdh* 2012/07/05 
+          }
+          else
+          {
             ise(0,g,g2)=-1;
-	    ise(1,g,g2)=-1;
-	    ise(2,g,g2)=-1;         // *wdh* 2012/07/05 
-	  }
+            ise(1,g,g2)=-1;
+            ise(2,g,g2)=-1;         // *wdh* 2012/07/05 
+          }
 
-	  // printf(" convertLocalInterpolationData:After ise(0:1,g=%i,g2=%i)=%i,%i\n",g,g2,ise(0,g,g2),ise(1,g,g2));
-	  
-	}
-	if( numSum!=numberOfInterpolationPoints(g) )
-	{
+          // printf(" convertLocalInterpolationData:After ise(0:1,g=%i,g2=%i)=%i,%i\n",g,g2,ise(0,g,g2),ise(1,g,g2));
+          
+        }
+        if( numSum!=numberOfInterpolationPoints(g) )
+        {
           printf("ERROR: CompositeGridData::convertLocalInterpolationData:ERROR: numSum=%i but"
                  " numberOfInterpolationPoints(g=%i)=%i\n",numSum,g,numberOfInterpolationPoints(g));
-	  OV_ABORT("ERROR");
-	}
+          OV_ABORT("ERROR");
+        }
       }
       delete [] pNumInterpLocal;
       delete [] pNumInterp;
@@ -2860,7 +2860,7 @@ put(GenericDataBase& db,
                     (THEinterpolationCoordinates | 
                       THEinterpoleeGrid | 
                       THEinterpoleeLocation |
-		      THEinterpolationPoint);
+                      THEinterpolationPoint);
     
    //     printf("\n ####### CG:put: computedGeometry & THEmask = %i\n\n",int(computedGeometry & THEmask));
    //     printf("\n ####### CG:put: geometryToPut & THEmask = %i\n\n",int(geometryToPut & THEmask));
@@ -2877,47 +2877,47 @@ put(GenericDataBase& db,
   geometryToPut= geometryToPut & computedGeometry;  
 
   returnValue |= dir.put(numberOfCompleteMultigridLevels,
-			 "numberOfCompleteMultigridLevels");
+                         "numberOfCompleteMultigridLevels");
   returnValue |= dir.put(epsilon, "epsilon");
   returnValue |= dir.put(interpolationIsAllExplicit,
-			 "interpolationIsAllExplicit");
+                         "interpolationIsAllExplicit");
   returnValue |= dir.put(interpolationIsAllImplicit,
-			 "interpolationIsAllImplicit");
+                         "interpolationIsAllImplicit");
 
   if( numberOfGrids > 0 )
   {
     returnValue |= dir.put(numberOfInterpolationPoints,
-			   "numberOfInterpolationPoints");
+                           "numberOfInterpolationPoints");
     returnValue |= dir.put(numberOfImplicitInterpolationPoints,
-			   "numberOfImplicitInterpolationPoints");
+                           "numberOfImplicitInterpolationPoints");
     returnValue |= dir.put(interpolationStartEndIndex,
-			   "interpolationStartEndIndex");
+                           "interpolationStartEndIndex");
   } // end if
 
   if( numberOfComponentGrids > 0 ) 
   {
     returnValue |= dir.put(interpolationIsImplicit,
-			   "interpolationIsImplicit");
+                           "interpolationIsImplicit");
     returnValue |= dir.put(interpolationWidth,
-			   "interpolationWidth");
+                           "interpolationWidth");
     returnValue |= dir.put(interpolationOverlap,
-			   "interpolationOverlap");
+                           "interpolationOverlap");
     returnValue |= dir.put(maximumHoleCuttingDistance,
-			   "maximumHoleCuttingDistance");
+                           "maximumHoleCuttingDistance");
     returnValue |= dir.put(interpolationPreference,
-			   "interpolationPreference");
+                           "interpolationPreference");
     returnValue |= dir.put(mayInterpolate,
-			   "mayInterpolate");
+                           "mayInterpolate");
     returnValue |= dir.put(mayCutHoles,
-			   "mayCutHoles");
+                           "mayCutHoles");
     returnValue |= dir.put(sharedSidesMayCutHoles,
-			   "sharedSidesMayCutHoles");
+                           "sharedSidesMayCutHoles");
     returnValue |= dir.put(multigridCoarseningRatio,
-			   "multigridCoarseningRatio");
+                           "multigridCoarseningRatio");
     returnValue |= dir.put(multigridProlongationWidth,
-			   "multigridProlongationWidth");
+                           "multigridProlongationWidth");
     returnValue |= dir.put(multigridRestrictionWidth,
-			   "multigridRestrictionWidth");
+                           "multigridRestrictionWidth");
   } // end if
 
   for( Integer i=0; i<numberOfGrids; i++ )
@@ -2927,31 +2927,31 @@ put(GenericDataBase& db,
       char thing_i[32];
       if (geometryToPut &  THEinterpolationCoordinates) 
       {
-	sprintf(thing_i,      "interpolationCoordinates[%d]", i);
-	returnValue |= dir.putDistributed(interpolationCoordinates[i], thing_i);
+        sprintf(thing_i,      "interpolationCoordinates[%d]", i);
+        returnValue |= dir.putDistributed(interpolationCoordinates[i], thing_i);
       } // end if
       if (geometryToPut &  THEinterpoleeGrid) {
-	sprintf(thing_i,      "interpoleeGrid[%d]", i);
-	if( false )
-	{
-	    printF("CG:put g=%i interpoleeGrid[g]=[%i,%i][%i,%i]\n",i,
-		   interpoleeGrid[i].getBase(0),interpoleeGrid[i].getBound(0),
-		   interpoleeGrid[i].getBase(1),interpoleeGrid[i].getBound(1));
-	  ::display(interpoleeGrid[i],sPrintF("put: interpoleeGrid for grid=%i",i));
+        sprintf(thing_i,      "interpoleeGrid[%d]", i);
+        if( false )
+        {
+            printF("CG:put g=%i interpoleeGrid[g]=[%i,%i][%i,%i]\n",i,
+                   interpoleeGrid[i].getBase(0),interpoleeGrid[i].getBound(0),
+                   interpoleeGrid[i].getBase(1),interpoleeGrid[i].getBound(1));
+          ::display(interpoleeGrid[i],sPrintF("put: interpoleeGrid for grid=%i",i));
           OV_GET_SERIAL_ARRAY(int,interpoleeGrid[i],igLocal);
-	  // ::display(igLocal,sPrintF("put: interpoleeGridLocal for grid=%i",i));
-	}
-	returnValue |= dir.putDistributed(interpoleeGrid[i], thing_i);
-	sprintf(thing_i,      "variableInterpolationWidth[%d]", i);
-	returnValue |= dir.putDistributed(variableInterpolationWidth[i], thing_i);
+          // ::display(igLocal,sPrintF("put: interpoleeGridLocal for grid=%i",i));
+        }
+        returnValue |= dir.putDistributed(interpoleeGrid[i], thing_i);
+        sprintf(thing_i,      "variableInterpolationWidth[%d]", i);
+        returnValue |= dir.putDistributed(variableInterpolationWidth[i], thing_i);
       } // end if
       if (geometryToPut &  THEinterpoleeLocation) {
-	sprintf(thing_i,      "interpoleeLocation[%d]", i);
-	returnValue |= dir.putDistributed(interpoleeLocation[i], thing_i);
+        sprintf(thing_i,      "interpoleeLocation[%d]", i);
+        returnValue |= dir.putDistributed(interpoleeLocation[i], thing_i);
       } // end if
       if (geometryToPut &  THEinterpolationPoint) {
-	sprintf(thing_i,      "interpolationPoint[%d]", i);
-	returnValue |= dir.putDistributed(interpolationPoint[i], thing_i);
+        sprintf(thing_i,      "interpolationPoint[%d]", i);
+        returnValue |= dir.putDistributed(interpolationPoint[i], thing_i);
       } // end if
     } // end if, end for
   }
@@ -2969,8 +2969,8 @@ put(GenericDataBase& db,
 
   
   if (geometryToPut & THEinverseMap) returnValue |=
-					  inverseCoordinates.put(dir, "inverseCoordinates") |
-					  inverseGrid       .put(dir, "inverseGrid");
+                                          inverseCoordinates.put(dir, "inverseCoordinates") |
+                                          inverseGrid       .put(dir, "inverseGrid");
 
   // // //
   // kkc 5/23/01 added output of hybrid connectivity
@@ -2983,7 +2983,7 @@ put(GenericDataBase& db,
 
     returnValue |= dir.putDistributed(hybridConnectivity.getBoundaryFaceMapping(),"hybridBoundaryFaceMapping");
     returnValue |= dir.putDistributed(hybridConnectivity.getUVertex2GridIndex(),"hybridUVertex2GridIndex");
-	
+        
     aString buff="";
     for ( int g=0; g<numberOfGrids-1; g++ ) 
     {
@@ -3017,8 +3017,8 @@ put(GenericDataBase& db,
 
 Integer CompositeGridData::
 update( GenericGridCollectionData& x,
-	const Integer              what,
-	const Integer              how) 
+        const Integer              what,
+        const Integer              how) 
 {
   // update all lists but the multigrid level and domain (which are lists of CompositeGrid's and done below)
   Integer upd = GridCollectionData::update(x, what & (~THEmultigridLevel | ~THEdomain) , how);
@@ -3040,19 +3040,19 @@ update( GenericGridCollectionData& x,
   for (Integer l=0; l<numberOfMultigridLevels; l++)
     for (Integer k1=0; k1<numberOfComponentGrids; k1++)
       for (Integer k2=0; k2<numberOfComponentGrids; k2++)
-	if (k1 != k2) 
+        if (k1 != k2) 
         {
-	  if ((mayInterpolate(k1,k2,l) &&
-	       interpolationIsImplicit(k1,k2,l)) 
-	      //  || ( mayBackupInterpolate(k1,k2,l) && backupInterpolationIsImplicit(k1,k2,l))
-	    )
-	    interpolationIsAllExplicit = LogicalFalse;
-	  if ((mayInterpolate(k1,k2,l) &&
-	       !interpolationIsImplicit(k1,k2,l)) 
-	      //  || ( mayBackupInterpolate(k1,k2,l) && !backupInterpolationIsImplicit(k1,k2,l))
-	    )
-	    interpolationIsAllImplicit = LogicalFalse;
-	} // end if, end for, end for, end for
+          if ((mayInterpolate(k1,k2,l) &&
+               interpolationIsImplicit(k1,k2,l)) 
+              //  || ( mayBackupInterpolate(k1,k2,l) && backupInterpolationIsImplicit(k1,k2,l))
+            )
+            interpolationIsAllExplicit = LogicalFalse;
+          if ((mayInterpolate(k1,k2,l) &&
+               !interpolationIsImplicit(k1,k2,l)) 
+              //  || ( mayBackupInterpolate(k1,k2,l) && !backupInterpolationIsImplicit(k1,k2,l))
+            )
+            interpolationIsAllImplicit = LogicalFalse;
+        } // end if, end for, end for, end for
 
 #ifdef USE_STL
   if (what & THEinterpolationCoordinates) 
@@ -3073,7 +3073,7 @@ update( GenericGridCollectionData& x,
     i = numberOfGrids - variableInterpolationWidth.size();
     if (i < 0)
       variableInterpolationWidth.erase(variableInterpolationWidth.begin() + numberOfGrids,
-				       variableInterpolationWidth.end());
+                                       variableInterpolationWidth.end());
     else
       for (Integer j=0; j<i; j++) variableInterpolationWidth.push_back();
   } // end if
@@ -3137,122 +3137,122 @@ update( GenericGridCollectionData& x,
     {
       if (what & THEinterpolationCoordinates) 
       {
-	if (&y != this && i <
+        if (&y != this && i <
 #ifdef USE_STL
-	    y.interpolationCoordinates.size() &&
+            y.interpolationCoordinates.size() &&
 #else
-	    y.interpolationCoordinates.getLength() &&
+            y.interpolationCoordinates.getLength() &&
 #endif // USE_STL
-	    y.interpolationCoordinates[i].elementCount() == numberOfInterpolationPoints(i) * numberOfDimensions &&
-	    y.interpolationCoordinates[i].getBase(0) == 0 &&
-	    y.interpolationCoordinates[i].getBound(0) == numberOfInterpolationPoints(i) - 1 &&
-	    y.interpolationCoordinates[i].getBase(1) == 0 &&
-	    y.interpolationCoordinates[i].getBound(1) == numberOfDimensions - 1)
-	  interpolationCoordinates[i].reference(y.interpolationCoordinates[i]);
+            y.interpolationCoordinates[i].elementCount() == numberOfInterpolationPoints(i) * numberOfDimensions &&
+            y.interpolationCoordinates[i].getBase(0) == 0 &&
+            y.interpolationCoordinates[i].getBound(0) == numberOfInterpolationPoints(i) - 1 &&
+            y.interpolationCoordinates[i].getBase(1) == 0 &&
+            y.interpolationCoordinates[i].getBound(1) == numberOfDimensions - 1)
+          interpolationCoordinates[i].reference(y.interpolationCoordinates[i]);
 
-	if (interpolationCoordinates[i].elementCount() != numberOfInterpolationPoints(i) * numberOfDimensions ||
-	    interpolationCoordinates[i].getBase(0) != 0 ||
-	    interpolationCoordinates[i].getBound(0) != numberOfInterpolationPoints(i) - 1 ||
-	    interpolationCoordinates[i].getBase(1) != 0 ||
-	    interpolationCoordinates[i].getBound(1) != numberOfDimensions - 1) 
-	{
+        if (interpolationCoordinates[i].elementCount() != numberOfInterpolationPoints(i) * numberOfDimensions ||
+            interpolationCoordinates[i].getBase(0) != 0 ||
+            interpolationCoordinates[i].getBound(0) != numberOfInterpolationPoints(i) - 1 ||
+            interpolationCoordinates[i].getBase(1) != 0 ||
+            interpolationCoordinates[i].getBound(1) != numberOfDimensions - 1) 
+        {
           interpolationCoordinates[i].partition(partition);
-	  interpolationCoordinates[i].redim( numberOfInterpolationPoints(i), numberOfDimensions);
-	  interpolationCoordinates[i] = (Real)0.;
-	  if (how & COMPUTEgeometryAsNeeded)
-	    computeNeeded  |=  THEinterpolationCoordinates;
-	  computedGeometry &= ~THEinterpolationCoordinates;
-	  upd              |=  THEinterpolationCoordinates;
-	} // end if
+          interpolationCoordinates[i].redim( numberOfInterpolationPoints(i), numberOfDimensions);
+          interpolationCoordinates[i] = (Real)0.;
+          if (how & COMPUTEgeometryAsNeeded)
+            computeNeeded  |=  THEinterpolationCoordinates;
+          computedGeometry &= ~THEinterpolationCoordinates;
+          upd              |=  THEinterpolationCoordinates;
+        } // end if
       } // end if
       if (what & THEinterpoleeGrid)
       {
-	if (&y != this && i <
+        if (&y != this && i <
 #ifdef USE_STL
-	    y.interpoleeGrid.size() &&
+            y.interpoleeGrid.size() &&
 #else
-	    y.interpoleeGrid.getLength() &&
+            y.interpoleeGrid.getLength() &&
 #endif // USE_STL
-	    y.interpoleeGrid[i].elementCount() == numberOfInterpolationPoints(i) &&
-	    y.interpoleeGrid[i].getBase(0) == 0 && 
-	    y.interpoleeGrid[i].getBound(0) == numberOfInterpolationPoints(i) - 1)
-	{
-	  interpoleeGrid[i].reference(y.interpoleeGrid[i]);
-	  variableInterpolationWidth[i].reference(y.variableInterpolationWidth[i]);
-	}
-	if (interpoleeGrid[i].elementCount() !=numberOfInterpolationPoints(i) ||
-	    interpoleeGrid[i].getBase(0) != 0 || 
-	    interpoleeGrid[i].getBound(0) != numberOfInterpolationPoints(i) - 1)
-	{
+            y.interpoleeGrid[i].elementCount() == numberOfInterpolationPoints(i) &&
+            y.interpoleeGrid[i].getBase(0) == 0 && 
+            y.interpoleeGrid[i].getBound(0) == numberOfInterpolationPoints(i) - 1)
+        {
+          interpoleeGrid[i].reference(y.interpoleeGrid[i]);
+          variableInterpolationWidth[i].reference(y.variableInterpolationWidth[i]);
+        }
+        if (interpoleeGrid[i].elementCount() !=numberOfInterpolationPoints(i) ||
+            interpoleeGrid[i].getBase(0) != 0 || 
+            interpoleeGrid[i].getBound(0) != numberOfInterpolationPoints(i) - 1)
+        {
           interpoleeGrid[i].partition(partition);
-	  interpoleeGrid[i].redim(numberOfInterpolationPoints(i));
-	  interpoleeGrid[i] = 0;
-	  variableInterpolationWidth[i].partition(partition); // *wdh* 050327
-	  variableInterpolationWidth[i].redim(numberOfInterpolationPoints(i));
-	  variableInterpolationWidth[i] = 0;
-	  if (how & COMPUTEgeometryAsNeeded)
-	    computeNeeded  |=  THEinterpoleeGrid;
-	  computedGeometry &= ~THEinterpoleeGrid;
-	  upd              |=  THEinterpoleeGrid;
-	} // end if
+          interpoleeGrid[i].redim(numberOfInterpolationPoints(i));
+          interpoleeGrid[i] = 0;
+          variableInterpolationWidth[i].partition(partition); // *wdh* 050327
+          variableInterpolationWidth[i].redim(numberOfInterpolationPoints(i));
+          variableInterpolationWidth[i] = 0;
+          if (how & COMPUTEgeometryAsNeeded)
+            computeNeeded  |=  THEinterpoleeGrid;
+          computedGeometry &= ~THEinterpoleeGrid;
+          upd              |=  THEinterpoleeGrid;
+        } // end if
       } // end if
       if (what & THEinterpoleeLocation) 
       {
-	if (&y != this && i <
+        if (&y != this && i <
 #ifdef USE_STL
-	    y.interpoleeLocation.size() &&
+            y.interpoleeLocation.size() &&
 #else
-	    y.interpoleeLocation.getLength() &&
+            y.interpoleeLocation.getLength() &&
 #endif // USE_STL
-	    y.interpoleeLocation[i].elementCount() != numberOfInterpolationPoints(i) * numberOfDimensions &&
-	    y.interpoleeLocation[i].getBase(0) == 0 &&
-	    y.interpoleeLocation[i].getBound(0) == numberOfInterpolationPoints(i) - 1 &&
-	    y.interpoleeLocation[i].getBase(1) == 0 &&
-	    y.interpoleeLocation[i].getBound(1) ==  numberOfDimensions - 1)
-	  interpoleeLocation[i].reference(y.interpoleeLocation[i]);
+            y.interpoleeLocation[i].elementCount() != numberOfInterpolationPoints(i) * numberOfDimensions &&
+            y.interpoleeLocation[i].getBase(0) == 0 &&
+            y.interpoleeLocation[i].getBound(0) == numberOfInterpolationPoints(i) - 1 &&
+            y.interpoleeLocation[i].getBase(1) == 0 &&
+            y.interpoleeLocation[i].getBound(1) ==  numberOfDimensions - 1)
+          interpoleeLocation[i].reference(y.interpoleeLocation[i]);
 
-	if (interpoleeLocation[i].elementCount() != numberOfInterpolationPoints(i) * numberOfDimensions ||
-	    interpoleeLocation[i].getBase(0) != 0 ||
-	    interpoleeLocation[i].getBound(0) != numberOfInterpolationPoints(i) - 1 ||
-	    interpoleeLocation[i].getBase(1) != 0 || 
-	    interpoleeLocation[i].getBound(1) != numberOfDimensions - 1) 
-	{
-	  interpoleeLocation[i].partition(partition);
-	  interpoleeLocation[i].redim( numberOfInterpolationPoints(i), numberOfDimensions);
-	  interpoleeLocation[i] = 0;
-	  if (how & COMPUTEgeometryAsNeeded)
-	    computeNeeded  |=  THEinterpoleeLocation;
-	  computedGeometry &= ~THEinterpoleeLocation;
-	  upd              |=  THEinterpoleeLocation;
-	} // end if
+        if (interpoleeLocation[i].elementCount() != numberOfInterpolationPoints(i) * numberOfDimensions ||
+            interpoleeLocation[i].getBase(0) != 0 ||
+            interpoleeLocation[i].getBound(0) != numberOfInterpolationPoints(i) - 1 ||
+            interpoleeLocation[i].getBase(1) != 0 || 
+            interpoleeLocation[i].getBound(1) != numberOfDimensions - 1) 
+        {
+          interpoleeLocation[i].partition(partition);
+          interpoleeLocation[i].redim( numberOfInterpolationPoints(i), numberOfDimensions);
+          interpoleeLocation[i] = 0;
+          if (how & COMPUTEgeometryAsNeeded)
+            computeNeeded  |=  THEinterpoleeLocation;
+          computedGeometry &= ~THEinterpoleeLocation;
+          upd              |=  THEinterpoleeLocation;
+        } // end if
       } // end if
       if (what & THEinterpolationPoint) {
-	if (&y != this && i <
+        if (&y != this && i <
 #ifdef USE_STL
-	    y.interpolationPoint.size() &&
+            y.interpolationPoint.size() &&
 #else
-	    y.interpolationPoint.getLength() &&
+            y.interpolationPoint.getLength() &&
 #endif // USE_STL
-	    y.interpolationPoint[i].elementCount() == numberOfInterpolationPoints(i) * numberOfDimensions &&
-	    y.interpolationPoint[i].getBase(0) == 0 &&
-	    y.interpolationPoint[i].getBound(0) == numberOfInterpolationPoints(i) - 1 &&
-	    y.interpolationPoint[i].getBase(1) == 0 &&
-	    y.interpolationPoint[i].getBound(1) ==  numberOfDimensions - 1)
-	  interpolationPoint[i].reference(y.interpolationPoint[i]);
-	if (interpolationPoint[i].elementCount() != numberOfInterpolationPoints(i) * numberOfDimensions ||
-	    interpolationPoint[i].getBase(0) != 0 ||
-	    interpolationPoint[i].getBound(0) != numberOfInterpolationPoints(i) - 1 ||
-	    interpolationPoint[i].getBase(1) != 0 ||
-	    interpolationPoint[i].getBound(1) != numberOfDimensions - 1) 
+            y.interpolationPoint[i].elementCount() == numberOfInterpolationPoints(i) * numberOfDimensions &&
+            y.interpolationPoint[i].getBase(0) == 0 &&
+            y.interpolationPoint[i].getBound(0) == numberOfInterpolationPoints(i) - 1 &&
+            y.interpolationPoint[i].getBase(1) == 0 &&
+            y.interpolationPoint[i].getBound(1) ==  numberOfDimensions - 1)
+          interpolationPoint[i].reference(y.interpolationPoint[i]);
+        if (interpolationPoint[i].elementCount() != numberOfInterpolationPoints(i) * numberOfDimensions ||
+            interpolationPoint[i].getBase(0) != 0 ||
+            interpolationPoint[i].getBound(0) != numberOfInterpolationPoints(i) - 1 ||
+            interpolationPoint[i].getBase(1) != 0 ||
+            interpolationPoint[i].getBound(1) != numberOfDimensions - 1) 
         {
           interpolationPoint[i].partition(partition);
-	  interpolationPoint[i].redim(numberOfInterpolationPoints(i), numberOfDimensions);
-	  interpolationPoint[i] = 0;
-	  if (how & COMPUTEgeometryAsNeeded)
-	    computeNeeded  |=  THEinterpolationPoint;
-	  computedGeometry &= ~THEinterpolationPoint;
-	  upd              |=  THEinterpolationPoint;
-	} // end if
+          interpolationPoint[i].redim(numberOfInterpolationPoints(i), numberOfDimensions);
+          interpolationPoint[i] = 0;
+          if (how & COMPUTEgeometryAsNeeded)
+            computeNeeded  |=  THEinterpolationPoint;
+          computedGeometry &= ~THEinterpolationPoint;
+          upd              |=  THEinterpolationPoint;
+        } // end if
       } // end if
 //             if (what & THEinterpolationCondition) {
 //                 if (&y != this && i <
@@ -3286,16 +3286,16 @@ update( GenericGridCollectionData& x,
     else 
     { // (numberOfInterpolationPoints == 0)
       if (what & THEinterpolationCoordinates)
-	interpolationCoordinates[i].redim(0);
+        interpolationCoordinates[i].redim(0);
       if (what & THEinterpoleeGrid)
       {
-	interpoleeGrid[i]            .redim(0);
-	variableInterpolationWidth[i].redim(0);
+        interpoleeGrid[i]            .redim(0);
+        variableInterpolationWidth[i].redim(0);
       }
       if (what & THEinterpoleeLocation)
-	interpoleeLocation[i]      .redim(0);
+        interpoleeLocation[i]      .redim(0);
       if (what & THEinterpolationPoint)
-	interpolationPoint[i]      .redim(0);
+        interpolationPoint[i]      .redim(0);
     } // end if
 //         if (what & THEinterpoleeGrid) {
 //             if (numberOfInterpoleePoints(i)) {
@@ -3341,12 +3341,12 @@ update( GenericGridCollectionData& x,
       inverseGrid       .reference(y.inverseGrid);
       if (y.computedGeometry &   THEinverseMap) 
       {
-	computedGeometry   |=  THEinverseMap;
+        computedGeometry   |=  THEinverseMap;
       } 
       else if (how         &   COMPUTEgeometryAsNeeded) 
       {
-	computedGeometry   &= ~THEinverseMap;
-	computeNeeded      |=  THEinverseMap;
+        computedGeometry   &= ~THEinverseMap;
+        computeNeeded      |=  THEinverseMap;
       } // end if
     } // end if
     if((  // inverseCondition  .updateToMatchGrid(*this, all, all, all) |
@@ -3359,7 +3359,7 @@ update( GenericGridCollectionData& x,
       inverseCoordinates     =   (Real)0.;
       inverseGrid            =   -1;
       if (how                &   COMPUTEgeometryAsNeeded)
-	computeNeeded        |=  THEinverseMap;
+        computeNeeded        |=  THEinverseMap;
       computedGeometry       &= ~THEinverseMap;
       upd                    |=  THEinverseMap;
     } // end if
@@ -3529,92 +3529,92 @@ replaceRefinementLevels(int level0, int numberOfRefinementLevels0, IntegerArray 
       for (Integer k20=0; k20<numberOfGrids; k20++)
       {
         // *wdh* if( multigridLevelNumber(k20)  == l &&
-        // 	    (refinementLevelNumber(k20) == refinementLevelNumber(n) ||
-        // 	     refinementLevelNumber(k20) == refinementLevelNumber(n) - 1)) 
-	if( multigridLevelNumber(k20)  == l )
-	{
-	  MappedGrid& g_20 = grid[k20];
-	  Integer k2 = componentGridNumber(k20), k4 = baseGridNumber(k20);
-	  assert(k4 == componentGridNumber(k4));
-	  if( k20 == k10 || k3 != k4 ) 
-	  {
-	    // Interpolation from self or from an unrelated grid.
-	    interpolationIsImplicit(k1,k2,l) = interpolationIsImplicit(k3,k4,l);
+        //          (refinementLevelNumber(k20) == refinementLevelNumber(n) ||
+        //           refinementLevelNumber(k20) == refinementLevelNumber(n) - 1)) 
+        if( multigridLevelNumber(k20)  == l )
+        {
+          MappedGrid& g_20 = grid[k20];
+          Integer k2 = componentGridNumber(k20), k4 = baseGridNumber(k20);
+          assert(k4 == componentGridNumber(k4));
+          if( k20 == k10 || k3 != k4 ) 
+          {
+            // Interpolation from self or from an unrelated grid.
+            interpolationIsImplicit(k1,k2,l) = interpolationIsImplicit(k3,k4,l);
 
-	    // printf(" k1=%i k2=%i level(k10)=%i level(k20)=%i\n",k1,k2,refinementLevelNumber(k10),
-	    // 	   refinementLevelNumber(k20));
-	    
-	    for (Integer kd=0; kd<3; kd++) 
-	    {
+            // printf(" k1=%i k2=%i level(k10)=%i level(k20)=%i\n",k1,k2,refinementLevelNumber(k10),
+            //     refinementLevelNumber(k20));
+            
+            for (Integer kd=0; kd<3; kd++) 
+            {
               if( refinementLevelNumber(k10) > refinementLevelNumber(k20) )
-	      {
-		//  *wdh* 061102 Implicit interpolation is allowed from coarser grid on a different base grid since
+              {
+                //  *wdh* 061102 Implicit interpolation is allowed from coarser grid on a different base grid since
                 //  these values will have already been assigned. (i.e. pretend this is still explicit interp.)
-		interpolationIsImplicit(k1,k2,l) = false;
-		interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
-		interpolationOverlap(kd,k1,k2,l) = amax1(epsilon,
-							 (Real).5 * interpolationWidth(kd,k1,k2,l) - (Real)1.);
-	      }
-	      else
-	      {
-		interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
-		interpolationOverlap(kd,k1,k2,l) = interpolationOverlap(kd,k3,k4,l);
-	      }
-	      
-	    } // end for
+                interpolationIsImplicit(k1,k2,l) = false;
+                interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
+                interpolationOverlap(kd,k1,k2,l) = amax1(epsilon,
+                                                         (Real).5 * interpolationWidth(kd,k1,k2,l) - (Real)1.);
+              }
+              else
+              {
+                interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
+                interpolationOverlap(kd,k1,k2,l) = interpolationOverlap(kd,k3,k4,l);
+              }
+              
+            } // end for
 
-	  } 
-	  else //  if (k3 == k4)  baseGrid(k1) = baseGrid(k2)
-	  {
-	    //   Interpolation from a related grid.
-	    interpolationIsImplicit(k1,k2,l) = LogicalFalse;
-	    Integer kd;
-	    for (kd=0; kd<numberOfDimensions; kd++) 
-	    {
-	      interpolationWidth(kd,k1,k2,l) = 1;
-	      if (g_20.mapping().getGridDimensions(kd) == 1)
-	      {
-		// Interpolation on a surface grid.
-		interpolationOverlap(kd,k1,k2,l)       = (Real)-.5;
-	      } 
-	      else if (refinementLevelNumber(k20) == refinementLevelNumber(k10))
-	      {
-		// Interpolation from a grid at the same refinement level.
-		interpolationOverlap(kd,k1,k2,l) = amax1(epsilon,
-							 (Real).5 * interpolationWidth(kd,k1,k2,l) - (Real)1. +
-							 (Real).5 * (g_20.discretizationWidth(kd) - 1));
-	      } 
-	      else 
-	      {
-		//  Implicit interpolation from a parent (coarser) grid. (i.e. pretend this is still explicit interp.)
-		// *wdh* 000821 interpolationIsImplicit(k1,k2,l) = LogicalTrue;
-		interpolationIsImplicit(k1,k2,l) = false;
-		interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
-		interpolationOverlap(kd,k1,k2,l) = amax1(epsilon,
-							 (Real).5 * interpolationWidth(kd,k1,k2,l) - (Real)1.);
-	      } // end if
+          } 
+          else //  if (k3 == k4)  baseGrid(k1) = baseGrid(k2)
+          {
+            //   Interpolation from a related grid.
+            interpolationIsImplicit(k1,k2,l) = LogicalFalse;
+            Integer kd;
+            for (kd=0; kd<numberOfDimensions; kd++) 
+            {
+              interpolationWidth(kd,k1,k2,l) = 1;
+              if (g_20.mapping().getGridDimensions(kd) == 1)
+              {
+                // Interpolation on a surface grid.
+                interpolationOverlap(kd,k1,k2,l)       = (Real)-.5;
+              } 
+              else if (refinementLevelNumber(k20) == refinementLevelNumber(k10))
+              {
+                // Interpolation from a grid at the same refinement level.
+                interpolationOverlap(kd,k1,k2,l) = amax1(epsilon,
+                                                         (Real).5 * interpolationWidth(kd,k1,k2,l) - (Real)1. +
+                                                         (Real).5 * (g_20.discretizationWidth(kd) - 1));
+              } 
+              else 
+              {
+                //  Implicit interpolation from a parent (coarser) grid. (i.e. pretend this is still explicit interp.)
+                // *wdh* 000821 interpolationIsImplicit(k1,k2,l) = LogicalTrue;
+                interpolationIsImplicit(k1,k2,l) = false;
+                interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
+                interpolationOverlap(kd,k1,k2,l) = amax1(epsilon,
+                                                         (Real).5 * interpolationWidth(kd,k1,k2,l) - (Real)1.);
+              } // end if
 
-	      if (refinementLevelNumber(k20) == refinementLevelNumber(k10) - 1) 
-	      {
-		//  Coarsen for multigrid in the same way as for any parent.
-		multigridCoarseningRatio(kd,k1,l) = multigridCoarseningRatio(kd,k3,l);
-		multigridProlongationWidth(kd,k1,l) = multigridProlongationWidth(kd,k3,l);
-		multigridRestrictionWidth(kd,k1,l) = multigridRestrictionWidth(kd,k3,l);
-	      } // end if
-	    } // end for
-	    for (kd=numberOfDimensions; kd<3; kd++) 
-	    {
-	      interpolationWidth(kd,k1,k2,l) = 1;
-	      interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
-	      interpolationOverlap(kd,k1,k2,l) = interpolationOverlap(kd,k3,k4,l);
-	    } // end for
-	  } // end if
-	  mayInterpolate(k1,k2,l) = k1 == k2 ? LogicalFalse : k3 == k4 ? LogicalTrue  :   mayInterpolate(k3,k4,l);
-	  if (refinementLevelNumber(k20) == refinementLevelNumber(k10)) 
-	  {
-	    mayInterpolate(k2,k1,l)= k1 == k2 ? LogicalFalse : k3 == k4 ? LogicalTrue  : mayInterpolate(k4,k3,l);
-	  } // end if
-	} // end if
+              if (refinementLevelNumber(k20) == refinementLevelNumber(k10) - 1) 
+              {
+                //  Coarsen for multigrid in the same way as for any parent.
+                multigridCoarseningRatio(kd,k1,l) = multigridCoarseningRatio(kd,k3,l);
+                multigridProlongationWidth(kd,k1,l) = multigridProlongationWidth(kd,k3,l);
+                multigridRestrictionWidth(kd,k1,l) = multigridRestrictionWidth(kd,k3,l);
+              } // end if
+            } // end for
+            for (kd=numberOfDimensions; kd<3; kd++) 
+            {
+              interpolationWidth(kd,k1,k2,l) = 1;
+              interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
+              interpolationOverlap(kd,k1,k2,l) = interpolationOverlap(kd,k3,k4,l);
+            } // end for
+          } // end if
+          mayInterpolate(k1,k2,l) = k1 == k2 ? LogicalFalse : k3 == k4 ? LogicalTrue  :   mayInterpolate(k3,k4,l);
+          if (refinementLevelNumber(k20) == refinementLevelNumber(k10)) 
+          {
+            mayInterpolate(k2,k1,l)= k1 == k2 ? LogicalFalse : k3 == k4 ? LogicalTrue  : mayInterpolate(k4,k3,l);
+          } // end if
+        } // end if
       } // end for k20
 
       //  Initially disallow interpolation to or from the new grid.
@@ -3631,7 +3631,7 @@ replaceRefinementLevels(int level0, int numberOfRefinementLevels0, IntegerArray 
 //     for( int grid2=0; grid2<numberOfComponentGrids; grid2++ )
 //     {
 //       printF(" grid1=%i grid2=%i interpolationOverlap=%5.2f\n",grid1,grid2,
-// 	     interpolationOverlap(0,grid1,grid2,0));
+//           interpolationOverlap(0,grid1,grid2,0));
 //     }
 // ********************
 
@@ -3680,90 +3680,90 @@ addRefinement(
       for (Integer k20=0; k20<numberOfGrids; k20++)
       {
         // *wdh* if( multigridLevelNumber(k20)  == l &&
-        // 	    (refinementLevelNumber(k20) == refinementLevelNumber(n) ||
-        // 	     refinementLevelNumber(k20) == refinementLevelNumber(n) - 1)) 
-	if( multigridLevelNumber(k20)  == l )
-	{
-	  MappedGrid& g_20 = grid[k20];
-	  Integer k2 = componentGridNumber(k20), k4 = baseGridNumber(k20);
-	  assert(k4 == componentGridNumber(k4));
-	  if (k20 == k10 || k3 != k4) 
-	  {
-	    // Interpolation from self or from an unrelated grid.
-	    interpolationIsImplicit(k1,k2,l) = interpolationIsImplicit(k3,k4,l);
+        //          (refinementLevelNumber(k20) == refinementLevelNumber(n) ||
+        //           refinementLevelNumber(k20) == refinementLevelNumber(n) - 1)) 
+        if( multigridLevelNumber(k20)  == l )
+        {
+          MappedGrid& g_20 = grid[k20];
+          Integer k2 = componentGridNumber(k20), k4 = baseGridNumber(k20);
+          assert(k4 == componentGridNumber(k4));
+          if (k20 == k10 || k3 != k4) 
+          {
+            // Interpolation from self or from an unrelated grid.
+            interpolationIsImplicit(k1,k2,l) = interpolationIsImplicit(k3,k4,l);
 
- 	    for (Integer kd=0; kd<3; kd++) 
- 	    {
-// 	      interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
-// 	      interpolationOverlap(kd,k1,k2,l) = interpolationOverlap(kd,k3,k4,l);
+            for (Integer kd=0; kd<3; kd++) 
+            {
+//            interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
+//            interpolationOverlap(kd,k1,k2,l) = interpolationOverlap(kd,k3,k4,l);
 
-	      if( refinementLevelNumber(k10) > refinementLevelNumber(k20) )
-	      {
-		//  *wdh* 061102 Implicit interpolation is allowed from coarser grid on a different base grid since
-		//  these values will have already been assigned. (i.e. pretend this is still explicit interp.)
-		interpolationIsImplicit(k1,k2,l) = false;
-		interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
-		interpolationOverlap(kd,k1,k2,l) = amax1(epsilon,
-							 (Real).5 * interpolationWidth(kd,k1,k2,l) - (Real)1.);
-	      }
-	      else
-	      {
-		interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
-		interpolationOverlap(kd,k1,k2,l) = interpolationOverlap(kd,k3,k4,l);
-	      }
- 	    } // end for
-	  } 
-	  else //  if (k3 == k4) 
-	  {
-	    //   Interpolation from a related grid.
-	    interpolationIsImplicit(k1,k2,l) = LogicalFalse;
-	    Integer kd;
-	    for (kd=0; kd<numberOfDimensions; kd++) 
-	    {
-	      interpolationWidth(kd,k1,k2,l) = 1;
-	      if (g_20.mapping().getGridDimensions(kd) == 1)
-	      {
-		// Interpolation on a surface grid.
-		interpolationOverlap(kd,k1,k2,l)       = (Real)-.5;
-	      } 
-	      else if (refinementLevelNumber(k20) == refinementLevelNumber(k10))
-	      {
-		// Interpolation from a grid at the same refinement level.
-		interpolationOverlap(kd,k1,k2,l) = amax1(epsilon,
-							 (Real).5 * interpolationWidth(kd,k1,k2,l) - (Real)1. +
-							 (Real).5 * (g_20.discretizationWidth(kd) - 1));
-	      } 
-	      else 
-	      {
-		//  Implicit interpolation from a parent (coarser) grid.
-		// *wdh* 000821 interpolationIsImplicit(k1,k2,l) = LogicalTrue;
-		interpolationIsImplicit(k1,k2,l) = false;
-		interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
-		interpolationOverlap(kd,k1,k2,l) = amax1(epsilon,
-							 (Real).5 * interpolationWidth(kd,k1,k2,l) - (Real)1.);
-	      } // end if
+              if( refinementLevelNumber(k10) > refinementLevelNumber(k20) )
+              {
+                //  *wdh* 061102 Implicit interpolation is allowed from coarser grid on a different base grid since
+                //  these values will have already been assigned. (i.e. pretend this is still explicit interp.)
+                interpolationIsImplicit(k1,k2,l) = false;
+                interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
+                interpolationOverlap(kd,k1,k2,l) = amax1(epsilon,
+                                                         (Real).5 * interpolationWidth(kd,k1,k2,l) - (Real)1.);
+              }
+              else
+              {
+                interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
+                interpolationOverlap(kd,k1,k2,l) = interpolationOverlap(kd,k3,k4,l);
+              }
+            } // end for
+          } 
+          else //  if (k3 == k4) 
+          {
+            //   Interpolation from a related grid.
+            interpolationIsImplicit(k1,k2,l) = LogicalFalse;
+            Integer kd;
+            for (kd=0; kd<numberOfDimensions; kd++) 
+            {
+              interpolationWidth(kd,k1,k2,l) = 1;
+              if (g_20.mapping().getGridDimensions(kd) == 1)
+              {
+                // Interpolation on a surface grid.
+                interpolationOverlap(kd,k1,k2,l)       = (Real)-.5;
+              } 
+              else if (refinementLevelNumber(k20) == refinementLevelNumber(k10))
+              {
+                // Interpolation from a grid at the same refinement level.
+                interpolationOverlap(kd,k1,k2,l) = amax1(epsilon,
+                                                         (Real).5 * interpolationWidth(kd,k1,k2,l) - (Real)1. +
+                                                         (Real).5 * (g_20.discretizationWidth(kd) - 1));
+              } 
+              else 
+              {
+                //  Implicit interpolation from a parent (coarser) grid.
+                // *wdh* 000821 interpolationIsImplicit(k1,k2,l) = LogicalTrue;
+                interpolationIsImplicit(k1,k2,l) = false;
+                interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
+                interpolationOverlap(kd,k1,k2,l) = amax1(epsilon,
+                                                         (Real).5 * interpolationWidth(kd,k1,k2,l) - (Real)1.);
+              } // end if
 
-	      if (refinementLevelNumber(k20) == refinementLevelNumber(k10) - 1) 
-	      {
-		//  Coarsen for multigrid in the same way as for any parent.
-		multigridCoarseningRatio(kd,k1,l) = multigridCoarseningRatio(kd,k3,l);
-		multigridProlongationWidth(kd,k1,l) = multigridProlongationWidth(kd,k3,l);
-		multigridRestrictionWidth(kd,k1,l) = multigridRestrictionWidth(kd,k3,l);
-	      } // end if
-	    } // end for
-	    for (kd=numberOfDimensions; kd<3; kd++) 
-	    {
-	      interpolationWidth(kd,k1,k2,l) = 1;
-	      interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
-	      interpolationOverlap(kd,k1,k2,l) = interpolationOverlap(kd,k3,k4,l);
-	    } // end for
-	  } // end if
-	  mayInterpolate(k1,k2,l) = k1 == k2 ? LogicalFalse : k3 == k4 ? LogicalTrue  :   mayInterpolate(k3,k4,l);
-	  if (refinementLevelNumber(k20) == refinementLevelNumber(n)) 
-	  {
-	    mayInterpolate(k2,k1,l)= k1 == k2 ? LogicalFalse : k3 == k4 ? LogicalTrue  : mayInterpolate(k4,k3,l);
-	  } // end if
-	} // end if
+              if (refinementLevelNumber(k20) == refinementLevelNumber(k10) - 1) 
+              {
+                //  Coarsen for multigrid in the same way as for any parent.
+                multigridCoarseningRatio(kd,k1,l) = multigridCoarseningRatio(kd,k3,l);
+                multigridProlongationWidth(kd,k1,l) = multigridProlongationWidth(kd,k3,l);
+                multigridRestrictionWidth(kd,k1,l) = multigridRestrictionWidth(kd,k3,l);
+              } // end if
+            } // end for
+            for (kd=numberOfDimensions; kd<3; kd++) 
+            {
+              interpolationWidth(kd,k1,k2,l) = 1;
+              interpolationWidth(kd,k1,k2,l) = interpolationWidth(kd,k3,k4,l);
+              interpolationOverlap(kd,k1,k2,l) = interpolationOverlap(kd,k3,k4,l);
+            } // end for
+          } // end if
+          mayInterpolate(k1,k2,l) = k1 == k2 ? LogicalFalse : k3 == k4 ? LogicalTrue  :   mayInterpolate(k3,k4,l);
+          if (refinementLevelNumber(k20) == refinementLevelNumber(n)) 
+          {
+            mayInterpolate(k2,k1,l)= k1 == k2 ? LogicalFalse : k3 == k4 ? LogicalTrue  : mayInterpolate(k4,k3,l);
+          } // end if
+        } // end if
       }
     } // end if
   }
@@ -3821,8 +3821,8 @@ void CompositeGridData::referenceRefinementLevels(
 }
 Integer CompositeGridData::
 addMultigridCoarsening( const IntegerArray& factor,
-			const Integer&      level,
-			const Integer       k)
+                        const Integer&      level,
+                        const Integer       k)
 {
   Integer n = GridCollectionData::addMultigridCoarsening(factor, level,  k);
   setNumberOfDimensionsAndGrids(numberOfDimensions, numberOfGrids);
@@ -3838,7 +3838,7 @@ addMultigridCoarsening( const IntegerArray& factor,
     for (kd=0; kd<3; kd++) 
     {
       interpolationWidth(kd,k1,k2,level) =interpolationWidth(kd,k1,k2,level-1);
-      interpolationOverlap(kd,k1,k2,level) = 	interpolationOverlap(kd,k1,k2,level-1);
+      interpolationOverlap(kd,k1,k2,level) =    interpolationOverlap(kd,k1,k2,level-1);
     } // end for
   } // end for
   //
@@ -3852,7 +3852,7 @@ addMultigridCoarsening( const IntegerArray& factor,
     if (k2 == n) 
       continue;
   else if (multigridLevelNumber(k2) == multigridLevelNumber(n) &&
-	   baseGridNumber(k2)       == baseGridNumber(n)) 
+           baseGridNumber(k2)       == baseGridNumber(n)) 
     break;
   if (k2 != numberOfGrids) k2 = componentGridNumber(k2);
 
@@ -3872,16 +3872,16 @@ addMultigridCoarsening( const IntegerArray& factor,
       //          multigridCoarseningRatio and multigridRestrictionWidth
       //          must be both odd or both even.
       if ((multigridRestrictionWidth(kd,k1,level)-multigridCoarseningRatio(kd,k1,level)) % 2)
-	multigridRestrictionWidth(kd,k1,level)++;
+        multigridRestrictionWidth(kd,k1,level)++;
     } 
     else 
     {
       //          multigridRestrictionWidth must be odd.
       if (multigridRestrictionWidth(kd,k1,level) % 2 == 0)
-	multigridRestrictionWidth(kd,k1,level)++;
+        multigridRestrictionWidth(kd,k1,level)++;
       //          multigridProlongationWidth must be even.
       if (multigridProlongationWidth(kd,k1,level) % 2)
-	multigridProlongationWidth(kd,k1,level)++;
+        multigridProlongationWidth(kd,k1,level)++;
     } // end if
   } // end for
   for (kd=numberOfDimensions; kd<3; kd++) 
@@ -3937,14 +3937,14 @@ deleteMultigridCoarsening(const Integer& k)
   if (k < 0 || k >= numberOfGrids)
   {
     cout << "CompositeGridData::deleteMultigridCoarsening(k = "
-	 << k << "):  Grid " << k << " does not exist." << endl;
+         << k << "):  Grid " << k << " does not exist." << endl;
     assert(k >= 0); assert(k < numberOfGrids);
   } 
   else if (multigridLevelNumber(k) == 0 && refinementLevelNumber(k) == 0)
   {
     cout << "CompositeGridData::deleteMultigridCoarsening(k = "
-	 << k << "):  Grid k = " << k << " is not a multigrid coarsening."
-	 << endl;
+         << k << "):  Grid k = " << k << " is not a multigrid coarsening."
+         << endl;
     assert(multigridLevelNumber(k) != 0 || refinementLevelNumber(k) != 0);
   } // end if
   Integer i, lastGrid=numberOfGrids-1;
@@ -4078,28 +4078,28 @@ setNumberOfDimensionsAndGrids(
 
       if (numberOfMultigridLevels > n2) 
       {
-	const Range oldMultigridLevels = numberOfMultigridLevels - n2;
-	interpolationIsImplicit(newComponentGrids,allComponentGrids,oldMultigridLevels) = LogicalFalse;
-	interpolationIsImplicit(allComponentGrids,newComponentGrids,oldMultigridLevels) = LogicalFalse;
+        const Range oldMultigridLevels = numberOfMultigridLevels - n2;
+        interpolationIsImplicit(newComponentGrids,allComponentGrids,oldMultigridLevels) = LogicalFalse;
+        interpolationIsImplicit(allComponentGrids,newComponentGrids,oldMultigridLevels) = LogicalFalse;
 
-	interpolationWidth(three,newComponentGrids,allComponentGrids,oldMultigridLevels) = 0;
-	interpolationWidth(three,allComponentGrids,newComponentGrids,oldMultigridLevels) = 0;
+        interpolationWidth(three,newComponentGrids,allComponentGrids,oldMultigridLevels) = 0;
+        interpolationWidth(three,allComponentGrids,newComponentGrids,oldMultigridLevels) = 0;
 
-	interpolationOverlap(three,newComponentGrids,allComponentGrids,oldMultigridLevels) = 0.;
-	interpolationOverlap(three,allComponentGrids,newComponentGrids,oldMultigridLevels) = 0.;
-	interpolationPreference(newComponentGrids,allComponentGrids,oldMultigridLevels) = 0;
-	interpolationPreference(allComponentGrids,newComponentGrids,oldMultigridLevels) = 0;
-	mayInterpolate(allComponentGrids,newComponentGrids,oldMultigridLevels) = LogicalFalse;
-	mayInterpolate(newComponentGrids,allComponentGrids,oldMultigridLevels) = LogicalFalse;
-	multigridCoarseningRatio(three,newComponentGrids,oldMultigridLevels)=0;
-	multigridProlongationWidth(three,newComponentGrids,oldMultigridLevels)=0;
-	multigridRestrictionWidth(three,newComponentGrids,oldMultigridLevels)=0;
+        interpolationOverlap(three,newComponentGrids,allComponentGrids,oldMultigridLevels) = 0.;
+        interpolationOverlap(three,allComponentGrids,newComponentGrids,oldMultigridLevels) = 0.;
+        interpolationPreference(newComponentGrids,allComponentGrids,oldMultigridLevels) = 0;
+        interpolationPreference(allComponentGrids,newComponentGrids,oldMultigridLevels) = 0;
+        mayInterpolate(allComponentGrids,newComponentGrids,oldMultigridLevels) = LogicalFalse;
+        mayInterpolate(newComponentGrids,allComponentGrids,oldMultigridLevels) = LogicalFalse;
+        multigridCoarseningRatio(three,newComponentGrids,oldMultigridLevels)=0;
+        multigridProlongationWidth(three,newComponentGrids,oldMultigridLevels)=0;
+        multigridRestrictionWidth(three,newComponentGrids,oldMultigridLevels)=0;
       } // end if
     } // end if
     if (n2 > 0 && numGrids > 0) 
     {
       const Range three = 3, newMultigridLevels(numberOfMultigridLevels - n2, numberOfMultigridLevels - 1),
-	allComponentGrids = numGrids;
+        allComponentGrids = numGrids;
       interpolationIsImplicit(allComponentGrids,allComponentGrids,newMultigridLevels) = LogicalFalse;
       interpolationWidth(three,allComponentGrids,allComponentGrids,newMultigridLevels) = 0;
       interpolationOverlap(three,allComponentGrids,allComponentGrids,newMultigridLevels) = 0.;
@@ -4115,7 +4115,7 @@ setNumberOfDimensionsAndGrids(
 
 void CompositeGridData::
 initialize(const Integer& numberOfDimensions_,
-	   const Integer& numberOfGrids_) 
+           const Integer& numberOfGrids_) 
 {
   numberOfCompleteMultigridLevels=0; // *wdh* 000825
   CompositeGridData::setNumberOfDimensionsAndGrids
@@ -4133,10 +4133,10 @@ initialize(const Integer& numberOfDimensions_,
 
 void CompositeGridData::
 getInterpolationStencil(const Integer&      k10,
-			const Integer&      k20,
-			const RealArray&    r,
-			const IntegerArray& interpolationStencil,
-			const intArray& useBackupRules) 
+                        const Integer&      k20,
+                        const RealArray&    r,
+                        const IntegerArray& interpolationStencil,
+                        const intArray& useBackupRules) 
 {
   MappedGrid& g = grid[k20];
   const Real a = -(Real)2. * epsilon, b = (Real)1. - a;
@@ -4533,12 +4533,12 @@ Logical CompositeGridData::canInterpolate(
             oneSided[kd][0] = oneSided[kd][1] = LogicalFalse;
             if (kd < numberOfDimensions) 
             {
-	      // *wdh if (invalid = r_(i,kd) < a || r_(i,kd) > b) break;
-	      if( (invalid = (r_(i,kd) < rBound[kd][0] || r_(i,kd) > rBound[kd][1])) ) break;
+              // *wdh if (invalid = r_(i,kd) < a || r_(i,kd) > b) break;
+              if( (invalid = (r_(i,kd) < rBound[kd][0] || r_(i,kd) > rBound[kd][1])) ) break;
                 Real rr = r_(i,kd) / g_gridSpacing(kd) + g_indexRange(0,kd);
 
                 // real overlap=ov0_(kd); // *wdh*
-		
+                
                 iab(0,kd) = Integer(floor(rr - ov0_(kd) -
                   (g_isCellCentered(kd) ? (Real).5 : (Real)0.)));
                 iab(1,kd) = Integer(floor(rr + ov0_(kd) +
@@ -4546,7 +4546,7 @@ Logical CompositeGridData::canInterpolate(
                 if (!g_isPeriodic(kd)) {
                     if (iab(0,kd) < g.extendedRange(0,kd)) {
 //                      Check if point is too close to an interpolated side.
-		      if( (invalid = !g_boundaryCondition(0,kd)) ) break;
+                      if( (invalid = !g_boundaryCondition(0,kd)) ) break;
 //                      One-sided interpolation is used close to a boundary.
                         isOneSided = oneSided[kd][0] = LogicalTrue;
                         iab(0,kd) = g.extendedRange(0,kd);
@@ -4555,7 +4555,7 @@ Logical CompositeGridData::canInterpolate(
                     } // end if
                     if (iab(1,kd) > g.extendedRange(1,kd)) {
 //                      Check if point is too close to an interpolated side.
-		      if( (invalid = !g_boundaryCondition(1,kd)) ) break;
+                      if( (invalid = !g_boundaryCondition(1,kd)) ) break;
 //                      One-sided interpolation is used close to a boundary.
                         isOneSided = oneSided[kd][1] = LogicalTrue;
                         iab(1,kd) = g.extendedRange(1,kd);
@@ -4574,15 +4574,15 @@ Logical CompositeGridData::canInterpolate(
 //      interpolation points are also allowed.
 //
         if (!invalid) 
-	{
-	  COMPOSITE_GRID_FOR_3(iab_, i1, i2, i3)
-	  {
-	    if( (invalid = invalid ||
-		 !(g_mask(g_I1[i1],g_I2[i2],g_I3[i3]) & ISusedPoint)) ) break;
-	  }
-	  
-	}
-	
+        {
+          COMPOSITE_GRID_FOR_3(iab_, i1, i2, i3)
+          {
+            if( (invalid = invalid ||
+                 !(g_mask(g_I1[i1],g_I2[i2],g_I3[i3]) & ISusedPoint)) ) break;
+          }
+          
+        }
+        
         if (!invalid && checkForOneSided && isOneSided) {
 //
 //          Check for one-sided interpolation from BC points
@@ -4603,10 +4603,10 @@ Logical CompositeGridData::canInterpolate(
                     Integer iab21=iab2_(0,0,kd), iab22=iab2_(0,1,kd);
                     // *wdh* 021205: check added getInterpolationStencil will return this value for bogus pts
                     if( iab21==INT_MAX ) 
-		    {
-		      invalid=true;
-		      break;
-		    }
+                    {
+                      invalid=true;
+                      break;
+                    }
 //                  Restrict the interpolation stencil to points that could be
 //                  boundary discretization points of side (kd,ks) of the grid.
                     if (ks == 0) {
@@ -4636,27 +4636,27 @@ Logical CompositeGridData::canInterpolate(
                     if (invalid) break;
 ------- */
                     COMPOSITE_GRID_FOR_3(iab2__, i1, i2, i3)
-		    {
+                    {
                       if( (invalid = invalid || g_mask(g_I1[i1],g_I2[i2],g_I3[i3]) & ISinteriorBoundaryPoint) )
-		      {
+                      {
                         // Make sure that we are not too close to an the interpolation point
-			real rDist=0.;
+                        real rDist=0.;
                         real cellCenterederedOffset=g_isCellCentered(kd) ? .5 : 0.;
-			for( int dir=0; dir<numberOfDimensions; dir++ )
-			  rDist=max(rDist,fabs( r_(i,dir)/g_gridSpacing(dir)
-						-(iv1[dir]+cellCenterederedOffset-g_indexRange(Start,dir))));
-			if( rDist > ov0_(0) )  // use ov_(0) as the minimum overlap. Normally=.5
-			{
-			  // printf("CompositeGrid::canInterpolate: near an interior boundary point but rDist=%e"
+                        for( int dir=0; dir<numberOfDimensions; dir++ )
+                          rDist=max(rDist,fabs( r_(i,dir)/g_gridSpacing(dir)
+                                                -(iv1[dir]+cellCenterederedOffset-g_indexRange(Start,dir))));
+                        if( rDist > ov0_(0) )  // use ov_(0) as the minimum overlap. Normally=.5
+                        {
+                          // printf("CompositeGrid::canInterpolate: near an interior boundary point but rDist=%e"
                           //       ", ov=%6.2e, so this point is ok! \n",rDist,ov0_(0));
                           invalid=FALSE;  // this point is ok after all
-			}
+                        }
                         else
-			  break;
-		      }
+                          break;
+                      }
                       if (invalid) break;
-		    }
-		    
+                    }
+                    
 //                  Restore the interpolation stencil;
                     iab2_(0,0,kd) = iab21;
                     iab2_(0,1,kd) = iab22;
@@ -5173,22 +5173,22 @@ Integer CompositeGridData::updateCollection(
     for (i=0; i<numberOfCollections; i++) 
      {
       if (i < list.getLength())
-	list[i].setNumberOfDimensionsAndGrids(numberOfDimensions, nG(i));
+        list[i].setNumberOfDimensionsAndGrids(numberOfDimensions, nG(i));
 #ifdef USE_STL
       else list.push_back(CompositeGrid(numberOfDimensions, nG(i)));
       if (i < gridCollectionList.size())
-	gridCollectionList[i].reference(list[i]);
+        gridCollectionList[i].reference(list[i]);
       else gridCollectionList.push_back(list[i]);
       if (i < genericGridCollectionList.size())
-	genericGridCollectionList[i].reference(list[i]);
+        genericGridCollectionList[i].reference(list[i]);
       else genericGridCollectionList.push_back(list[i]);
 #else
       else list.addElement(CompositeGrid(numberOfDimensions, nG(i)));
       if (i < gridCollectionList.getLength())
-	gridCollectionList[i].reference(list[i]);
+        gridCollectionList[i].reference(list[i]);
       else gridCollectionList.addElement(list[i]);
       if (i < genericGridCollectionList.getLength())
-	genericGridCollectionList[i].reference(list[i]);
+        genericGridCollectionList[i].reference(list[i]);
       else genericGridCollectionList.addElement(list[i]);
 #endif // USE_STL
     } // end for
@@ -5204,24 +5204,24 @@ Integer CompositeGridData::updateCollection(
 
       const Integer j = nG(i)++;    // j = current number of grids in list i 
       const Range three = 3, 
-      // *wdh	991023        allGrids = numberOfComponentGrids,
+      // *wdh   991023        allGrids = numberOfComponentGrids,
       // *wdh 991023         allGridsPlusOne = numberOfComponentGrids + 1;
-	allGrids = list[i].numberOfComponentGrids(),
-	allGridsPlusOne = list[i].numberOfComponentGrids() + 1;
+        allGrids = list[i].numberOfComponentGrids(),
+        allGridsPlusOne = list[i].numberOfComponentGrids() + 1;
 
       // *wdh* 060815 -- copy interp data from appropriate MG level
       const int level = what & THEmultigridLevel ? number(k) : 0;
       
       list[i].numberOfCompleteMultigridLevels() = i < numberOfCompleteMultigridLevels ? 1 : 0;
       list[i].epsilon() = epsilon;
-      list[i].numberOfInterpolationPoints(j) = 	numberOfInterpolationPoints(k);
+      list[i].numberOfInterpolationPoints(j) =  numberOfInterpolationPoints(k);
 
       // These next values are over-written below for all but MG levels 
       list[i].interpolationIsAllExplicit() = interpolationIsAllExplicit;
       list[i].interpolationIsAllImplicit() = interpolationIsAllImplicit;
       list[i].interpolationIsImplicit(allGrids,allGrids,0) =interpolationIsImplicit(allGrids,allGrids,level);
       list[i].interpolationWidth(three,allGrids,allGrids,0) =interpolationWidth(three,allGrids,allGrids,level);
-      list[i].interpolationOverlap(three,allGrids,allGrids,0) =	interpolationOverlap(three,allGrids,allGrids,level);
+      list[i].interpolationOverlap(three,allGrids,allGrids,0) = interpolationOverlap(three,allGrids,allGrids,level);
       list[i].maximumHoleCuttingDistance(nullRange,nullRange,allGrids)= maximumHoleCuttingDistance(nullRange,nullRange,allGrids);
       list[i].interpolationPreference(allGrids,allGrids,0) =interpolationPreference(allGrids,allGrids,level);
       list[i].mayInterpolate(allGrids,allGrids,0) =mayInterpolate(allGrids,allGrids,level);
@@ -5246,78 +5246,78 @@ Integer CompositeGridData::updateCollection(
         num1(d1)++;                 // g1 on the master list corresponds to k1=num1(d1)-1 on collection d1
         const int k1=num1(d1)-1;
 
-	const int level = what & THEmultigridLevel ? number(g1) : 0;
+        const int level = what & THEmultigridLevel ? number(g1) : 0;
 
         //  maximumHoleCuttingDistance(side,axis,grid)
-	list[d1].maximumHoleCuttingDistance(nullRange,nullRange,k1)=maximumHoleCuttingDistance(nullRange,nullRange,g1);
-	list[d1].multigridCoarseningRatio(three,k1,0) = multigridCoarseningRatio(three,g1,level);
-	list[d1].multigridProlongationWidth(three,k1,0) =multigridProlongationWidth(three,g1,level);
-	list[d1].multigridRestrictionWidth(three,k1,0) = multigridRestrictionWidth(three,g1,level);
+        list[d1].maximumHoleCuttingDistance(nullRange,nullRange,k1)=maximumHoleCuttingDistance(nullRange,nullRange,g1);
+        list[d1].multigridCoarseningRatio(three,k1,0) = multigridCoarseningRatio(three,g1,level);
+        list[d1].multigridProlongationWidth(three,k1,0) =multigridProlongationWidth(three,g1,level);
+        list[d1].multigridRestrictionWidth(three,k1,0) = multigridRestrictionWidth(three,g1,level);
 
         num2=0;
-	for( int g2=0; g2<numberOfGrids; g2++ )
-	{
-	  int d2 = number(g2); // grid g2 is in collection d2
-	  if( d1==d2 )
-	  {
+        for( int g2=0; g2<numberOfGrids; g2++ )
+        {
+          int d2 = number(g2); // grid g2 is in collection d2
+          if( d1==d2 )
+          {
             num2(d2)++;  // g2 on the master list corresponds to k2=num2(d2)-1 on collection 2
-	    const int k2=num2(d2)-1;
+            const int k2=num2(d2)-1;
 
-	    list[d1].interpolationIsImplicit(k1,k2,0) =interpolationIsImplicit(g1,g2,level);
-	    list[d1].interpolationWidth(three,k1,k2,0) =interpolationWidth(three,g1,g2,level);
-	    list[d1].interpolationOverlap(three,k1,k2,0) =	interpolationOverlap(three,g1,g2,level);
-	    list[d1].interpolationPreference(k1,k2,0) =interpolationPreference(g1,g2,level);
-	    list[d1].mayInterpolate(k1,k2,0) =mayInterpolate(g1,g2,level);
-	    list[d1].mayCutHoles(k1,k2) = mayCutHoles(g1,g2);
-	    list[d1].sharedSidesMayCutHoles(k1,k2) = sharedSidesMayCutHoles(g1,g2);
-	    
-	  }
-	}
+            list[d1].interpolationIsImplicit(k1,k2,0) =interpolationIsImplicit(g1,g2,level);
+            list[d1].interpolationWidth(three,k1,k2,0) =interpolationWidth(three,g1,g2,level);
+            list[d1].interpolationOverlap(three,k1,k2,0) =      interpolationOverlap(three,g1,g2,level);
+            list[d1].interpolationPreference(k1,k2,0) =interpolationPreference(g1,g2,level);
+            list[d1].mayInterpolate(k1,k2,0) =mayInterpolate(g1,g2,level);
+            list[d1].mayCutHoles(k1,k2) = mayCutHoles(g1,g2);
+            list[d1].sharedSidesMayCutHoles(k1,k2) = sharedSidesMayCutHoles(g1,g2);
+            
+          }
+        }
       }
       // For domains recompute interpolationIsAllExplicit and interpolationIsAllImplicit for each domain
       if( what & THEdomain )
       {
-	for( i=0; i<numberOfCollections; i++ ) 
-	{
-	  Logical & interpolationIsAllExplicit = list[i]->interpolationIsAllExplicit;
-	  Logical & interpolationIsAllImplicit = list[i]->interpolationIsAllImplicit;
-	  const int numberOfComponentGrids = list[i].numberOfComponentGrids();
-	  const IntegerArray & mayInterpolate = list[i].mayInterpolate;
-	  const IntegerArray & interpolationIsImplicit = list[i].interpolationIsImplicit;
-	  interpolationIsAllExplicit=true;
-	  interpolationIsAllImplicit = true;
-	  for (int k1=0; k1<numberOfComponentGrids; k1++)
-	  {
-	    for (int k2=0; k2<numberOfComponentGrids; k2++)
-	    {
-	      if (k1 != k2) 
-	      {
-		if( (mayInterpolate(k1,k2,0) && interpolationIsImplicit(k1,k2,0)) 
-		    //  || ( mayBackupInterpolate(k1,k2,0) && backupInterpolationIsImplicit(k1,k2,0))
-		  )
-		  interpolationIsAllExplicit = false;
-		if( (mayInterpolate(k1,k2,0) && !interpolationIsImplicit(k1,k2,0)) 
-		    //  || ( mayBackupInterpolate(k1,k2,0) && !backupInterpolationIsImplicit(k1,k2,0))
-		  )
-		  interpolationIsAllImplicit = false;
-	      } // end if, end for, end for, end for
-	    }
-	  }
-	}
+        for( i=0; i<numberOfCollections; i++ ) 
+        {
+          Logical & interpolationIsAllExplicit = list[i]->interpolationIsAllExplicit;
+          Logical & interpolationIsAllImplicit = list[i]->interpolationIsAllImplicit;
+          const int numberOfComponentGrids = list[i].numberOfComponentGrids();
+          const IntegerArray & mayInterpolate = list[i].mayInterpolate;
+          const IntegerArray & interpolationIsImplicit = list[i].interpolationIsImplicit;
+          interpolationIsAllExplicit=true;
+          interpolationIsAllImplicit = true;
+          for (int k1=0; k1<numberOfComponentGrids; k1++)
+          {
+            for (int k2=0; k2<numberOfComponentGrids; k2++)
+            {
+              if (k1 != k2) 
+              {
+                if( (mayInterpolate(k1,k2,0) && interpolationIsImplicit(k1,k2,0)) 
+                    //  || ( mayBackupInterpolate(k1,k2,0) && backupInterpolationIsImplicit(k1,k2,0))
+                  )
+                  interpolationIsAllExplicit = false;
+                if( (mayInterpolate(k1,k2,0) && !interpolationIsImplicit(k1,k2,0)) 
+                    //  || ( mayBackupInterpolate(k1,k2,0) && !backupInterpolationIsImplicit(k1,k2,0))
+                  )
+                  interpolationIsAllImplicit = false;
+              } // end if, end for, end for, end for
+            }
+          }
+        }
       }
     }
 
     for (i=0; i<numberOfCollections; i++) 
     {
       const Integer des = ~(computedGeometry | what) &      (
-	THEinterpolationCoordinates | THEinterpoleeGrid     |
-	THEinterpoleeLocation       | THEinterpolationPoint |
-	THEinverseMap         );
+        THEinterpolationCoordinates | THEinterpoleeGrid     |
+        THEinterpoleeLocation       | THEinterpolationPoint |
+        THEinverseMap         );
       if (des) list[i].destroy(des);
       const Integer upd = (computedGeometry | what) &       (
-	THEinterpolationCoordinates | THEinterpoleeGrid     |
-	THEinterpoleeLocation       | THEinterpolationPoint |
-	THEinverseMap         );
+        THEinterpolationCoordinates | THEinterpoleeGrid     |
+        THEinterpoleeLocation       | THEinterpolationPoint |
+        THEinverseMap         );
       if (upd) list[i].update(upd, COMPUTEnothing);
     } // end for
 
@@ -5340,7 +5340,7 @@ Integer CompositeGridData::updateCollection(
 
     // *wdh* 061123
 //     printf(" CG:updateCollections: numberOfGrids=%i computedGeometry & THEinterpolationCoordinates=%i\n",
-// 	   numberOfGrids,int((computedGeometry & THEinterpolationCoordinates)!=0));
+//         numberOfGrids,int((computedGeometry & THEinterpolationCoordinates)!=0));
 
     for( nG=0, k=0; k<numberOfGrids; k++ ) 
     {
@@ -5355,60 +5355,60 @@ Integer CompositeGridData::updateCollection(
 
       if ((computedGeometry | what) & THEinterpolationCoordinates)
       {
-	// printf("CG:updateCollections: update mg[i=%i].interpolationCoordinates[j=%i]="
-	//        "interpolationCoordinates[k=%i], numberOfInterpolationPoints(k)=%i\n", i,j,k,
-	//        numberOfInterpolationPoints(k));
-	// interpolationCoordinates[k].getPartition().display("interpolationCoordinates[k].getPartition()");
-	 
-	if( ni>0 ) // this is needed for parallel, otherwise there is an error
-	  list[i]->interpolationCoordinates[j].reference(interpolationCoordinates[k]);
-	else
-	  list[i]->interpolationCoordinates[j].redim(0);
+        // printf("CG:updateCollections: update mg[i=%i].interpolationCoordinates[j=%i]="
+        //        "interpolationCoordinates[k=%i], numberOfInterpolationPoints(k)=%i\n", i,j,k,
+        //        numberOfInterpolationPoints(k));
+        // interpolationCoordinates[k].getPartition().display("interpolationCoordinates[k].getPartition()");
+         
+        if( ni>0 ) // this is needed for parallel, otherwise there is an error
+          list[i]->interpolationCoordinates[j].reference(interpolationCoordinates[k]);
+        else
+          list[i]->interpolationCoordinates[j].redim(0);
       }
       
       if ((computedGeometry | what) & THEinterpoleeGrid)
       {
         // If we update the domain collection then we need to adjust the interpoleeGrid
         if( what & THEdomain )
-	{
-	  // we need to adjust the interpoleeGrid numbers to match the new grid
-	  intArray & ig =list[i]->interpoleeGrid[j];
- 	  ig=interpoleeGrid[k]; // deep copy -- since we need to change these values
+        {
+          // we need to adjust the interpoleeGrid numbers to match the new grid
+          intArray & ig =list[i]->interpoleeGrid[j];
+          ig=interpoleeGrid[k]; // deep copy -- since we need to change these values
 
           #ifdef USE_PPP
-  	   intSerialArray igj; getLocalArrayWithGhostBoundaries(ig,igj);
-  	   intSerialArray igk; getLocalArrayWithGhostBoundaries(interpoleeGrid[k],igk);
+           intSerialArray igj; getLocalArrayWithGhostBoundaries(ig,igj);
+           intSerialArray igk; getLocalArrayWithGhostBoundaries(interpoleeGrid[k],igk);
           #else
            intSerialArray & igj = ig;
-	   intSerialArray & igk = interpoleeGrid[k];
-	  #endif
+           intSerialArray & igk = interpoleeGrid[k];
+          #endif
 
-	  for( int ii=igj.getBase(0); ii<=igj.getBound(0); ii++ )
-	  {
-	    // *** here we assume that the sub-collection is a valid independent CompositeGrid ***
-	    int gn=newGridNumber(igj(ii));
-	    assert( gn>=0 && gn<list[i]->numberOfComponentGrids );
-	    igj(ii)=gn;
-	  }
+          for( int ii=igj.getBase(0); ii<=igj.getBound(0); ii++ )
+          {
+            // *** here we assume that the sub-collection is a valid independent CompositeGrid ***
+            int gn=newGridNumber(igj(ii));
+            assert( gn>=0 && gn<list[i]->numberOfComponentGrids );
+            igj(ii)=gn;
+          }
     
-// 	  for( int ii=0; ii<ni; ii++ )
-// 	  {
-// 	    // *** here we assume that the sub-collection is a valid independent CompositeGrid ***
-// 	    int gn=newGridNumber(ig(ii));
-// 	    assert( gn>=0 && gn<list[i]->numberOfComponentGrids );
-// 	    ig(ii)=gn;
-//	  }
+//        for( int ii=0; ii<ni; ii++ )
+//        {
+//          // *** here we assume that the sub-collection is a valid independent CompositeGrid ***
+//          int gn=newGridNumber(ig(ii));
+//          assert( gn>=0 && gn<list[i]->numberOfComponentGrids );
+//          ig(ii)=gn;
+//        }
 
-	}
-	else
-	{
-	  if( ni>0 )
-  	    list[i]->interpoleeGrid[j].reference(interpoleeGrid[k]);
+        }
+        else
+        {
+          if( ni>0 )
+            list[i]->interpoleeGrid[j].reference(interpoleeGrid[k]);
           else
             list[i]->interpoleeGrid[j].redim(0);
-	}
+        }
 
-	if( ni>0 )
+        if( ni>0 )
           list[i]->variableInterpolationWidth[j].reference(variableInterpolationWidth[k]);
         else
           list[i]->variableInterpolationWidth[j].redim(0);
@@ -5416,39 +5416,39 @@ Integer CompositeGridData::updateCollection(
       if ((computedGeometry | what) & THEinterpoleeLocation)
       {
         if( ni>0 )
-	  list[i]->interpoleeLocation[j].reference(interpoleeLocation[k]);
-	else
-	  list[i]->interpoleeLocation[j].redim(0);
+          list[i]->interpoleeLocation[j].reference(interpoleeLocation[k]);
+        else
+          list[i]->interpoleeLocation[j].redim(0);
       }
       if ((computedGeometry | what) & THEinterpolationPoint)
       {
         if( ni>0 )
-	  list[i]->interpolationPoint[j].reference(interpolationPoint[k]);
+          list[i]->interpolationPoint[j].reference(interpolationPoint[k]);
         else
-	  list[i]->interpolationPoint[j].redim(0);
+          list[i]->interpolationPoint[j].redim(0);
       }
       
       if ((computedGeometry | what) & THEinverseMap) 
       {
-	list[i]->inverseCoordinates[j].reference(inverseCoordinates[k]);
-	list[i]->inverseGrid[j].reference(inverseGrid[k]);
-	list[i]->inverseCoordinates.updateToMatchGrid(*list[i]);
-	list[i]->inverseGrid       .updateToMatchGrid(*list[i]);
+        list[i]->inverseCoordinates[j].reference(inverseCoordinates[k]);
+        list[i]->inverseGrid[j].reference(inverseGrid[k]);
+        list[i]->inverseCoordinates.updateToMatchGrid(*list[i]);
+        list[i]->inverseGrid       .updateToMatchGrid(*list[i]);
 
-	for (Integer j2=0; j2<list[i].numberOfBaseGrids(); j2++) 
+        for (Integer j2=0; j2<list[i].numberOfBaseGrids(); j2++) 
         {
-	  BoundaryAdjustmentArray
-	    &bA12j = list[i]->boundaryAdjustment(j,j2),
-	    &bA12k = boundaryAdjustment(k,j2);
-	  bA12j.redim(bA12k);
-	  if (bA12j.getNumberOfElements()) 
+          BoundaryAdjustmentArray
+            &bA12j = list[i]->boundaryAdjustment(j,j2),
+            &bA12k = boundaryAdjustment(k,j2);
+          bA12j.redim(bA12k);
+          if (bA12j.getNumberOfElements()) 
           {
-	    for (Integer kd=0; kd<numberOfDimensions; kd++)
-	      for (Integer ks=0; ks<2; ks++) 
+            for (Integer kd=0; kd<numberOfDimensions; kd++)
+              for (Integer ks=0; ks<2; ks++) 
               {
-		BoundaryAdjustment &bAj = bA12j(ks,kd), &bAk = bA12k(ks,kd);
-		bAj.reference(bAk);
-			    
+                BoundaryAdjustment &bAj = bA12j(ks,kd), &bAk = bA12k(ks,kd);
+                bAj.reference(bAk);
+                            
 //                             bAj.computedGeometry = bAk.computedGeometry;
 //                             bAj.boundaryAdjustment.reference(
 //                             bAk.boundaryAdjustment);
@@ -5456,16 +5456,16 @@ Integer CompositeGridData::updateCollection(
 //                             bAk.acrossGrid);
 //                             bAj.oppositeBoundary  .reference(
 //                             bAk.oppositeBoundary);
-	      } // end for, end for
-	  } // end if
-	} // end for
+              } // end for, end for
+          } // end if
+        } // end for
 
 
       } // end if
       list[i]->computedGeometry |= (computedGeometry | what) & (
-	THEinterpolationCoordinates | THEinterpoleeGrid     |
-	THEinterpoleeLocation       | THEinterpolationPoint |
-	THEinverseMap         );
+        THEinterpolationCoordinates | THEinterpoleeGrid     |
+        THEinterpoleeLocation       | THEinterpolationPoint |
+        THEinverseMap         );
       list[i].updateReferences(computedGeometry | what);
     
     } // end for( nG ..
@@ -5487,29 +5487,29 @@ Integer CompositeGridData::updateCollection(
         int d1 = domainNumber(g1);
         num1(d1)++;         // g1 on the master list corresponds to k1=num1(d1)-1 on domain 1
         num2=0; numi=0;
-	for( int g2=0; g2<numberOfGrids; g2++ )
-	{
-	  int d2 = domainNumber(g2); 
-	  if( d1==d2 )
-	  {
+        for( int g2=0; g2<numberOfGrids; g2++ )
+        {
+          int d2 = domainNumber(g2); 
+          if( d1==d2 )
+          {
             num2(d2)++;  // g2 on the master list corresponds to k2=num2(d2)-1 on domain 2
-	    int k1=num1(d1)-1, k2=num2(d2)-1;
-	    // interpolationStartEndIndex(0,g1,g2) : start value 
-	    // interpolationStartEndIndex(1,g1,g2) : end value 
-	    // interpolationStartEndIndex(2,g1,g2) : end value for implicit pts
-	    // interpolationStartEndIndex(3,g1,g2) : 
-	    if( k1!=k2 && ise(0,g1,g2)>=0 )
-	    {
+            int k1=num1(d1)-1, k2=num2(d2)-1;
+            // interpolationStartEndIndex(0,g1,g2) : start value 
+            // interpolationStartEndIndex(1,g1,g2) : end value 
+            // interpolationStartEndIndex(2,g1,g2) : end value for implicit pts
+            // interpolationStartEndIndex(3,g1,g2) : 
+            if( k1!=k2 && ise(0,g1,g2)>=0 )
+            {
               // printF(" (g1,g2)=(%i,%i) (k1,k2)=(%i,%i) domain=%i\n",g1,g2,k1,k2,d1);
-	      
-	      list[d1].interpolationStartEndIndex(0,k1,k2)=numi(d1);
-	      list[d1].interpolationStartEndIndex(1,k1,k2)=numi(d1)+ise(1,g1,g2)-ise(0,g1,g2);
-	      list[d1].interpolationStartEndIndex(2,k1,k2)=numi(d1)+ise(2,g1,g2)-ise(0,g1,g2);
-	      numi(d1)+=ise(1,g1,g2)-ise(0,g1,g2)+1;  // *wdh* 070405 add +1 
+              
+              list[d1].interpolationStartEndIndex(0,k1,k2)=numi(d1);
+              list[d1].interpolationStartEndIndex(1,k1,k2)=numi(d1)+ise(1,g1,g2)-ise(0,g1,g2);
+              list[d1].interpolationStartEndIndex(2,k1,k2)=numi(d1)+ise(2,g1,g2)-ise(0,g1,g2);
+              numi(d1)+=ise(1,g1,g2)-ise(0,g1,g2)+1;  // *wdh* 070405 add +1 
 
-	    }
-	  }
-	}
+            }
+          }
+        }
       }
       
 
@@ -5517,7 +5517,7 @@ Integer CompositeGridData::updateCollection(
       #else
       for (i=0; i<numberOfCollections; i++) 
       {
-	list[i].sortInterpolationPoints();
+        list[i].sortInterpolationPoints();
       }
       #endif
     }
@@ -5526,15 +5526,15 @@ Integer CompositeGridData::updateCollection(
       // fill in the interpolationStartEndIndex arrays in each MG level from the master copy
       for( int l=0; l<numberOfMultigridLevels; l++ )
       {
-	for( int grid=0; grid<numberOfComponentGrids; grid++ )
-	{
-	  for( int grid2=0; grid2<numberOfComponentGrids; grid2++ )
-	  {
-	    int g=grid+l*numberOfComponentGrids;
-	    int g2=grid2+l*numberOfComponentGrids;
-	    list[l].interpolationStartEndIndex(Range(0,2),grid,grid2)=interpolationStartEndIndex(Range(0,2),g,g2);
-	  }
-	}
+        for( int grid=0; grid<numberOfComponentGrids; grid++ )
+        {
+          for( int grid2=0; grid2<numberOfComponentGrids; grid2++ )
+          {
+            int g=grid+l*numberOfComponentGrids;
+            int g2=grid2+l*numberOfComponentGrids;
+            list[l].interpolationStartEndIndex(Range(0,2),grid,grid2)=interpolationStartEndIndex(Range(0,2),g,g2);
+          }
+        }
       
       }
 
@@ -5548,42 +5548,42 @@ Integer CompositeGridData::updateCollection(
 namespace {
   // helper routing for setHybridConnectivity
   inline void addGhostAndAssignInterp( const bool &is2D, 
-				       const int &ugrid, const int &grid, intArray &gid, 
-				       realArray &gverts, 
-				       const int i, const int j, const int k,
-				       UnstructuredMapping &umap, MappedGrid &mg,
-				       IntegerArray &numberOfInterpolationPoints,
-				       intArray &uig, intArray &uil, intArray &uvw, intArray &uip, 
-				       realArray &uic,
-				       intArray &umask )
+                                       const int &ugrid, const int &grid, intArray &gid, 
+                                       realArray &gverts, 
+                                       const int i, const int j, const int k,
+                                       UnstructuredMapping &umap, MappedGrid &mg,
+                                       IntegerArray &numberOfInterpolationPoints,
+                                       intArray &uig, intArray &uil, intArray &uvw, intArray &uip, 
+                                       realArray &uic,
+                                       intArray &umask )
   {
     gid(i,j,k) = is2D ? 
       umap.addVertex( gverts(i,j,k,0),
-		      gverts(i,j,k,1) ) :
+                      gverts(i,j,k,1) ) :
       umap.addVertex( gverts(i,j,k,0),
-		      gverts(i,j,k,1),
-		      gverts(i,j,k,2) );
+                      gverts(i,j,k,1),
+                      gverts(i,j,k,2) );
     if ( !umap.isGhost(UnstructuredMapping::Vertex, gid(i,j,k) ) )
       umap.setAsGhost(UnstructuredMapping::Vertex, gid(i,j,k));
     
     int ngid = gid(i,j,k);
     if ( ngid>=umask.getLength(0) )
       {
-	int oldMV = umask.getLength(0);
-	umask.resize(oldMV+100,1,1);
-	Range R(oldMV, umask.getLength(0)-1);
-	umask(R,0,0) = MappedGrid::ISdiscretizationPoint;
+        int oldMV = umask.getLength(0);
+        umask.resize(oldMV+100,1,1);
+        Range R(oldMV, umask.getLength(0)-1);
+        umask(R,0,0) = MappedGrid::ISdiscretizationPoint;
       }
     
     umask(ngid,0,0) = MappedGrid::ISinterpolationPoint;
     if ( uil.getLength(0)<=numberOfInterpolationPoints(ugrid) )
       {
-	int oldLength = uil.getLength(0);
-	uil.resize(oldLength+100, uil.getLength(1));
-	uig.resize(oldLength+100);
-	uvw.resize(oldLength+100, uvw.getLength(1));
-	uip.resize(oldLength+100, uip.getLength(1));
-	uic.resize(oldLength+100, uip.getLength(1));
+        int oldLength = uil.getLength(0);
+        uil.resize(oldLength+100, uil.getLength(1));
+        uig.resize(oldLength+100);
+        uvw.resize(oldLength+100, uvw.getLength(1));
+        uip.resize(oldLength+100, uip.getLength(1));
+        uic.resize(oldLength+100, uip.getLength(1));
       }
 
     uig(numberOfInterpolationPoints(ugrid)) = grid;
@@ -5617,10 +5617,10 @@ namespace {
 void 
 CompositeGrid::
 setHybridConnectivity(const int grid_,
-		      intArray * gridIndex2UVertex_,
-		      intArray & uVertex2GridIndex_,
-		      intArray * gridVertex2UVertex_, // could be built from gridIndex2UVertex ?
-		      intArray & boundaryFaceMapping_)
+                      intArray * gridIndex2UVertex_,
+                      intArray & uVertex2GridIndex_,
+                      intArray * gridVertex2UVertex_, // could be built from gridIndex2UVertex ?
+                      intArray & boundaryFaceMapping_)
 // ======================================================================================================
 //   /Description:
 //     This method sets the connectivity between an unstructured mesh and the structured
@@ -5641,13 +5641,13 @@ setHybridConnectivity(const int grid_,
 {
 
   rcData->hybridConnectivity.setCompositeGridHybridConnectivity(grid_,
-								gridIndex2UVertex_, uVertex2GridIndex_,
-								gridVertex2UVertex_, boundaryFaceMapping_);
+                                                                gridIndex2UVertex_, uVertex2GridIndex_,
+                                                                gridVertex2UVertex_, boundaryFaceMapping_);
 
   assert( (*this)[grid_].mapping().getClassName()=="UnstructuredMapping" );
 
   this->update(THEinterpolationPoint | THEinterpoleeGrid | THEinterpoleeLocation 
-	       | THEinterpolationCoordinates /*| THEvariableInterpolationWidth done coords update*/);
+               | THEinterpolationCoordinates /*| THEvariableInterpolationWidth done coords update*/);
 
   UnstructuredMapping &umap = (UnstructuredMapping &)(*this)[grid_].mapping().getMapping();
 
@@ -5689,9 +5689,9 @@ setHybridConnectivity(const int grid_,
     {
       umap.deleteConnectivity(ztype,UnstructuredMapping::EntityTypeEnum(i));
       if ( i!=int(UnstructuredMapping::Vertex) ) 
-	{
-	  umap.deleteConnectivity( UnstructuredMapping::EntityTypeEnum(i) );
-	}
+        {
+          umap.deleteConnectivity( UnstructuredMapping::EntityTypeEnum(i) );
+        }
     }
 
   const IntegerArray & iw0 = interpolationWidth();
@@ -5710,7 +5710,7 @@ setHybridConnectivity(const int grid_,
       int iip[3];
       iip[2] = i3=0;
       for ( int a=0; a<numberOfDimensions(); a++ )
-	iip[a] = ii[a] = ugi(v,a+1);
+        iip[a] = ii[a] = ugi(v,a+1);
 
       MappedGrid &mg = (MappedGrid &)(*this)[grid];
       Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
@@ -5719,15 +5719,15 @@ setHybridConnectivity(const int grid_,
 
       bool isp=false;
       for ( int a=0; a<mg.numberOfDimensions(); a++ )
-	{
-	  if ( mg.isPeriodic(a) && (ii[a]==Iv[a].getBase()) )
-	    {
-	      nper(grid)++;
-	      iip[a] = Iv[a].getBound();
-	      isp=true;
-	      break;
-	    }
-	}
+        {
+          if ( mg.isPeriodic(a) && (ii[a]==Iv[a].getBase()) )
+            {
+              nper(grid)++;
+              iip[a] = Iv[a].getBound();
+              isp=true;
+              break;
+            }
+        }
       if ( isp ) gid(iip[0],iip[1],iip[2]) = gid(i1,i2,i3);
       
     }
@@ -5735,9 +5735,9 @@ setHybridConnectivity(const int grid_,
   for ( int g=0; g<numberOfComponentGrids(); g++ )
     {
       if ( g!= cghc.getUnstructuredGridIndex() )
-	numberOfInterpolationPoints(g) = cghc.getNumberOfInterfaceVertices(g) + nper(g);
+        numberOfInterpolationPoints(g) = cghc.getNumberOfInterfaceVertices(g) + nper(g);
       else
-	numberOfInterpolationPoints(g) = nGhostVertGuess; // this may need to be resized if we guess wrong
+        numberOfInterpolationPoints(g) = nGhostVertGuess; // this may need to be resized if we guess wrong
       //      cout<<"NINTERP GUESS IS "<<numberOfInterpolationPoints(g)<<endl;
 
       interpoleeGrid[g].resize(numberOfInterpolationPoints(g));
@@ -5776,15 +5776,15 @@ setHybridConnectivity(const int grid_,
       il(numberOfInterpolationPoints(grid),0) = v;
 
       for ( int i=1; i<numberOfDimensions(); i++ )
-	il(numberOfInterpolationPoints(grid),i) = 0;
+        il(numberOfInterpolationPoints(grid),i) = 0;
       
       int ii[3], &i1=ii[0], &i2=ii[1], &i3=ii[2];
       i3=0;
       for ( int a=0; a<numberOfDimensions(); a++ )
-	{
-	  ii[a] = ugi(v,a+1);
-	  ip(numberOfInterpolationPoints(grid),a) = ii[a];
-	} 
+        {
+          ii[a] = ugi(v,a+1);
+          ip(numberOfInterpolationPoints(grid),a) = ii[a];
+        } 
 
       ic(numberOfInterpolationPoints(grid,0)) = real(v)/real(umap.size(UnstructuredMapping::Vertex)-1);
 
@@ -5801,10 +5801,10 @@ setHybridConnectivity(const int grid_,
       Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
       ::getIndex(mg.gridIndexRange(),I1,I2,I3);
       if ( !zmask.size() )
-	{
-	  zmask.resize(I1.getLength(), I2.getLength(), I3.getLength());
-	  zmask = false;
-	}
+        {
+          zmask.resize(I1.getLength(), I2.getLength(), I3.getLength());
+          zmask = false;
+        }
 
       intArray &gid = (intArray &)cghc.getGridIndex2UVertex(grid);
 
@@ -5814,140 +5814,140 @@ setHybridConnectivity(const int grid_,
       //   note that ghost cells/vertices in the structured grids are NOT added to the 
       //       unstructured mesh
       for ( int ia=0; ia<2; ia++ )
-	{
-	  int iz = i1 + /*2*ia*/ ia - 1;
-	  for ( int ja=0; ja<2 && ( iz>=I1.getBase() && iz<I1.getBound()) ; ja++ )
-	    {
-	      int jz = i2 + /*2*ja*/ ja - 1;
-	      for ( int ka=0; ka<(kp+1) && ( jz>=I2.getBase() && jz<I2.getBound()); ka++ )
-		{
-		  int kz = kp ? ( i3 + /*2*ka*/ ka - 1 ) : 0;
-		  if ( (kz>=I3.getBase() && kz<=(I3.getBound()-kp)) && 
-		      ( mask(iz,jz,kz)        && mask(iz+1,jz,kz) && 
-			mask(iz+1,jz+1,kz)    && mask(iz,jz+1,kz) &&
-			mask(iz,jz,kz+kp)     && mask(iz+1,jz,kz+kp) && 
-			mask(iz+1,jz+1,kz+kp) && mask(iz,jz+1,kz+kp) ) )
-		  {
-		      // then we need to add this zone to the umap
+        {
+          int iz = i1 + /*2*ia*/ ia - 1;
+          for ( int ja=0; ja<2 && ( iz>=I1.getBase() && iz<I1.getBound()) ; ja++ )
+            {
+              int jz = i2 + /*2*ja*/ ja - 1;
+              for ( int ka=0; ka<(kp+1) && ( jz>=I2.getBase() && jz<I2.getBound()); ka++ )
+                {
+                  int kz = kp ? ( i3 + /*2*ka*/ ka - 1 ) : 0;
+                  if ( (kz>=I3.getBase() && kz<=(I3.getBound()-kp)) && 
+                      ( mask(iz,jz,kz)        && mask(iz+1,jz,kz) && 
+                        mask(iz+1,jz+1,kz)    && mask(iz,jz+1,kz) &&
+                        mask(iz,jz,kz+kp)     && mask(iz+1,jz,kz+kp) && 
+                        mask(iz+1,jz+1,kz+kp) && mask(iz,jz+1,kz+kp) ) )
+                  {
+                      // then we need to add this zone to the umap
 
-		    if ( !zmask(iz,jz,kz) )
-		      {
-			for ( int kk=0; kk<(kp+1); kk++ )
-			  {
-			    if ( gid(iz,jz,kz+kk)==-1 )
-			      {
-				addGhostAndAssignInterp( is2D, ugrid, grid, gid, gverts, 
-							 iz,jz,kz+kk,
-							 umap, mg,
-							 numberOfInterpolationPoints,
-							 uig,uil,uvw,uip,uic,umask );
+                    if ( !zmask(iz,jz,kz) )
+                      {
+                        for ( int kk=0; kk<(kp+1); kk++ )
+                          {
+                            if ( gid(iz,jz,kz+kk)==-1 )
+                              {
+                                addGhostAndAssignInterp( is2D, ugrid, grid, gid, gverts, 
+                                                         iz,jz,kz+kk,
+                                                         umap, mg,
+                                                         numberOfInterpolationPoints,
+                                                         uig,uil,uvw,uip,uic,umask );
 
-			      }
-			    
-			    
-			    if ( gid(iz+1,jz,kz+kk)==-1 )
-			      {
-				addGhostAndAssignInterp( is2D, ugrid, grid, gid, gverts, 
-							 iz+1,jz,kz+kk,
-							 umap, mg,
-							 numberOfInterpolationPoints,
-							 uig,uil,uvw,uip,uic,umask );
+                              }
+                            
+                            
+                            if ( gid(iz+1,jz,kz+kk)==-1 )
+                              {
+                                addGhostAndAssignInterp( is2D, ugrid, grid, gid, gverts, 
+                                                         iz+1,jz,kz+kk,
+                                                         umap, mg,
+                                                         numberOfInterpolationPoints,
+                                                         uig,uil,uvw,uip,uic,umask );
 
-			      }
-			    
-			    
-			    if ( gid(iz+1,jz+1,kz+kk)==-1 )
-			      {
-				addGhostAndAssignInterp( is2D, ugrid, grid, gid, gverts, 
-							 iz+1,jz+1,kz+kk,
-							 umap, mg,
-							 numberOfInterpolationPoints,
-							 uig,uil,uvw,uip,uic,umask );
+                              }
+                            
+                            
+                            if ( gid(iz+1,jz+1,kz+kk)==-1 )
+                              {
+                                addGhostAndAssignInterp( is2D, ugrid, grid, gid, gverts, 
+                                                         iz+1,jz+1,kz+kk,
+                                                         umap, mg,
+                                                         numberOfInterpolationPoints,
+                                                         uig,uil,uvw,uip,uic,umask );
 
-			      }
-			    
-			    if ( gid(iz,jz+1,kz+kk)==-1 )
-			      {
-				addGhostAndAssignInterp( is2D, ugrid, grid, gid, gverts, 
-							 iz,jz+1,kz+kk,
-							 umap, mg,
-							 numberOfInterpolationPoints,
-							 uig,uil,uvw,uip,uic,umask );
-			      }
-			    
-			    
-			    assert(gid(iz,jz,kz+kk)<=umap.size(UnstructuredMapping::Vertex));
-			    assert(gid(iz+1,jz,kz+kk)<=umap.size(UnstructuredMapping::Vertex));
-			    assert(gid(iz+1,jz+1,kz+kk)<=umap.size(UnstructuredMapping::Vertex));
-			    assert(gid(iz,jz+1,kz+kk)<=umap.size(UnstructuredMapping::Vertex));
-			    
-			  } // end kk
-			
-			if ( mg.mapping().getMapping().getSignForJacobian()>0 )
-			  {
-			    for ( int kk=0; kk<(kp+1); kk++ )
-			      {
-				newZone(0+4*kk) = gid(iz,jz,kz+kk);
-				newZone(1+4*kk) = gid(iz+1,jz,kz+kk);
-				newZone(2+4*kk) = gid(iz+1,jz+1,kz+kk);
-				newZone(3+4*kk) = gid(iz,jz+1,kz+kk);
-			      }				  
-			  }
-			else
-			  {
-			    for ( int kk=0; kk<(kp+1); kk++ )
-			      {
-				newZone(3+4*kk) = gid(iz,jz,kz+kk);
-				newZone(2+4*kk) = gid(iz+1,jz,kz+kk);
-				newZone(1+4*kk) = gid(iz+1,jz+1,kz+kk);
-				newZone(0+4*kk) = gid(iz,jz+1,kz+kk);
-			      }
-			  }
-			
-			int zid = umap.addEntity( ztype, newZone );
-			
-			umap.setAsGhost( ztype, zid );
-			
-			zmask(iz,jz,kz) = true;
-			
-		      } //end if !zmask
-		    
-		  } // end if !mask
-		  
-		}// end ka
-	    } // end ja
-	}// end ia
+                              }
+                            
+                            if ( gid(iz,jz+1,kz+kk)==-1 )
+                              {
+                                addGhostAndAssignInterp( is2D, ugrid, grid, gid, gverts, 
+                                                         iz,jz+1,kz+kk,
+                                                         umap, mg,
+                                                         numberOfInterpolationPoints,
+                                                         uig,uil,uvw,uip,uic,umask );
+                              }
+                            
+                            
+                            assert(gid(iz,jz,kz+kk)<=umap.size(UnstructuredMapping::Vertex));
+                            assert(gid(iz+1,jz,kz+kk)<=umap.size(UnstructuredMapping::Vertex));
+                            assert(gid(iz+1,jz+1,kz+kk)<=umap.size(UnstructuredMapping::Vertex));
+                            assert(gid(iz,jz+1,kz+kk)<=umap.size(UnstructuredMapping::Vertex));
+                            
+                          } // end kk
+                        
+                        if ( mg.mapping().getMapping().getSignForJacobian()>0 )
+                          {
+                            for ( int kk=0; kk<(kp+1); kk++ )
+                              {
+                                newZone(0+4*kk) = gid(iz,jz,kz+kk);
+                                newZone(1+4*kk) = gid(iz+1,jz,kz+kk);
+                                newZone(2+4*kk) = gid(iz+1,jz+1,kz+kk);
+                                newZone(3+4*kk) = gid(iz,jz+1,kz+kk);
+                              }                           
+                          }
+                        else
+                          {
+                            for ( int kk=0; kk<(kp+1); kk++ )
+                              {
+                                newZone(3+4*kk) = gid(iz,jz,kz+kk);
+                                newZone(2+4*kk) = gid(iz+1,jz,kz+kk);
+                                newZone(1+4*kk) = gid(iz+1,jz+1,kz+kk);
+                                newZone(0+4*kk) = gid(iz,jz+1,kz+kk);
+                              }
+                          }
+                        
+                        int zid = umap.addEntity( ztype, newZone );
+                        
+                        umap.setAsGhost( ztype, zid );
+                        
+                        zmask(iz,jz,kz) = true;
+                        
+                      } //end if !zmask
+                    
+                  } // end if !mask
+                  
+                }// end ka
+            } // end ja
+        }// end ia
 
       // add periodic interpolation points on the structured grid
       bool isper=false;
       for ( int a=0; a<mg.numberOfDimensions() && !isper; a++ )
-	isper = mg.isPeriodic(a) && (ii[a]==Iv[a].getBase());
+        isper = mg.isPeriodic(a) && (ii[a]==Iv[a].getBase());
       
       if ( isper )
-	{
-	  ig(numberOfInterpolationPoints(grid)) = ugrid;
-	  il(numberOfInterpolationPoints(grid),0) = v;
-	  
-	  for ( int i=1; i<numberOfDimensions(); i++ )
-	    il(numberOfInterpolationPoints(grid),i) = 0;
-	  
-	  //	  int ii[3], &i1=ii[0], &i2=ii[1], &i3=ii[2];
-	  //	  i3=0;
-	  for ( int a=0; a<numberOfDimensions(); a++ )
-	    {
-	      if ( mg.isPeriodic(a) && ii[a]==Iv[a].getBase() )
-		ii[a] = Iv[a].getBound();
-	      //	      else
-	      //		ii[a] = ugi(v,a+1);
+        {
+          ig(numberOfInterpolationPoints(grid)) = ugrid;
+          il(numberOfInterpolationPoints(grid),0) = v;
+          
+          for ( int i=1; i<numberOfDimensions(); i++ )
+            il(numberOfInterpolationPoints(grid),i) = 0;
+          
+          //      int ii[3], &i1=ii[0], &i2=ii[1], &i3=ii[2];
+          //      i3=0;
+          for ( int a=0; a<numberOfDimensions(); a++ )
+            {
+              if ( mg.isPeriodic(a) && ii[a]==Iv[a].getBase() )
+                ii[a] = Iv[a].getBound();
+              //              else
+              //                ii[a] = ugi(v,a+1);
 
-	      ip(numberOfInterpolationPoints(grid),a) = ii[a];
-	    } 
-	  mask(ii[0],ii[1],ii[2]) = MappedGrid::ISinterpolationPoint;
-	  //	  cout<<"PER POINT "<<ii[0]<<"  "<<ii[1]<<"  "<<ii[2]<<endl;
-	  ic(numberOfInterpolationPoints(grid,0)) = real(v)/real(umap.size(UnstructuredMapping::Vertex)-1);
-	  
-	  numberOfInterpolationPoints(grid)++;
-	}
+              ip(numberOfInterpolationPoints(grid),a) = ii[a];
+            } 
+          mask(ii[0],ii[1],ii[2]) = MappedGrid::ISinterpolationPoint;
+          //      cout<<"PER POINT "<<ii[0]<<"  "<<ii[1]<<"  "<<ii[2]<<endl;
+          ic(numberOfInterpolationPoints(grid,0)) = real(v)/real(umap.size(UnstructuredMapping::Vertex)-1);
+          
+          numberOfInterpolationPoints(grid)++;
+        }
 
     }// end v
 
@@ -5973,28 +5973,28 @@ setHybridConnectivity(const int grid_,
   for ( bdy=umap.tag_entity_begin(bdyEntTag); bdy!=bdy_end; bdy++ )
     {
       if ( umap.adjacency_begin(*bdy, UnstructuredMapping::EntityTypeEnum(numberOfDimensions())).nAdjacent()==1 )
-	{
-	  // {
-// 	    vert_end = umap.adjacency_end(*bdy, UnstructuredMapping::EntityTypeEnum(numberOfDimensions()));
-// 	    for (vert=umap.adjacency_begin(*bdy, UnstructuredMapping::EntityTypeEnum(numberOfDimensions()));
-// 		 vert!=vert_end;
-// 		 vert++ )
-// 	      cout<<"ADJ Face "<<*vert<<endl;
-// 	  }
-//	  cout<<"Edge "<<bdy->e<<" is apparently on a boundary ?"<<endl;
-	  vert_end = umap.adjacency_end(*bdy, UnstructuredMapping::Vertex);
-	  for ( vert=umap.adjacency_begin(*bdy, UnstructuredMapping::Vertex);
-		vert!=vert_end;
-		vert++ )
-	    {
-	      if (!umap.hasTag(UnstructuredMapping::Vertex,*vert, bdyVertTag))
-		cout<<"WARNING : Vertex "<<*vert<<" Is apparently NOT a boundary vertex"<<endl;;
+        {
+          // {
+//          vert_end = umap.adjacency_end(*bdy, UnstructuredMapping::EntityTypeEnum(numberOfDimensions()));
+//          for (vert=umap.adjacency_begin(*bdy, UnstructuredMapping::EntityTypeEnum(numberOfDimensions()));
+//               vert!=vert_end;
+//               vert++ )
+//            cout<<"ADJ Face "<<*vert<<endl;
+//        }
+//        cout<<"Edge "<<bdy->e<<" is apparently on a boundary ?"<<endl;
+          vert_end = umap.adjacency_end(*bdy, UnstructuredMapping::Vertex);
+          for ( vert=umap.adjacency_begin(*bdy, UnstructuredMapping::Vertex);
+                vert!=vert_end;
+                vert++ )
+            {
+              if (!umap.hasTag(UnstructuredMapping::Vertex,*vert, bdyVertTag))
+                cout<<"WARNING : Vertex "<<*vert<<" Is apparently NOT a boundary vertex"<<endl;;
 
-		     //	      umap.addTag(UnstructuredMapping::Vertex, umap.tagPrefix(UnstructuredMapping::EntityTypeEnum(numberOfDimensions()-1),UnstructuredMapping::GhostEntity),(void *)0);
-	      umap.setBC(UnstructuredMapping::Vertex, *vert, 1);
-	      nbv++;
-	    }
-	}
+                     //       umap.addTag(UnstructuredMapping::Vertex, umap.tagPrefix(UnstructuredMapping::EntityTypeEnum(numberOfDimensions()-1),UnstructuredMapping::GhostEntity),(void *)0);
+              umap.setBC(UnstructuredMapping::Vertex, *vert, 1);
+              nbv++;
+            }
+        }
     }
   
   //cout<<"NBV = "<<nbv<<endl;
@@ -6082,7 +6082,7 @@ sortInterpolationPoints()
       intArray & interpoleeLocation1        = interpoleeLocation[grid];
       intArray & variableInterpolationWidth1= variableInterpolationWidth[grid];
       realArray    & interpolationCoordinates1  = interpolationCoordinates[grid];
-	  
+          
       intArray interpoleeGrid             = this->interpoleeGrid[grid];
       intArray interpolationPoint         = this->interpolationPoint[grid];
       intArray interpoleeLocation         = this->interpoleeLocation[grid];
@@ -6095,117 +6095,117 @@ sortInterpolationPoints()
       int *interpoleeLocation1p = interpoleeLocation1.Array_Descriptor.Array_View_Pointer1;
       const int interpoleeLocation1Dim0=interpoleeLocation1.getRawDataSize(0);
 #define INTERPOLEELOCATION1(i0,i1) interpoleeLocation1p[i0+interpoleeLocation1Dim0*(i1)]
-	  
+          
       const int *interpolationPointp = interpolationPoint.Array_Descriptor.Array_View_Pointer1;
       const int interpolationPointDim0=interpolationPoint.getRawDataSize(0);
 #define INTERPOLATIONPOINT(i0,i1) interpolationPointp[i0+interpolationPointDim0*(i1)]
       int *interpolationPoint1p = interpolationPoint1.Array_Descriptor.Array_View_Pointer1;
       const int interpolationPoint1Dim0=interpolationPoint1.getRawDataSize(0);
 #define INTERPOLATIONPOINT1(i0,i1) interpolationPoint1p[i0+interpolationPoint1Dim0*(i1)]
-	  
+          
       const real *interpolationCoordinatesp = interpolationCoordinates.Array_Descriptor.Array_View_Pointer1;
       const int interpolationCoordinatesDim0=interpolationCoordinates.getRawDataSize(0);
 #define INTERPOLATIONCOORDINATES(i0,i1) interpolationCoordinatesp[i0+interpolationCoordinatesDim0*(i1)]
       real *interpolationCoordinates1p = interpolationCoordinates1.Array_Descriptor.Array_View_Pointer1;
       const int interpolationCoordinates1Dim0=interpolationCoordinates1.getRawDataSize(0);
 #define INTERPOLATIONCOORDINATES1(i0,i1) interpolationCoordinates1p[i0+interpolationCoordinates1Dim0*(i1)]
-	  
-	  
+          
+          
       int * interpoleeGridp = interpoleeGrid.Array_Descriptor.Array_View_Pointer0;
 #define INTERPOLEEGRID(i0) interpoleeGridp[i0]
       int * interpoleeGrid1p = interpoleeGrid1.Array_Descriptor.Array_View_Pointer0;
 #define INTERPOLEEGRID1(i0) interpoleeGrid1p[i0]
       int * ngp = ng.Array_Descriptor.Array_View_Pointer0;
 #define NG(i0) ngp[i0]
-	  
+          
       int * gridStartp = gridStart.Array_Descriptor.Array_View_Pointer0;
 #define GRIDSTART(i0) gridStartp[i0]
       const int * variableInterpolationWidthp = variableInterpolationWidth.Array_Descriptor.Array_View_Pointer0;
 #define VARIABLEINTERPOLATIONWIDTH(i0) variableInterpolationWidthp[i0]
       int * variableInterpolationWidth1p = variableInterpolationWidth1.Array_Descriptor.Array_View_Pointer0;
 #define VARIABLEINTERPOLATIONWIDTH1(i0) variableInterpolationWidth1p[i0]
-	
-      //	  interpoleeLocation1.display("IL before");
+        
+      //          interpoleeLocation1.display("IL before");
   
       // order the interpolation points by interpolee grid.
       ng=0;
       int i;
       const int nig=numberOfInterpolationPoints(grid);
       for( i=0; i<nig; i++ )
-	NG(INTERPOLEEGRID(i))++;
+        NG(INTERPOLEEGRID(i))++;
 
-      //	  ng.display("NG");
+      //          ng.display("NG");
 
       GRIDSTART(0)=0;
       int grid2;
       for( grid2=1; grid2<numberOfComponentGrids(); grid2++ )
-	GRIDSTART(grid2)=GRIDSTART(grid2-1)+NG(grid2-1);
-	  
-      //	  gridStart.display("GRIDSTART");
+        GRIDSTART(grid2)=GRIDSTART(grid2-1)+NG(grid2-1);
+          
+      //          gridStart.display("GRIDSTART");
       // ***** we need to assign the interpolationStartEndIndex 
       // **** this needs to be set on multigridLevel[0] too ********
-	  
+          
       // for now we assume that the interpolation is implicit on coarser levels *** fix this ***
-	  
-      //kkc left over from ogmg	  cg1.interpolationIsAllExplicit()=false;
-      //kkc left over from ogmg	  cg1.interpolationIsAllImplicit()=true;
+          
+      //kkc left over from ogmg   cg1.interpolationIsAllExplicit()=false;
+      //kkc left over from ogmg   cg1.interpolationIsAllImplicit()=true;
 
       //kkc left over from ogmg :
       for( grid2=0; grid2<numberOfComponentGrids(); grid2++ )
       {
-	      
-	if( NG(grid2)>0 )
-	{
-	  interpolationStartEndIndex(0,grid,grid2)=GRIDSTART(grid2);              // start value
-	  interpolationStartEndIndex(1,grid,grid2)=GRIDSTART(grid2)+NG(grid2)-1;  // end value
-	  if( true || interpolationIsImplicit(grid,grid2,0) )
-	    interpolationStartEndIndex(2,grid,grid2)= interpolationStartEndIndex(1,grid,grid2);
-	  // fix this: put any implicit points first
-	  // 	   else if( ngi(grid2)>0 )
-	  // 	     interpolationStartEndIndex(2,grid,grid2)=GRIDSTART(grid2)+ngi(grid2)-1; // end value for implicit pts.
-	}
+              
+        if( NG(grid2)>0 )
+        {
+          interpolationStartEndIndex(0,grid,grid2)=GRIDSTART(grid2);              // start value
+          interpolationStartEndIndex(1,grid,grid2)=GRIDSTART(grid2)+NG(grid2)-1;  // end value
+          if( true || interpolationIsImplicit(grid,grid2,0) )
+            interpolationStartEndIndex(2,grid,grid2)= interpolationStartEndIndex(1,grid,grid2);
+          // fix this: put any implicit points first
+          //       else if( ngi(grid2)>0 )
+          //         interpolationStartEndIndex(2,grid,grid2)=GRIDSTART(grid2)+ngi(grid2)-1; // end value for implicit pts.
+        }
       }
-	  
+          
       if( numberOfDimensions()==2 )
       {
-	for( i=0; i<nig; i++ )
-	{
-	  grid2=INTERPOLEEGRID(i);
-	  int j=GRIDSTART(grid2);
-	  INTERPOLEEGRID1(j)=grid2;
-	  INTERPOLATIONPOINT1(j,0)=INTERPOLATIONPOINT(i,0);
-	  INTERPOLATIONPOINT1(j,1)=INTERPOLATIONPOINT(i,1);
-	  INTERPOLEELOCATION1(j,0)=INTERPOLEELOCATION(i,0);
-	  INTERPOLEELOCATION1(j,1)=INTERPOLEELOCATION(i,1);
-	  INTERPOLATIONCOORDINATES1(j,0)=INTERPOLATIONCOORDINATES(i,0);
-	  INTERPOLATIONCOORDINATES1(j,1)=INTERPOLATIONCOORDINATES(i,1);
-	  variableInterpolationWidth1(j)=variableInterpolationWidth(i);
-		  
-	  GRIDSTART(grid2)++;
-	}
+        for( i=0; i<nig; i++ )
+        {
+          grid2=INTERPOLEEGRID(i);
+          int j=GRIDSTART(grid2);
+          INTERPOLEEGRID1(j)=grid2;
+          INTERPOLATIONPOINT1(j,0)=INTERPOLATIONPOINT(i,0);
+          INTERPOLATIONPOINT1(j,1)=INTERPOLATIONPOINT(i,1);
+          INTERPOLEELOCATION1(j,0)=INTERPOLEELOCATION(i,0);
+          INTERPOLEELOCATION1(j,1)=INTERPOLEELOCATION(i,1);
+          INTERPOLATIONCOORDINATES1(j,0)=INTERPOLATIONCOORDINATES(i,0);
+          INTERPOLATIONCOORDINATES1(j,1)=INTERPOLATIONCOORDINATES(i,1);
+          variableInterpolationWidth1(j)=variableInterpolationWidth(i);
+                  
+          GRIDSTART(grid2)++;
+        }
       }
       else
       {
-	for( i=0; i<nig; i++ )
-	{
-	  grid2=INTERPOLEEGRID(i);
-	  int j=GRIDSTART(grid2);
-	  interpoleeGrid1(j)=grid2;
-	  INTERPOLATIONPOINT1(j,0)=INTERPOLATIONPOINT(i,0);
-	  INTERPOLATIONPOINT1(j,1)=INTERPOLATIONPOINT(i,1);
-	  INTERPOLATIONPOINT1(j,2)=INTERPOLATIONPOINT(i,2);
-	  INTERPOLEELOCATION1(j,0)=INTERPOLEELOCATION(i,0);
-	  INTERPOLEELOCATION1(j,1)=INTERPOLEELOCATION(i,1);
-	  INTERPOLEELOCATION1(j,2)=INTERPOLEELOCATION(i,2);
-	  INTERPOLATIONCOORDINATES1(j,0)=INTERPOLATIONCOORDINATES(i,0);
-	  INTERPOLATIONCOORDINATES1(j,1)=INTERPOLATIONCOORDINATES(i,1);
-	  INTERPOLATIONCOORDINATES1(j,2)=INTERPOLATIONCOORDINATES(i,2);
-	  VARIABLEINTERPOLATIONWIDTH1(j)=VARIABLEINTERPOLATIONWIDTH(i);
-		  
-	  GRIDSTART(grid2)++;
-	}
+        for( i=0; i<nig; i++ )
+        {
+          grid2=INTERPOLEEGRID(i);
+          int j=GRIDSTART(grid2);
+          interpoleeGrid1(j)=grid2;
+          INTERPOLATIONPOINT1(j,0)=INTERPOLATIONPOINT(i,0);
+          INTERPOLATIONPOINT1(j,1)=INTERPOLATIONPOINT(i,1);
+          INTERPOLATIONPOINT1(j,2)=INTERPOLATIONPOINT(i,2);
+          INTERPOLEELOCATION1(j,0)=INTERPOLEELOCATION(i,0);
+          INTERPOLEELOCATION1(j,1)=INTERPOLEELOCATION(i,1);
+          INTERPOLEELOCATION1(j,2)=INTERPOLEELOCATION(i,2);
+          INTERPOLATIONCOORDINATES1(j,0)=INTERPOLATIONCOORDINATES(i,0);
+          INTERPOLATIONCOORDINATES1(j,1)=INTERPOLATIONCOORDINATES(i,1);
+          INTERPOLATIONCOORDINATES1(j,2)=INTERPOLATIONCOORDINATES(i,2);
+          VARIABLEINTERPOLATIONWIDTH1(j)=VARIABLEINTERPOLATIONWIDTH(i);
+                  
+          GRIDSTART(grid2)++;
+        }
       }
-	  
+          
       //      interpoleeLocation1.display("IL after");
 
 
@@ -6214,7 +6214,7 @@ sortInterpolationPoints()
       
   }
   //  interpolationStartEndIndex.display("ISTARTEND");
-	  
+          
 }
 
 #undef COMPOSITE_GRID_FOR_3

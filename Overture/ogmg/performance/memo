@@ -6,6 +6,23 @@
 
 set perf = $ov/ogmg/performance
 
+****************************
+****** Fri July 22, 2022
+
+TRY bigger grid 
+cg6:~/runs/ogmg> make -s square2b
+ square2048 &  2  &  Ogmg V[2,1]       &   4.2M  &    9  &    4.0e-07       &    2.54  &    0.04  &    2.50  &     6.7 \\
+ square2048 &  2  &  AMG               &   4.2M  &   10  &    6.7e-07       &   31.01  &   18.85  &   12.15  &    96.5 \\
+ square2048 &  2  &  Bi-CG-Stab ILU(1) &   4.2M  &  750  &    1.7e-06       &  299.41  &   13.75  &  285.67  &    53.8 \\
+
+
+cg6:~/runs/ogmg> make -s square4b
+ square2048 &  4  &  Ogmg V[2,1]       &   4.2M  &    9  &    7.6e-08       &    3.67  &    0.04  &    3.63  &     6.7 \\
+ square2048 &  4  &  AMG               &   4.2M  &   19  &    2.6e-07       &   67.35  &   30.80  &   36.55  &   165.6 \\
+
+
+
+
 === 2012/08/20 
 
 

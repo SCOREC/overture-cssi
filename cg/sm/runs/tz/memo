@@ -1,4 +1,28 @@
 *************************
+**** Fri Jan 28, 2022
+
+
+"BUG" fixed --> set PRESURE RHS FOR SINGULAR PRESSURE AND TZ
+
+
+CHECK PC2 on square with all dirichlet 
+
+**NOW EXACT**
+cgsm -noplot tz -g=nonSquare16.order2 -upwindSOS=0 -tf=1 -tp=.1 -tz=poly -degreex=2 -degreet=2 -pv=nc -ts=pc2 -incompressible=1 -upwindSOS=0 -bc1=d -bc2=d -bc3=d -bc4=d -go=og
+
+cgsm -noplot tz -g=nonSquare16.order2 -upwindSOS=0 -tf=1 -tp=.1 -tz=poly -degreex=2 -degreet=2 -pv=nc -ts=me -incompressible=1 -upwindSOS=0 -bc1=d -bc2=d -bc3=d -bc4=d -go=og
+
+-->t=1.0000e-01 dt=3.3e-02 maxNorm errors:[8.8818e-16,6.6613e-16,3.1086e-14,], maxNorm(u):[4.21e+00,2.11e+00,4.34e+00,]
+>>> Cgsm: ILE22: t=1.00e-01, steps=3, dt=3.3e-02 TS=ME degree(X,T)=(2,2) ad=0.10(order=2) |div(U)|=1.60e-14, |curl(U)|=4.21e+00, |div(U)|/|grad(U)|=3.79e-15 |grad(U)|=4.21e+00, cpu=8.52e+00(s)
+-->t=2.0000e-01 dt=3.3e-02 maxNorm errors:[2.6645e-15,6.6613e-16,2.9754e-14,], maxNorm(u):[4.45e+00,2.23e+00,4.58e+00,]
+>>> Cgsm: ILE22: t=2.00e-01, steps=6, dt=3.3e-02 TS=ME degree(X,T)=(2,2) ad=0.10(order=2) |div(U)|=1.60e-14, |curl(U)|=4.45e+00, |div(U)|/|grad(U)|=3.59e-15 |grad(U)|=4.45e+00, cpu=9.49e+00(s)
+-->t=3.0000e-01 dt=3.3e-02 maxNorm errors:[2.6645e-15,1.3323e-15,3.5527e-14,], maxNorm(u):[4.72e+00,2.36e+00,4.86e+00,]
+>>> Cgsm: ILE22: t=3.00e-01, steps=9, dt=3.3e-02 TS=ME degree(X,T)=(2,2) ad=0.10(order=2) |div(U)|=2.26e-14, |curl(U)|=4.72e+00, |div(U)|/|grad(U)|=4.80e-15 |grad(U)|=4.72e+00, cpu=9.92e+00(s)
+
+
+
+
+*************************
 **** Fri Oct 22, 2021
 
 return to 3D -> do more tests

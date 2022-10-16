@@ -378,6 +378,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
                           "use nonlinear interface projection",
                           "relax correction steps",
                           "project initial conditions",
+                          "project interface temperature",
                             ""};
     int tbState[10];
     tbState[0] = dbase.get<bool>("solveCoupledInterfaceEquations");
@@ -388,6 +389,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     tbState[5] = useNonlinearInterfaceProjection;
     tbState[6] = relaxCorrectionSteps;
     tbState[7] = dbase.get<bool>("projectMultiDomainInitialConditions");
+    tbState[8] = dbase.get<bool>("projectInterfaceTemperature");
     
     int numColumns=1;
     addPrefix(tbLabels,prefix,cmd,maxCommands);
@@ -510,6 +512,8 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
                                    dbase.get<bool>("extrapolateInitialInterfaceValues")) ){} //
     else if( dialog.getToggleValue(answer,"use new interface transfer",
                                    dbase.get<bool>("useNewInterfaceTransfer")) ){} //
+    else if( dialog.getToggleValue(answer,"project interface temperature",
+                                   dbase.get<bool>("projectInterfaceTemperature")) ){} //
     else if( dialog.getToggleValue(answer,"project interface",
                                    dbase.get<bool>("projectInterface")) ){} //
     else if( dialog.getToggleValue(answer,"use nonlinear interface projection",useNonlinearInterfaceProjection) )

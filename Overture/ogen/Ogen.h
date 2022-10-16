@@ -42,9 +42,9 @@ class Ogen
   ~Ogen();
   
   int buildACompositeGrid(CompositeGrid & cg, 
-			  MappingInformation & mapInfo, 
-			  const IntegerArray & mapList,
-			  const int & numberOfMultigridLevels =1,
+                          MappingInformation & mapInfo, 
+                          const IntegerArray & mapList,
+                          const int & numberOfMultigridLevels =1,
                           const bool useAnOldGrid=FALSE );
 
   static bool canDiscretize( MappedGrid & g, const int iv[3], bool checkOneSidedAtBoundaries=true );
@@ -82,9 +82,9 @@ class Ogen
 
   // build a composite grid when some grids have moved, tryng to use optimized algorithms.
   int updateOverlap(CompositeGrid & cg, 
-		    CompositeGrid & cgNew, 
-		    const LogicalArray & hasMoved, 
-		    const MovingGridOption & option =useOptimalAlgorithm );
+                    CompositeGrid & cgNew, 
+                    const LogicalArray & hasMoved, 
+                    const MovingGridOption & option =useOptimalAlgorithm );
 
   // update refinement level(s) on a composite grid.
   int updateRefinement(CompositeGrid & cg, 
@@ -113,7 +113,7 @@ class Ogen
   int chooseASide( MappedGrid & mg, int & side, int & axis );
   
   bool interpolateAPoint(CompositeGrid & cg, int grid, int iv[3], bool interpolatePoint,
-			bool checkInterpolationCoords, bool checkBoundaryPoint, int infoLevel );
+                        bool checkInterpolationCoords, bool checkBoundaryPoint, int infoLevel );
   
   int interpolatePoints(CompositeGrid & cg, int grid, int numberToInterpolate, const IntegerArray & ia, 
                         IntegerArray & interpolates );
@@ -122,25 +122,25 @@ class Ogen
   
   int interpolateMixedBoundary(CompositeGrid & cg, int mixedBoundaryNumber,
                                int side, int axis, int grid, MappedGrid & g, int grid2, MappedGrid & g2,
-			       int offset[3], real rScale[3],real rOffset[3]);
+                               int offset[3], real rScale[3],real rOffset[3]);
 
   int checkInterpolationOnBoundaries(CompositeGrid & cg);
 
   int classifyPoints(CompositeGrid & cg,
-		     realSerialArray & invalidPoint, 
-		     int & numberOfInvalidPoints,
-		     const int & level,
-		     CompositeGrid & cg0 );
+                     realSerialArray & invalidPoint, 
+                     int & numberOfInvalidPoints,
+                     const int & level,
+                     CompositeGrid & cg0 );
 
   int classifyRedundantPoints( CompositeGrid& cg, const int & grid, 
-			       const int & level, 
-			       CompositeGrid & cg0  );
+                               const int & level, 
+                               CompositeGrid & cg0  );
 
   int computeOverlap( CompositeGrid & cg, 
-		      CompositeGrid & cgOld,
+                      CompositeGrid & cgOld,
                       const int & level=0,
-		      const bool & movingGrids =FALSE, 
-		      const IntegerArray & hasMoved = Overture::nullIntArray() );
+                      const bool & movingGrids =FALSE, 
+                      const IntegerArray & hasMoved = Overture::nullIntArray() );
 
   int checkForOrphanPointsOnBoundaries(CompositeGrid & cg );
 
@@ -157,30 +157,30 @@ class Ogen
   int explicitHoleCutting( CompositeGrid & cg );
 
   int getHoleWidth( CompositeGrid & cg,
-		    MappedGrid & g2, 
-		    int pHoleMarker[3], 
-		    IntegerArray & holeCenter, 
-		    IntegerArray & holeMask, 
-		    IntegerArray & holeWidth, 
-		    RealArray & r,
-		    RealArray & x,
-		    const int *pIndexRange2,
-		    const int *pExtendedIndexRange2,
-		    const int *plocalIndexBounds2,
-		    int iv[3], int jv[3], int jpv[3],
+                    MappedGrid & g2, 
+                    int pHoleMarker[3], 
+                    IntegerArray & holeCenter, 
+                    IntegerArray & holeMask, 
+                    IntegerArray & holeWidth, 
+                    RealArray & r,
+                    RealArray & x,
+                    const int *pIndexRange2,
+                    const int *pExtendedIndexRange2,
+                    const int *plocalIndexBounds2,
+                    int iv[3], int jv[3], int jpv[3],
                     bool isPeriodic2[3], bool isPeriodic2p[3], 
-		    const Index Iv[3], 
-		    const int &grid, const int &grid2,
-		    int &ib, int &ib2,
-		    int & skipThisPoint,
-		    int & initialPoint,
-		    const int & numberOfDimensions,
-		    const int & axisp1, const int & axisp2, const real & cellCenterOffset,
+                    const Index Iv[3], 
+                    const int &grid, const int &grid2,
+                    int &ib, int &ib2,
+                    int & skipThisPoint,
+                    int & initialPoint,
+                    const int & numberOfDimensions,
+                    const int & axisp1, const int & axisp2, const real & cellCenterOffset,
                     const int & maximumHoleWidth, int & numberOfHoleWidthWarnings );
 
   int countCrossingsWithRealBoundary(CompositeGrid & cg, 
-				     const realArray & x, 
-				     IntegerArray & crossings );
+                                     const realArray & x, 
+                                     IntegerArray & crossings );
   
   int findTrueBoundary(CompositeGrid & cg);
 
@@ -189,9 +189,9 @@ class Ogen
   bool isNeededForDiscretization(MappedGrid& g, const int iv[3] );
   bool isOnInterpolationBoundary(MappedGrid& g, const int iv[3], const int & width=1 );
   bool isNeededForMultigridRestriction(CompositeGrid& c,
-				       const int & grid,
-				       const int & l,
-				       const int iv[3]);
+                                       const int & grid,
+                                       const int & l,
+                                       const int iv[3]);
   real computeInterpolationQuality(CompositeGrid & cg, const int & grid,
                                    const int & i1, const int & i2, const int & i3,
                                    real & qForward, real & qReverse, 
@@ -207,35 +207,35 @@ class Ogen
   int markPointsReallyNeededForInterpolation( CompositeGrid & cg );
 
 //   int markPartiallyPeriodicBoundaries( CompositeGrid & cg,
-// 				       intArray *iInterp  );
+//                                     intArray *iInterp  );
   
   int improveQuality( CompositeGrid & cg, const int & grid, RealArray & removedPointBound );
   int updateCanInterpolate( CompositeGrid & cg, CompositeGrid & cg0, RealArray & removedPointBound );
 
   int plot(const aString & title,
-	   CompositeGrid & cg,
+           CompositeGrid & cg,
            const int & queryForChanges =TRUE );
   
   // new: 
   int projectToParameterBoundary( const real rv0[3], const real rv1[3], real rv[3], 
-	  			  const int numberOfDimensions, const int grid );
+                                  const int numberOfDimensions, const int grid );
 
   int projectToBoundary( CompositeGrid & cg,
-			 const int & grid, 
-			 const realArray & r,
-			 const int iv[3], 
-			 const int ivp[3], 
-			 real rv[3] );
+                         const int & grid, 
+                         const realArray & r,
+                         const int iv[3], 
+                         const int ivp[3], 
+                         real rv[3] );
 
   int queryAPoint(CompositeGrid & cg);
   
   // int projectGhostPoints(CompositeGrid & cg);
 
   int removeExteriorPoints(CompositeGrid & cg, 
-			   const bool boundariesHaveCutHoles= FALSE );
+                           const bool boundariesHaveCutHoles= FALSE );
   
   int removeExteriorPointsNew(CompositeGrid & cg, 
-			   const bool boundariesHaveCutHoles= FALSE );
+                           const bool boundariesHaveCutHoles= FALSE );
   
   int sweepOutHolePoints(CompositeGrid & cg );
   
@@ -244,9 +244,9 @@ class Ogen
   int unmarkInterpolationPoints( CompositeGrid & cg, const bool & unMarkAll=FALSE );
 
   int updateGeometry(CompositeGrid & cg,
-		     CompositeGrid & cgOld,
-		     const bool & movingGrids=FALSE, 
-		     const IntegerArray & hasMoved = Overture::nullIntArray() );
+                     CompositeGrid & cgOld,
+                     const bool & movingGrids=FALSE, 
+                     const IntegerArray & hasMoved = Overture::nullIntArray() );
 
  public:
   int debug;   // for turning on debug info and extra plotting
@@ -379,21 +379,21 @@ class Ogen
   
   int adjustBoundary(CompositeGrid & cg,
                      const Integer&      k1,
-		     const Integer&      k2,
-		     const intSerialArray& i1,
-		     const realSerialArray&    x);
+                     const Integer&      k2,
+                     const intSerialArray& i1,
+                     const realSerialArray&    x);
   int adjustBoundarySerial(CompositeGrid & cg,
-			   const Integer&      k1,
-			   const Integer&      k2,
-			   const intSerialArray& i1,
-			   const realSerialArray&    x);
+                           const Integer&      k1,
+                           const Integer&      k2,
+                           const intSerialArray& i1,
+                           const realSerialArray&    x);
  int oppositeBoundaryIndex(MappedGrid & g, const int & ks, const int & kd );
 #ifdef USE_PPP
   int adjustBoundary(CompositeGrid & cg,
                      const Integer&      k1,
-		     const Integer&      k2,
-		     const intArray& i1,
-		     const realArray&    x);
+                     const Integer&      k2,
+                     const intArray& i1,
+                     const realArray&    x);
 #endif
 
   int adjustForNearbyBoundaries(CompositeGrid & cg,
@@ -401,72 +401,72 @@ class Ogen
                                 intSerialArray *iInterp );
   
   int determineBoundaryPointsToAdjust(CompositeGrid & cg, 
-				      const int grid, 
-				      const int grid2,
-				      IntegerArray & sidesShare, 
-				      const int ks1, const int kd1, const int ks2, const int kd2, 
-				      BoundaryAdjustment & bA , bool & first, bool & needAdjustment,
+                                      const int grid, 
+                                      const int grid2,
+                                      IntegerArray & sidesShare, 
+                                      const int ks1, const int kd1, const int ks2, const int kd2, 
+                                      BoundaryAdjustment & bA , bool & first, bool & needAdjustment,
                                       int numberOfDirectionsAdjusted, bool & directionAdjusted, bool & wasAdjusted,
-				      Range & R, IntegerArray & ia, IntegerArray & ok, 
+                                      Range & R, IntegerArray & ia, IntegerArray & ok, 
                                       const int it, real shareTol[3][2],
-				      RealArray & r, RealArray & r2, RealArray & r3, RealArray & rOk, 
-				      RealArray & xx, RealArray & x2, RealArray & x3  );
+                                      RealArray & r, RealArray & r2, RealArray & r3, RealArray & rOk, 
+                                      RealArray & xx, RealArray & x2, RealArray & x3  );
   
   int checkBoundaryAdjustment(CompositeGrid & cg, 
-			      const int grid, 
-			      const int grid2,
-			      const int ks1, const int kd1,
-			      BoundaryAdjustment & bA ,
-			      int numberOfDirectionsAdjusted, 
-			      Range & R, IntegerArray & ia, IntegerArray & ok,
-			      RealArray & r, RealArray & r2, RealArray & r3, RealArray & rOk, 
-			      RealArray & xx, RealArray & x2, RealArray & x3);
+                              const int grid, 
+                              const int grid2,
+                              const int ks1, const int kd1,
+                              BoundaryAdjustment & bA ,
+                              int numberOfDirectionsAdjusted, 
+                              Range & R, IntegerArray & ia, IntegerArray & ok,
+                              RealArray & r, RealArray & r2, RealArray & r3, RealArray & rOk, 
+                              RealArray & xx, RealArray & x2, RealArray & x3);
   
   int checkForBoundaryAdjustments(CompositeGrid & cg, int k1, int k2, IntegerArray & sidesShare,
                                   bool & needAdjustment, int manualSharedBoundaryNumber[2][3]  );
 
   int getAdjustmentVectors(CompositeGrid & cg, BoundaryAdjustment& bA, 
                            int grid, int grid2, bool & needAdjustment, int numberOfPoints,
-			   int it, int ks1, int kd1, int ks2, int kd2, Index Iv[3], RealArray & x1 );
+                           int it, int ks1, int kd1, int ks2, int kd2, Index Iv[3], RealArray & x1 );
 
 public:
   static int checkCanInterpolate(CompositeGrid & cg ,
-		                 int grid, int donor, int numberToCheck,
+                                 int grid, int donor, int numberToCheck,
                                  RealArray & r, IntegerArray & interpolates,
-				 IntegerArray & useBackupRules );
+                                 IntegerArray & useBackupRules );
 
   static int checkCanInterpolate(CompositeGrid & cg ,
-		                 int grid, int donor, RealArray & r, IntegerArray & interpolates,
-          	   	         IntegerArray & useBackupRules );
+                                 int grid, int donor, RealArray & r, IntegerArray & interpolates,
+                                 IntegerArray & useBackupRules );
 
 protected:
   bool canInterpolate(CompositeGrid & cg,
-		      const Integer&      k10,
-		      const Integer&      k20,
-		      const RealArray&    r,
-		      const LogicalArray& ok,
-		      const LogicalArray& useBackupRules,
-		      const Logical       checkForOneSided);
+                      const Integer&      k10,
+                      const Integer&      k20,
+                      const RealArray&    r,
+                      const LogicalArray& ok,
+                      const LogicalArray& useBackupRules,
+                      const Logical       checkForOneSided);
 
   int checkCrossings(CompositeGrid & cg,
-		     const int & numToCheck, 
-		     const IntegerArray & ia, 
-		     intArray & mask,
-		     realArray & x,
-		     realArray & vertex,
-		     IntegerArray & crossings,
-		     const Range & Rx,
+                     const int & numToCheck, 
+                     const IntegerArray & ia, 
+                     intArray & mask,
+                     realArray & x,
+                     realArray & vertex,
+                     IntegerArray & crossings,
+                     const Range & Rx,
                      const int & usedPoint );
   
   int checkHoleCutting(CompositeGrid & cg);
   
   int computeInterpolationStencil(CompositeGrid & cg, 
-				  const int & grid, 
-				  const int & gridI, 
-				  const real r[3], 
-				  int stencil[3][2],
-				  bool useOneSidedAtBoundaries = true,
-				  bool useOddInterpolationWidth = false  );
+                                  const int & grid, 
+                                  const int & gridI, 
+                                  const real r[3], 
+                                  int stencil[3][2],
+                                  bool useOneSidedAtBoundaries = true,
+                                  bool useOddInterpolationWidth = false  );
 
   int conformToCmpgrd( CompositeGrid & cg );
 
@@ -475,11 +475,11 @@ protected:
   int estimateSharedBoundaryTolerance(CompositeGrid & cg);
 
   int findBestGuess(CompositeGrid & cg, 
-		    const int & grid, 
-		    const int & numberToCheck, 
-		    intSerialArray & ia, 
-		    realSerialArray & x, 
-		    realSerialArray & r,
+                    const int & grid, 
+                    const int & numberToCheck, 
+                    intSerialArray & ia, 
+                    realSerialArray & x, 
+                    realSerialArray & r,
                     realSerialArray & rI,
                     intSerialArray & inverseGrid,
                     const realSerialArray & center );
@@ -487,33 +487,33 @@ protected:
   int findClosestBoundaryPoint( MappedGrid & mg, real *x, int *iv, int *ivb, int & sideb, int & axisb );
 
   int generateInterpolationArrays( CompositeGrid & cg, 
-				   const IntegerArray & numberOfInterpolationPoints,
-				   intSerialArray *iInterp );
+                                   const IntegerArray & numberOfInterpolationPoints,
+                                   intSerialArray *iInterp );
   
   int initialize();
 
   int lastChanceInterpolation(CompositeGrid & cg,
                               CompositeGrid & cg0, 
-			      const int & grid,
-			      const IntegerArray & ia,
+                              const int & grid,
+                              const IntegerArray & ia,
                               const IntegerArray & ok,
                               intSerialArray & interpolates,
-			      int & numberOfInvalidPoints,
-			      realSerialArray & invalidPoint,
-			      const int & printDiagnosticMessages = false,
+                              int & numberOfInvalidPoints,
+                              realSerialArray & invalidPoint,
+                              const int & printDiagnosticMessages = false,
                               const bool & tryBackupRules = false,
                               const bool saveInvalidPoints = true,
                               int lastChanceOption = 0  );
 
   int movingUpdate(CompositeGrid & cg, 
-		   CompositeGrid & cgOld, 
-		   const LogicalArray & hasMoved, 
-		   const MovingGridOption & option =useOptimalAlgorithm );
+                   CompositeGrid & cgOld, 
+                   const LogicalArray & hasMoved, 
+                   const MovingGridOption & option =useOptimalAlgorithm );
 
   int movingUpdateNew(CompositeGrid & cg, 
-		      CompositeGrid & cgOld, 
-		      const LogicalArray & hasMoved, 
-		      const MovingGridOption & option =useOptimalAlgorithm );
+                      CompositeGrid & cgOld, 
+                      const LogicalArray & hasMoved, 
+                      const MovingGridOption & option =useOptimalAlgorithm );
 
   int preInterpolateGrids(CompositeGrid & cg);
   
@@ -529,12 +529,12 @@ protected:
                                     real & rTol, real & xTol, real & nTol ) const;
 
   int updateBoundaryAdjustment( CompositeGrid & cg, 
-				const int & grid, 
-				const int & grid2,
-				intSerialArray *iag,
-				realSerialArray *rg,
-				realSerialArray *xg,
-				IntegerArray & sidesShare );
+                                const int & grid, 
+                                const int & grid2,
+                                intSerialArray *iag,
+                                realSerialArray *rg,
+                                realSerialArray *xg,
+                                IntegerArray & sidesShare );
 
  public:
   int updateParameters(CompositeGrid & cg, const int level = -1, 
@@ -549,24 +549,24 @@ protected:
 
 //   int setRefinementMaskFace(intArray & mask,
 //                             int side, int axis, 
-// 			    int numberOfDimensions, int rf[3],
-// 			    Range & I1r, Range & I2r, Range & I3r,
-// 			    const intArray & mask00, 
-// 			    const intArray & mask10,
-// 			    const intArray & mask01,
-// 			    const intArray & mask11);
+//                          int numberOfDimensions, int rf[3],
+//                          Range & I1r, Range & I2r, Range & I3r,
+//                          const intArray & mask00, 
+//                          const intArray & mask10,
+//                          const intArray & mask01,
+//                          const intArray & mask11);
   
   int markOffAxisRefinementMask( int numberOfDimensions, Index Ivr[3], Index Ivb[3], int rf[3], 
                                intSerialArray & mask, const intSerialArray & maskb );
 
   int setRefinementMaskFace(intSerialArray & mask,
                             int side, int axis, 
-			    int numberOfDimensions, int rf[3],
-			    Index & I1r, Index & I2r, Index & I3r,
-			    const intSerialArray & mask00, 
-			    const intSerialArray & mask10,
-			    const intSerialArray & mask01,
-			    const intSerialArray & mask11);
+                            int numberOfDimensions, int rf[3],
+                            Index & I1r, Index & I2r, Index & I3r,
+                            const intSerialArray & mask00, 
+                            const intSerialArray & mask10,
+                            const intSerialArray & mask01,
+                            const intSerialArray & mask11);
   
   int checkRefinementInterpolation( CompositeGrid & cg );
   int checkRefinementInterpolationNew( CompositeGrid & cg );
@@ -589,8 +589,8 @@ sidesShareBoundary( CompositeGrid & cg, int grid1, int side1, int dir1, int grid
   for( int n=0; n<numberOfManualSharedBoundaries; n++ )
   {
     if( manualSharedBoundary(n,0)==grid1 && manualSharedBoundary(n,3)==grid2 &&
-	manualSharedBoundary(n,1)==side1 && manualSharedBoundary(n,2)==dir1 &&
-	manualSharedBoundary(n,4)==side2 && manualSharedBoundary(n,5)==dir2 )
+        manualSharedBoundary(n,1)==side1 && manualSharedBoundary(n,2)==dir1 &&
+        manualSharedBoundary(n,4)==side2 && manualSharedBoundary(n,5)==dir2 )
     {
       return true;
     }

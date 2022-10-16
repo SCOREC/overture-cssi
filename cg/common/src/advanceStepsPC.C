@@ -379,7 +379,7 @@ initializeTimeSteppingPC( real & t0, real & dt0 )
                         }  // end for grid
                     } 
                 } // end if orderOfAccuracy==4 
-                if( debug() & 4 )
+                if( debug() & 32 )
                 {
           // determineErrors( gf[mOld].u,gf[mOld].gridVelocity, tp, 0, error,
           //               sPrintF(" adams:startup: errors in u at t=%e \n",nab,tp) );
@@ -599,12 +599,12 @@ initializeTimeSteppingPC( real & t0, real & dt0 )
             {
                 determineErrors( gf[mOld].u,gf[mOld].gridVelocity, gf[mOld].t, 0, error,
                                                   sPrintF("--adamsPC-- errors in u at t=%9.3e (t0-dt0=%9.3e)\n",gf[mOld].t,t0-dt0) );
-                if( numberOfPastTimeDerivatives>0 )
-                {
-                    fn[nab1].updateToMatchGrid(gf[mOld].cg);  // for moving grid TZ to get errors correct
-                    determineErrors( fn[nab1],gf[mOld].gridVelocity, gf[mOld].t, 1, error,
-                                                  sPrintF("--adamsPC-- errors in ut (fn[nab1]) at t=%9.3e (t0-dt0=%9.3e)\n",gf[mOld].t,t0-dt0) );
-                }
+                    if( numberOfPastTimeDerivatives>0 )
+                    {
+                        fn[nab1].updateToMatchGrid(gf[mOld].cg);  // for moving grid TZ to get errors correct
+                        determineErrors( fn[nab1],gf[mOld].gridVelocity, gf[mOld].t, 1, error,
+                                                      sPrintF("--adamsPC-- errors in ut (fn[nab1]) at t=%9.3e (t0-dt0=%9.3e)\n",gf[mOld].t,t0-dt0) );
+                    }
             }
         }
     }

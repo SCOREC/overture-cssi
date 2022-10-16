@@ -4,7 +4,7 @@
 # usage: 
 # ogen [noplot] diskArrayGrid -prefix=<s> -factor=<num> -order=[2/4/6/8] -interp=[e/i] ...
 #                             -nCylx=<num> -nCyly=<num> -rad=<num> -dist=<num> -periodic=[p|np|pn] ...
-#                             -xa=<f> -xb=<f> -ya=<f> -yb=<f> -deltaRadius=<>
+#                             -xa=<f> -xb=<f> -ya=<f> -yb=<f> -deltaRadius=<> -option=[solid|hollow]
 # 
 #   nCylx : number of cylinders in the x direction
 #   nCyly : number of cylinders in the y direction
@@ -18,10 +18,13 @@
 # examples:
 #  4 disks
 # ogen -noplot diskArrayGrid -prefix=fourDiskGrid -xa=-1.75 -xb=1.75 -ya=-1.5 -yb=1.5 -nCylx=2 -nCyly=2 -deltaX=1.5 -deltaY=1.5 -order=2 -periodic=np -factor=2
+# 4 hollow disks: 
+# ogen -noplot diskArrayGrid -prefix=fourHollowDiskGrid -option=hollow -xa=-1.75 -xb=1.75 -ya=-1.5 -yb=1.5 -nCylx=2 -nCyly=2 -deltaX=1.5 -deltaY=1.5 -order=2 -periodic=np -factor=2
 #
 #
 $prefix = "diskArrayGrid"; 
 $order=2; $factor=1; $interp="i";  $periodic=""; # default values
+$option="solid";  # solid inner disks or hollow 
 $orderOfAccuracy = "second order"; $ng=2;
 $interp = "e";            # explicit interpolation by default 
 $numGhost=-1;             # if >0 use this many ghost 
@@ -36,7 +39,7 @@ $deltaRadius=-1;          # if set, use this as the radial width of the grids
 GetOptions( "prefix=s"=>\$prefix,"rad=f"=>\$rad,"dist=f"=>\$dist,"order=i"=>\$order,"numGhost=i"=>\$numGhost,\
             "factor=i"=> \$factor,"interp=s"=> \$interp,"periodic=s"=>\$periodic,"deltaX=f"=>\$deltaX,"deltaY=f"=>\$deltaY,\
             "nCylx=i"=> \$nCylx,"nCyly=i"=> \$nCyly,"xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb,\
-            "deltaRadius=f"=>\$deltaRadius );
+            "deltaRadius=f"=>\$deltaRadius,"option=s"=>\$option );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
@@ -205,6 +208,9 @@ elsif( $periodic eq "pn" ){ $bc ="-1 -1 3 4"; }else{ $bc="1 2 3 4"; }
     exit 
 #
   exit this menu 
+#
+# For hollow disks: 
+if( $option eq "hollow" ){ $innerMappingNames = ""; $domainCommands="#" }
 #
 generate an overlapping grid 
   backGround

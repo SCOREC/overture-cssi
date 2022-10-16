@@ -9,6 +9,8 @@
 #include "display.h"
 #include "ParallelUtility.h"
 #include "MappedGridOperators.h"
+#include "InterpolatePointsOnAGrid.h"
+#include "OGFunction.h"
 
 #define extrapInterpNeighboursOpt EXTERN_C_NAME(extrapinterpneighboursopt)
 // new version: 
@@ -34,14 +36,31 @@ static int numberOfReduceOrderOfExtrapMessages=0;
 
 FILE* AssignInterpNeighbours::debugFile=NULL;
 
-// ===========================================================================
+// ===============================================================================
 /// \brief Constructor for the class that assigns interpolation neighbours.
-// ===========================================================================
+/// \param assignmentType_ : extrapolate or interpolate interpolation neighbours
+// ==============================================================================
 AssignInterpNeighbours::
-AssignInterpNeighbours()
+AssignInterpNeighbours(  AssignmentTypeEnum assignmentType_ /* = extrapolateInterpolationNeighbours */  )
 {
+  assignmentType = assignmentType_;
+
   setup();
 }
+
+// ===============================================================================
+/// \brief Set the assignment type.
+///
+/// \param assignmentType_ : extrapolate or interpolate interpolation neighbours
+// ===============================================================================
+void AssignInterpNeighbours::
+setAssignmentType( AssignmentTypeEnum assignmentType_ )
+{
+  assignmentType = assignmentType_;
+}
+
+
+
 // ===========================================================================
 /// \brief Setup routine (protected)
 // ===========================================================================
@@ -53,6 +72,7 @@ setup()
   AIN_COMM = Overture::OV_COMM;  // use this communicator by default
 
   isInitialized=false;
+  ipogIsInitialized=false;
 
   errorStatus=noErrors; // is this really needed?
   
@@ -70,6 +90,12 @@ setup()
   extrapolateInterpolationNeighboursVariableWidth=NULL;  
 
   interpolationPoint=NULL; // this points to the cg.interpolationPoint[grid]
+
+  ipog = NULL; // for interpolating interp-neighbours
+
+  // for interpolating interp-neighbours: 
+  dbase.put<int>("interpolationWidth")=3;
+  dbase.put<int>("numberOfValidGhostPoints")=2;
 
   // npr = number of processors that we will receive data from
   // nps = number of processors that we will send data to 
@@ -106,6 +132,11 @@ AssignInterpNeighbours::
   delete extrapolateInterpolationNeighbourPoints;
   delete extrapolateInterpolationNeighboursDirection;
   delete extrapolateInterpolationNeighboursVariableWidth;
+
+  delete ipog;
+
+  if( dbase.has_key("interpNeighbours") )
+    delete [] dbase.get<IntegerArray*>("interpNeighbours");  
 
   if( nar!=NULL )
   {
@@ -201,6 +232,9 @@ sizeOf(FILE *file /* = NULL */ ) const
 }
 
 
+
+
+
 // ===============================================================================================
 /// \brief Find the unused points that need to be assigned.
 /// \details
@@ -284,17 +318,17 @@ findInterpolationNeighbours( MappedGrid & mg )
        
        // pbc(side,axis)=1 if this face  is an internal parallel boundary
        // printf(" Bounds:  mask=[%i,%i][%i,%i] maskd=[%i,%i][%i,%i]\n",
-       //	      mask.getBase(0), mask.getBound(0),
-       //	      mask.getBase(1), mask.getBound(1),
-       //	      maskd.getBase(0), maskd.getBound(0),
-       //	      maskd.getBase(1), maskd.getBound(1));
+       //             mask.getBase(0), mask.getBound(0),
+       //             mask.getBase(1), mask.getBound(1),
+       //             maskd.getBase(0), maskd.getBound(0),
+       //             maskd.getBase(1), maskd.getBound(1));
 
        // NOTE: mask.getBase(0) = maskd.getBase(0) - maskd.getGhostBoundaryWidth(0) on the "left edge"
        for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
        {
-	 if( mask.getBase(axis)>maskd.getBase(axis) )
+         if( mask.getBase(axis)>maskd.getBase(axis) )
            pbc(0,axis)=1;
-	 if( mask.getBound(axis)<maskd.getBound(axis) )
+         if( mask.getBound(axis)<maskd.getBound(axis) )
            pbc(1,axis)=1;
        }
        // pbc=0;
@@ -306,34 +340,34 @@ findInterpolationNeighbours( MappedGrid & mg )
        if( n1a<=n1b && n2a<=n2b && n3a<=n3b )
        {
 //          for( int dir=0; dir<3; dir++ )
-// 	 {
-// 	   dimension(0,dir)=max(mg.dimension(0,dir),mask.getBase(dir) +maskd.getGhostBoundaryWidth(dir));
-// 	   dimension(1,dir)=min(mg.dimension(1,dir),mask.getBound(dir)-maskd.getGhostBoundaryWidth(dir));
-// 	 }
-	 
+//       {
+//         dimension(0,dir)=max(mg.dimension(0,dir),mask.getBase(dir) +maskd.getGhostBoundaryWidth(dir));
+//         dimension(1,dir)=min(mg.dimension(1,dir),mask.getBound(dir)-maskd.getGhostBoundaryWidth(dir));
+//       }
+         
 
          extendedIndexRange(0,0)=n1a; extendedIndexRange(1,0)=n1b;
          extendedIndexRange(0,1)=n2a; extendedIndexRange(1,1)=n2b;
          extendedIndexRange(0,2)=n3a; extendedIndexRange(1,2)=n3b;
-	 
+         
          // determine interpolation points on this processor -- 
          // *wdh* 060523: include interp. pts on the first parallel ghost line if 
          //               there are more than 1 parallel ghost line.
          if( maskd.getGhostBoundaryWidth(0)>1 )
-  	   I1 = Range(n1a-1,n1b+1);  
+           I1 = Range(n1a-1,n1b+1);  
          else
-  	   I1 = Range(n1a,n1b);
-	 if( maskd.getGhostBoundaryWidth(1)>1 )
+           I1 = Range(n1a,n1b);
+         if( maskd.getGhostBoundaryWidth(1)>1 )
            I2 = Range(n2a-1,n2b+1);
          else
            I2 = Range(n2a,n2b);
          if( maskd.getGhostBoundaryWidth(2)>1 )
-  	   I3 = Range(n3a-1,n3b+1);
+           I3 = Range(n3a-1,n3b+1);
          else
-	   I3 = Range(n3a,n3b);
+           I3 = Range(n3a,n3b);
 
          // optimize this: 
-	 ip = (mask(I1,I2,I3)<0).indexMap(); // interpolation points on this processor;
+         ip = (mask(I1,I2,I3)<0).indexMap(); // interpolation points on this processor;
 
        }
   
@@ -341,8 +375,8 @@ findInterpolationNeighbours( MappedGrid & mg )
 
        for( int axis=0; axis<3; axis++ )
        {
-	 dimension(0,axis)=mask.getBase(axis) +maskd.getGhostBoundaryWidth(axis);
-	 dimension(1,axis)=mask.getBound(axis)-maskd.getGhostBoundaryWidth(axis);
+         dimension(0,axis)=mask.getBase(axis) +maskd.getGhostBoundaryWidth(axis);
+         dimension(1,axis)=mask.getBound(axis)-maskd.getGhostBoundaryWidth(axis);
        }
        
   
@@ -370,15 +404,15 @@ findInterpolationNeighbours( MappedGrid & mg )
      int ndin=0;  // dimension for interp arrays 
      if( ni>0 )
      {
-	 
+         
        // estimate the max number of interpolation point neighbours
        ndin = ni*numberOfDimensions*numberOfDimensions+100;
        if( numberOfDimensions==1 )
-	 ndin=ni*2+100;
+         ndin=ni*2+100;
        else if( numberOfDimensions==2 )
-	 ndin=ni*2+100;
+         ndin=ni*2+100;
        else
-	 ndin=ni*3+1000;
+         ndin=ni*3+1000;
      
 
        ia.redim(ndin,numberOfDimensions);
@@ -404,25 +438,35 @@ findInterpolationNeighbours( MappedGrid & mg )
        ipar[2]=min(ipar[2],maskd.getGhostBoundaryWidth(0)); // assume all ghost boundary widths are the same
 #endif
        int *pvew = extrapolateInterpolationNeighboursVariableWidth!=NULL ? 
-	 getDataPointer(*extrapolateInterpolationNeighboursVariableWidth) : pia;
+         getDataPointer(*extrapolateInterpolationNeighboursVariableWidth) : pia;
      
        ipar[3]=myid;
 
        int ierr=0;
        findInterpNeighbours( numberOfDimensions,
-			     mask.getBase(0),mask.getBound(0),
-			     mask.getBase(1),mask.getBound(1),
-			     mask.getBase(2),mask.getBound(2),
-			     ni,ndin,extendedIndexRange(0,0),dimension(0,0),pbc(0,0),
-			     ni,numberOfInterpolationNeighbours,
-			     *getDataPointer(mask),
-			     *getDataPointer(m),*getDataPointer(ip), *getDataPointer(id), 
-			     *pia, *pvew, status(0), ipar[0], ierr );
+                             mask.getBase(0),mask.getBound(0),
+                             mask.getBase(1),mask.getBound(1),
+                             mask.getBase(2),mask.getBound(2),
+                             ni,ndin,extendedIndexRange(0,0),dimension(0,0),pbc(0,0),
+                             ni,numberOfInterpolationNeighbours,
+                             *getDataPointer(mask),
+                             *getDataPointer(m),*getDataPointer(ip), *getDataPointer(id), 
+                             *pia, *pvew, status(0), ipar[0], ierr );
+
+
+       if( debug & 2 )
+       {
+
+        printF("Grid %s: After findInterpNeighbours: numberOfInterpolationNeighbours=%d\n",
+          (const char*)mg.getName(),numberOfInterpolationNeighbours);
+        fprintf(debugFile,"Grid %s: After findInterpNeighbours: numberOfInterpolationNeighbours=%d\n",
+          (const char*)mg.getName(),numberOfInterpolationNeighbours);
+       }
 
        if( ierr!=0 )
        {
-	 printF("AssignInterpNeighbours::findInterpolationNeighbours:ERROR return from findInterpNeighbours!\n");
-	 OV_ABORT("error");
+         printF("AssignInterpNeighbours::findInterpolationNeighbours:ERROR return from findInterpNeighbours!\n");
+         OV_ABORT("error");
        }
 
 
@@ -430,7 +474,7 @@ findInterpolationNeighbours( MappedGrid & mg )
 //      {
 //        maximumWidthToExtrapolationInterpolationNeighbours=ipar[0];
 //        printf("GenericMappedGridOperators::findInterpolationNeighbours:max extrapolation width reduced to %i\n",
-// 	      maximumWidthToExtrapolationInterpolationNeighbours);
+//            maximumWidthToExtrapolationInterpolationNeighbours);
 //      }
        
      } // end if ni>0 
@@ -445,12 +489,12 @@ findInterpolationNeighbours( MappedGrid & mg )
      if( debug & 2 )
      {
        fprintf(debugFile," Bounds:  mask=[%i,%i][%i,%i] maskd=[%i,%i][%i,%i]\n",
-	       mask.getBase(0), mask.getBound(0),
-	       mask.getBase(1), mask.getBound(1),
-	       maskd.getBase(0), maskd.getBound(0),
-	       maskd.getBase(1), maskd.getBound(1));
+               mask.getBase(0), mask.getBound(0),
+               mask.getBase(1), mask.getBound(1),
+               maskd.getBase(0), maskd.getBound(0),
+               maskd.getBase(1), maskd.getBound(1));
        if( debug & 4 )
-	 displayMask(mask,"mask",debugFile);
+         displayMask(mask,"mask",debugFile);
 
      }
 
@@ -484,35 +528,35 @@ findInterpolationNeighbours( MappedGrid & mg )
        if( status(i)==0 )
        {
          #ifdef AIN_DEBUG
-	 if( debug & 4 )
-	   fprintf(debugFile," myid=%i: pt i=%i, ia=(%i,%i) id=(%i,%i) is assigned from this proc.\n",
-		   myid,i,IA(i,0),IA(i,1),ID(i,0),ID(i,1));
+         if( debug & 4 )
+           fprintf(debugFile," myid=%i: pt i=%i, ia=(%i,%i) id=(%i,%i) is assigned from this proc.\n",
+                   myid,i,IA(i,0),IA(i,1),ID(i,0),ID(i,1));
          #endif
        }
        else if( status(i)==2 )
        {
-	 // check if this point is needed from another processor
+         // check if this point is needed from another processor
          for( int axis=0; axis<numberOfDimensions; axis++ )
-	 { // index of a point on the extrapolation stencil that should be on the next processor
+         { // index of a point on the extrapolation stencil that should be on the next processor
            index[axis]=IA(i,axis)+shift*ID(i,axis);
-	 }
-	 int sp= maskd.Array_Descriptor.findProcNum( index );
+         }
+         int sp= maskd.Array_Descriptor.findProcNum( index );
 
          status(i)=10+sp;  // save the proc num
          #ifdef AIN_DEBUG
          if( debug & 2 )
-	   fprintf(debugFile," myid=%i: pt i=%i, ia=(%i,%i) id=(%i,%i) is obtained from proc. sp=%i.\n",
+           fprintf(debugFile," myid=%i: pt i=%i, ia=(%i,%i) id=(%i,%i) is obtained from proc. sp=%i.\n",
                  myid,i,IA(i,0),IA(i,1),ID(i,0),ID(i,1),sp);
          #endif
-	 
-	 // OV_ABORT("error");
+         
+         // OV_ABORT("error");
          numToSend(sp)++;
-	 
+         
 
        }
        else if( status(i)==-1 )
        {
-	 // this point not needed 
+         // this point not needed 
        }
        else
        {
@@ -526,7 +570,7 @@ findInterpolationNeighbours( MappedGrid & mg )
      {
        fprintf(debugFile," Send this many pts: numToSend=");
        for( int p=0; p<np; p++ )
-	 fprintf(debugFile," %i,",numToSend(p));
+         fprintf(debugFile," %i,",numToSend(p));
        fprintf(debugFile,"\n");
        fflush(debugFile);
      }
@@ -535,20 +579,20 @@ findInterpolationNeighbours( MappedGrid & mg )
      {
        numToSend(p) = numToSend(p)*numToSendPerProc;  // here is how much data we will send
      }
-	  
+          
      int tag0=501346;  // try to make a unique tag
      MPI_Status mpiStatus;
      for( int p=0; p<np; p++ )
      {
        int tags=tag0+p, tagr=tag0+myid;
        MPI_Sendrecv(&numToSend(p),    1, MPI_INT, p, tags, 
-		    &numToReceive(p), 1, MPI_INT, p, tagr, AIN_COMM, &mpiStatus ); 
+                    &numToReceive(p), 1, MPI_INT, p, tagr, AIN_COMM, &mpiStatus ); 
      }
      if( debug & 1 )
      {
        fprintf(debugFile," receive this many pts: numToReceive=");
        for( int p=0; p<np; p++ )
-	 fprintf(debugFile," %i,",numToReceive(p)/numToSendPerProc);
+         fprintf(debugFile," %i,",numToReceive(p)/numToSendPerProc);
        fprintf(debugFile,"\n");
        fflush(debugFile);
      }
@@ -559,7 +603,7 @@ findInterpolationNeighbours( MappedGrid & mg )
        // assert( npr>0 );
        assert( nar!=NULL );
        for( int p=0; p<npr; p++ )
-	 delete iar[p];
+         delete iar[p];
        delete [] iar; iar=NULL;
        delete [] nar; nar=NULL;
      }
@@ -568,7 +612,7 @@ findInterpolationNeighbours( MappedGrid & mg )
        // assert( nps>0 );
        assert( nas!=NULL );
        for( int p=0; p<nps; p++ )
-	 delete ias[p];
+         delete ias[p];
        delete [] ias; ias=NULL;
        delete [] nas; nas=NULL;
      }
@@ -646,7 +690,7 @@ findInterpolationNeighbours( MappedGrid & mg )
        int tag=tag1+myid;
        assert( numToReceive(p)>0 );
        if( debug & 2 )
-	 fprintf(debugFile," *** post receive for %i values from p=%i\n",numToReceive(p),pp);
+         fprintf(debugFile," *** post receive for %i values from p=%i\n",numToReceive(p),pp);
        MPI_Irecv(prbuff[p],numToReceive(p),MPI_INT ,pp,tag,AIN_COMM,&receiveRequest[p] ); // rec. from prc. pp
      }
   
@@ -665,9 +709,9 @@ findInterpolationNeighbours( MappedGrid & mg )
        nar[p]=numToSend(p)/numToSendPerProc;  // this is how many pts we will rec. in the assign stage
        assert( iar[p]==NULL );
        if( nar[p]>0 )
-	 iar[p] = new int [nar[p]*numberOfDimensions];
+         iar[p] = new int [nar[p]*numberOfDimensions];
        else
-	 iar[p]=NULL;
+         iar[p]=NULL;
      }
      
      // num(p) : holds count of number of values that will be sent (setup) or rec'd (assign) from proc. p
@@ -679,22 +723,22 @@ findInterpolationNeighbours( MappedGrid & mg )
      {
        if( status(i)>=10 )
        {
-	 // proc. pp will eval this pt: 
+         // proc. pp will eval this pt: 
          const int pp = status(i)-10;  // pp in in the range [0,np-1]
          const int p = ppr(pp);        // p should be in the range [0,npr-1]
          assert( p>=0 && p<npr );
-	 
-	 int & k = num(p);  // *note reference*
-	 const int jr = k/numToSendPerProc;
-	 for( int axis=0; axis<numberOfDimensions; axis++ )
- 	 {
-	   sendBuff(k,p)=IA(i,axis); k++;
+         
+         int & k = num(p);  // *note reference*
+         const int jr = k/numToSendPerProc;
+         for( int axis=0; axis<numberOfDimensions; axis++ )
+         {
+           sendBuff(k,p)=IA(i,axis); k++;
            IAR(jr,axis,p)=IA(i,axis);         // save this value 
- 	 }
-	 for( int axis=0; axis<numberOfDimensions; axis++ )
- 	 {
-	   sendBuff(k,p)=ID(i,axis); k++;
- 	 }
+         }
+         for( int axis=0; axis<numberOfDimensions; axis++ )
+         {
+           sendBuff(k,p)=ID(i,axis); k++;
+         }
        }
      }
 
@@ -713,7 +757,7 @@ findInterpolationNeighbours( MappedGrid & mg )
        int tag=tag1+pp;
        assert( numToSend(p)>0 );
        if( debug & 2 )
-	 fprintf(debugFile," *** send %i values to p=%i\n",numToSend(p),pp);
+         fprintf(debugFile," *** send %i values to p=%i\n",numToSend(p),pp);
 
        MPI_Isend(psbuff[p],numToSend(p),MPI_INT ,pp,tag,AIN_COMM,&sendRequest[p] ); // send to proc. pp 
      }
@@ -729,18 +773,18 @@ findInterpolationNeighbours( MappedGrid & mg )
 
        if( status(i)==0 )
        {
-	 if( i!=na )
-	 {
-	   for( int axis=0; axis<numberOfDimensions; axis++ )
-	   {
+         if( i!=na )
+         {
+           for( int axis=0; axis<numberOfDimensions; axis++ )
+           {
              IA(na,axis)=IA(i,axis);
-	     ID(na,axis)=ID(i,axis);
-	   }
-	 }
-	 na++;
+             ID(na,axis)=ID(i,axis);
+           }
+         }
+         na++;
        }
      }
-	     
+             
      if( nps>0 )
        MPI_Waitall( nps, receiveRequest, receiveStatus );  // wait to receive all messages
  
@@ -770,72 +814,72 @@ findInterpolationNeighbours( MappedGrid & mg )
        if( numPts>0 )
          ias[p] = new int [numPts*numberOfDimensions];
        else
-	 ias[p]=NULL;
+         ias[p]=NULL;
        nas[p]=numPts;
        int jp = 0;
        for( int j=0; j<numPts; j++ )
        {
          for( int axis=0; axis<numberOfDimensions; axis++ )
-	 {
-	   iav[axis] = receiveBuff(k,p); k++;
+         {
+           iav[axis] = receiveBuff(k,p); k++;
            IA(na,axis) =iav[axis];  // save this pt in the main list so it will be assigned
            IAS(jp,axis,p)=iav[axis];  // save this index so we know which pts go to proc. p
-	 }
+         }
          for( int axis=0; axis<numberOfDimensions; axis++ )
-	 {
-	   idv[axis] = receiveBuff(k,p); k++;
+         {
+           idv[axis] = receiveBuff(k,p); k++;
            ID(na,axis) = idv[axis];
-	 }
+         }
          #ifdef AIN_DEBUG
          if( debug & 2 )
-	   fprintf(debugFile," myid=%i : evaluate point ia=(%i,%i) id=(%i,%i) for proc p=%i\n",
+           fprintf(debugFile," myid=%i : evaluate point ia=(%i,%i) id=(%i,%i) for proc p=%i\n",
                    myid,iav[0],iav[1],idv[0],idv[1],pp);
          #endif
          #ifdef AIN_DEBUG
           // --- check that the point ia,id defines a valid extrapolation stencil on this proc. ----
           int w=maximumWidthToExtrapolationInterpolationNeighbours-1;
-  	  int i1=iav[0], i2=iav[1], i3=iav[2];                 // first pt in the stencil 
+          int i1=iav[0], i2=iav[1], i3=iav[2];                 // first pt in the stencil 
           int j1=i1+idv[0]*w, j2=i2+idv[1]*w, j3=i3+idv[2]*w;  // final pt in the stencil
-	  if( i1<mask.getBase(0) || i1>mask.getBound(0) ||
+          if( i1<mask.getBase(0) || i1>mask.getBound(0) ||
               i2<mask.getBase(1) || i2>mask.getBound(1) ||
               i3<mask.getBase(2) || i3>mask.getBound(2) ||
               j1<mask.getBase(0) || j1>mask.getBound(0) ||
               j2<mask.getBase(1) || j2>mask.getBound(1) ||
               j3<mask.getBase(2) || j3>mask.getBound(2) )
-	  {
-	    printf("AIN:ERROR: stencil pt i=(%i,%i,%i) to j=(%i,%i,%i) (from p=%i) cannot be evaluated"
+          {
+            printf("AIN:ERROR: stencil pt i=(%i,%i,%i) to j=(%i,%i,%i) (from p=%i) cannot be evaluated"
                    " on myid=%i : stencil outside index bounds\n",i1,i2,i3,j1,j2,j3,pp,myid);
-	    
-	    OV_ABORT("ERROR");
-	  }
+            
+            OV_ABORT("ERROR");
+          }
           if( mask(i1,i2,i3)!=0 )
-	  {
-	    printf("AIN:ERROR: stencil pt i=(%i,%i,%i) j=(%i,%i,%i) (from p=%i) cannot be evaluated"
+          {
+            printf("AIN:ERROR: stencil pt i=(%i,%i,%i) j=(%i,%i,%i) (from p=%i) cannot be evaluated"
                    " on myid=%i : mask(i)!=0 \n",i1,i2,i3,j1,j2,j3,pp,myid);
-	    displayMask(mask,"mask",debugFile);
-	    OV_ABORT("ERROR");
-	  }
-	  
+            displayMask(mask,"mask",debugFile);
+            OV_ABORT("ERROR");
+          }
+          
           // all pts in the stencil except the first should have mask!=0 
           for( int w=1; w<maximumWidthToExtrapolationInterpolationNeighbours; w++ )
-	  {
+          {
             j1=i1+idv[0]*w, j2=i2+idv[1]*w, j3=i3+idv[2]*w;
             if( mask(j1,j2,j3)==0 )
-	    {
-	      printf("AIN:ERROR: stencil pt i=(%i,%i,%i), j=(%i,%i,%i) (from p=%i) cannot be evaluated"
-		     " on myid=%i : mask(j)==0 \n",i1,i2,i3,j1,j2,j3,pp,myid);
-	      fprintf(debugFile,"AIN:ERROR: stencil pt i=(%i,%i,%i), j=(%i,%i,%i) (from p=%i) cannot be evaluated"
-		     " on myid=%i : mask(j)==0 \n",i1,i2,i3,j1,j2,j3,pp,myid);
-	      displayMask(mask,"mask",debugFile);
-	      fflush(debugFile);
-	      fclose(debugFile);
-	      OV_ABORT("ERROR");
-	    }
-	  }
-	  
+            {
+              printf("AIN:ERROR: stencil pt i=(%i,%i,%i), j=(%i,%i,%i) (from p=%i) cannot be evaluated"
+                     " on myid=%i : mask(j)==0 \n",i1,i2,i3,j1,j2,j3,pp,myid);
+              fprintf(debugFile,"AIN:ERROR: stencil pt i=(%i,%i,%i), j=(%i,%i,%i) (from p=%i) cannot be evaluated"
+                     " on myid=%i : mask(j)==0 \n",i1,i2,i3,j1,j2,j3,pp,myid);
+              displayMask(mask,"mask",debugFile);
+              fflush(debugFile);
+              fclose(debugFile);
+              OV_ABORT("ERROR");
+            }
+          }
+          
          #endif
 
-	 na++;
+         na++;
          jp++;
        }
      }
@@ -893,7 +937,7 @@ findInterpolationNeighbours( MappedGrid & mg )
      if( false )
      {
        printf(" findInterpolationNeighbours:opt: ni=%i, numberOfInterpolationNeighbours=%i\n",ni,
-	      numberOfInterpolationNeighbours);
+              numberOfInterpolationNeighbours);
        
        display(ip,"ip - interpolation points","%3i ");
        display(ia,"ia - interpolation neighb","%3i ");
@@ -966,38 +1010,38 @@ assign( realMappedGridFunction & uA, Range & C, const BoundaryConditionParameter
     bool useVariableExtrapolationWidth=extrapolateInterpolationNeighboursVariableWidth!=NULL;
     const int *pvew = useVariableExtrapolationWidth ? 
       getDataPointer(*extrapolateInterpolationNeighboursVariableWidth) : pia;
-	
+        
     int extrapOrder=bcParameters.orderOfExtrapolation;
     if( extrapOrder > maximumWidthToExtrapolationInterpolationNeighbours-1 )
     {
       extrapOrder=maximumWidthToExtrapolationInterpolationNeighbours-1;
       if( numberOfReduceOrderOfExtrapMessages<=10 )
       {
-	numberOfReduceOrderOfExtrapMessages++;
-	printF("AssignInterpNeighbours:INFO: reducing order of extrapolation to %i from requested order=%i. "
-	       "(since maximumWidthToExtrapolationInterpolationNeighbours=%i)\n",extrapOrder,
+        numberOfReduceOrderOfExtrapMessages++;
+        printF("AssignInterpNeighbours:INFO: reducing order of extrapolation to %i from requested order=%i. "
+               "(since maximumWidthToExtrapolationInterpolationNeighbours=%i)\n",extrapOrder,
                bcParameters.orderOfExtrapolation,maximumWidthToExtrapolationInterpolationNeighbours);
-	if( numberOfReduceOrderOfExtrapMessages==10 )
+        if( numberOfReduceOrderOfExtrapMessages==10 )
           printF("Too many reducing order of extrapolation info messages. I will not print anymore.\n");
       }
       
     }
     int ipar[]={maximumWidthToExtrapolationInterpolationNeighbours,
-		extrapOrder, 
-		(int)bcParameters.extrapolationOption,
-		(int)useVariableExtrapolationWidth
+                extrapOrder, 
+                (int)bcParameters.extrapolationOption,
+                (int)useVariableExtrapolationWidth
     };//
     const real uEps=1000.*REAL_MIN; // for limited extrapolation
     real rpar[]={bcParameters.extrapolateWithLimiterParameters[0],
-		 bcParameters.extrapolateWithLimiterParameters[1],
-		 uEps}; //
+                 bcParameters.extrapolateWithLimiterParameters[1],
+                 uEps}; //
 
     extrapInterpNeighboursOpt(mg.numberOfDimensions(), 
-			      uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
-			      uLocal.getBase(2),uLocal.getBound(2),uLocal.getBase(3),uLocal.getBound(3),
-			      ia.getBase(0),ia.getBound(0),id.getBase(0),id.getBound(0),
-			      *pia,*getDataPointer(id),*pvew, *getDataPointer(uLocal),
-			      C.getBase(),C.getBound(),ipar[0],rpar[0] );
+                              uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
+                              uLocal.getBase(2),uLocal.getBound(2),uLocal.getBase(3),uLocal.getBound(3),
+                              ia.getBase(0),ia.getBound(0),id.getBase(0),id.getBound(0),
+                              *pia,*getDataPointer(id),*pvew, *getDataPointer(uLocal),
+                              C.getBase(),C.getBound(),ipar[0],rpar[0] );
 
     if( debug & 4 )
     {
@@ -1008,10 +1052,10 @@ assign( realMappedGridFunction & uA, Range & C, const BoundaryConditionParameter
       int i1,i2,i3=0;
       for( int i=0; i<numberOfInterpolationNeighbours; i++ )
       {
-	i1=IA(i,0); i2=IA(i,1);
-	if( numberOfDimensions==3 ) i3=IA(i,2);
-	for( int c=c0; c<=c1; c++ )
-	  fprintf(debugFile," assign u(%i,%i,%i,%i)=%9.3e on this proc.\n",i1,i2,i3,c,uLocal(i1,i2,i3,c));
+        i1=IA(i,0); i2=IA(i,1);
+        if( numberOfDimensions==3 ) i3=IA(i,2);
+        for( int c=c0; c<=c1; c++ )
+          fprintf(debugFile," assign u(%i,%i,%i,%i)=%9.3e on this proc.\n",i1,i2,i3,c,uLocal(i1,i2,i3,c));
       }
     }
     
@@ -1091,9 +1135,9 @@ assign( realMappedGridFunction & uA, Range & C, const BoundaryConditionParameter
       
       for( int c=c0; c<=c1; c++ )
       {
-	sbuff(k,p) = uLocal(i1,i2,i3,c); k++;
-	if( debug & 2 )
-	  fprintf(debugFile," Send u(%i,%i,%i,%i)=%9.3e to p=%i\n",i1,i2,i3,c,uLocal(i1,i2,i3,c),pp);
+        sbuff(k,p) = uLocal(i1,i2,i3,c); k++;
+        if( debug & 2 )
+          fprintf(debugFile," Send u(%i,%i,%i,%i)=%9.3e to p=%i\n",i1,i2,i3,c,uLocal(i1,i2,i3,c),pp);
       }
     }
     assert( k==nums(p) );
@@ -1109,7 +1153,7 @@ assign( realMappedGridFunction & uA, Range & C, const BoundaryConditionParameter
     {
       fprintf(debugFile," Send %i reals to p=%i : ",nums(p),pp);
       for( int i=0; i<nums(p); i++ )
-	fprintf(debugFile,"%5.2f ",psbuff[p][i]);
+        fprintf(debugFile,"%5.2f ",psbuff[p][i]);
       fprintf(debugFile,"\n");
     }
     
@@ -1130,7 +1174,7 @@ assign( realMappedGridFunction & uA, Range & C, const BoundaryConditionParameter
     {
       fprintf(debugFile," Rec. %i reals from  p=%i : ",numr(p),pp);
       for( int i=0; i<numr(p); i++ )
-	fprintf(debugFile,"%5.2f ",prbuff[p][i]);
+        fprintf(debugFile,"%5.2f ",prbuff[p][i]);
       fprintf(debugFile,"\n");
     }
        
@@ -1142,10 +1186,10 @@ assign( realMappedGridFunction & uA, Range & C, const BoundaryConditionParameter
       
       for( int c=c0; c<=c1; c++ )
       {
-	uLocal(i1,i2,i3,c) = rbuff(k,p); k++;
+        uLocal(i1,i2,i3,c) = rbuff(k,p); k++;
         #ifdef AIN_DEBUG
-	if( debug & 2 )
-	  fprintf(debugFile," set u(%i,%i,%i,%i) = %9.3e (from p=%i)\n",i1,i2,i3,c,uLocal(i1,i2,i3,c),pp);
+        if( debug & 2 )
+          fprintf(debugFile," set u(%i,%i,%i,%i) = %9.3e (from p=%i)\n",i1,i2,i3,c,uLocal(i1,i2,i3,c),pp);
         #endif
       }
     }
@@ -1183,4 +1227,373 @@ assign( realMappedGridFunction & uA, Range & C, const BoundaryConditionParameter
   return 0;
 }
 
+// =======================================================================================
+/// \brief Set the interpolation width for interpolating interp neighbours:
+// =======================================================================================
+int AssignInterpNeighbours::
+setInterpolationWidth( int width )
+{
+  dbase.get<int>("interpolationWidth")=width;
+  return 0;
+}
 
+// =======================================================================================
+/// \brief Set the number of valid ghost values that can be used 
+///    for interpolating interp neighbours:
+// =======================================================================================
+int AssignInterpNeighbours::
+setNumberOfValidGhostPoints( int numValidGhost )
+{
+  dbase.get<int>("numberOfValidGhostPoints")=numValidGhost;
+  return 0;
+}
+
+
+// ===============================================================================================
+/// \brief Setup the data structures needed to INTERPOLATE interpolation neighbours
+// ================================================================================================
+int AssignInterpNeighbours::
+setupInterpolation( CompositeGrid & cg )
+{
+  if( debug & 2 )
+    printF("AssignInterpNeighbours::   ***ENTERING***   setupInterpolation \n");
+
+  if( assignmentType != interpolateInterpolationNeighbours )
+  {
+    printF("AssignInterpNeighbours::setupInterpolation: ERROR assignmentType != interpolateInterpolationNeighbours\n");
+    OV_ABORT("AssignInterpNeighbours::setupInterpolation: ERROR");
+
+  }
+
+  ipogIsInitialized=true; 
+
+  const int numberOfDimensions     = cg.numberOfDimensions();
+  const int numberOfComponentGrids = cg.numberOfComponentGrids();
+
+  const int & interpolationWidth       = dbase.get<int>("interpolationWidth");
+  const int & numberOfValidGhostPoints = dbase.get<int>("numberOfValidGhostPoints");
+
+  int iv[3], &i1=iv[0], &i2=iv[1], &i3=iv[2];
+  i3=0; 
+
+  // -- estimate the number of interp neighbours based on the number of interp points ----
+  const int totalNumberOfInterpolationPoints = sum(cg.numberOfInterpolationPoints());  // ********** FIX ME FOR PARALLEL *****
+  #ifdef USE_PPP
+    printf("\n #### AssignInterpNeighbours::setupInterpolation:WARNING: FIX ME FOR PARALLEL #####\n\n");
+  #endif
+
+  const int estimatedNumberOfInterpolationNeighbours = int( totalNumberOfInterpolationPoints*1.5 + 100);
+  RealArray xn(estimatedNumberOfInterpolationNeighbours,numberOfDimensions);  // x locations of interpolation neighbours 
+  IntegerArray numberPerGrid(numberOfComponentGrids);
+  numberPerGrid=0; // number to be interpolated per grid
+
+  // interpNeighbours[grid](i,0:2) = (i1,i2,i3) : index point of interp neighbour "i"
+  IntegerArray*& interpNeighbours = dbase.put<IntegerArray*>("interpNeighbours");
+  interpNeighbours = new IntegerArray [numberOfComponentGrids];                    
+
+
+  int numPts=0;  // counts total number of interp neighbours 
+  for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+  {
+    if( cg.numberOfInterpolationPoints(grid) == 0 )   // fix me for parallel
+    {
+      continue;
+    }
+
+    MappedGrid & mg = cg[grid];
+    mg.update(MappedGrid::THEmask | MappedGrid::THEvertex | MappedGrid::THEcenter );
+    OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
+
+    isInitialized=false;
+
+    setInterpolationPoint( cg.interpolationPoint[grid] );
+
+    // -- find interpolation neighbours ----
+    findInterpolationNeighbours( mg );
+
+    IntegerArray & ia = *extrapolateInterpolationNeighbourPoints;
+
+    // Keep a copy of the ia array
+    interpNeighbours[grid].redim(ia.getLength(0),numberOfDimensions);
+    interpNeighbours[grid] = ia;
+
+    if( debug & 2 )
+    {
+      printf("\n >>> grid=%s: findInterpolationNeighbours:opt: numberOfInterpolationNeighbours=%i\n",
+            (const char*)mg.getName(),numberOfInterpolationNeighbours);
+     
+      IntegerArray & id = *extrapolateInterpolationNeighboursDirection;
+     
+      if( debug & 4 )
+      {
+        // display(ip,"ip - interpolation points","%3i ");
+        display(ia,"ia - interpolation neighbours","%3i ");
+        // display(id,"id - interpolation direction ","%3i ");
+      }
+     
+    }  
+    numberPerGrid(grid) = numberOfInterpolationNeighbours;
+
+    const int newNumber = numPts + numberOfInterpolationNeighbours;
+    if( xn.getBound(0) < newNumber )
+    {
+      xn.resize(newNumber,numberOfDimensions);
+    }
+    for( int in=0; in<numberOfInterpolationNeighbours; in++ )
+    {
+      for( int dir=0; dir<numberOfDimensions; dir++ )
+        iv[dir]=ia(in,dir);
+      for( int dir=0; dir<numberOfDimensions; dir++ )
+       xn(numPts,dir) = xLocal(i1,i2,i3,dir);  
+      numPts++;
+    }
+  } // end for grid 
+
+  // Make the correct size
+  xn.resize(numPts,numberOfDimensions);
+
+  int & totalNumberOfInterpolationNeighbours = dbase.put<int>("totalNumberOfInterpolationNeighbours");
+  totalNumberOfInterpolationNeighbours = numPts; 
+
+  if( debug & 2 )
+    printF(">> INFO : estimatedNumberOfInterpolationNeighbours=%d, totalNumberOfInterpolationNeighbours=%d\n",
+           estimatedNumberOfInterpolationNeighbours,totalNumberOfInterpolationNeighbours);
+
+  if( debug & 4 )
+    display(xn,"xn - interpolation neighbour coordinates","%5.2f ");
+
+  if( ipog==NULL )
+    ipog = new InterpolatePointsOnAGrid;
+
+  int infoLevel=0; // 1;  // add to class?
+  
+  InterpolatePointsOnAGrid & interpolator = *ipog;
+
+  interpolator.setInfoLevel( infoLevel );
+
+
+  // Initialize the ipog object 
+  
+
+  interpolator.setInterpolationWidth(interpolationWidth);
+  // Set the number of valid ghost points that can be used when interpolating from a grid function: 
+  interpolator.setNumberOfValidGhostPoints( numberOfValidGhostPoints );
+  
+  // Assign all points, extrapolate pts if necessary:
+  interpolator.setAssignAllPoints(true);
+
+  int rt=interpolator.buildInterpolationInfo( xn ,cg ); 
+
+  if( rt==0 && (debug & 2) )
+  {
+    printF("AssignInterpNeighbours::setupInterpolation: ALL neighbours were successfully interpolated (interpWidth=%d).\n",
+            interpolationWidth);
+  }
+
+  if( rt!=0 )
+  {
+    // Unable to assign some points
+    const int num=abs(rt);
+    const IntegerArray & status = interpolator.getStatus();
+    printf("AssignInterpNeighbours::setupInterpolation:Error return from interpolator.buildInterpolationInfo: unable to interpolate %i points\n",
+           num);
+    printf("Here are the points that could not be interpolated:\n");
+    int start=0;
+    for( int grid=0; grid<numberOfComponentGrids; grid++ )
+    {
+      if( numberPerGrid(grid)>0 )
+      {
+        int end=start+numberPerGrid(grid);
+        for( int i=start; i<end; i++ )
+        {
+          if( status(i)==InterpolatePointsOnAGrid::notInterpolated )
+          {
+            printf("interpExposed: i=%4i grid=%i x=(%8.2e,%8.2e) status=%i\n",
+                   i,grid,xn(i,0),xn(i,1),status(i));            
+            // printf("interpExposed: i=%4i iv=(%i,%i,%i) grid=%i x=(%8.2e,%8.2e) status=%i\n",
+            //        i,ia(i,0),ia(i,1),ia(i,2),grid,x_(i,0),x_(i,1),status(i));
+          }
+        }
+      }
+    }
+    OV_ABORT("error");
+  }
+  
+  // We should set: numberPerGrid(grid) (used below for periodic grids )
+  periodicUpdateNeeded.redim(numberOfComponentGrids);
+  periodicUpdateNeeded=0;
+  for( int grid=0; grid<numberOfComponentGrids; grid++ )
+  {
+    MappedGrid & mg = cg[grid];
+    const IntegerArray & bc = mg.boundaryCondition();
+    if( min(bc(Range(0,1),Range(numberOfDimensions))) <0 )
+    { // this grid has a periodic boundary
+     
+      periodicUpdateNeeded(grid)=interpolator.getTotalNumberOfPointsAssigned(grid)>0;
+    }
+  }
+
+  return 0;
+}
+
+
+
+
+//===========================================================================
+/// \brief
+///   Interpolate values at interpolation neighbours.
+///
+///  /u1: On output, the interpolation neighbours will be interpolated
+///  /TZFlow: If specified and non-NULL this pointer to a twilight-zone function
+///           will be used to compute the error in the interpolation. This is used
+///          for debugging.
+///  /t: Evaluate the twilight-zone function at this time (the time corresponding to cg). 
+///
+//===========================================================================
+
+int AssignInterpNeighbours::
+assignInterpolationNeighbours( realCompositeGridFunction & u, const Range & C, OGFunction *TZFlow,  real t  )
+{
+  if( debug & 1 ) 
+  {
+    printF("\n =================== assignInterpolationNeighbours ====================\n\n");
+  }
+  
+  int returnValue=0;
+
+  CompositeGrid & cg = *u.getCompositeGrid();
+  if( !ipogIsInitialized )
+  {
+    setupInterpolation( cg );
+  }
+
+  const int & totalNumberOfInterpolationNeighbours = dbase.get<int>("totalNumberOfInterpolationNeighbours");
+
+  if( totalNumberOfInterpolationNeighbours==0 )
+    return returnValue;
+
+  const int numberOfDimensions = cg.numberOfDimensions();
+  const int numberOfComponentGrids = cg.numberOfComponentGrids();
+
+  Range N=C;
+  if( C==nullRange )
+    N = Range(u.getComponentBase(0),u.getComponentBound(0));
+  const int NBase=N.getBase();
+  const int NBound=N.getBound();
+
+  assert( ipog!=NULL );
+  InterpolatePointsOnAGrid & interpolator = *ipog;    
+
+  RealArray ui;
+  Range R=totalNumberOfInterpolationNeighbours;
+  ui.redim(R,N);
+
+  // -- interpolate the neighbours ----
+  interpolator.interpolatePoints(u,ui);
+  
+  // ----- Fill interpolated values back into u ------
+
+  IntegerArray*& interpNeighbours = dbase.get<IntegerArray*>("interpNeighbours");
+
+  real maxError=0.;
+
+  int i3=0; 
+  int start=0;
+  for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+  {
+    IntegerArray & ia = interpNeighbours[grid];
+    const int numNeighbours = ia.getLength(0);
+
+    if( numNeighbours>0 )
+    {
+      OV_GET_SERIAL_ARRAY(real,u[grid],uLocal);
+
+      const int end=start+numNeighbours;
+
+      for( int n=NBase; n<=NBound; n++)
+      {
+        if( numberOfDimensions==2 )
+        {
+          for( int i=0; i<numNeighbours; i++ )
+            uLocal(ia(i,0),ia(i,1),i3,n)=ui(i+start,n);
+        }
+        else
+        {
+          for( int i=0; i<numNeighbours; i++ )
+            uLocal(ia(i,0),ia(i,1),ia(i,2),n)=ui(i+start,n);
+        }
+      }
+      if( debug & 1 && !TZFlow )
+      {
+        OV_GET_SERIAL_ARRAY(real,cg[grid].vertex(),xLocal);
+        for( int i=0; i<numNeighbours; i++ )
+        {
+          const int i1=ia(i,0), i2=ia(i,1), i3= numberOfDimensions==2 ? 0 : ia(i,2);
+          fprintf(debugFile,"interpNeighbours: grid=%3i i=%4i iv=(%i,%i,%i) x=(%8.2e,%8.2e) interp: u=(",
+                grid,i,i1,i2,i3,xLocal(i1,i2,i3,0),xLocal(i1,i2,i3,1));
+          for( int n=NBase; n<=NBound; n++)
+          {
+            fprintf(debugFile,"%9.3e,",uLocal(i1,i2,i3,n));
+          }
+          fprintf(debugFile,")\n");
+        }
+      }
+      
+      if( TZFlow )
+      { 
+        // --- compute errors ---
+        OV_GET_SERIAL_ARRAY(real,cg[grid].vertex(),xLocal);
+        OGFunction & e = *TZFlow;
+        real err;
+        for( int i=0; i<numNeighbours; i++ )
+        {
+          int i1=ia(i,0);
+          int i2=ia(i,1);
+          int i3=numberOfDimensions==2 ? 0 : ia(i,2);
+          for( int n=NBase; n<=NBound; n++)
+          {
+            Real z = numberOfDimensions==2 ? 0 : xLocal(i1,i2,i3,2); 
+            Real uTrue = e(xLocal(i1,i2,i3,0),xLocal(i1,i2,i3,1),z,n,t);
+
+            err=fabs(uLocal(i1,i2,i3,n)-uTrue);
+            maxError=max(maxError,err);
+            if( debug & 2 )
+            {
+               fprintf(debugFile,"interpNeighbours: grid=%i i=%3i (i1,i2,i3,n)=(%i,%i,%i,%i), "
+                     "error=%8.2e, u1=%9.3e, true=%9.3e\n",
+                      grid,i,i1,i2,i3,n,err,uLocal(i1,i2,i3,n),uTrue);
+            }
+          }
+        }
+
+      } // end if TZFlow
+      start=end;
+      
+    } // end if numPerGrid>0
+  } // end for grid
+
+  
+  for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+  {
+    // If there are any neighbour points on this grid then we must perform a periodic update
+    const int numNeighbours = interpNeighbours[grid].getLength(0);    
+    if( numNeighbours>0 )
+    {
+      // **we could do this more efficiently!  **DO THIS FOR NOW**
+      u[grid].updateGhostBoundaries(); 
+
+      if( periodicUpdateNeeded(grid) )
+        u[grid].periodicUpdate();  
+
+    }
+  }
+  
+
+  if( (debug & 1) && TZFlow )
+  {
+    maxError=ParallelUtility::getMaxValue(maxError);
+    printF("interpNeighbours: %i pts interpolated max error =%8.2e \n",totalNumberOfInterpolationNeighbours,maxError);
+  }
+
+  return returnValue;
+}

@@ -20,7 +20,7 @@ ref:
 
 
 # Convergence results
-results: ogmgResults.tex
+ogmgResults: ogmgResults.tex
 	pdflatex ogmgResults
 	bibtex ogmgResults
 

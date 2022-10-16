@@ -2,7 +2,7 @@ SRC_FILES += Cgad.C getUt.C addForcing.C getTimeSteppingEigenvalue.C AdParameter
              setupPde.C timeSteppingDialog.C setupGridFunctions.C implicit.C advanceADI.C interface.C \
 	           userDefinedInitialConditions.C userDefinedBoundaryValues.C getCoefficients.C updateStateVariables.C \
              userDefinedDeformingSurface.C implicitTimeStep.C thinFilmSolver.C userDefinedKnownSolution.C \
-             getChampParameters.C getChampResidual.C
+             getChampParameters.C getChampResidual.C projectInterface.C AdExactSolutions.C plot.C
 
 
 # champ files: 
@@ -22,11 +22,21 @@ src/interface.C : src/interface.bC; $(BPP) -quiet -clean $<
 
 COMMON_SRC := ../common/src
 
+src/AdExactSolutions.C : src/AdExactSolutions.bC $(COMMON_SRC)/pcMacros.h; $(BPP) -quiet -clean $<
+
 src/implicitTimeStep.C : src/implicitTimeStep.bC $(COMMON_SRC)/pcMacros.h; $(BPP) -quiet -clean $<
 
-src/champBoundaryConditions.C : src/champBoundaryConditions.bC champ2InterfaceStencilRectangular.h champ2InterfaceStencilCurvilinear.h; $(BPP) -quiet -clean $<	
+src/champBoundaryConditions.C : src/champBoundaryConditions.bC \
+         src/champ2InterfaceStencilRectangular.h src/champ2InterfaceStencilCurvilinear.h \
+         src/champ4InterfaceStencilRectangular.h src/champ4InterfaceStencilCurvilinear.h \
+         src/champDiffusionCurvilinearCoefficientsOrder2NormalDir0.h \
+         src/champDiffusionCurvilinearCoefficientsOrder2NormalDir1.h \
+         src/champDiffusionCurvilinearCoefficientsOrder4NormalDir0.h \
+         src/champDiffusionCurvilinearCoefficientsOrder4NormalDir1.h; $(BPP) -quiet -clean $<	
 src/getChampResidual.C : src/getChampResidual.bC champMacros.h; $(BPP) -quiet -clean $< 
 src/applyBoundaryConditions.C : src/applyBoundaryConditions.bC champMacros.h; $(BPP) -quiet -clean $< 
+
+src/getChampParameters.C : src/getChampParameters.bC champMacros.h; $(BPP) -quiet -clean $< 
 
 # optimized BCs
 src/bcOptAd.f90 : src/bcOptAd.bf90; $(BPP) -quiet -clean -I$(Overture)/include $< 

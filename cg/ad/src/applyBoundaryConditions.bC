@@ -394,7 +394,7 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
 // Macro: Add twilght-zone corrections
 // ====================================================================================
 #beginMacro addTwilightZoneCorrection()              
-  printF("**** ADD TZ Correction to results from getData **CHECK ME**\n");
+  printF("**** applyBC: ADD TZ Correction to results from getData a0=%g, a1=%g **CHECK ME**\n",a0,a1);
   // fix me for parallel
 
   OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
@@ -535,6 +535,9 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
   MappedGrid & mg = *u.getMappedGrid();
   const int & numberOfDimensions = mg.numberOfDimensions();
 
+  const int orderOfAccuracy=parameters.dbase.get<int >("orderOfAccuracy");
+  assert( orderOfAccuracy==2 || orderOfAccuracy==4 );  
+
   const bool twilightZoneFlow = parameters.dbase.get<bool >("twilightZoneFlow");
 
   Range N = parameters.dbase.get<Range >("Rt");   // time dependent variables
@@ -567,7 +570,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
   {
     // ** Note that we are assigning the RHS for the implicit solve ***
     if( debug() & 2 )
-      printP("AD: applyBCForImplicitTimeStepping: fill RHS for implicit solve, t=%9.3e\n",t);
+      printP("AD: applyBCForImplicitTimeStepping: fill RHS for implicit solve, orderOfAccuracy=%d, t=%9.3e\n",orderOfAccuracy,t);
 
     // The RHS for the interface equations is placed in the BoundaryDataArray
     BoundaryData::BoundaryDataArray & pBoundaryData = parameters.getBoundaryData(grid);
@@ -687,7 +690,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
             // *** TEST NEW WAY **** April 8, 2021 
             if( debug() & 4 )
             {
-              printP("REQUEST DATA for (grid,side,axis)=(%d,%d,%d) interfaceType(side,axis,grid)=%d\n",grid,side,axis,interfaceType(side,axis,grid));
+              printP("applyBCImp:REQUEST DATA for (grid,side,axis)=(%d,%d,%d) interfaceType(side,axis,grid)=%d\n",grid,side,axis,interfaceType(side,axis,grid));
               if( bc==Parameters::dirichletInterface )
                 printP("applyBCImp: dirichletInterface: TEST:request heatFluxInterface interface data, t=%9.3e\n",t);
               else
@@ -698,6 +701,9 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
             // Range Rx=numberOfDimensions;
             getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
             getGhostIndex(   mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
+            // *wdh* April 16, 2022
+            //getBoundaryIndex(mg.indexRange(),side,axis,Ib1,Ib2,Ib3);
+            //getGhostIndex(   mg.indexRange(),side,axis,Ig1,Ig2,Ig3);
 
             interfaceData.u.redim(Ib1,Ib2,Ib3,N); // heat flux is returned here 
             interfaceData.t=t;
@@ -715,16 +721,12 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
             }
             
             // We pass the coefficients in the dirichlet, neumann or mixed BC
-            // *** THIS IS NOT CORRECT -- FIX ME ***
 
             // From ins/src/addedMassImplicitBoundaryConditions.bC: 
             //Parameters & bulkSolidParams = getInterfaceParameters( grid,side,axis,parameters );
 
             GridFaceDescriptor & myGFD = getInterfaceGridFaceDescriptor( grid, side, axis, parameters );
             real *sourceMixedBC = myGFD.dbase.get<real[2]>("sourceMixedBC");
-
-            if( debug() & 8 )
-              printF("After getInterfaceGridFaceDescriptor: myGFD.a=[%g,%g], sourceMixedBC=[%g,%g]\n",myGFD.a[0],myGFD.a[1],sourceMixedBC[0],sourceMixedBC[1]);
 
 
 
@@ -735,6 +737,11 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
 
             targetInfo.a[0]=sourceMixedBC[0]; targetInfo.a[1]=sourceMixedBC[1]; targetInfo.a[2]=0.; 
             // const real a0 = targetInfo.a[0], a1= targetInfo.a[1]; 
+
+            if( debug() & 2 )
+              printF("--- applyBC: After getInterfaceGridFaceDescriptor: [a0,a1]=[%g,%g] myGFD.a=[%g,%g], sourceMixedBC=[%g,%g]\n",
+                       a0,a1,myGFD.a[0],myGFD.a[1],sourceMixedBC[0],sourceMixedBC[1]);
+
 
             if( applyChampInterfaceConditions )
             { 
@@ -751,6 +758,10 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
               targetInfo.a[1] = -1.;  // flip sign of normal
               // Do this for now: 
               targetInfo.dbase.put<int>("getChampData")=1;
+            }
+            else
+            {
+              // What should we do here ?
             }
 
             int interfaceDataOptions = Parameters::heatFluxInterfaceData;
@@ -785,6 +796,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
 
             if( debug() & 8 )
             {
+              printP("AFTER REQUEST DATA FOR INTERFACE + TZ FIX (grid,side,axis)=(%d,%d,%d) t=%9.3e\n",grid,side,axis,t);
               ::display(interfaceData.u(Ib1,Ib2,Ib3,N),"AFTER REQUEST DATA FOR INTERFACE + TZ FIX","%7.4f ");
               ::display(bd,"bd: existing boundary data","%7.4f ");
               printP("MAX DIFF getInterface - bd = %8.2e\n",max(fabs(bd(Ib1,Ib2,Ib3,N)-interfaceData.u(Ib1,Ib2,Ib3,N))));
@@ -795,6 +807,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
               if( multiDomainProblem )
               {  // FILL IN RHS FOR implicit CHAMP condition
                 uLocal(Ig1,Ig2,Ig3,N) = interfaceData.u(Ib1,Ib2,Ib3,N);
+                bd(Ib1,Ib2,Ib3,N)     = interfaceData.u(Ib1,Ib2,Ib3,N);      // *wdh* March 25, 2022
                 if( debug() & 8 )
                 {
                   ::display(uLocal(Ib1,Ib2,Ib3,N),"RHS ON BOUNDARY FOR CHAMP face uLocal(Ib1,Ib2,Ib3,N)","%7.4f ");
@@ -865,6 +878,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
         }
         else if( bc==Parameters::dirichletInterface  && !applyChampInterfaceConditions )
         {
+          // DIRICHLET INTERFACE (NO CHAMP)
           getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
           const int includeGhost=1;
           bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
@@ -889,9 +903,13 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
               int rectangular=0;
               e.gd( ue,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,N,t);
 
-              ::display(ue(Ib1,Ib2,Ib3,N),"Cgad:imp: EXACT RHS for dirichlet BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
+              ::display(ue(Ib1,Ib2,Ib3,N),"Cgad:applyImpBC: EXACT RHS for dirichlet BC: ue(Ib1,Ib2,Ib3,N)","%7.4f ");
 
-              // printP("Cgad:imp: set RHS to exact\n");
+              ::display(fabs(bd(Ib1,Ib2,Ib3,N)-ue(Ib1,Ib2,Ib3,N)),
+                           "Cgad:applyImpBC: ERROR in RHS for Dirichlet BC: bd-ue","%7.4f ");
+
+
+              // printP("Cgad:applyImpBC: set RHS to exact\n");
               // bd(Ib1,Ib2,Ib3,N)=ue(Ib1,Ib2,Ib3,N);  // *****************************************************************
 
             }
@@ -934,7 +952,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
 
             if( debug() & 4 && twilightZoneFlow )
             {
-              ::display(bd(Ib1,Ib2,Ib3,N),"Cgad:imp: RHS for Neumann BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
+              ::display(bd(Ib1,Ib2,Ib3,N),"Cgad:applyImpBC: RHS for Neumann BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
 
               OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
               RealArray ue(Ib1,Ib2,Ib3,N), uex(Ib1,Ib2,Ib3,N), uey(Ib1,Ib2,Ib3,N);
@@ -950,15 +968,15 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
                   real a0=mixedCoeff(n,side,axis,grid), a1=mixedNormalCoeff(n,side,axis,grid);
                   ue(Ib1,Ib2,Ib3,n)=a1*(uex(Ib1,Ib2,Ib3,n)*normal(Ib1,Ib2,Ib3,0)+
                                         uey(Ib1,Ib2,Ib3,n)*normal(Ib1,Ib2,Ib3,1))+ a0*ue(Ib1,Ib2,Ib3,n);
-                  ::display(ue(Ib1,Ib2,Ib3,n),"Cgad:imp: EXACT RHS for Neumann BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
+                  ::display(ue(Ib1,Ib2,Ib3,n),"Cgad:applyImpBC: EXACT RHS for Neumann BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
                   ::display(fabs(bd(Ib1,Ib2,Ib3,n)-ue(Ib1,Ib2,Ib3,n)),
-                           "Cgad:imp: ERROR in RHS for Neumann BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
+                           "Cgad:applyImpBC: ERROR in RHS for Neumann BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
 
                   // ** bd(Ib1,Ib2,Ib3,N) *= 1./a1;
                   
                 }
               }
-              // printP("Cgad:imp: set RHS to exact\n");
+              // printP("Cgad:applyImpBC: set RHS to exact\n");
               // bd(Ib1,Ib2,Ib3,N)=ue(Ib1,Ib2,Ib3,N);  // ***********************************************************
             }
             
@@ -997,7 +1015,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
 
                 if( debug() & 8 )
                 {
-                  printP("Cgad:imp: set RHS to exact where interface meets adj-dirichlet "
+                  printP("Cgad:applyImpBC: set RHS to exact where interface meets adj-dirichlet "
                          " (side,axis)=(%i,%i) (side2,dir2)=(%i,%i) Jv=[%i,%i][%i,%i][%i,%i]\n",
                          side,axis,side2,dir2,Jb1.getBase(),Jb1.getBound(),Jb2.getBase(),Jb2.getBound(),
                          Jb3.getBase(),Jb3.getBound() );

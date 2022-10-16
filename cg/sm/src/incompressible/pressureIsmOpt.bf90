@@ -450,6 +450,25 @@
  end do ! end axis
 #endMacro
 
+! ==============================================================
+! Macro: Check for nans
+! ==============================================================
+#beginMacro checkForNansMacro( f,label )
+  if( checkForNans )then
+    numNans=0
+    beginLoops(i1,i2,i3,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b)
+      if( isnan( f(i1,i2,i3) ) )then 
+        numNans = numNans+1 
+      end if 
+    endLoops()
+    if( numNans.gt.0 )then
+      write(*,'("pIsmOpt: ERROR - nans found in pressure RHS label, grid=",i3)') grid
+      stop 9876
+    else
+      write(*,'("pIsmOpt: INFO: no nans in pressureRHS found: label, grid=",i3)') grid
+    end if
+  end if
+#endMacro
 
 #beginMacro getNormal2d(i1,i2,i3,axis)
  an1 = rsxy(i1,i2,i3,axis,0)
@@ -609,7 +628,7 @@
 
 !     ---- local variables -----
  integer i1,i2,i3,n,gridType,orderOfAccuracy,orderInTime,debug,numGhost,numGhost0
- integer addForcing,option,twilightZone,useCurlCurlBoundaryCondition
+ integer addForcing,option,twilightZone,useCurlCurlBoundaryCondition,numNans
  integer useWhereMask,grid
  ! integer useConservative
  integer u1c,u2c,u3c,pc
@@ -637,6 +656,7 @@
  integer numSmooths,smooth
  real omega
 
+ logical checkForNans
 
  integer rectangular,curvilinear
  parameter( rectangular=0, curvilinear=1 )
@@ -741,7 +761,7 @@
  ! c1dtsq=c1*dtsq
  ! c2dtsq=c2*dtsq
 
-
+  checkForNans=.false.
 
  if( t<=2*dt )then
    write(*,'(" #### NAME: dt=",1pe12.4," u1c,u2c,u3c,pc=",4i3," t=",1pe12.3)') dt,u1c,u2c,u3c,pc,t
@@ -825,6 +845,8 @@
       f(i1,i2,i3)=cdvOverDtSq*divUt(i1,i2,i3)
     end if
   endLoops()
+
+  checkForNansMacro( f,  pIsmOptAfterDiv )
 
   ! -- smooth divergence damping ---
   numSmooths=0
@@ -1074,7 +1096,7 @@
             ! #End              
             #If #DIM eq "2"
               f(i1,i2,i3) = 2.*mu*( an1**2*UNX(i1,i2,i3,u1c) + an2**2*UNY(i1,i2,i3,u2c) )  \
-                              + 2.*mu*an1*an2*( UNY(i1,i2,i3,u1c) + UNX(i1,i2,i3,u2c) )
+                          + 2.*mu*an1*an2*( UNY(i1,i2,i3,u1c) + UNX(i1,i2,i3,u2c) )
             #Else
               ! p.n = 2*mu * n.( u.n )
               !       2*mu* n^T [ n1*ux+n2*uy+n3*uz ]
@@ -1082,7 +1104,16 @@
               !                 [ n1*wx+n2*wy+n3*wz ] 
               f(i1,i2,i3) = 2.*mu*( an1*( an1*UNX(i1,i2,i3,u1c) + an2*UNY(i1,i2,i3,u1c) + an3*UNZ(i1,i2,i3,u1c) ) + \
                                     an2*( an1*UNX(i1,i2,i3,u2c) + an2*UNY(i1,i2,i3,u2c) + an3*UNZ(i1,i2,i3,u2c) ) + \
-                                    an3*( an1*UNX(i1,i2,i3,u3c) + an2*UNY(i1,i2,i3,u3c) + an3*UNZ(i1,i2,i3,u3c) ) )                                   
+                                    an3*( an1*UNX(i1,i2,i3,u3c) + an2*UNY(i1,i2,i3,u3c) + an3*UNZ(i1,i2,i3,u3c) ) ) 
+
+              if( isnan( f(i1,i2,i3) ) )then
+                write(*,'("pRHS: Traction BC: nan found, grid=",i3," i1,i2,i3=",3i3)') grid,i1,i2,i3 
+                write(*,'("    : an1,an2,an3=",3(1pe12.4,1x))') an1,an2,an3
+                write(*,'("    : u1x,u1y,u1z=",3(1pe12.4,1x))') UNX(i1,i2,i3,u1c),UNY(i1,i2,i3,u1c),UNZ(i1,i2,i3,u1c)
+                write(*,'("    : u2x,u2y,u2z=",3(1pe12.4,1x))') UNX(i1,i2,i3,u2c),UNY(i1,i2,i3,u2c),UNZ(i1,i2,i3,u2c)
+                write(*,'("    : u3x,u3y,u3z=",3(1pe12.4,1x))') UNX(i1,i2,i3,u3c),UNY(i1,i2,i3,u3c),UNZ(i1,i2,i3,u3c)
+
+              end if                                  
 
             #End
 
@@ -1488,6 +1519,8 @@
 
   endLoopOverSides()   
   ! ---------- END LOOP OVER BOUNDARIES -------
+
+  checkForNansMacro( f,  pIsmOptAfterFillBC  )
 
 !  #If #GRIDTYPE eq "rectangular"
 !

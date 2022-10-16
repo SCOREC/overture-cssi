@@ -250,6 +250,8 @@ init()
   // For high-order schemes we may use lower order on the coarser levels
   if( !dbase.has_key("orderOfCoarseLevels") ){ dbase.put<int>( "orderOfCoarseLevels")=-1; }// 
 
+  // Max iterations for the coarse grid solver: 
+  if( !dbase.has_key("maxIterationsCoarseGgrid") ){ dbase.put<int>( "maxIterationsCoarseGrid")=10000; }// -1 = use default
 }
 
 // =================================================================================
@@ -327,9 +329,9 @@ chooseGoodMultigridParameters(CompositeGrid & cg, int maxLevels /* =useLevelsInG
     {
       printF(" Turning on IBS (interpolation boundary smoothing), orderOfAccuracy=%i.\n",orderOfAccuracy);
       printF(" IBS: interp. bndry smoothing: global its=%i, local its=%i, layers=%i for %i levels, %s.\n",
-	      numberOfIBSIterations,numberOfInterpolationSmoothIterations,
+              numberOfIBSIterations,numberOfInterpolationSmoothIterations,
               numberOfInterpolationLayersToSmooth,numberOfLevelsForInterpolationSmoothing,
-	     (combineSmoothsWithIBS==1 ? "combine with smooths" : "apply separately from smooths"));
+             (combineSmoothsWithIBS==1 ? "combine with smooths" : "apply separately from smooths"));
     }
     
   }
@@ -361,62 +363,69 @@ chooseGoodMultigridParameters(CompositeGrid & cg, int maxLevels /* =useLevelsInG
       {
         // check the ratio of the max to min spacing in this direction:
         real ratio1 = dsMax[axis]/dsMin[axis];
-	
+        
         // check the ratio of the min spacing on this axis to the max spacing in all directions: 
         real ratio2 = maxDsMax/dsMin[axis];
 
-	if( info & 2 )
-	  printF(" grid=%i : axis=%i : grid-pts=%i, spacing: (min,ave,max)=(%8.2e,%8.2e,%8.2e), dsMax/dsMin=%8.2e, "
+        if( info & 2 )
+          printF(" grid=%i : axis=%i : grid-pts=%i, spacing: (min,ave,max)=(%8.2e,%8.2e,%8.2e), dsMax/dsMin=%8.2e, "
                  " max(dsMax)/dsMin = %8.2e\n",
                  grid,axis,gid(1,axis)-gid(0,axis)+1,dsMin[axis],dsAve[axis],dsMax[axis],ratio1,ratio2);
 
         if( max(ratio1,ratio2) > spacingFactor )
-	{
-	  // choose a line smoother in this direction 
-	  if( smoother==defaultSmoother )
+        {
+          // choose a line smoother in this direction 
+          if( smoother==defaultSmoother )
             smoother = SmootherTypeEnum(lineZebraInDirection1 + axis);
           else
-	    smoother = alternatingLineZebra;
-	}
+            smoother = alternatingLineZebra;
+        }
       }
       if( info & 1 )
-	printF(" grid =%i : smoother = %s\n",grid,
-	       (smoother==lineZebraInDirection1 ? "lineZebraInDirection1" :
-		smoother==lineZebraInDirection2 ? "lineZebraInDirection2" :
-		smoother==lineZebraInDirection3 ? "lineZebraInDirection3" :
-		smoother==alternatingLineZebra ? "alternatingLineZebra" :
-		smoother==redBlack ? "redBlack" :
-		smoother==redBlackJacobi ? "redBlackJacobi" : "unknown"));
+        printF(" grid =%i : smoother = %s\n",grid,
+               (smoother==lineZebraInDirection1 ? "lineZebraInDirection1" :
+                smoother==lineZebraInDirection2 ? "lineZebraInDirection2" :
+                smoother==lineZebraInDirection3 ? "lineZebraInDirection3" :
+                smoother==alternatingLineZebra ? "alternatingLineZebra" :
+                smoother==redBlack ? "redBlack" :
+                smoother==redBlackJacobi ? "redBlackJacobi" : "unknown"));
 
       smootherType(grid,L)=smoother;
     }
   } // end for grid
 
-
-  // -- coarse grid solver ---
-  ogesParameters.set(OgesParameters::THEbestIterativeSolver);
-  // Note: For nearly singular problems (Neumann + mixed BC's) we need to make sure we solve the coarse grid equations 
-  // accurately enough. 
-  // Do not over-ride tolerance if it has been set (default value is 0)
-  real tol = 0.;
-  ogesParameters.get(OgesParameters::THErelativeTolerance,tol);
-  if( tol <= 0. ) tol=1.e-3;
-  ogesParameters.set(OgesParameters::THErelativeTolerance,tol);
-  int maxit=100;  // this should depend on the number of points on the coarse grid!
-  ogesParameters.set(OgesParameters::THEmaximumNumberOfIterations,maxit);
-
-  // *wdh* 2012/06/04 -- increase ILU levels on coarse grid solve
-  ogesParameters.set(OgesParameters::THEnumberOfIncompleteLULevels,3);
-  if( chooseGoodParametersOption>1 )
-  { // more robust: 
-    ogesParameters.set(OgesParameters::THEnumberOfIncompleteLULevels,5);
-  }
-  
-
-  if( info & 1 )
+  // printF("\n ### chooseGoodMultigridParameters: useDirectSolverForOneLevel=%d ####\n",useDirectSolverForOneLevel);
+  if( false && useDirectSolverForOneLevel )
   {
-    printF(" Choosing coarse grid solver: `best iterative', tol=%9.3e, maxit=%i\n",
-	   tol,maxit);
+    printF("\n ### chooseGoodMultigridParameters: useDirectSolverForOneLevel ####\n");
+    // ogesParameters.get(OgesParameters::THErelativeTolerance,tol);
+  }
+  else
+  {
+    // -- coarse grid solver ---
+    ogesParameters.set(OgesParameters::THEbestIterativeSolver);
+    // Note: For nearly singular problems (Neumann + mixed BC's) we need to make sure we solve the coarse grid equations 
+    // accurately enough. 
+    // Do not over-ride tolerance if it has been set (default value is 0)
+    real tol = 0.;
+    ogesParameters.get(OgesParameters::THErelativeTolerance,tol);
+    if( tol <= 0. ) tol=1.e-3;
+    ogesParameters.set(OgesParameters::THErelativeTolerance,tol);
+    int maxit=100;  // this should depend on the number of points on the coarse grid!
+    ogesParameters.set(OgesParameters::THEmaximumNumberOfIterations,maxit);
+
+    // *wdh* 2012/06/04 -- increase ILU levels on coarse grid solve
+    ogesParameters.set(OgesParameters::THEnumberOfIncompleteLULevels,3);
+    if( chooseGoodParametersOption>1 )
+    { // more robust: 
+      ogesParameters.set(OgesParameters::THEnumberOfIncompleteLULevels,5);
+    }
+
+    if( info & 1 )
+    {
+      printF(" Choosing coarse grid solver: `best iterative', tol=%9.3e, maxit=%i\n",
+             tol,maxit);
+    }
   }
 
   if( info & 1 )
@@ -434,15 +443,15 @@ chooseGoodMultigridParameters(CompositeGrid & cg, int maxLevels /* =useLevelsInG
 //       int gridMin=INT_MAX, gridMax=-INT_MAX, minAxis=-1, maxAxis=-1, midAxis=-1;
 //       for( int axis=0; axis<numberOfDimensions; axis++ )
 //       {
-// 	gridDims[axis]=gid(1,axis)-gid(0,axis);
-// 	if( gridDims[axis]<gridMin )
-// 	{
-// 	  gridMin=gridDims[axis]; minAxis=axis;
-// 	}
-// 	if( gridDims[axis]>gridMax )
-// 	{
-// 	  gridMax=gridDims[axis]; maxAxis=axis;
-// 	} 
+//      gridDims[axis]=gid(1,axis)-gid(0,axis);
+//      if( gridDims[axis]<gridMin )
+//      {
+//        gridMin=gridDims[axis]; minAxis=axis;
+//      }
+//      if( gridDims[axis]>gridMax )
+//      {
+//        gridMax=gridDims[axis]; maxAxis=axis;
+//      } 
 //       }
 //       assert( minAxis>=0 && maxAxis>=0 );
 //       if( numberOfDimensions==2 )
@@ -451,7 +460,7 @@ chooseGoodMultigridParameters(CompositeGrid & cg, int maxLevels /* =useLevelsInG
 //       }
 //       else
 //       {
-// 	midAxis = (minAxis+maxAxis) == 1 ? 2 : (minAxis+maxAxis) == 2 ? 1 : 0;
+//      midAxis = (minAxis+maxAxis) == 1 ? 2 : (minAxis+maxAxis) == 2 ? 1 : 0;
 //         assert( midAxis!=minAxis && midAxis!=maxAxis );
 //       }
 //       real ratio1 = real(gridMax)/gridMin;
@@ -775,8 +784,8 @@ updateToMatchGrid( CompositeGrid & mg, int maxLevels /* =useLevelsInGrid */ )
     if( Ogmg::debug & 2 )
     {
       printF("*** OgmgParameters::updateToMatchGrid: maxLevels=%i, old=cg.numberOfMultigridLevels=%i"
-	     " new=mg.numberOfMultigridLevels=%i (new)\n",
-	     maxLevels,cg.numberOfMultigridLevels(),mg.numberOfMultigridLevels());
+             " new=mg.numberOfMultigridLevels=%i (new)\n",
+             maxLevels,cg.numberOfMultigridLevels(),mg.numberOfMultigridLevels());
     }
     
     if( orderOfAccuracy==-1 )  // order has not been set yet
@@ -784,8 +793,8 @@ updateToMatchGrid( CompositeGrid & mg, int maxLevels /* =useLevelsInGrid */ )
       orderOfAccuracy = cg[0].discretizationWidth(0)-1;  
       if( orderOfAccuracy!=2 && orderOfAccuracy!=4 )
       {
-	printF("OgmgParameters::WARNING:orderOfAccuracy=%i is unexpected! Expecting 2 or 4.\n");
-	OV_ABORT("error");
+        printF("OgmgParameters::WARNING:orderOfAccuracy=%i is unexpected! Expecting 2 or 4.\n");
+        OV_ABORT("error");
       }
     }
 
@@ -820,27 +829,27 @@ updateToMatchGrid( CompositeGrid & mg, int maxLevels /* =useLevelsInGrid */ )
     {
       if( newNumberOfMultigridLevels>oldNumberOfMultigridLevels )
       {
-	Range R(oldNumberOfMultigridLevels,newNumberOfMultigridLevels-1);
-	numberOfSmooths.resize(2,newNumberOfMultigridLevels);
-	numberOfSmooths(0,R)=2;
-	numberOfSmooths(1,R)=1;
+        Range R(oldNumberOfMultigridLevels,newNumberOfMultigridLevels-1);
+        numberOfSmooths.resize(2,newNumberOfMultigridLevels);
+        numberOfSmooths(0,R)=2;
+        numberOfSmooths(1,R)=1;
 
         // number of times to iterate on each level (=1 -> V-cycle, 2=W-cycle)
-	numberOfCycles.resize(newNumberOfMultigridLevels);
-	if( oldNumberOfMultigridLevels>0 )
-	  numberOfCycles(R)=numberOfCycles(oldNumberOfMultigridLevels-1);
+        numberOfCycles.resize(newNumberOfMultigridLevels);
+        if( oldNumberOfMultigridLevels>0 )
+          numberOfCycles(R)=numberOfCycles(oldNumberOfMultigridLevels-1);
         else
-    	  numberOfCycles(R)=1;
+          numberOfCycles(R)=1;
 
-	totalNumberOfSmoothsPerLevel.resize(newNumberOfMultigridLevels);
-	totalNumberOfSmoothsPerLevel(R)=0;
+        totalNumberOfSmoothsPerLevel.resize(newNumberOfMultigridLevels);
+        totalNumberOfSmoothsPerLevel(R)=0;
       }
       else
       {
-	numberOfSmooths.resize(2,newNumberOfMultigridLevels);
-	numberOfCycles.resize(newNumberOfMultigridLevels);
-	totalNumberOfSmoothsPerLevel.resize(newNumberOfMultigridLevels);
-	totalNumberOfSmoothsPerLevel=0;
+        numberOfSmooths.resize(2,newNumberOfMultigridLevels);
+        numberOfCycles.resize(newNumberOfMultigridLevels);
+        totalNumberOfSmoothsPerLevel.resize(newNumberOfMultigridLevels);
+        totalNumberOfSmoothsPerLevel=0;
       }
       
     }
@@ -849,51 +858,51 @@ updateToMatchGrid( CompositeGrid & mg, int maxLevels /* =useLevelsInGrid */ )
       // smootherType.display("OgmgParameters::updateToMatchGrid smootherType BEFORE");
       if( numberOfSubSmooths.getLength(0)==0 )
       {
-	numberOfSubSmooths.redim(newNumberOfComponentGrids,newNumberOfMultigridLevels);
-	smootherType.redim(newNumberOfComponentGrids,newNumberOfMultigridLevels);
-	numberOfSubSmooths=1;
-	smootherType=redBlack;
+        numberOfSubSmooths.redim(newNumberOfComponentGrids,newNumberOfMultigridLevels);
+        smootherType.redim(newNumberOfComponentGrids,newNumberOfMultigridLevels);
+        numberOfSubSmooths=1;
+        smootherType=redBlack;
 
         totalNumberOfSubSmooths.redim(newNumberOfComponentGrids,newNumberOfMultigridLevels);
         totalNumberOfSubSmooths=0;
-	
+        
       }
       else
       {
-	numberOfSubSmooths.resize(newNumberOfComponentGrids,newNumberOfMultigridLevels);
-	smootherType.resize(newNumberOfComponentGrids,newNumberOfMultigridLevels);
+        numberOfSubSmooths.resize(newNumberOfComponentGrids,newNumberOfMultigridLevels);
+        smootherType.resize(newNumberOfComponentGrids,newNumberOfMultigridLevels);
         totalNumberOfSubSmooths.resize(newNumberOfComponentGrids,newNumberOfMultigridLevels);
 
-	for( int level=0; level<newNumberOfMultigridLevels; level++ )
-	{
-	  for( int grid=0; grid<newNumberOfComponentGrids; grid++ )
-	  {
-	    if( grid>=oldNumberOfComponentGrids || level>=oldNumberOfMultigridLevels )
-	    {
-	      numberOfSubSmooths(grid,level)= (grid>0 || level>0) ? numberOfSubSmooths(0,0) : 1;
-	      // smootherType(grid,level)=(grid>0 || level>0) ? smootherType(0,0) : redBlack; // *wdh* 100607
+        for( int level=0; level<newNumberOfMultigridLevels; level++ )
+        {
+          for( int grid=0; grid<newNumberOfComponentGrids; grid++ )
+          {
+            if( grid>=oldNumberOfComponentGrids || level>=oldNumberOfMultigridLevels )
+            {
+              numberOfSubSmooths(grid,level)= (grid>0 || level>0) ? numberOfSubSmooths(0,0) : 1;
+              // smootherType(grid,level)=(grid>0 || level>0) ? smootherType(0,0) : redBlack; // *wdh* 100607
               if( grid>0 || level>0 )
-	      {
+              {
                 // new grid or new level: 
-		if( grid<oldNumberOfComponentGrids )
-		{  // old grid, new level: keep same smoother as level 0
-		  smootherType(grid,level)= smootherType(grid,0);
-		}
-		else 
-		{ // new grid
-		  smootherType(grid,level)= smootherType(0,0);
-		}
-	      }
-	      else
-	      {
+                if( grid<oldNumberOfComponentGrids )
+                {  // old grid, new level: keep same smoother as level 0
+                  smootherType(grid,level)= smootherType(grid,0);
+                }
+                else 
+                { // new grid
+                  smootherType(grid,level)= smootherType(0,0);
+                }
+              }
+              else
+              {
                 smootherType(grid,level)= redBlack;
-	      }
-		
-	      totalNumberOfSubSmooths(grid,level)=0;
-	      
-	    }
-	  }
-	}
+              }
+                
+              totalNumberOfSubSmooths(grid,level)=0;
+              
+            }
+          }
+        }
       }
       
       // smootherType.display("OgmgParameters::updateToMatchGrid smootherType AFTER");
@@ -1245,8 +1254,8 @@ setResidualTolerance(const real residualTolerance_ )
 //\begin{>>OgmgParametersInclude.tex}{\subsection{setSmootherType}}
 int OgmgParameters::
 setSmootherType(const SmootherTypeEnum & smoother, 
-		const int & grid /* =allGrids */, 
-		const int & level /* =allLevels */ )
+                const int & grid /* =allGrids */, 
+                const int & level /* =allLevels */ )
 //==================================================================================
 // /Description:
 //   Set the type of smoother.
@@ -1531,9 +1540,9 @@ buildOptionsDialog( DialogData & dialog )
 
 
   aString pbcmds[] = {"null vector solve options...",
-		      "oges smoother",
-		      "oges smoother parameters",
-		      ""};
+                      "oges smoother",
+                      "oges smoother parameters",
+                      ""};
   numberOfPushButtons=3;  // number of entries in cmds
   int numRows=(numberOfPushButtons+1)/2;
   dialog.setPushButtons( pbcmds, pbcmds, numRows ); 
@@ -1544,7 +1553,7 @@ buildOptionsDialog( DialogData & dialog )
                           "set mean value for singular problems",
                           "adjust equations for singular problems",
                           "average equations on the coarsest grid",
-			  ""};
+                          ""};
   int tbState[10];
   tbState[0] = problemIsSingular; 
   tbState[1] = projectRightHandSideForSingularProblem; 
@@ -1774,7 +1783,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       printF("choose good parameters: 0=OFF, 1=ON, 2=Use more robust parameters. Setting value to %i\n",chooseGoodParametersOption);
       if( chooseGoodParametersOption>0 )
       {
-	chooseGoodMultigridParameters(cg,numberOfMultigridLevels,chooseGoodParametersOption);
+        chooseGoodMultigridParameters(cg,numberOfMultigridLevels,chooseGoodParametersOption);
       }
       
     }
@@ -1785,13 +1794,13 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       sScanF(answer(9,length-1),"%i",&grid);
       for( int i=10; i<length; i++ )
       {
-        if( answer[i]=='=' )	  
-	{
-	  line=answer(i+1,length);
-	  break;
-	}
-	if( answer[i]==',' )
-	  sScanF(answer(i+1,length),"%i",&level);
+        if( answer[i]=='=' )      
+        {
+          line=answer(i+1,length);
+          break;
+        }
+        if( answer[i]==',' )
+          sScanF(answer(i+1,length),"%i",&level);
       }
       SmootherTypeEnum smoother=OgmgParameters::redBlack;
       if( line=="rb" )
@@ -1824,12 +1833,12 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       }
       else
       {
-	printF("Unknown smoother specified on answer=[%s]\n",(const char*)answer);
-	gi.stopReadingCommandFile();
+        printF("Unknown smoother specified on answer=[%s]\n",(const char*)answer);
+        gi.stopReadingCommandFile();
         continue;
       }
       printF("set smoother=%s : cg.numberOfComponentGrids()=%i numberOfMultigridLevels=%i\n",
-	     (const char*)smootherName[smoother],cg.numberOfComponentGrids(),numberOfMultigridLevels);
+             (const char*)smootherName[smoother],cg.numberOfComponentGrids(),numberOfMultigridLevels);
 
       Range G=cg.numberOfComponentGrids(),
             L=numberOfMultigridLevels;
@@ -1839,11 +1848,11 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
         L=Range(level,level);
       for( level=L.getBase(); level<=L.getBound(); level++ )
       {
-	for( grid=G.getBase(); grid<=G.getBound(); grid++ )
-	{
+        for( grid=G.getBase(); grid<=G.getBound(); grid++ )
+        {
           printF("set smoother(grid=%i,level=%i)=%s\n",grid,level,(const char*)smootherName[smoother]);
-	  setSmootherType(smoother,grid,level);
-	}
+          setSmootherType(smoother,grid,level);
+        }
       }
       // cout << "Choosing: " << getSolverName() << endl;
     }
@@ -1854,14 +1863,14 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       {
         ogesSmoothParameters=new OgesParameters(); // who will delete this ?
         // set some defaults
-	OgesParameters & par = *ogesSmoothParameters;
+        OgesParameters & par = *ogesSmoothParameters;
         int solverType=solverType=OgesParameters::PETSc;
-	par.set(OgesParameters::THEsolverType,solverType); 
-	par.set(OgesParameters::THEsolverMethod,OgesParameters::biConjugateGradientStabilized);
-	par.set(OgesParameters::THEpreconditioner,OgesParameters::incompleteLUPreconditioner);
+        par.set(OgesParameters::THEsolverType,solverType); 
+        par.set(OgesParameters::THEsolverMethod,OgesParameters::biConjugateGradientStabilized);
+        par.set(OgesParameters::THEpreconditioner,OgesParameters::incompleteLUPreconditioner);
         real tol=1.e-10;                                          // ************************
-	par.set(OgesParameters::THErelativeTolerance,max(tol,REAL_EPSILON*10.));
-	par.set(OgesParameters::THEmaximumNumberOfIterations,1);  // ************************
+        par.set(OgesParameters::THErelativeTolerance,max(tol,REAL_EPSILON*10.));
+        par.set(OgesParameters::THEmaximumNumberOfIterations,1);  // ************************
         int iluLevels=cg.numberOfDimensions()==2 ? 5 : 3;
         if( iluLevels>=0 )
           par.set(OgesParameters::THEnumberOfIncompleteLULevels,iluLevels);
@@ -1869,10 +1878,10 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       for( int g=0; g<=activeGrids.getBound(0); g++ )
       {
         int grid=activeGrids(g);
-	setSmootherType(ogesSmoother,grid);
+        setSmootherType(ogesSmoother,grid);
       }
       
-	
+        
     }
     else if( answer=="oges smoother parameters" )
     {
@@ -1913,12 +1922,12 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       int postSmooths=1;
       gi.inputString(answer2,sPrintF(line,"Enter the number of pre-smooths and post-smooths (default=2,1)"));
       if( answer2!="" )
-	sScanF(answer2,"%i %i",&preSmooths,&postSmooths);
+        sScanF(answer2,"%i %i",&preSmooths,&postSmooths);
 
       for(level=0; level<numberOfMultigridLevels; level++ )
       {
-	setNumberOfSmooths(preSmooths,postSmooths,level);
-	printF("level %i: preSmooths=%i, postSmooths=%i\n",level,preSmooths,postSmooths);
+        setNumberOfSmooths(preSmooths,postSmooths,level);
+        printF("level %i: preSmooths=%i, postSmooths=%i\n",level,preSmooths,postSmooths);
       }
     } 
     else if( answer=="number of smooths per level" )
@@ -1936,15 +1945,15 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       answer2="start";
       for(level=0; level<numberOfMultigridLevels; level++ )
       {
-	if( answer2!="" )
-	{
-	  gi.inputString(answer2,sPrintF(line,"Enter the number of pre-smooths and post-smooths for level %i",level));
+        if( answer2!="" )
+        {
+          gi.inputString(answer2,sPrintF(line,"Enter the number of pre-smooths and post-smooths for level %i",level));
           if( answer2!="" )
-	    sScanF(answer2,"%i %i",&preSmooths,&postSmooths);
+            sScanF(answer2,"%i %i",&preSmooths,&postSmooths);
 
-	}
-	setNumberOfSmooths(preSmooths,postSmooths,level);
-	printF("level %i: preSmooths=%i, postSmooths=%i\n",level,preSmooths,postSmooths);
+        }
+        setNumberOfSmooths(preSmooths,postSmooths,level);
+        printF("level %i: preSmooths=%i, postSmooths=%i\n",level,preSmooths,postSmooths);
       }
     } 
     else if( answer=="maximum number of iterations" )
@@ -1953,7 +1962,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,sPrintF(buff,"Enter the maximum number of iterations"));
       if( answer2!="" )
       {
-	sScanF(answer2,"%i",&n);
+        sScanF(answer2,"%i",&n);
         setMaximumNumberOfIterations(n);
       }
     }
@@ -1983,7 +1992,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
 //       gi.inputString(answer2,sPrintF(buff,"Enter the number of iterations for a level solve"));
 //       if( answer2!="" )
 //       {
-// 	sScanF(answer2,"%i",&n);
+//      sScanF(answer2,"%i",&n);
 //         setNumberOfCycles(n);
 //       }
 
@@ -1994,14 +2003,14 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,sPrintF(buff,"Enter the number of iterations for a level solve"));
       if( answer2!="" )
       {
-	int numRead=0;
-	numRead=sScanF(answer2,"%i %i %i %i %i %i %i %i",&n[0],&n[1],&n[2],&n[3],&n[4],&n[5],&n[6],&n[7]);
-	// printF("numRead = %i \n",numRead);
-	for(int level=0; level<numberOfMultigridLevels; level++ )
-	{
-	  setNumberOfCycles((level<numRead ? n[level] : n[numRead-1]),level);
+        int numRead=0;
+        numRead=sScanF(answer2,"%i %i %i %i %i %i %i %i",&n[0],&n[1],&n[2],&n[3],&n[4],&n[5],&n[6],&n[7]);
+        // printF("numRead = %i \n",numRead);
+        for(int level=0; level<numberOfMultigridLevels; level++ )
+        {
+          setNumberOfCycles((level<numRead ? n[level] : n[numRead-1]),level);
           printF("numberOfCycles(level=%i)=%i\n",level,numberOfCycles(level));
-	}
+        }
       }
 
     }
@@ -2009,15 +2018,15 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
     {
       IntegerArray values(cg.numberOfComponentGrids());
       int numRead=gi.getValues("Enter sub-smooths per grid (last value is repeated for remaining grids)",
-	           values);
+                   values);
 //   gi.inputString(answer2,sPrintF(buff,"Enter sub-smooths per grid (last value is repeated for remaining grids)"));
       if( numRead>0 )
       {
-	int grid;
-	for( int grid=0; grid<min(numRead,cg.numberOfComponentGrids()); grid++ )
-	  setNumberOfSubSmooths(values(grid),grid);
-	for( grid=numRead; grid<cg.numberOfComponentGrids(); grid++ )
-	  setNumberOfSubSmooths(values(numRead-1),grid);
+        int grid;
+        for( int grid=0; grid<min(numRead,cg.numberOfComponentGrids()); grid++ )
+          setNumberOfSubSmooths(values(grid),grid);
+        for( grid=numRead; grid<cg.numberOfComponentGrids(); grid++ )
+          setNumberOfSubSmooths(values(numRead-1),grid);
       }
       // numberOfSubSmooths.display("numberOfSubSmooths");
     }
@@ -2026,7 +2035,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,sPrintF(buff,"Enter the minimum number of initial smooths"));
       if( answer2!="" )
       {
-	sScanF(answer2,"%i",&minimumNumberOfInitialSmooths);
+        sScanF(answer2,"%i",&minimumNumberOfInitialSmooths);
         printF("Setting the minimum number of initial smooths to %i\n",minimumNumberOfInitialSmooths);
       }
     }
@@ -2036,14 +2045,14 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,sPrintF(buff,"Enter the residual tolerance"));
       if( answer2!="" )
       {
-	sScanF(answer2,"%e",&tol);
+        sScanF(answer2,"%e",&tol);
         // setResidualTolerance(tol);
         set(THEresidualTolerance,tol);
         printF("residualTolerance=%e\n",residualTolerance);
       }
       else
       {
-	printF("ERROR: answer2=[%s]\n",(const char*)answer2);
+        printF("ERROR: answer2=[%s]\n",(const char*)answer2);
       }
     }
     else if( answer=="error tolerance" )
@@ -2052,7 +2061,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,sPrintF(buff,"Enter the error tolerance"));
       if( answer2!="" )
       {
-	sScanF(answer2,"%e",&tol);
+        sScanF(answer2,"%e",&tol);
         set(THEerrorTolerance,tol);
       }
     }
@@ -2065,7 +2074,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,sPrintF(buff,"Enter the smoothing rate cutoff (current=%5.1f)",smoothingRateCutoff));
       if( answer2!="" )
       {
-	sScanF(answer2,"%e",&tol);
+        sScanF(answer2,"%e",&tol);
         set(THEsmoothingRateCutoff,tol);
       }
     }
@@ -2073,14 +2082,14 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
     {
       printF("Enter the boundary averaging option for `extrapolation' and `equation' type boundary conditions\n");
       printF("0 imposeDirichlet          : impose a dirichlet BC\n"
-	     "1 imposeExtrapolation    : explicitly impose an extrapolation equation\n"
-	     "2 injection             : \n"
-	     "3 partialWeighting   : full weighting in the tangential directions\n"
-	     "4 halfWeighting      : full weighting but exclude ghost points.\n"
-	     "5 lumpedPartialWeighting : lump partial weighting coefficients in tangential directions.\n"
+             "1 imposeExtrapolation    : explicitly impose an extrapolation equation\n"
+             "2 injection             : \n"
+             "3 partialWeighting   : full weighting in the tangential directions\n"
+             "4 halfWeighting      : full weighting but exclude ghost points.\n"
+             "5 lumpedPartialWeighting : lump partial weighting coefficients in tangential directions.\n"
              "6 imposeNeumann : ");
      gi.inputString(answer2,sPrintF(buff,"Enter the boundary averaging options (current=%i, %i)",
-				    boundaryAveragingOption[0],boundaryAveragingOption[1]));
+                                    boundaryAveragingOption[0],boundaryAveragingOption[1]));
      if( answer2!="" )
      {
        sScanF(answer2,"%i %i",&boundaryAveragingOption[0],&boundaryAveragingOption[1]);
@@ -2090,14 +2099,14 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
     {
       printF("Enter the ghost line averaging option for `extrapolation' and `equation' type boundary conditions\n");
       printF("0 imposeDirichlet          : impose a dirichlet BC\n"
-	     "1 imposeExtrapolation    : explicitly impose an extrapolation equation\n"
-	     "2 injection             : \n"
-	     "3 partialWeighting   : full weighting in the tangential directions\n"
-	     "4 halfWeighting      : full weighting but exclude ghost points.\n"
-	     "5 lumpedPartialWeighting : lump partial weighting coefficients in tangential directions.\n"
+             "1 imposeExtrapolation    : explicitly impose an extrapolation equation\n"
+             "2 injection             : \n"
+             "3 partialWeighting   : full weighting in the tangential directions\n"
+             "4 halfWeighting      : full weighting but exclude ghost points.\n"
+             "5 lumpedPartialWeighting : lump partial weighting coefficients in tangential directions.\n"
              "6 imposeNeumann : \n");
      gi.inputString(answer2,sPrintF(buff,"Enter the ghost line averaging options (current=%i, %i)",
-				    ghostLineAveragingOption[0],ghostLineAveragingOption[1]));
+                                    ghostLineAveragingOption[0],ghostLineAveragingOption[1]));
      if( answer2!="" )
      {
        sScanF(answer2,"%i %i",&ghostLineAveragingOption[0],&ghostLineAveragingOption[1]);
@@ -2120,7 +2129,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter maximumNumberOfLevels (current=%i)",maximumNumberOfLevels));
       if( answer2!="" )
-	sScanF(answer2,"%i",&maximumNumberOfLevels);
+        sScanF(answer2,"%i",&maximumNumberOfLevels);
       printF("maximumNumberOfLevels = %i \n",maximumNumberOfLevels);
       
     }
@@ -2128,37 +2137,37 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter maximumNumberOfExtraLevels (current=%i)",maximumNumberOfExtraLevels));
       if( answer2!="" )
-	sScanF(answer2,"%i",&maximumNumberOfExtraLevels);
+        sScanF(answer2,"%i",&maximumNumberOfExtraLevels);
       
     }
     else if( answer=="fine to coarse transfer width" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter fineToCoarseTransferWidth (current=%i)",fineToCoarseTransferWidth));
       if( answer2!="" )
-	sScanF(answer2,"%i",&fineToCoarseTransferWidth);
+        sScanF(answer2,"%i",&fineToCoarseTransferWidth);
     }
     else if( answer=="coarse to fine transfer width" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter coarseToFineTransferWidth (current=%i)",coarseToFineTransferWidth));
       if( answer2!="" )
-	sScanF(answer2,"%i",&coarseToFineTransferWidth);
+        sScanF(answer2,"%i",&coarseToFineTransferWidth);
     }
     else if( answer=="debug" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter Ogmg::debug (current=%i)",Ogmg::debug));
       if( answer2!="" )
-	sScanF(answer2,"%i",&Ogmg::debug);
+        sScanF(answer2,"%i",&Ogmg::debug);
 
       if( Ogmg::debug>6 )
       {
-	showSmoothingRates=true;
+        showSmoothingRates=true;
       }
     }
     else if( answer=="Oges::debug" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter Oges:debug (current=%i)",Oges::debug));
       if( answer2!="" )
-	sScanF(answer2,"%i",&Oges::debug);
+        sScanF(answer2,"%i",&Oges::debug);
     }
     else if( answer=="iterate on coarse grid" )
     {
@@ -2168,19 +2177,19 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter number of iterations on coarse grid (current=%i)",numberOfIterationsOnCoarseGrid));
       if( answer2!="" )
-	sScanF(answer2,"%i",&numberOfIterationsOnCoarseGrid);
+        sScanF(answer2,"%i",&numberOfIterationsOnCoarseGrid);
     }
     // this next answer is deprecated: 
     else if( answer=="use error estimate in convergence test" ||
-	     answer=="do not use error estimate in convergence test" )
+             answer=="do not use error estimate in convergence test" )
     {
       // useErrorEstimateForConvergence=answer=="use error estimate in convergence test";
 
       // -convert to new way: *wdh* 110310
       if( answer=="use error estimate in convergence test" )
-	convergenceCriteria=errorEstimateConverged;
+        convergenceCriteria=errorEstimateConverged;
       else
-	convergenceCriteria=residualConverged;
+        convergenceCriteria=residualConverged;
     }
     else if( answer=="use automatic sub-smooth determination" )
       autoSubSmoothDetermination=TRUE;
@@ -2225,7 +2234,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
 //                      conjugateGradientNumberOfIterations));
 //       if( answer2!="" )
 //       {
-// 	sScanF(answer2,"%i",&conjugateGradientNumberOfIterations);
+//      sScanF(answer2,"%i",&conjugateGradientNumberOfIterations);
 //         mgSolver.directSolver.setConjugateGradientNumberOfIterations(conjugateGradientNumberOfIterations);
 //       }
 //     }
@@ -2279,35 +2288,35 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter the relaxation parameter for Jacobi smoothing"));
       if( answer2!="" )
-	sScanF(answer2,"%e",&omegaJacobi);
+        sScanF(answer2,"%e",&omegaJacobi);
       printF("omegaJacobi=%e\n",omegaJacobi);
     }
     else if( answer=="omega Gauss-Seidel" || answer=="omega gauss-seidel" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter the relaxation parameter for Gauss-Seidel smoothing"));
       if( answer2!="" )
-	sScanF(answer2,"%e",&omegaGaussSeidel);
+        sScanF(answer2,"%e",&omegaGaussSeidel);
       printF("omegaGaussSeidel=%e\n",omegaGaussSeidel);
     }
     else if( answer=="omega red-black" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter the relaxation parameter for red-black smoothing"));
       if( answer2!="" )
-	sScanF(answer2,"%e",&omegaRedBlack);
+        sScanF(answer2,"%e",&omegaRedBlack);
       printF("omegaRedBlack=%e\n",omegaRedBlack);
     }
     else if( answer=="omega line-Jacobi" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter the relaxation parameter for line-Jacobi smoothing"));
       if( answer2!="" )
-	sScanF(answer2,"%e",&omegaLineJacobi);
+        sScanF(answer2,"%e",&omegaLineJacobi);
       printF("omegaJacobi=%e\n",omegaLineJacobi);
     }
     else if( answer=="omega line-zebra" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter the relaxation parameter for line-zebra smoothing"));
       if( answer2!="" )
-	sScanF(answer2,"%e",&omegaLineZebra);
+        sScanF(answer2,"%e",&omegaLineZebra);
       printF("omegaJacobi=%e\n",omegaLineZebra);
     }
     else if( answer=="variable omega scale factor" )
@@ -2315,35 +2324,35 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,sPrintF(buff,"Enter variable omega scale factor (current=%7.3f)",
                   variableOmegaScaleFactor));
       if( answer2!="" )
-	sScanF(answer2,"%e",&variableOmegaScaleFactor);
+        sScanF(answer2,"%e",&variableOmegaScaleFactor);
       printF("variableOmegaScaleFactor=%e\n",variableOmegaScaleFactor);
     }
     else if( answer=="defect ratio lower bound" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter the defect ratio lower bound"));
       if( answer2!="" )
-	sScanF(answer2,"%e",&defectRatioLowerBound);
+        sScanF(answer2,"%e",&defectRatioLowerBound);
       printF("defectRatioLowerBound=%e\n",defectRatioLowerBound);
     }
     else if( answer=="defect ratio upper bound" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter the defect ratio upper bound"));
       if( answer2!="" )
-	sScanF(answer2,"%e",&defectRatioUpperBound);
+        sScanF(answer2,"%e",&defectRatioUpperBound);
       printF("defectRatioUpperBound=%e\n",defectRatioUpperBound);
     }
     else if( answer=="defect ratio lower bound for line smooths" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter the defect ratio lower bound for line smooths"));
       if( answer2!="" )
-	sScanF(answer2,"%e",&defectRatioLowerBoundLineSmooth);
+        sScanF(answer2,"%e",&defectRatioLowerBoundLineSmooth);
       printF("defectRatioLowerBoundLineSmooth=%e\n",defectRatioLowerBoundLineSmooth);
     }
     else if( answer=="defect ratio upper bound for line smooths" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter the defect ratio upper bound for line smooths"));
       if( answer2!="" )
-	sScanF(answer2,"%e",&defectRatioUpperBoundLineSmooth);
+        sScanF(answer2,"%e",&defectRatioUpperBoundLineSmooth);
       printF("defectRatioUpperBoundLineSmooth=%e\n",defectRatioUpperBoundLineSmooth);
     }
     else if( answer=="use locally optimal omega" || answer=="do not use locally optimal omega" )
@@ -2370,7 +2379,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter the order (current=%i)",orderOfExtrapolationForDirichletOnLowerLevels));
       if( answer2!="" )
-	sScanF(answer2,"%i",&orderOfExtrapolationForDirichletOnLowerLevels);
+        sScanF(answer2,"%i",&orderOfExtrapolationForDirichletOnLowerLevels);
       printF(" orderOfExtrapolationForDirichletOnLowerLevels=%i\n",orderOfExtrapolationForDirichletOnLowerLevels);
       
     }
@@ -2379,7 +2388,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,
             sPrintF(buff,"Enter the number of boundary layers to smooth"));
       if( answer2!="" )
-	sScanF(answer2,"%i",&numberOfBoundaryLayersToSmooth);
+        sScanF(answer2,"%i",&numberOfBoundaryLayersToSmooth);
       printF("numberOfBoundaryLayersToSmooth=%i\n",numberOfBoundaryLayersToSmooth);
     } 
     else if( answer=="number of boundary smooth iterations" )
@@ -2387,7 +2396,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,
             sPrintF(buff,"Enter the number of boundary smooth iterations"));
       if( answer2!="" )
-	sScanF(answer2,"%i",&numberOfBoundarySmoothIterations);
+        sScanF(answer2,"%i",&numberOfBoundarySmoothIterations);
       printF("numberOfBoundarySmoothIterations=%i\n",numberOfBoundarySmoothIterations);
     } 
     else if( answer=="number of levels for boundary smooths" )
@@ -2395,7 +2404,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,
             sPrintF(buff,"Enter the number of levels for boundary smooths"));
       if( answer2!="" )
-	sScanF(answer2,"%i",&numberOfLevelsForBoundarySmoothing);
+        sScanF(answer2,"%i",&numberOfLevelsForBoundarySmoothing);
       printF("numberOfLevelsForBoundarySmoothing=%i\n",numberOfLevelsForBoundarySmoothing);
     } 
     else if( answer=="combine smooths with IBS" )
@@ -2411,7 +2420,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,
             sPrintF(buff,"Enter the number of interpolation layers to smooth"));
       if( answer2!="" )
-	sScanF(answer2,"%i",&numberOfInterpolationLayersToSmooth);
+        sScanF(answer2,"%i",&numberOfInterpolationLayersToSmooth);
       printF("numberOfInterpolationLayersToSmooth=%i\n",numberOfInterpolationLayersToSmooth);
     } 
     else if( answer=="number of interpolation smooth iterations" )
@@ -2419,7 +2428,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,
             sPrintF(buff,"Enter the number of interpolation smooth iterations"));
       if( answer2!="" )
-	sScanF(answer2,"%i",&numberOfInterpolationSmoothIterations);
+        sScanF(answer2,"%i",&numberOfInterpolationSmoothIterations);
       printF("numberOfInterpolationSmoothIterations=%i\n",numberOfInterpolationSmoothIterations);
     } 
     else if( answer=="number of levels for interpolation smooths" )
@@ -2427,7 +2436,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,
             sPrintF(buff,"Enter the number of levels for interpolation smooths"));
       if( answer2!="" )
-	sScanF(answer2,"%i",&numberOfLevelsForInterpolationSmoothing);
+        sScanF(answer2,"%i",&numberOfLevelsForInterpolationSmoothing);
       printF("numberOfLevelsForInterpolationSmoothing=%i\n",numberOfLevelsForInterpolationSmoothing);
     } 
     else if( answer=="number of interpolation smooth global iterations" )
@@ -2435,7 +2444,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,
             sPrintF(buff,"Enter the number of interpolation smooth global iterations"));
       if( answer2!="" )
-	sScanF(answer2,"%i",&numberOfIBSIterations);
+        sScanF(answer2,"%i",&numberOfIBSIterations);
       printF("numberOfIBSIterations=%i\n",numberOfIBSIterations);
     } 
     else if( answer=="maximum number of sub-smooths" )
@@ -2443,7 +2452,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,
             sPrintF(buff,"Enter the maximum number of sub-smooths for point smoothers"));
       if( answer2!="" )
-	sScanF(answer2,"%i",&maximumNumberOfSubSmooths);
+        sScanF(answer2,"%i",&maximumNumberOfSubSmooths);
       printF("maximumNumberOfSubSmooths=%i\n",maximumNumberOfSubSmooths);
     } 
     else if( answer=="maximum number of line sub-smooths" )
@@ -2451,7 +2460,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,
             sPrintF(buff,"Enter the maximum number of sub-smooths for line smoothers"));
       if( answer2!="" )
-	sScanF(answer2,"%i",&maximumNumberOfLineSubSmooths);
+        sScanF(answer2,"%i",&maximumNumberOfLineSubSmooths);
       printF("maximumNumberOfSubSmooths=%i\n",maximumNumberOfLineSubSmooths);
     } 
 //      else if( answer=="coarse grid interpolation width" ) // this is used before it can be set
@@ -2459,7 +2468,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
 //        gi.inputString(answer2,
 //              sPrintF(buff,"Enter the coarse grid interpolation width (-1=use default)"));
 //        if( answer2!="" )
-//  	sScanF(answer2,"%i",&coarseGridInterpolationWidth);
+//      sScanF(answer2,"%i",&coarseGridInterpolationWidth);
 //        printF("coarseGridInterpolationWidth=%i\n",coarseGridInterpolationWidth);
 //      } 
     else if( answer=="useEquationForDirichletOnLowerLevels" )
@@ -2467,7 +2476,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       gi.inputString(answer2,
             sPrintF(buff,"Enter useEquationForDirichletOnLowerLevels: 0=no, 1=yes, 2=rectangular only"));
       if( answer2!="" )
-	sScanF(answer2,"%i",&useEquationForDirichletOnLowerLevels);
+        sScanF(answer2,"%i",&useEquationForDirichletOnLowerLevels);
       printF("useEquationForDirichletOnLowerLevels=%i\n",useEquationForDirichletOnLowerLevels);
     }
     else if( answer=="solve equation with boundary conditions" ||
@@ -2533,16 +2542,16 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       problemIsSingular=false;
     }//
     else if( dialog.getToggleValue(answer,"average equations on the coarsest grid",
-				   dbase.get<bool>("averageEquationsOnCoarsestGrid")) )
+                                   dbase.get<bool>("averageEquationsOnCoarsestGrid")) )
     {
       if( !dbase.get<bool>("averageEquationsOnCoarsestGrid") )
       {
-	printF("--OGMG-- INFO: Generate equations on the coarest level using operator averaging\n"
+        printF("--OGMG-- INFO: Generate equations on the coarest level using operator averaging\n"
                "               (if operator averaging is also turned on\n");
       }
       else
       {
-	printF("--OGMG-- INFO: do NOT generate equations on the coarest level using operator averaging\n");
+        printF("--OGMG-- INFO: do NOT generate equations on the coarest level using operator averaging\n");
       }
       printF("    Note that the Hypre AMG solver may perform better if averageEquationsOnCoarsestGrid=false\n");
     }
@@ -2570,7 +2579,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
     {
       if( nullVectorParameters==NULL )
       {
-	nullVectorParameters = new OgesParameters;
+        nullVectorParameters = new OgesParameters;
       }
       nullVectorParameters->update(gi,cg);
       
@@ -2584,9 +2593,9 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
     {
       if( loadBalancer==NULL )
       {
-	loadBalancer = new LoadBalancer;
-	// NOTE: when there is only 1 grid then the default load-balancer will always use all-to-all
-	loadBalancer->setLoadBalancer(LoadBalancer::KernighanLin);
+        loadBalancer = new LoadBalancer;
+        // NOTE: when there is only 1 grid then the default load-balancer will always use all-to-all
+        loadBalancer->setLoadBalancer(LoadBalancer::KernighanLin);
       }
       loadBalancer->update(gi);
     }
@@ -2599,11 +2608,11 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
                              convergenceCriteria=residualConvergedOldWay );
       if( convergenceCriteria==residualConverged )
       {
-	printF("Ogmg:INFO: Setting convergence criteria to : l2Norm(residual) < residualTolerance*l2Nnorm(f) + absoluteTolerance\n");
+        printF("Ogmg:INFO: Setting convergence criteria to : l2Norm(residual) < residualTolerance*l2Nnorm(f) + absoluteTolerance\n");
       }
       else if( convergenceCriteria==errorEstimateConverged )
       {
-	printF("Ogmg:INFO: Setting convergence criteria to : max(error estimate) < errorTolerance\n");
+        printF("Ogmg:INFO: Setting convergence criteria to : max(error estimate) < errorTolerance\n");
       }
       else if( convergenceCriteria==residualConvergedOldWay )
       {
@@ -2619,14 +2628,14 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       printF("Setting the reference grid for determining variable sub-smooths to grid=%i.\n"
              " This grid will use 1 sub-smooth and should normally be a large Cartesian grid.\n"
              " Set this value to -1 to have Ogmg determine this grid automatically.\n",
-	     subSmoothReferenceGrid);
+             subSmoothReferenceGrid);
     }
     else if( dialog.getTextValue(answer,"order of accuracy:","%i",orderOfAccuracy) )
     {
       if( orderOfAccuracy!=2 && orderOfAccuracy!=4 )
       {
         orderOfAccuracy =  cg[0].discretizationWidth(0)-1;
-	printF("OgmgParameters::WARNING: orderOfAccuracy=%i is unexpected! Expecting 2 or 4. Setting to %i.\n",orderOfAccuracy);
+        printF("OgmgParameters::WARNING: orderOfAccuracy=%i is unexpected! Expecting 2 or 4. Setting to %i.\n",orderOfAccuracy);
       }
     }
     
@@ -2635,7 +2644,7 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       if( orderOfCoarseLevelSolves!=2 && orderOfCoarseLevelSolves!=4 )
       {
         orderOfCoarseLevelSolves =  cg[0].discretizationWidth(0)-1;
-	printF("OgmgParameters::WARNING: orderOfAccuracy=%i is unexpected! Expecting 2 or 4. Setting to %i.\n",
+        printF("OgmgParameters::WARNING: orderOfAccuracy=%i is unexpected! Expecting 2 or 4. Setting to %i.\n",
                 orderOfCoarseLevelSolves);
       }
       else

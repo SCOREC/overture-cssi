@@ -14,12 +14,12 @@
 
 // forward declarations:
 
-int getChampParameters( int grid, int side, int axis, real dt, real dx, Parameters & parameters, RealArray & champParameters );
+int getChampParameters( int grid, int side, int axis, int grid2, int side2, int axis2, 
+                        real dt, real dx, Parameters & parameters, RealArray & champParameters );
 
 // Macros to define 2nd-order difference approximations: 
 #include "cgux2a.h"
-
-
+//#include "champ4InterfaceStencilRectangularMacro.h" 
 
 // // static real S = 1.*pow(10.,-2); // *note* also defined in AdParameters.C and userDefinedInitialConditions.C
 // // static real G = 0.0;
@@ -46,8 +46,6 @@ int getChampParameters( int grid, int side, int axis, real dt, real dx, Paramete
 #define ForBoundary(side,axis)   for( axis=0; axis<mg.numberOfDimensions(); axis++ ) \
                                  for( side=0; side<=1; side++ )
 
-
-
 #define FOR_3IJD(i1,i2,i3,I1,I2,I3,j1,j2,j3,J1,J2,J3) \
 int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  \
 int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
@@ -56,6 +54,13 @@ for(int i3=I3Base,j3=J3Base; i3<=I3Bound; i3++,j3++) \
 for(int i2=I2Base,j2=J2Base; i2<=I2Bound; i2++,j2++) \
 for(int i1=I1Base,j1=J1Base; i1<=I1Bound; i1++,j1++)
 
+#define FOR_3IJ(i1,i2,i3,I1,I2,I3,j1,j2,j3,J1,J2,J3) \
+I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  \
+I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
+J1Base =J1.getBase(),   J2Base =J2.getBase(),  J3Base =J3.getBase();  \
+for(int i3=I3Base,j3=J3Base; i3<=I3Bound; i3++,j3++) \
+for(int i2=I2Base,j2=J2Base; i2<=I2Bound; i2++,j2++) \
+for(int i1=I1Base,j1=J1Base; i1<=I1Bound; i1++,j1++)
 // Use this for indexing into coefficient matrices representing systems of equations
 #define CE(c,e) (stencilSize*((c)+numberOfComponentsForCoefficients*(e)))
 #define M123(m1,m2,m3) (m1+halfWidth1+width*(m2+halfWidth2+width*(m3+halfWidth3)))
@@ -108,111 +113,326 @@ classify(i1,i2,i3,n)=type
 for( int m=CE(0,e1); m<=CE(0,e2+1)-1; m++ ) \
 coeff(m,i1,i2,i3)=0.
 
-// =======================================================================================================================
-// Macro: Evaluate some variables that appear in the CHAMP conditions
-// =======================================================================================================================
-#beginMacro evalChampVariables()
-  const Real an1L = normal(i1,i2,i3,0), an2L =normal(i1,i2,i3,1);       // normal from left side, index with i1,i2,i3
 
-  // (b1L,b2L) are coefficients in the the normal derivative (left) = bL1*D_r + bL2*D_s 
+// These macros define cI, cr, cs, crr, crs .. etc 
+#Include "champGetMatrixCoeffMacros.h"
 
-  const Real b1L = an1L*rxL(i1,i2,i3,0,0) + an2L*rxL(i1,i2,i3,0,1);     // note index left with i1,i2,i3
-  const Real b2L = an1L*rxL(i1,i2,i3,1,0) + an2L*rxL(i1,i2,i3,1,1);
+// // =======================================================================================================================
+// // Macro: Evaluate some variables that appear in the CHAMP conditions
+// // =======================================================================================================================
+// #beginMacro evalChampVariables()
+//   const Real an1L = normal(i1,i2,i3,0), an2L =normal(i1,i2,i3,1);       // normal from left side, index with i1,i2,i3
 
-  // Macros needed when computing derivatives of b1 and b2 
-  #define b1Lm(i1,i2,i3,j1,j2,j3) ( normal(i1,i2,i3,0)*rxL(i1,i2,i3,0,0) + normal(i1,i2,i3,1)*rxL(i1,i2,i3,0,1) )
-  #define b2Lm(i1,i2,i3,j1,j2,j3) ( normal(i1,i2,i3,0)*rxL(i1,i2,i3,1,0) + normal(i1,i2,i3,1)*rxL(i1,i2,i3,1,1) )
+//   // (b1L,b2L) are coefficients in the the normal derivative (left) = bL1*D_r + bL2*D_s 
 
-  // (b1R,b2R) the coefficients in the normal derivative (right) = bR1*TR_r + bR2*TR_s 
+//   const Real b1L = an1L*rxL(i1,i2,i3,0,0) + an2L*rxL(i1,i2,i3,0,1);     // note index left with i1,i2,i3
+//   const Real b2L = an1L*rxL(i1,i2,i3,1,0) + an2L*rxL(i1,i2,i3,1,1);
 
-  const Real b1R = an1L*rxR(j1,j2,j3,0,0) + an2L*rxR(j1,j2,j3,0,1);     // note index right with j1,j2,j3
-  const Real b2R = an1L*rxR(j1,j2,j3,1,0) + an2L*rxR(j1,j2,j3,1,1);
+//   // Macros needed when computing derivatives of b1 and b2 
+//   #define b1Lm(i1,i2,i3,j1,j2,j3) ( normal(i1,i2,i3,0)*rxL(i1,i2,i3,0,0) + normal(i1,i2,i3,1)*rxL(i1,i2,i3,0,1) )
+//   #define b2Lm(i1,i2,i3,j1,j2,j3) ( normal(i1,i2,i3,0)*rxL(i1,i2,i3,1,0) + normal(i1,i2,i3,1)*rxL(i1,i2,i3,1,1) )
 
-  // Macros needed when computing derivatives of b1 and b2 
-  #define b1Rm(i1,i2,i3,j1,j2,j3) ( normal(i1,i2,i3,0)*rxR(j1,j2,j3,0,0) + normal(i1,i2,i3,1)*rxR(j1,j2,j3,0,1) )
-  #define b2Rm(i1,i2,i3,j1,j2,j3) ( normal(i1,i2,i3,0)*rxR(j1,j2,j3,1,0) + normal(i1,i2,i3,1)*rxR(j1,j2,j3,1,1) )
+//   // Macros needed when computing derivatives of c11,c12,c22,c1,c2
+//   #define c11Lm(i1,i2,i3)  (SQR(rxL(i1,i2,i3,0,0)) + SQR(rxL(i1,i2,i3,0,1)))
+//   #define c12Lm(i1,i2,i3)  (rxL(i1,i2,i3,0,0)*rxL(i1,i2,i3,1,0) + rxL(i1,i2,i3,0,1)*rxL(i1,i2,i3,1,1))
+//   #define c21Lm(i1,i2,i3)  (rxL(i1,i2,i3,0,0)*rxL(i1,i2,i3,1,0) + rxL(i1,i2,i3,0,1)*rxL(i1,i2,i3,1,1))
+//   #define c22Lm(i1,i2,i3)  (SQR(rxL(i1,i2,i3,1,0)) + SQR(rxL(i1,i2,i3,1,1)))
+//   #define c1Lm(i1,i2,i3)  (RXX2(i1,i2,i3)+RYY2(i1,i2,i3))
+//   #define c2Lm(i1,i2,i3)  (SXX2(i1,i2,i3)+SYY2(i1,i2,i3))
+//   // (b1R,b2R) the coefficients in the normal derivative (right) = bR1*TR_r + bR2*TR_s 
 
-  // Use macros to compute derivatives of metrics 
-  // Macros in cgux2a need the following to be set:
-  //    dr12(axis) = 1./( 2*dr(axis) )  : for computing D0 
-  //    inverseVertexDerivative         : name of metric array
+//   const Real b1R = an1L*rxR(j1,j2,j3,0,0) + an2L*rxR(j1,j2,j3,0,1);     // note index right with j1,j2,j3
+//   const Real b2R = an1L*rxR(j1,j2,j3,1,0) + an2L*rxR(j1,j2,j3,1,1);
 
-  #define d12(axis) dr12L[axis]
-  #define inverseVertexDerivative rxLeft
-  Real r1xxL = RXX2(i1,i2,i3);  // r1 == R
-  Real r1yyL = RYY2(i1,i2,i3);
-  Real r2xxL = SXX2(i1,i2,i3);  // r2 == S 
-  Real r2yyL = SYY2(i1,i2,i3);
-  const Real c1L  = r1xxL + r1yyL ;                                  // coeff of D/D r_1 in Laplacian
-  const Real c2L  = r2xxL + r2yyL ;                                  // coeff of D/D r_2 in Laplacian
+//   // Macros needed when computing derivatives of b1 and b2 
+//   #define b1Rm(i1,i2,i3,j1,j2,j3) ( normal(i1,i2,i3,0)*rxR(j1,j2,j3,0,0) + normal(i1,i2,i3,1)*rxR(j1,j2,j3,0,1) )
+//   #define b2Rm(i1,i2,i3,j1,j2,j3) ( normal(i1,i2,i3,0)*rxR(j1,j2,j3,1,0) + normal(i1,i2,i3,1)*rxR(j1,j2,j3,1,1) )
 
-  const Real c11L = SQR(rxL(i1,i2,i3,0,0)) + SQR(rxL(i1,i2,i3,0,1)); // coeff of D^2/D r_1^2 in Laplacian 
-  const Real c12L = rxL(i1,i2,i3,0,0)*rxL(i1,i2,i3,1,0) + rxL(i1,i2,i3,0,1)*rxL(i1,i2,i3,1,1); // coeff of D^2/(D r_1 D_r2) in Laplacian
-  const Real c21L = c12L;  
-  const Real c22L = SQR(rxL(i1,i2,i3,1,0)) + SQR(rxL(i1,i2,i3,1,1)); // coeff of D^2/D r_2^2 in Laplacian 
+//   #define c11Rm(j1,j2,j3)  (SQR(rxR(j1,j2,j3,0,0)) + SQR(rxR(j1,j2,j3,0,1)))
+//   #define c12Rm(j1,j2,j3)  (rxR(j1,j2,j3,0,0)*rxR(j1,j2,j3,1,0) + rxR(j1,j2,j3,0,1)*rxR(j1,j2,j3,1,1))
+//   #define c21Rm(j1,j2,j3)  (rxR(j1,j2,j3,0,0)*rxR(j1,j2,j3,1,0) + rxR(j1,j2,j3,0,1)*rxR(j1,j2,j3,1,1))
+//   #define c22Rm(j1,j2,j3)  (SQR(rxR(j1,j2,j3,1,0)) + SQR(rxR(j1,j2,j3,1,1)))
+//   #define c1Rm(j1,j2,j3)  (RXX2(j1,j2,j3)+RYY2(j1,j2,j3))
+//   #define c2Rm(j1,j2,j3)  (SXX2(j1,j2,j3)+SYY2(j1,j2,j3))
+
+//   // Use macros to compute derivatives of metrics 
+//   #define Diffr2(name,i1,i2,i3,axis,dr)  ((name(i1+1,i2,i3)-name(i1-1,i2,i3))/(2.*dr[axis]))
+//   #define Diffs2(name,i1,i2,i3,axis,dr)  ((name(i1,i2+1,i3)-name(i1,i2-1,i3))/(2.*dr[axis]))
+//   #define Diffrr2(name,i1,i2,i3,axis,dr) ((name(i1+1,i2,i3)-2.*name(i1,i2,i3)+name(i1-1,i2,i3))/(SQR(dr[axis])))
+//   #define Diffss2(name,i1,i2,i3,axis,dr) ((name(i1,i2+1,i3)-2.*name(i1,i2,i3)+name(i1,i2-1,i3))/(SQR(dr[axis])))
+//   #define Diffr4(name,i1,i2,i3,axis,dr)  (((1./12.)*name(i1-2,i2,i3)-(2./3.)*name(i1-1,i2,i3)+(2./3.)*name(i1+1,i2,i3)-(1./12.)*name(i1+2,i2,i3))/(dr[axis]))
+//   #define Diffs4(name,i1,i2,i3,axis,dr)  (((1./12.)*name(i1,i2-2,i3)-(2./3.)*name(i1,i2-1,i3)+(2./3.)*name(i1,i2+1,i3)-(1./12.)*name(i1,i2+2,i3))/(dr[axis]))
+//   #define Diffrr4(name,i1,i2,i3,axis,dr)  ((-1.*name(i1-2,i2,i3)+16.*name(i1-1,i2,i3)-30.*name(i1,i2,i3)+16.*name(i1+1,i2,i3)-1.*name(i1+2,i2,i3))/(12.*SQR(dr[axis])))
+//   #define Diffss4(name,i1,i2,i3,axis,dr)  ((-1.*name(i1,i2-2,i3)+16.*name(i1,i2-1,i3)-30.*name(i1,i2,i3)+16.*name(i1,i2+1,i3)-1.*name(i1,i2+2,i3))/(12.*SQR(dr[axis])))
+//   #define Diffrrr2(name,i1,i2,i3,axis,dr)  (((-1./2.)*name(i1-2,i2,i3)+1.*name(i1-1,i2,i3)-1.*name(i1+1,i2,i3)+(1./2.)*name(i1+2,i2,i3))/(pow(dr[axis],3)))
+//   #define Diffsss2(name,i1,i2,i3,axis,dr)  (((-1./2.)*name(i1,i2-2,i3)+1.*name(i1,i2-1,i3)-1.*name(i1,i2+1,i3)+(1./2.)*name(i1,i2+2,i3))/(pow(dr[axis],3)))
+//   #define Diffrrrr2(name,i1,i2,i3,axis,dr)  ((name(i1-2,i2,i3)-4.*name(i1-1,i2,i3)+6.*name(i1,i2,i3)-4.*name(i1+1,i2,i3)+name(i1+2,i2,i3))/(pow(dr[axis],4)))
+//   #define Diffssss2(name,i1,i2,i3,axis,dr)  ((name(i1,i2-2,i3)-4.*name(i1,i2-1,i3)+6.*name(i1,i2,i3)-4.*name(i1,i2+1,i3)+name(i1,i2+2,i3))/(pow(dr[axis],4)))
+//   #define Diffrs4(name,i1,i2,i3,axis1,axis2,dr) ((64.*name(i1+1,i2+1,i3)-64.*name(i1+1,i2-1,i3)-8.*name(i1+1,i2+2,i3)+8.*name(i1+1,i2-2,i3)-64.*name(i1-1,i2+1,i3)+64.*name(i1-1,i2-1,i3)+8.*name(i1-1,i2+2,i3)-8.*name(i1-1,i2-2,i3)-8.*name(i1+2,i2+1,i3)+8.*name(i1+2,i2-1,i3)+name(i1+2,i2+2,i3)-name(i1+2,i2-2,i3)+8.*name(i1-2,i2+1,i3)-8.* name(i1-2,i2-1,i3)-name(i1-2,i2+2,i3)+name(i1-2,i2-2,i3))/(dr[axis2]*dr[axis1]*144.))
+ 
+//   #define Diffbr2(name,i1,i2,i3,j1,j2,j3,axis,dr)  ((name(i1+1,i2,i3,j1+1,j2,j3)-name(i1-1,i2,i3,j1-1,j2,j3))/(2.*dr[axis]))
+//   #define Diffbs2(name,i1,i2,i3,j1,j2,j3,axis,dr)  ((name(i1,i2+1,i3,j1,j2+1,j3)-name(i1,i2-1,i3,j1,j2-1,j3))/(2.*dr[axis]))
+//   #define Diffbrr2(name,i1,i2,i3,j1,j2,j3,axis,dr) ((name(i1+1,i2,i3,j1+1,j2,j3)-2.*name(i1,i2,i3,j1,j2,j3)+name(i1-1,i2,i3,j1-1,j2,j3))/(SQR(dr[axis])))
+//   #define Diffbss2(name,i1,i2,i3,j1,j2,j3,axis,dr) ((name(i1,i2+1,i3,j1,j2+1,j3)-2.*name(i1,i2,i3,j1,j2,j3)+name(i1,i2-1,i3,j1,j2-1,j3))/(SQR(dr[axis])))
+//   #define Diffbr4(name,i1,i2,i3,j1,j2,j3,axis,dr)  (((1./12.)*name(i1-2,i2,i3,j1-2,j2,j3)-(2./3.)*name(i1-1,i2,i3,j1-1,j2,j3)+(2./3.)*name(i1+1,i2,i3,j1+1,j2,j3)-(1./12.)*name(i1+2,i2,i3,j1+2,j2,j3))/(dr[axis]))
+//   #define Diffbs4(name,i1,i2,i3,j1,j2,j3,axis,dr)  (((1./12.)*name(i1,i2-2,i3,j1,j2-2,j3)-(2./3.)*name(i1,i2-1,i3,j1,j2-1,j3)+(2./3.)*name(i1,i2+1,i3,j1,j2+1,j3)-(1./12.)*name(i1,i2+2,i3,j1,j2+2,j3))/(dr[axis]))
+//   #define Diffbrr4(name,i1,i2,i3,j1,j2,j3,axis,dr)  ((-name(i1-2,i2,i3,j1-2,j2,j3)+16.*name(i1-1,i2,i3,j1-1,j2,j3)-30.*name(i1,i2,i3,j1,j2,j3)+16.*name(i1+1,i2,i3,j1+1,j2,j3)-name(i1+2,i2,i3,j1+2,j2,j3))/(12.*SQR(dr[axis])))
+//   #define Diffbss4(name,i1,i2,i3,j1,j2,j3,axis,dr)  ((-name(i1,i2-2,i3,j1,j2-2,j3)+16.*name(i1,i2-1,i3,j1,j2-1,j3)-30.*name(i1,i2,i3,j1,j2,j3)+16.*name(i1,i2+1,i3,j1,j2+1,j3)-name(i1,i2+2,i3,j1,j2+2,j3))/(12.*SQR(dr[axis])))
+//   #define Diffbrrr2(name,i1,i2,i3,j1,j2,j3,axis,dr)  (((-1./2.)*name(i1-2,i2,i3,j1-2,j2,j3)+1.*name(i1-1,i2,i3,j1-1,j2,j3)-1.*name(i1+1,i2,i3,j1+1,j2,j3)+(1./2.)*name(i1+2,i2,i3,j1+2,j2,j3)/(pow(dr[axis],3)))
+//   #define Diffbsss2(name,i1,i2,i3,j1,j2,j3,axis,dr)  (((-1./2.)*name(i1,i2-2,i3,j1,j2-2,j3)+1.*name(i1,i2-1,i3,j1,j2-1,j3)-1.*name(i1,i2+1,i3,j1,j2+1,j3)+(1./2.)*name(i1,i2+2,i3,j1,j2+2,j3))/(pow(dr[axis],3)))
+//   #define Diffbrrrr2(name,i1,i2,i3,j1,j2,j3,axis,dr)  ((name(i1-2,i2,i3,j1-2,j2,j3)-4.*name(i1-1,i2,i3,j1-1,j2,j3)+6.*name(i1,i2,i3,j1,j2,j3)-4.*name(i1+1,i2,i3,j1+1,j2,j3)+name(i1+2,i2,i3,j1+2,j2,j3))/(pow(dr[axis],4)))
+//   #define Diffbssss2(name,i1,i2,i3,j1,j2,j3,axis,dr)  ((name(i1,i2-2,i3,j1,j2-2,j3)-4.*name(i1,i2-1,i3,j1,j2-1,j3)+6.*name(i1,i2,i3,j1,j2,j3)-4.*name(i1,i2+1,i3,j1,j2+1,j3)+name(i1,i2+2,i3,j1,j2+2,j3))/(pow(dr[axis],4)))
+//   #define Diffbrs4(name,i1,i2,i3,j1,j2,j3,axis1,axis2,dr) ((64.*name(i1+1,i2+1,i3,j1+1,j2+1,j3)-64.*name(i1+1,i2-1,i3,j1+1,j2-1,j3)-8.*name(i1+1,i2+2,i3,j1+1,j2+2,j3)+8.*name(i1+1,i2-2,i3,j1+1,j2-2,j3)-64.*name(i1-1,i2+1,i3,j1-1,j2+1,j3)+64.*name(i1-1,i2-1,i3,j1-1,j2-1,j3)+8.*name(i1-1,i2+2,i3,j1-1,j2+2,j3)-8.*name(i1-1,i2-2,i3,j1-1,j2-2,j3)-8.*name(i1+2,i2+1,i3,j1+2,j2+1,j3)+8.*name(i1+2,i2-1,i3,j1+2,j2-1,j3)+name(i1+2,i2+2,i3,j1+2,j2+2,j3)-name(i1+2,i2-2,i3,j1+2,j2-2,j3)+8.*name(i1-2,i2+1,i3,j1-2,j2+1,j3)-8.*name(i1-2,i2-1,i3,j1-2,j2-1,j3)-name(i1-2,i2+2,i3,j1-2,j2+2,j3)+name(i1-2,i2-2,i3,j1-2,j2-2,j3))/(dr[axis2]*dr[axis1]*144.))
+ 
+   
+//   // Use macros to compute derivatives of metrics 
+//   // Macros in cgux2a need the following to be set:
+//   //    dr12(axis) = 1./( 2*dr(axis) )  : for computing D0 
+//   //    inverseVertexDerivative         : name of metric array
+
+//   #define d12(axis) dr12L[axis]
+//   #define inverseVertexDerivative rxLeft
+//   Real r1xxL = RXX2(i1,i2,i3);  // r1 == R
+//   Real r1yyL = RYY2(i1,i2,i3);
+//   Real r2xxL = SXX2(i1,i2,i3);  // r2 == S 
+//   Real r2yyL = SYY2(i1,i2,i3);
+//   const Real c1L  = r1xxL + r1yyL ;                                  // coeff of D/D r_1 in Laplacian
+//   const Real c2L  = r2xxL + r2yyL ;                                  // coeff of D/D r_2 in Laplacian
+
+//   const Real c11L = SQR(rxL(i1,i2,i3,0,0)) + SQR(rxL(i1,i2,i3,0,1)); // coeff of D^2/D r_1^2 in Laplacian 
+//   const Real c12L = rxL(i1,i2,i3,0,0)*rxL(i1,i2,i3,1,0) + rxL(i1,i2,i3,0,1)*rxL(i1,i2,i3,1,1); // coeff of D^2/(D r_1 D_r2) in Laplacian
+//   const Real c21L = c12L;  
+//   const Real c22L = SQR(rxL(i1,i2,i3,1,0)) + SQR(rxL(i1,i2,i3,1,1)); // coeff of D^2/D r_2^2 in Laplacian 
   
-  Real b1Lr2, b2Lr2;
-  if( axis2==0 )
-  {  // D0r2 
-    b1Lr2 = ( b1Lm(i1,i2+1,i3,j1,j2+1,j3) - b1Lm(i1,i2-1,i3,j1,j2-1,j3) )/(2.*drL[1]);
-    b2Lr2 = ( b2Lm(i1,i2+1,i3,j1,j2+1,j3) - b2Lm(i1,i2-1,i3,j1,j2-1,j3) )/(2.*drL[1]);
-  }
-  else
-  {
-    // D0r1 
-    b1Lr2 = ( b1Lm(i1+1,i2,i3,j1+1,j2,j3) - b1Lm(i1-1,i2,i3,j1-1,j2,j3) )/(2.*drL[0]);
-    b2Lr2 = ( b2Lm(i1+1,i2,i3,j1+1,j2,j3) - b2Lm(i1-1,i2,i3,j1-1,j2,j3) )/(2.*drL[0]);
+//   Real b1Lr2, b2Lr2;
+//   if( axis2==0 )
+//   {  // D0r2 
+//     b1Lr2 = ( b1Lm(i1,i2+1,i3,j1,j2+1,j3) - b1Lm(i1,i2-1,i3,j1,j2-1,j3) )/(2.*drL[1]);
+//     b2Lr2 = ( b2Lm(i1,i2+1,i3,j1,j2+1,j3) - b2Lm(i1,i2-1,i3,j1,j2-1,j3) )/(2.*drL[1]);
+//   }
+//   else
+//   {
+//     // D0r1 
+//     b1Lr2 = ( b1Lm(i1+1,i2,i3,j1+1,j2,j3) - b1Lm(i1-1,i2,i3,j1-1,j2,j3) )/(2.*drL[0]);
+//     b2Lr2 = ( b2Lm(i1+1,i2,i3,j1+1,j2,j3) - b2Lm(i1-1,i2,i3,j1-1,j2,j3) )/(2.*drL[0]);
+//   }
 
-  }
+//   //Real c11Lr2,c11Lr2Test;
+//   //c11Lr2 = Diffr2(c11Lm,i1,i2,i3,0,drL);
+//   //c11Lr2Test = (c11Lm(i1+1,i2,i3)-c11Lm(i1-1,i2,i3))/(drL[0]*2);
+
+//   Real c11Lr4, c12Lr4, c22Lr4, c1Lr4, c2Lr4, b1Lr4, b2Lr4;
+//   Real c11Ls4, c12Ls4, c22Ls4, c1Ls4, c2Ls4, b1Ls4, b2Ls4;
+//   Real c11Lrr4, c12Lrr4, c22Lrr4, c1Lrr4, c2Lrr4, b1Lrr4, b2Lrr4;
+//   Real c11Lss4, c12Lss4, c22Lss4, c1Lss4, c2Lss4, b1Lss4, b2Lss4;
+//   Real c11Lrs4, c12Lrs4, c22Lrs4, c1Lrs4, c2Lrs4, b1Lrs4, b2Lrs4;
+//   Real c11Lsss2, c12Lsss2, c22Lsss2, c1Lsss2, c2Lsss2, b1Lsss2, b2Lsss2;
+
+//   if( orderOfAccuracy==4 ) // *wdh* 
+//   {
+//     if( axis2==0 )
+//     {
+//       c11Lr4=Diffr4(c11Lm,i1,i2,i3,0,drL); c12Lr4=Diffr4(c12Lm,i1,i2,i3,0,drL); c22Lr4=Diffr4(c22Lm,i1,i2,i3,0,drL);
+//       c1Lr4 =Diffr4(c1Lm,i1,i2,i3,0,drL); c2Lr4 =Diffr4(c2Lm,i1,i2,i3,0,drL); 
+//       //c22Lr4 = ( SQR(rxL(i1+1,i2,i3,1,0)) + SQR(rxL(i1+1,i2,i3,1,1)) - (SQR(rxL(i1-1,i2,i3,1,0)) + SQR(rxL(i1-1,i2,i3,1,1))));
+//       //c22Lr4 = c22Lm(i1+1,i2,i3)-c22Lm(i1-1,i2,i3);
+
+//       c11Ls4=Diffs4(c11Lm,i1,i2,i3,1,drL); c12Ls4=Diffs4(c12Lm,i1,i2,i3,1,drL); c22Ls4=Diffs4(c22Lm,i1,i2,i3,1,drL); 
+//       c1Ls4 =Diffs4(c1Lm,i1,i2,i3,1,drL); c2Ls4 =Diffs4(c2Lm,i1,i2,i3,1,drL);
+
+//       c11Lrr4=Diffrr4(c11Lm,i1,i2,i3,0,drL); c12Lrr4=Diffrr4(c12Lm,i1,i2,i3,0,drL); c22Lrr4=Diffrr4(c22Lm,i1,i2,i3,0,drL);
+//       c1Lrr4 =Diffrr4(c1Lm,i1,i2,i3,0,drL); c2Lrr4 =Diffrr4(c2Lm,i1,i2,i3,0,drL);
+
+//       c11Lss4=Diffss4(c11Lm,i1,i2,i3,1,drL); c12Lss4=Diffss4(c12Lm,i1,i2,i3,1,drL); c22Lss4=Diffss4(c22Lm,i1,i2,i3,1,drL); 
+//       c1Lss4 =Diffss4(c1Lm,i1,i2,i3,1,drL); c2Lss4 =Diffss4(c2Lm,i1,i2,i3,1,drL);
+
+//       c11Lsss2=Diffsss2(c11Lm,i1,i2,i3,1,drL); c12Lsss2=Diffsss2(c12Lm,i1,i2,i3,1,drL); c22Lsss2=Diffsss2(c22Lm,i1,i2,i3,1,drL); 
+//       c1Lsss2 =Diffsss2(c1Lm,i1,i2,i3,1,drL); c2Lsss2 =Diffsss2(c2Lm,i1,i2,i3,1,drL);
+
+//       c11Lrs4=Diffrs4(c11Lm,i1,i2,i3,0,1,drL); c12Lrs4=Diffrs4(c12Lm,i1,i2,i3,0,1,drL); c22Lrs4=Diffrs4(c22Lm,i1,i2,i3,0,1,drL);
+//       c1Lrs4 =Diffrs4(c1Lm,i1,i2,i3,0,1,drL); c2Lrs4 =Diffrs4(c2Lm,i1,i2,i3,0,1,drL);
+
+//       b1Lr4=Diffbr4(b1Lm,i1,i2,i3,j1,j2,j3,0,drL);
+//       b1Ls4=Diffbs4(b1Lm,i1,i2,i3,j1,j2,j3,1,drL);
+//       b1Lrr4=Diffbrr4(b1Lm,i1,i2,i3,j1,j2,j3,0,drL);
+//       b1Lss4=Diffbss4(b1Lm,i1,i2,i3,j1,j2,j3,1,drL);
+//       b1Lsss2=Diffbsss2(b1Lm,i1,i2,i3,j1,j2,j3,1,drL);
+//       b1Lrs4=Diffbrs4(b1Lm,i1,i2,i3,j1,j2,j3,0,1,drL);
+//       //b1Lrs4 = (64. * b1Lm(i1 + 1,i2 + 1,i3,j1 + 1,j2 + 1,j3) - 64. * b1Lm(i1 - 1,i2 + 1,i3,j1 - 1,j2 + 1,j3) - 8. * b1Lm(i1 + 2,i2 + 1,i3,j1 + 2,j2 + 1,j3) + 8. * b1Lm(i1 - 2,i2 + 1,i3,j1 - 2,j2 + 1,j3) - 64. * b1Lm(i1 + 1,i2 - 1,i3,j1 + 1,j2 - 1,j3) + 64. * b1Lm(i1 - 1,i2 - 1,i3,j1 - 1,j2 - 1,j3))\
+//                + 8. * b1Lm(i1 + 2,i2 - 1,i3,j1 + 2,j2 - 1,j3) - 8. * b1Lm(i1 - 2,i2 - 1,i3,j1 - 2,j2 - 1,j3) - 8. * b1Lm(i1 + 1,i2 + 2,i3,j1 + 1,j2 + 2,j3) + 8. * b1Lm(i1 - 1,i2 + 2,i3,j1 - 1,j2 + 2,j3)\
+//                + 8. * b1Lm(i1 + 1,i2 - 2,i3,j1 + 1,j2 - 2,j3) - 8. * b1Lm(i1 - 1,i2 - 2,i3,j1 - 1,j2 - 2,j3)+ 1.*b1Lm(i1 + 2,i2 + 2,i3,j1 + 2,j2 + 2,j3) - 1.*b1Lm(i1 - 2,i2 + 2,i3,j1 - 2,j2 + 2,j3);//  - b1Lm(i1 + 2,i2 - 2,i3,j1 + 2,j2 - 2,j3) + b1Lm(i1 - 2,i2 - 2,i3,j1 - 2,j2 - 2,j3));
+//       //b1Lrs4 = ( normal(i1+ 2,i2+ 2,i3,0)*rxL(i1+ 2,i2+ 2,i3,0,0) );//+ normal(i1+ 2,i2+ 2,i3,1)*rxL(i1+ 2,i2+ 2,i3,0,1)) ;//b1Lm(i1 + 2,i2 + 2,i3,j1 + 2,j2 + 2,j3);// - b1Lm(i1 - 2,i2 + 2,i3,j1 - 2,j2 + 2,j3);
+
+//       b2Lr4=Diffbr4(b2Lm,i1,i2,i3,j1,j2,j3,0,drL);
+//       b2Ls4=Diffbs4(b2Lm,i1,i2,i3,j1,j2,j3,1,drL);
+//       b2Lrr4=Diffbrr4(b2Lm,i1,i2,i3,j1,j2,j3,0,drL);
+//       b2Lss4=Diffbss4(b2Lm,i1,i2,i3,j1,j2,j3,1,drL);
+//       b2Lsss2=Diffbsss2(b2Lm,i1,i2,i3,j1,j2,j3,1,drL);
+//       b2Lrs4=Diffbrs4(b2Lm,i1,i2,i3,j1,j2,j3,0,1,drL);
+//     }
+//     else
+//     {
+//       c11Lr4=Diffr4(c11Lm,i1,i2,i3,1,drL); c12Lr4=Diffr4(c12Lm,i1,i2,i3,1,drL); c22Lr4=Diffr4(c22Lm,i1,i2,i3,1,drL);
+//       c1Lr4 =Diffr4(c1Lm,i1,i2,i3,1,drL); c2Lr4 =Diffr4(c2Lm,i1,i2,i3,1,drL);
+
+//       c11Ls4=Diffs4(c11Lm,i1,i2,i3,0,drL); c12Ls4=Diffs4(c12Lm,i1,i2,i3,0,drL); c22Ls4=Diffs4(c22Lm,i1,i2,i3,0,drL); 
+//       c1Ls4 =Diffs4(c1Lm,i1,i2,i3,0,drL); c2Ls4 =Diffs4(c2Lm,i1,i2,i3,0,drL);
+
+//       c11Lrr4=Diffrr4(c11Lm,i1,i2,i3,1,drL); c12Lrr4=Diffrr4(c12Lm,i1,i2,i3,1,drL); c22Lrr4=Diffrr4(c22Lm,i1,i2,i3,1,drL);
+//       c1Lrr4 =Diffrr4(c1Lm,i1,i2,i3,1,drL); c2Lrr4 =Diffrr4(c2Lm,i1,i2,i3,1,drL);
+
+//       c11Lss4=Diffss4(c11Lm,i1,i2,i3,0,drL); c12Lss4=Diffss4(c12Lm,i1,i2,i3,0,drL); c22Lss4=Diffss4(c22Lm,i1,i2,i3,0,drL); 
+//       c1Lss4 =Diffss4(c1Lm,i1,i2,i3,0,drL); c2Lss4 =Diffss4(c2Lm,i1,i2,i3,0,drL);
+
+//       c11Lsss2=Diffsss2(c11Lm,i1,i2,i3,0,drL); c12Lsss2=Diffsss2(c12Lm,i1,i2,i3,0,drL); c22Lsss2=Diffsss2(c22Lm,i1,i2,i3,0,drL); 
+//       c1Lsss2 =Diffsss2(c1Lm,i1,i2,i3,0,drL); c2Lsss2 =Diffsss2(c2Lm,i1,i2,i3,0,drL);
+
+//       c11Lrs4=Diffrs4(c11Lm,i1,i2,i3,1,0,drL); c12Lrs4=Diffrs4(c12Lm,i1,i2,i3,1,0,drL); c22Lrs4=Diffrs4(c22Lm,i1,i2,i3,1,0,drL);
+//       c1Lrs4 =Diffrs4(c1Lm,i1,i2,i3,1,0,drL); c2Lrs4 =Diffrs4(c2Lm,i1,i2,i3,1,0,drL);
+
+//       b1Lr4=Diffbr4(b1Lm,i1,i2,i3,j1,j2,j3,1,drL);
+//       b1Ls4=Diffbs4(b1Lm,i1,i2,i3,j1,j2,j3,0,drL);
+//       b1Lrr4=Diffbrr4(b1Lm,i1,i2,i3,j1,j2,j3,1,drL);
+//       b1Lss4=Diffbss4(b1Lm,i1,i2,i3,j1,j2,j3,0,drL);
+//       b1Lsss2=Diffbsss2(b1Lm,i1,i2,i3,j1,j2,j3,0,drL);
+//       b1Lrs4=Diffbrs4(b1Lm,i1,i2,i3,j1,j2,j3,1,0,drL);
+
+//       b2Lr4=Diffbr4(b2Lm,i1,i2,i3,j1,j2,j3,1,drL);
+//       b2Ls4=Diffbs4(b2Lm,i1,i2,i3,j1,j2,j3,0,drL);
+//       b2Lrr4=Diffbrr4(b2Lm,i1,i2,i3,j1,j2,j3,1,drL);
+//       b2Lss4=Diffbss4(b2Lm,i1,i2,i3,j1,j2,j3,0,drL);
+//       b2Lsss2=Diffbsss2(b2Lm,i1,i2,i3,j1,j2,j3,0,drL);
+//       b2Lrs4=Diffbrs4(b2Lm,i1,i2,i3,j1,j2,j3,1,0,drL);
+//     }
+//   } // end order=4
+
+//   #define d12(axis) dr12R[axis]
+//   #define inverseVertexDerivative rxRight
+//   Real r1xxR = RXX2(j1,j2,j3);  // r1 == R
+//   Real r1yyR = RYY2(j1,j2,j3);
+//   Real r2xxR = SXX2(j1,j2,j3);  // r2 == S 
+//   Real r2yyR = SYY2(j1,j2,j3);
+
+//   const Real c1R  = r1xxR + r1yyR ;                                  // coeff of D/D r_1 in Laplacian
+//   const Real c2R  = r2xxR + r2yyR ;                                  // coeff of D/D r_2 in Laplacian
+
+//   const Real c11R = SQR(rxR(j1,j2,j3,0,0)) + SQR(rxR(j1,j2,j3,0,1)); // coeff of D^2/D r_1^2 in Laplacian 
+//   const Real c12R = rxR(j1,j2,j3,0,0)*rxR(j1,j2,j3,1,0) + rxR(j1,j2,j3,0,1)*rxR(j1,j2,j3,1,1); // coeff of D^2/(D r_1 D_r2) in Laplacian
+//   const Real c21R = c12R;  
+//   const Real c22R = SQR(rxR(j1,j2,j3,1,0)) + SQR(rxR(j1,j2,j3,1,1)); // coeff of D^2/D r_2^2 in Laplacian 
   
-  #define d12(axis) dr12R[axis]
-  #define inverseVertexDerivative rxRight
-  Real r1xxR = RXX2(j1,j2,j3);  // r1 == R
-  Real r1yyR = RYY2(j1,j2,j3);
-  Real r2xxR = SXX2(j1,j2,j3);  // r2 == S 
-  Real r2yyR = SYY2(j1,j2,j3);
+//   Real c11Rr4, c12Rr4, c22Rr4, c1Rr4, c2Rr4, b1Rr4, b2Rr4;
+//   Real c11Rs4, c12Rs4, c22Rs4, c1Rs4, c2Rs4, b1Rs4, b2Rs4;
+//   Real c11Rrr4, c12Rrr4, c22Rrr4, c1Rrr4, c2Rrr4, b1Rrr4, b2Rrr4;
+//   Real c11Rss4, c12Rss4, c22Rss4, c1Rss4, c2Rss4, b1Rss4, b2Rss4;
+//   Real c11Rrs4, c12Rrs4, c22Rrs4, c1Rrs4, c2Rrs4, b1Rrs4, b2Rrs4;
+//   Real c11Rsss2, c12Rsss2, c22Rsss2, c1Rsss2, c2Rsss2, b1Rsss2, b2Rsss2;
 
-  const Real c1R  = r1xxR + r1yyR ;                                  // coeff of D/D r_1 in Laplacian
-  const Real c2R  = r2xxR + r2yyR ;                                  // coeff of D/D r_2 in Laplacian
+//   if( orderOfAccuracy==4 ) // *wdh* 
+//   {
+//     if( axis2==0 )
+//     {
+//       c11Rr4=Diffr4(c11Rm,j1,j2,j3,0,drR); c12Rr4=Diffr4(c12Rm,j1,j2,j3,0,drR); c22Rr4=Diffr4(c22Rm,j1,j2,j3,0,drR);
+//       c1Rr4 =Diffr4(c1Rm,j1,j2,j3,0,drR); c2Rr4 =Diffr4(c2Rm,j1,j2,j3,0,drR);
 
-  const Real c11R = SQR(rxR(j1,j2,j3,0,0)) + SQR(rxR(j1,j2,j3,0,1)); // coeff of D^2/D r_1^2 in Laplacian 
-  const Real c12R = rxR(j1,j2,j3,0,0)*rxR(j1,j2,j3,1,0) + rxR(j1,j2,j3,0,1)*rxR(j1,j2,j3,1,1); // coeff of D^2/(D r_1 D_r2) in Laplacian
-  const Real c21R = c12R;  
-  const Real c22R = SQR(rxR(j1,j2,j3,1,0)) + SQR(rxR(j1,j2,j3,1,1)); // coeff of D^2/D r_2^2 in Laplacian 
+//       c11Rs4=Diffs4(c11Rm,j1,j2,j3,1,drR); c12Rs4=Diffs4(c12Rm,j1,j2,j3,1,drR); c22Rs4=Diffs4(c22Rm,j1,j2,j3,1,drR); 
+//       c1Rs4 =Diffs4(c1Rm,j1,j2,j3,1,drR); c2Rs4 =Diffs4(c2Rm,j1,j2,j3,1,drR);
 
-  Real b1Rr2, b2Rr2;
-  if( axis2==0 )
-  {  // D0r2 
-    b1Rr2 = ( b1Rm(i1,i2+1,i3,j1,j2+1,j3) - b1Rm(i1,i2-1,i3,j1,j2-1,j3) )/(2.*drR[1]);
-    b2Rr2 = ( b2Rm(i1,i2+1,i3,j1,j2+1,j3) - b2Rm(i1,i2-1,i3,j1,j2-1,j3) )/(2.*drR[1]);
-  }
-  else
-  {
-    // D0r1 
-    b1Rr2 = ( b1Rm(i1+1,i2,i3,j1+1,j2,j3) - b1Rm(i1-1,i2,i3,j1-1,j2,j3) )/(2.*drR[0]);
-    b2Rr2 = ( b2Rm(i1+1,i2,i3,j1+1,j2,j3) - b2Rm(i1-1,i2,i3,j1-1,j2,j3) )/(2.*drR[0]);
-  }
+//       c11Rrr4=Diffrr4(c11Rm,j1,j2,j3,0,drR); c12Rrr4=Diffrr4(c12Rm,j1,j2,j3,0,drR); c22Rrr4=Diffrr4(c22Rm,j1,j2,j3,0,drR);
+//       c1Rrr4 =Diffrr4(c1Rm,j1,j2,j3,0,drR); c2Rrr4 =Diffrr4(c2Rm,j1,j2,j3,0,drR);
 
-  // --- we ned to evaluate tangential derivatives of
-  //          b2L/b1R
-  //          b2R/b1R 
-  # define b2Lb1R(i1,i2,i3,j1,j2,j3) (b2Lm(i1,i2,i3,j1,j2,j3)/b1Rm(i1,i2,i3,j1,j2,j3)) 
-  # define b2Rb1R(i1,i2,i3,j1,j2,j3) (b2Rm(i1,i2,i3,j1,j2,j3)/b1Rm(i1,i2,i3,j1,j2,j3)) 
+//       c11Rss4=Diffss4(c11Rm,j1,j2,j3,1,drR); c12Rss4=Diffss4(c12Rm,j1,j2,j3,1,drR); c22Rss4=Diffss4(c22Rm,j1,j2,j3,1,drR); 
+//       c1Rss4 =Diffss4(c1Rm,j1,j2,j3,1,drR); c2Rss4 =Diffss4(c2Rm,j1,j2,j3,1,drR);
 
-  Real b2Lb1Rr2, b2Rb1Rr2;
-  // ** CHECK ME **
-  if( axis2==0 )
-  {  // D0r2 
-    b2Lb1Rr2 = ( b2Lb1R(i1,i2+1,i3,j1,j2+1,j3) - b2Lb1R(i1,i2-1,i3,j1,j2-1,j3) )/(2.*drR[1]) ; //  D( (b2L/b1R) )/D( rR2)
-    b2Rb1Rr2 = ( b2Rb1R(i1,i2+1,i3,j1,j2+1,j3) - b2Rb1R(i1,i2-1,i3,j1,j2-1,j3) )/(2.*drR[1]) ; //  D( (b2L/b1R) )/D( rR2)
-  }
-  else
-  {
-    // D0r1 
-    b2Lb1Rr2 = ( b2Lb1R(i1+1,i2,i3,j1+1,j2,j3) - b2Lb1R(i1-1,i2,i3,j1-1,j2,j3) )/(2.*drR[0]) ;
-    b2Rb1Rr2 = ( b2Rb1R(i1+1,i2,i3,j1+1,j2,j3) - b2Rb1R(i1-1,i2,i3,j1-1,j2,j3) )/(2.*drR[0]) ;
-  }
-#endMacro
+//       c11Rsss2=Diffsss2(c11Rm,j1,j2,j3,1,drR); c12Rsss2=Diffsss2(c12Rm,j1,j2,j3,1,drR); c22Rsss2=Diffsss2(c22Rm,j1,j2,j3,1,drR); 
+//       c1Rsss2 =Diffsss2(c1Rm,j1,j2,j3,1,drR); c2Rsss2 =Diffsss2(c2Rm,j1,j2,j3,1,drR);
+
+//       c11Rrs4=Diffrs4(c11Rm,j1,j2,j3,0,1,drR); c12Rrs4=Diffrs4(c12Rm,j1,j2,j3,0,1,drR); c22Rrs4=Diffrs4(c22Rm,j1,j2,j3,0,1,drR);
+//       c1Rrs4 =Diffrs4(c1Rm,j1,j2,j3,0,1,drR); c2Rrs4 =Diffrs4(c2Rm,j1,j2,j3,0,1,drR);
+
+//       b1Rr4=Diffbr4(b1Rm,i1,i2,i3,j1,j2,j3,0,drR);
+//       b1Rs4=Diffbs4(b1Rm,i1,i2,i3,j1,j2,j3,1,drR);
+//       b1Rrr4=Diffbrr4(b1Rm,i1,i2,i3,j1,j2,j3,0,drR);
+//       b1Rss4=Diffbss4(b1Rm,i1,i2,i3,j1,j2,j3,1,drR);
+//       b1Rsss2=Diffbsss2(b1Rm,i1,i2,i3,j1,j2,j3,1,drR);
+//       b1Rrs4=Diffbrs4(b1Rm,i1,i2,i3,j1,j2,j3,0,1,drR);
+
+//       b2Rr4=Diffbr4(b2Rm,i1,i2,i3,j1,j2,j3,0,drR);
+//       b2Rs4=Diffbs4(b2Rm,i1,i2,i3,j1,j2,j3,1,drR);
+//       b2Rrr4=Diffbrr4(b2Rm,i1,i2,i3,j1,j2,j3,0,drR);
+//       b2Rss4=Diffbss4(b2Rm,i1,i2,i3,j1,j2,j3,1,drR);
+//       b2Rsss2=Diffbsss2(b2Rm,i1,i2,i3,j1,j2,j3,1,drR);
+//       b2Rrs4=Diffbrs4(b2Rm,i1,i2,i3,j1,j2,j3,0,1,drR);
+//     }
+//     else
+//     {
+//       c11Rr4=Diffr4(c11Rm,j1,j2,j3,1,drR); c12Rr4=Diffr4(c12Rm,j1,j2,j3,1,drR); c22Rr4=Diffr4(c22Rm,j1,j2,j3,1,drR);
+//       c1Rr4 =Diffr4(c1Rm,j1,j2,j3,1,drR); c2Rr4 =Diffr4(c2Rm,j1,j2,j3,1,drR);
+
+//       c11Rs4=Diffs4(c11Rm,j1,j2,j3,0,drR); c12Rs4=Diffs4(c12Rm,j1,j2,j3,0,drR); c22Rs4=Diffs4(c22Rm,j1,j2,j3,0,drR); 
+//       c1Rs4 =Diffs4(c1Rm,j1,j2,j3,0,drR); c2Rs4 =Diffs4(c2Rm,j1,j2,j3,0,drR);
+
+//       c11Rrr4=Diffrr4(c11Rm,j1,j2,j3,1,drR); c12Rrr4=Diffrr4(c12Rm,j1,j2,j3,1,drR); c22Rrr4=Diffrr4(c22Rm,j1,j2,j3,1,drR);
+//       c1Rrr4 =Diffrr4(c1Rm,j1,j2,j3,1,drR); c2Rrr4 =Diffrr4(c2Rm,j1,j2,j3,1,drR);
+
+//       c11Rss4=Diffss4(c11Rm,j1,j2,j3,0,drR); c12Rss4=Diffss4(c12Rm,j1,j2,j3,0,drR); c22Rss4=Diffss4(c22Rm,j1,j2,j3,0,drR); 
+//       c1Rss4 =Diffss4(c1Rm,j1,j2,j3,0,drR); c2Rss4 =Diffss4(c2Rm,j1,j2,j3,0,drR);
+
+//       c11Rsss2=Diffsss2(c11Rm,j1,j2,j3,0,drR); c12Rsss2=Diffsss2(c12Rm,j1,j2,j3,0,drR); c22Rsss2=Diffsss2(c22Rm,j1,j2,j3,0,drR); 
+//       c1Rsss2 =Diffsss2(c1Rm,j1,j2,j3,0,drR); c2Rsss2 =Diffsss2(c2Rm,j1,j2,j3,0,drR);
+
+//       c11Rrs4=Diffrs4(c11Rm,j1,j2,j3,1,0,drR); c12Rrs4=Diffrs4(c12Rm,j1,j2,j3,1,0,drR); c22Rrs4=Diffrs4(c22Rm,j1,j2,j3,1,0,drR);
+//       c1Rrs4 =Diffrs4(c1Rm,j1,j2,j3,1,0,drR); c2Rrs4 =Diffrs4(c2Rm,j1,j2,j3,1,0,drR);
+
+//       b1Rr4=Diffbr4(b1Rm,i1,i2,i3,j1,j2,j3,1,drR);
+//       b1Rs4=Diffbs4(b1Rm,i1,i2,i3,j1,j2,j3,0,drR);
+//       b1Rrr4=Diffbrr4(b1Rm,i1,i2,i3,j1,j2,j3,1,drR);
+//       b1Rss4=Diffbss4(b1Rm,i1,i2,i3,j1,j2,j3,0,drR);
+//       b1Rsss2=Diffbsss2(b1Rm,i1,i2,i3,j1,j2,j3,0,drR);
+//       b1Rrs4=Diffbrs4(b1Rm,i1,i2,i3,j1,j2,j3,1,0,drR);
+
+//       b2Rr4=Diffbr4(b2Rm,i1,i2,i3,j1,j2,j3,1,drR);
+//       b2Rs4=Diffbs4(b2Rm,i1,i2,i3,j1,j2,j3,0,drR);
+//       b2Rrr4=Diffbrr4(b2Rm,i1,i2,i3,j1,j2,j3,1,drR);
+//       b2Rss4=Diffbss4(b2Rm,i1,i2,i3,j1,j2,j3,0,drR);
+//       b2Rsss2=Diffbsss2(b2Rm,i1,i2,i3,j1,j2,j3,0,drR);
+//       b2Rrs4=Diffbrs4(b2Rm,i1,i2,i3,j1,j2,j3,1,0,drR);
+//     }
+//   } // end order=4
+
+//   Real b1Rr2, b2Rr2;
+//   if( axis2==0 )
+//   {  // D0r2 
+//     b1Rr2 = ( b1Rm(i1,i2+1,i3,j1,j2+1,j3) - b1Rm(i1,i2-1,i3,j1,j2-1,j3) )/(2.*drR[1]);
+//     b2Rr2 = ( b2Rm(i1,i2+1,i3,j1,j2+1,j3) - b2Rm(i1,i2-1,i3,j1,j2-1,j3) )/(2.*drR[1]);
+//   }
+//   else
+//   {
+//     // D0r1 
+//     b1Rr2 = ( b1Rm(i1+1,i2,i3,j1+1,j2,j3) - b1Rm(i1-1,i2,i3,j1-1,j2,j3) )/(2.*drR[0]);
+//     b2Rr2 = ( b2Rm(i1+1,i2,i3,j1+1,j2,j3) - b2Rm(i1-1,i2,i3,j1-1,j2,j3) )/(2.*drR[0]);
+//   }
+
+//   // --- we ned to evaluate tangential derivatives of
+//   //          b2L/b1R
+//   //          b2R/b1R 
+//   # define b2Lb1R(i1,i2,i3,j1,j2,j3) (b2Lm(i1,i2,i3,j1,j2,j3)/b1Rm(i1,i2,i3,j1,j2,j3)) 
+//   # define b2Rb1R(i1,i2,i3,j1,j2,j3) (b2Rm(i1,i2,i3,j1,j2,j3)/b1Rm(i1,i2,i3,j1,j2,j3)) 
+
+//   Real b2Lb1Rr2, b2Rb1Rr2;
+//   // ** CHECK ME **
+//   if( axis2==0 )
+//   {  // D0r2 
+//     b2Lb1Rr2 = ( b2Lb1R(i1,i2+1,i3,j1,j2+1,j3) - b2Lb1R(i1,i2-1,i3,j1,j2-1,j3) )/(2.*drR[1]) ; //  D( (b2L/b1R) )/D( rR2)
+//     b2Rb1Rr2 = ( b2Rb1R(i1,i2+1,i3,j1,j2+1,j3) - b2Rb1R(i1,i2-1,i3,j1,j2-1,j3) )/(2.*drR[1]) ; //  D( (b2L/b1R) )/D( rR2)
+//   }
+//   else
+//   {
+//     // D0r1 
+//     b2Lb1Rr2 = ( b2Lb1R(i1+1,i2,i3,j1+1,j2,j3) - b2Lb1R(i1-1,i2,i3,j1-1,j2,j3) )/(2.*drR[0]) ;
+//     b2Rb1Rr2 = ( b2Rb1R(i1+1,i2,i3,j1+1,j2,j3) - b2Rb1R(i1-1,i2,i3,j1-1,j2,j3) )/(2.*drR[0]) ;
+//   }
+// #endMacro
 
 // ===============================================================================
 // Macro: 
@@ -258,7 +478,10 @@ coeff(m,i1,i2,i3)=0.
   GridFunction & gf2 = solver2.gf[current2];  
   CompositeGrid & cg2 = gf2.cg; 
   MappedGrid & mg2 = cg2[grid2];
-  getBoundaryIndex(mg2.gridIndexRange(),side2,axis2,Jb1,Jb2,Jb3);
+
+  // *wdh* April 16, 2022 -- fix for periodic in tangnetial direction
+  // getBoundaryIndex(mg2.gridIndexRange(),side2,axis2,Jb1,Jb2,Jb3);
+  getBoundaryIndex(mg2.indexRange(),side2,axis2,Jb1,Jb2,Jb3);
 
   const bool isRectangular2 = mg2.isRectangular();
   real dx2[3]={1.,1.,1.};
@@ -315,6 +538,45 @@ coeff(m,i1,i2,i3)=0.
 
 #endMacro
 
+#Include "champ4InterfaceStencilRectangularMacro.h"
+//#Include "champ4InterfaceStencilCurvilinearMacro.h"
+
+/*
+#beginMacro fillGhostChamp(ghost,hIdx)
+  const int i1m=i1-is1*ghost, i2m=i2-is2*ghost, i3m=i3-is3*ghost; //  ghost point is (i1m,i2m,i3m)
+  real hI=ghost*hIdx;
+  if( isRectangular )
+  {
+    evalChamp4StencilRectangular(hI,coefAg);
+  }
+  else
+  {
+    evalChamp4StencilRectangular(hI,coefAg);
+    //#Include "champ4InterfaceStencilCurvilinearMacro.h"
+    //evalChamp4StencilCurvilinear(hI,coefAg);
+  }
+  coeff(mm,i1m,i2m,i3m) = coefAg(m1,m2);
+  const int j1=i1m + mm*is1, j2=i2m + mm*is2, j3=i3m + mm*is3;     // index of point "m" in extrap formula is shifted in the direction (is1,is2,is3)
+  setEquationNumber(mm, e,i1m,i2m,i3m,  c,j1,j2,j3 ); 
+#endMacro  
+*/
+
+
+
+// ==========================================================================
+// Macro: Evaluate the advection coefficients 
+// ==========================================================================
+#beginMacro getAdvectionCoefficients(i1,i2,i3,u1DL,u2DL, j1,j2,j3,u1DR,u2DR )
+  if( variableAdvection )
+  {
+    u1DL = advectVarL(i1,i2,i3,0)/DL;
+    u2DL = advectVarL(i1,i2,i3,1)/DL;
+
+    u1DR = advectVarR(j1,j2,j3,0)/DR;
+    u2DR = advectVarR(j1,j2,j3,1)/DR;
+  }
+#endMacro
+
 // ====================================================================================================
 //
 //   Fill in the CHAMP implicit boundary conditions.
@@ -338,7 +600,7 @@ coeff(m,i1,i2,i3)=0.
 int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Parameters & parameters, Real dt )
 {
 
-  int debug = 0; 
+  const int debug = parameters.dbase.get<int>("debug");
 
   CompositeGrid & cg = *coeffcg.getCompositeGrid();
   const int numberOfDimensions = cg.numberOfDimensions();
@@ -349,6 +611,8 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
   
   const std::vector<real> & kappa  = parameters.dbase.get<std::vector<real> >("kappa");
   const real & thermalConductivity = parameters.dbase.get<real>("thermalConductivity");
+
+  const bool & variableAdvection = parameters.dbase.get<bool >("variableAdvection");
 
   const int & multiDomainProblem = parameters.dbase.get<int>("multiDomainProblem"); 
   const bool twilightZoneFlow = parameters.dbase.get<bool>("twilightZoneFlow");
@@ -374,6 +638,10 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
    }
 
 
+  int mapleOption = 0;  // switch between versions  0 = old,  1=Sijia's version
+  if( orderOfAccuracy==4 )
+    mapleOption=1;
+
   // Sl = optimized Schwartz parameter
   // theta = Ktc1/Ktc2
   // beta  = Dc1/Dc2
@@ -385,31 +653,27 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
     RealArray & champParameters = parameters.dbase.get<RealArray>("champParameters");
 
     // ---- number of champ paramters we save-- 
-    const int numChampPar=6; 
-    // const Real pl    = champParameters(0,side,axis,grid);    // optimized Scwartz Parameter for side 1
-    // const Real pr    = champParameters(1,side,axis,grid);    // optimized Scwartz Parameter for side 2
-    // const Real theta = champParameters(2,side,axis,grid);    // K1/K2
-    // const Real beta  = champParameters(3,side,axis,grid);    // D1/D2   
-    // champParameters(4,side,axis,grid) = Sl;  
-    // champParameters(5,side,axis,grid) = dxs; 
+    const int numChampPar=10; 
+
+    //  pl    = champParameters(0,side,axis,grid);    // optimized Scwartz Parameter for side 1
+    //  pr    = champParameters(1,side,axis,grid);    // optimized Scwartz Parameter for side 2
+    //  theta = champParameters(2,side,axis,grid);    // K1/K2
+    //  beta  = champParameters(3,side,axis,grid);    // D1/D2   
+    //  Sl    = champParameters(4,side,axis,grid);  
+    //  dxs   = champParameters(5,side,axis,grid);
+    //  DL    = champParameters(6,side,axis,grid);
+    //  KL    = champParameters(7,side,axis,grid);
+    //  DR    = champParameters(8,side,axis,grid);
+    //  KR    = champParameters(9,side,axis,grid);
     // 
+
     champParameters.redim(numChampPar,2,3,cg.numberOfComponentGrids());
     champParameters=-123456.; 
 
 
-    // // **** TEMP: --> these are now assigned below 
-    // // const real beta=.5, theta=2., S1=.8, S2=.7;   /// **** FIX ME ***
-    // const real beta=1., theta=1., S1=.7, S2=.7;   /// **** FIX ME ***
-    // Range all;
-    // champParameters(0,all,all,all)=S1; // optimized Scwartz Parameter for side 1
-    // champParameters(1,all,all,all)=S2; // optimized Scwartz Parameter for side 2
-    // champParameters(2,all,all,all)=theta; // K1/K2
-    // champParameters(3,all,all,all)=beta;  // D1/D2 
+
   }
   RealArray & champParameters = parameters.dbase.get<RealArray>("champParameters");
-  // const real Sl    = champParameters(0);
-  // const real theta = champParameters(2);
-  // const real beta  = champParameters(3);
 
   const IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
 
@@ -420,9 +684,14 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
   Range all;
   Range c0(0,0), c1(1,1);  // c0 = first component, c1 = second component
   
+  Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
+  Index Jv[3], &J1=Jv[0], &J2=Jv[1], &J3=Jv[2];  // opposite side 
+  Index Igv[3], &Ig1=Igv[0], &Ig2=Igv[1], &Ig3=Igv[2];
+
   Index Ibv[3], &Ib1=Ibv[0], &Ib2=Ibv[1], &Ib3=Ibv[2];
   Index Jbv[3], &Jb1=Jbv[0], &Jb2=Jbv[1], &Jb3=Jbv[2];  // opposite side 
-  int i1,i2,i3, j1,j2,j3, i1m,i2m,i3m, m1,m2,m3;
+  int j1,j2,j3, i1m,i2m,i3m, m1,m2,m3;
+  int iv[3], &i1=iv[0], &i2=iv[1], &i3=iv[2];
   int isv[3], &is1=isv[0], &is2=isv[1], &is3=isv[2];
   int side,axis;
     
@@ -443,6 +712,8 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
       mg.getDeltaX(dx);
     else
       mg.update(MappedGrid::THEinverseVertexDerivative);
+
+
 
     assert( coeff.sparse!=NULL );
     
@@ -483,22 +754,34 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
                       0.,0.,0.,0.,0.,
                       0.,0.,0.,0.,0.,
                       0.,0.,0.,0.,0.}; // initialize
-    #define coefA(i,j) coefB[i+halfWidth1][j+halfWidth2]    
+    #define coefA(i,j) coefB[i+halfWidth1][j+halfWidth2]
+    Real coefBg[5][5]={0.,0.,0.,0.,0.,
+                      0.,0.,0.,0.,0.,
+                      0.,0.,0.,0.,0.,
+                      0.,0.,0.,0.,0.,
+                      0.,0.,0.,0.,0.}; // initialize
+    #define coefAg(i,j) coefBg[i+halfWidth1][j+halfWidth2]    
       
+    const bool fillSecondGhostUsingExtrapolation=true; 
+
     ForBoundary(side,axis)
     {
       if( interfaceType(side,axis,grid) == Parameters::heatFluxInterface && mg.boundaryCondition(side,axis)>0 )
       {
-        printF("+++++ CHAMP BC: FILL MATRIX BC FOR (grid,side,axis)=(%d,%d,%d) order=%d, numGhost=%d (heatFluxInterface)\n",
-             grid,side,axis,orderOfAccuracy,numGhost );
+        printF("\n +++++ CHAMP BC: FILL MATRIX BC FOR (grid,side,axis)=(%d,%d,%d) order=%d, numGhost=%d fillSecondGhostUsingExtrapolation=%d mapleOption=%d (heatFluxInterface) ++++++++\n",
+             grid,side,axis,orderOfAccuracy,numGhost,(int)fillSecondGhostUsingExtrapolation,mapleOption );
 
         // Set the index-shift for this side
         is1=is2=is3=0;
         isv[axis]=1-2*side;
 
-        getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+        // *wdh* April 16, 2022 -- fix for periodic in tangnetial direction
+        // getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+        getBoundaryIndex(mg.indexRange(),side,axis,Ib1,Ib2,Ib3);
 
         OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal); 
+
+       
 
         // Retrieve information about the domain solver on the opposite side:
         //   int domain2, side2, axis2
@@ -509,7 +792,9 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
         //   Boundary index: J1,J2,J3
         //   CompositeGridOperators cgop2
         //   MappedGridOperators mgop2        
-        getOppositeSideDomainInfo();         
+        getOppositeSideDomainInfo();   
+
+
 
         // NO: 
         // Champ h = (=/-) dx[axis] : sign depends on which side we are on 
@@ -525,27 +810,34 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
           printF("+++++ CHAMP BC: dx[axis]=%9.3e. Opposite side: dx2[axis2]=%9.3e\n",dx[axis],dx2[axis2]);
 
 
-        // ** OLD: 
-        // // Retrieve the parameters from the opposite side of the interface:
-        // Parameters & paramRight = getInterfaceParameters( grid, side, axis, parameters);
+        // --- Get grid spacing in normal direction for computing lambdaD = DL*dt/dxL*dxL  ---
+        Real dnL = dx[axis];  
 
-        // // This only works if the opposite side is a Cgad object *** FIX ME ***
-        // std::vector<real> & kappaLeft  = parameters.dbase.get<std::vector<real> >("kappa");
-        // std::vector<real> & kappaRight = paramRight.dbase.get<std::vector<real> >("kappa");
-        // const Real & kThermalLeft  = parameters.dbase.get<Real>("thermalConductivity");
-        // const Real & kThermalRight = paramRight.dbase.get<Real>("thermalConductivity");
+        if( !isRectangular )
+        {
+          // -- Estimate dn in normal direction ---
+          //    dn  = dr /[ n.( dr/dx) ] 
+          // Do this for now 
+          OV_GET_SERIAL_ARRAY(real, mg.inverseVertexDerivative(),rxLeft );  // metric on left 
+          //  The rx array is only 4d, here is a macro to make it look 5d 
+          #define rxL(i1,i2,i3,m1,m2)  rxLeft(i1,i2,i3,(m1)+numberOfDimensions*(m2))          
+          const Real drL[3]   = { mg.gridSpacing(0),mg.gridSpacing(1),mg.gridSpacing(2) };     // grid spacing on left 
 
-        // Real theta = kThermalLeft/kThermalRight;
-        // Real beta = kappaLeft[0]/kappaRight[0];
-
-        // Real Sl=1., Sr=1.;  // ********* FIX ME : we need to look these up ************************************
-
-
+          const int i1=Ib1.getBase(), i2=Ib2.getBase(), i3=Ib3.getBase();    // find dx at this point 
+          Real bL = -( normal(i1,i2,i3,0)*rxL(i1,i2,i3,axis,0) + normal(i1,i2,i3,1)*rxL(i1,i2,i3,axis,1)) ;
+          // Real b2L = -( normal(i1,i2,i3,0)*rxL(i1,i2,i3,1,0) + normal(i1,i2,i3,1)*rxL(i1,i2,i3,1,1)) ;  
+                  
+          dnL = fabs( drL[axis]/bL );    // approx. normal grid spacing on left 
+          printF("+++++ CHAMP BC: curvilinear grid: estimate normal grid spacing: i1=%d i2=%d drL=%e, bL=%e, "
+                 "normal=[%e,%e] rx=[%e,%e] dnL=%e\n",
+                 i1,i2,drL[axis], bL,normal(i1,i2,i3,0),normal(i1,i2,i3,1),rxL(i1,i2,i3,axis,0),rxL(i1,i2,i3,axis,1),dnL);
+          // OV_ABORT("stop here for now");
+        }
 
         // --- get the champ parameters and store in the array champParameters ---
         if( multiDomainProblem )
         {
-          getChampParameters( grid, side, axis, dt, dxs, parameters, champParameters );
+          getChampParameters( grid, side, axis, grid2, side2, axis2, dt, dnL, parameters, champParameters );
         }
         else
         {
@@ -563,11 +855,59 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
         // pr is not used here and (currently) may not be correct: 
         // const Real pr    = champParameters(1,side,axis,grid);    // optimized Scwartz Parameter for side 2
         const Real theta = champParameters(2,side,axis,grid);    // K1/K2
-        const Real beta  = champParameters(3,side,axis,grid);    // D1/D2    
+        const Real beta  = champParameters(3,side,axis,grid);    // D1/D2  
+
+        const Real DL    = champParameters(6,side,axis,grid);
+        const Real KL    = champParameters(7,side,axis,grid);
+        const Real DR    = champParameters(8,side,axis,grid);
+        const Real KR    = champParameters(9,side,axis,grid);            
 
 
-        printF("***** fillChampBC: (side,axis,grid)=(%d,%d,%d) : theta=Kleft/Kright=%g, beta=Dleft/Dright=%g, CHAMP parameter pl=%g ****\n",
+        // -- advection coefficients 
+        std::vector<real> & aL = parameters.dbase.get<std::vector<real> >("a");
+        std::vector<real> & bL = parameters.dbase.get<std::vector<real> >("b");
+        std::vector<real> & cL = parameters.dbase.get<std::vector<real> >("c"); 
+
+        Parameters & parametersR = solver2.parameters;
+        std::vector<real> & aR = parametersR.dbase.get<std::vector<real> >("a");
+        std::vector<real> & bR = parametersR.dbase.get<std::vector<real> >("b");
+        std::vector<real> & cR = parametersR.dbase.get<std::vector<real> >("c"); 
+
+        Real u1L=aL[0]; 
+        Real u2L=bL[0]; 
+        Real u1R=aR[0]; 
+        Real u2R=bR[0];
+
+        // advection coefficients scaled by 1/D 
+        Real u1DL=aL[0]/DL; 
+        Real u2DL=bL[0]/DL; 
+        Real u1DR=aR[0]/DR; 
+        Real u2DR=bR[0]/DR;         
+        bool advectionIsOn=false;
+        if( u1L!=0. || u2L!=0. || u1R!=0. || u2R!=0. || variableAdvection )
+        {
+          advectionIsOn=true;
+
+          if( isRectangular )
+            OV_ABORT("champBC: finish me for rectangular + advection");
+
+          // if( orderOfAccuracy==4 )
+          //   OV_ABORT("champBC: finish me for order=4 + advection");
+        }
+
+        const int gridAdvect = variableAdvection ? grid : 0;
+        realCompositeGridFunction * pAdvectVarL = variableAdvection ? parameters.dbase.get<realCompositeGridFunction*>("advectVar") : &coeffcg;
+        OV_GET_SERIAL_ARRAY_CONDITIONAL(real,(*pAdvectVarL)[gridAdvect],advectVarL,variableAdvection); 
+
+        const int grid2Advect = variableAdvection ? grid2 : 0;
+        realCompositeGridFunction * pAdvectVarR= variableAdvection ? parametersR.dbase.get<realCompositeGridFunction*>("advectVar") : &coeffcg;
+        OV_GET_SERIAL_ARRAY_CONDITIONAL(real,(*pAdvectVarR)[grid2Advect],advectVarR,variableAdvection); 
+
+        printF("***** fillChampBC: (side,axis,grid)=(%d,%d,%d) : Kleft/Kright=%g, Dleft/Dright=%g, CHAMP parameter pl=%g ****\n",
              side,axis,grid,theta,beta,pl); 
+        printF("***** fillChampBC: DL=%g, KL=%g, u1DL=%g, u2DL=%g, advectionIsOn=%d, variableAdvection=%d\n",
+              DL,KL,u1DL,u2DL,(int)advectionIsOn,(int)variableAdvection );
+        printF("***** fillChampBC: DR=%g, KR=%g, u1DR=%g, u2DR=%g\n",DR,KR,u1DR,u2DR);
 
         
         // --- Fill in the CHAMP interface conditions -----
@@ -583,7 +923,8 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
 
         if( isRectangular )
         {
-          // ------------------ RECTANGULAR GRID CASE 
+          // ------------------ RECTANGULAR GRID CASE ----------------------------
+          printF("\n &&&&&& CHAMP BC: FILL MATRIX BC FOR RECTANGULAR GRID &&&&&&\n");
 
           // store SL
           const Real Sl = pl/dxs; 
@@ -631,10 +972,36 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
               printF(" FILL MATRIX BC FOR GHOST PT (i1m,i2m,i3m)=(%d,%d,%d) Sl=%g, dxs=%g, (heatFluxInterface)\n",i1m,i2m,i3m,Sl,dxs);
 
             // --- Coefficients from Sijia: 
-            #include "champ2InterfaceStencilRectangular.h"
+            //#include "champ2InterfaceStencilRectangular.h"
+
+            if( orderOfAccuracy==2 )
+            {
+              #include "champ2InterfaceStencilRectangular.h"
+            }
+            else if( orderOfAccuracy==4 )
+            {
+              //#include "champ4InterfaceStencilRectangular.h" 
+              Real hI=dxs;
+              evalChamp4StencilRectangular(hI,coefA);
+            }
+            //#include "champ4InterfaceStencilRectangular.h"
+            if( orderOfAccuracy==4 && debug & 4 ) 
+            {
+              printF("SH: order=4: coefA=(%10.3e,%10.3e,%10.3e,%10.3e,%10.3e,\n"
+                     "                    %10.3e,%10.3e,%10.3e,%10.3e,%10.3e,\n"
+                     "                    %10.3e,%10.3e,%10.3e,%10.3e,%10.3e,\n"
+                     "                    %10.3e,%10.3e,%10.3e,%10.3e,%10.3e,\n"
+                     "                    %10.3e,%10.3e,%10.3e,%10.3e,%10.3e )\n",\
+                      coefA(-2,-2),coefA(-1,-2),coefA(0,-2),coefA(1,-2),coefA(2,-2),\
+                      coefA(-2,-1),coefA(-1,-1),coefA(0,-1),coefA(1,-1),coefA(2,-1),\
+                      coefA(-2, 0),coefA(-1, 0),coefA(0, 0),coefA(1, 0),coefA(2, 0),\
+                      coefA(-2, 1),coefA(-1, 1),coefA(0, 1),coefA(1, 1),coefA(2, 1),\
+                      coefA(-2, 2),coefA(-1, 2),coefA(0, 2),coefA(1, 2),coefA(2, 2));
+            }
+
+
             //#include "champ2InterfaceStencil.C"
-            printF(" My coefficients: coefA =(%g,%g,%g,%g,%g,%g,%g,%g,%g)\n", coefA(-1,-1),coefA(0,-1),coefA(1,-1),coefA(-1,0),coefA(0,0),coefA(1,0),coefA(-1,1),coefA(0,1),coefA(1,1));
-           
+            //printF(" My coefficients: coefA =(%g,%g,%g,%g,%g,%g,%g,%g,%g)\n", coefA(-1,-1),coefA(0,-1),coefA(1,-1),coefA(-1,0),coefA(0,0),coefA(1,0),coefA(-1,1),coefA(0,1),coefA(1,1));
             for( int e=eqnStart; e<=eqnEnd; e++ ) // equation eq1, eq2, ...
             {
               const int c=0; // component number 
@@ -643,10 +1010,20 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
                 int m  = M123(m1,m2,m3);        // the single-component coeff-index
                 int mm = M123CE(m1,m2,m3,c,e);  // the system coeff-index
                 
-                
-                coeff(mm,i1m,i2m,i3m) =  a0*idCoeff(m,i1,i2,i3) 
-                                       + a1*( normal(i1,i2,i3,0)*xCoeff(m,i1,i2,i3) + normal(i1,i2,i3,1)*yCoeff(m,i1,i2,i3) )
+                if( mapleOption==0 )
+                {
+                  coeff(mm,i1m,i2m,i3m) = a0*idCoeff(m,i1,i2,i3) 
+                                        + a1*( normal(i1,i2,i3,0)*xCoeff(m,i1,i2,i3) + normal(i1,i2,i3,1)*yCoeff(m,i1,i2,i3) )
                                         +axx*xxCoeff(m,i1,i2,i3) + ayy*yyCoeff(m,i1,i2,i3); 
+                }
+                else if( mapleOption==1 )
+                {
+                  //printF("---->Use MAPLE generated coefficients.\n");
+                  coeff(mm,i1m,i2m,i3m) = coefA(m1,m2);
+                }
+                //coeff(mm,i1m,i2m,i3m) =  a0*idCoeff(m,i1,i2,i3) 
+                //                       + a1*( normal(i1,i2,i3,0)*xCoeff(m,i1,i2,i3) + normal(i1,i2,i3,1)*yCoeff(m,i1,i2,i3) )
+                //                        +axx*xxCoeff(m,i1,i2,i3) + ayy*yyCoeff(m,i1,i2,i3); 
                 
 
                 if( multiDomainProblem==0 )
@@ -666,15 +1043,30 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
                 j1=i1+m1, j2=i2+m2, j3=i3+m3;   // the stencil is centred on the boundary pt (i1,i2,i3)
                 setEquationNumber(mm, e,i1m,i2m,i3m,  c,j1,j2,j3 );  // macro to set equationNumber
 
-                // Fill Ghost 2 -- extrapolation for now 
+                // ---- Fill Ghost 2 ----
+
                 if( numGhost>1 )
                 {
                   const int ghost=2;
-                  fillGhostExtrapolation(ghost); 
-                }
+                  if( fillSecondGhostUsingExtrapolation )
+                  {
+                    fillGhostExtrapolation(ghost); 
+                  }
+                  else
+                  {
+                    //fillGhostChamp(ghost,dxs); 
 
+                    const int i1m=i1-is1*ghost, i2m=i2-is2*ghost, i3m=i3-is3*ghost; //  ghost point is (i1m,i2m,i3m)
+                    real hI=ghost*dxs;
+                    evalChamp4StencilRectangular(hI,coefAg);
+                    coeff(mm,i1m,i2m,i3m) = coefAg(m1,m2);
+                    const int j1=i1m + mm*is1, j2=i2m + mm*is2, j3=i3m + mm*is3;     // index of point "m" in extrap formula is shifted in the direction (is1,is2,is3)
+                    setEquationNumber(mm, e,i1m,i2m,i3m,  c,j1,j2,j3 ); 
+                  }
+                }
+                
              }
-             if( maxDiff > REAL_EPSILON/(SQR(dxs)) )
+             if( orderOfAccuracy==2 && (maxDiff > 10.*REAL_EPSILON/(SQR(dxs)) ) )
              {
                printF("\n **** champBC:ERROR: rectangular: There is a difference between coeff from Sijia and WDH, maxDiff=%9.2e *** \n",maxDiff);
                ForStencil(m1,m2,m3)  
@@ -689,48 +1081,62 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
            }  // end for e
 
           }   // end FOR_3D
-
+          if( debug & 8 )
+          {
+            printF("My ghost coefficients: coefAg=(%10.3e,%10.3e,%10.3e,%10.3e,%10.3e,\n                               \
+                                                   %10.3e,%10.3e,%10.3e,%10.3e,%10.3e,\n                               \
+                                                   %10.3e,%10.3e,%10.3e,%10.3e,%10.3e,\n                               \
+                                                   %10.3e,%10.3e,%10.3e,%10.3e,%10.3e,\n                               \
+                                                   %10.3e,%10.3e,%10.3e,%10.3e,%10.3e )\n",\
+                      coefAg(-2,-2),coefAg(-1,-2),coefAg(0,-2),coefAg(1,-2),coefAg(2,-2),\
+                      coefAg(-2,-1),coefAg(-1,-1),coefAg(0,-1),coefAg(1,-1),coefAg(2,-1),\
+                      coefAg(-2, 0),coefAg(-1, 0),coefAg(0, 0),coefAg(1, 0),coefAg(2, 0),\
+                      coefAg(-2, 1),coefAg(-1, 1),coefAg(0, 1),coefAg(1, 1),coefAg(2, 1),\
+                      coefAg(-2, 2),coefAg(-1, 2),coefAg(0, 2),coefAg(1, 2),coefAg(2, 2));
+          }
           if( true )
             printF(">>>>>>> champBC::INFO max-diff in coeff between Sijia and WDH = %9.2e <<<<<<<<<\n",maxDiff);
 
         }
         else
         {
+
           // ---------------------- CURVILINEAR GRID --------------------------
+          printF("\n &&&&&& CHAMP BC: FILL MATRIX BC FOR CURVILINEAR GRID &&&&&&\n");
 
           // ******* WE NEED THE METRICS FROM THE OPPOSITE SIDE *******
           // getOppositeSideDomainInfo(); 
 
-          // Evaluate the (single component) Laplace operator for points on the boundary
-          realSerialArray lapCoeff(M0,Ib1,Ib2,Ib3), xCoeff(M0,Ib1,Ib2,Ib3), yCoeff(M0,Ib1,Ib2,Ib3), idCoeff(M0,Ib1,Ib2,Ib3);
-          // realSerialArray xxCoeff(M0,Ib1,Ib2,Ib3), yyCoeff(M0,Ib1,Ib2,Ib3);
-          // mgop.assignCoefficients(MappedGridOperators::xxDerivative,xxCoeff,Ib1,Ib2,Ib3,0,0); //
-          // mgop.assignCoefficients(MappedGridOperators::yyDerivative,yyCoeff,Ib1,Ib2,Ib3,0,0); //
-          mgop.assignCoefficients(MappedGridOperators::laplacianOperator,lapCoeff,Ib1,Ib2,Ib3,0,0); //
+          // // Evaluate the (single component) Laplace operator for points on the boundary
+          // realSerialArray lapCoeff(M0,Ib1,Ib2,Ib3), xCoeff(M0,Ib1,Ib2,Ib3), yCoeff(M0,Ib1,Ib2,Ib3), idCoeff(M0,Ib1,Ib2,Ib3);
+          // // realSerialArray xxCoeff(M0,Ib1,Ib2,Ib3), yyCoeff(M0,Ib1,Ib2,Ib3);
+          // // mgop.assignCoefficients(MappedGridOperators::xxDerivative,xxCoeff,Ib1,Ib2,Ib3,0,0); //
+          // // mgop.assignCoefficients(MappedGridOperators::yyDerivative,yyCoeff,Ib1,Ib2,Ib3,0,0); //
+          // mgop.assignCoefficients(MappedGridOperators::laplacianOperator,lapCoeff,Ib1,Ib2,Ib3,0,0); //
 
-          mgop.assignCoefficients(MappedGridOperators::xDerivative ,xCoeff, Ib1,Ib2,Ib3,0,0);
-          mgop.assignCoefficients(MappedGridOperators::yDerivative ,yCoeff, Ib1,Ib2,Ib3,0,0);
-          mgop.assignCoefficients(MappedGridOperators::identityOperator,idCoeff,Ib1,Ib2,Ib3,0,0);
+          // mgop.assignCoefficients(MappedGridOperators::xDerivative ,xCoeff, Ib1,Ib2,Ib3,0,0);
+          // mgop.assignCoefficients(MappedGridOperators::yDerivative ,yCoeff, Ib1,Ib2,Ib3,0,0);
+          // mgop.assignCoefficients(MappedGridOperators::identityOperator,idCoeff,Ib1,Ib2,Ib3,0,0);
 
-          // r1r2Coeff : left side
-          RealArray r1r2Coeff(M0,Ib1,Ib2,Ib3);
-          mgop.assignCoefficients(MappedGridOperators::r1r2Derivative,r1r2Coeff,Ib1,Ib2,Ib3,0,0); //
+          // // r1r2Coeff : left side
+          // RealArray r1r2Coeff(M0,Ib1,Ib2,Ib3);
+          // mgop.assignCoefficients(MappedGridOperators::r1r2Derivative,r1r2Coeff,Ib1,Ib2,Ib3,0,0); //
 
 
-          // --- Matrix elements from the opposite side: 
-          RealArray r2Coeff(M0,Jb1,Jb2,Jb3), r2r2Coeff(M0,Jb1,Jb2,Jb3);
+          // // --- Matrix elements from the opposite side: 
+          // RealArray r2Coeff(M0,Jb1,Jb2,Jb3), r2r2Coeff(M0,Jb1,Jb2,Jb3);
 
-          // These are from the right-side: 
-          if( axis2==0 )
-          {
-            mgop2.assignCoefficients(MappedGridOperators::r2Derivative  ,r2Coeff  ,Jb1,Jb2,Jb3,0,0); // tangential direction is r2 
-            mgop2.assignCoefficients(MappedGridOperators::r2r2Derivative,r2r2Coeff,Jb1,Jb2,Jb3,0,0); //
-          }
-          else
-          {
-            mgop2.assignCoefficients(MappedGridOperators::r1Derivative  ,r2Coeff  ,Jb1,Jb2,Jb3,0,0); // tangential direction is r1 
-            mgop2.assignCoefficients(MappedGridOperators::r1r1Derivative,r2r2Coeff,Jb1,Jb2,Jb3,0,0); //            
-          }
+          // // These are from the right-side: 
+          // if( axis2==0 )
+          // {
+          //   mgop2.assignCoefficients(MappedGridOperators::r2Derivative  ,r2Coeff  ,Jb1,Jb2,Jb3,0,0); // tangential direction is r2 
+          //   mgop2.assignCoefficients(MappedGridOperators::r2r2Derivative,r2r2Coeff,Jb1,Jb2,Jb3,0,0); //
+          // }
+          // else
+          // {
+          //   mgop2.assignCoefficients(MappedGridOperators::r1Derivative  ,r2Coeff  ,Jb1,Jb2,Jb3,0,0); // tangential direction is r1 
+          //   mgop2.assignCoefficients(MappedGridOperators::r1r1Derivative,r2r2Coeff,Jb1,Jb2,Jb3,0,0); //            
+          // }
 
 
           OV_GET_SERIAL_ARRAY(real, mg.inverseVertexDerivative(),rxLeft );  // metric on left 
@@ -738,7 +1144,6 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
           //  The rx array is only 4d, here is a macro to make it look 5d 
           #define rxL(i1,i2,i3,m1,m2)  rxLeft(i1,i2,i3,(m1)+numberOfDimensions*(m2))          
           #define rxR(i1,i2,i3,m1,m2) rxRight(i1,i2,i3,(m1)+numberOfDimensions*(m2))          
-            
 
           RealArray NCoeff(M0), LCoeff(M0); // Matrix representations of operators Nlr and Llr (see champ4/notes)
 
@@ -749,12 +1154,16 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
           const Real drR[3]   = { mg2.gridSpacing(0),mg2.gridSpacing(1),mg2.gridSpacing(2) };  // grid spacing on right 
           const Real dr12R[3] = { 1./(2.*drR[0]), 1./(2.*drR[1]), 1./(2.*drR[2]) };            // for D0 
 
-          assert( axis1==0 && axis2==0 ); // for now we assume this
+
+          // Real uDotGradLr=0., uDotGradLs=0.;
+          // Real uDotGradRr=0., uDotGradRs=0.;
+
+          // assert( axis1==0 && axis2==0 ); // for now we assume this
 
           Real Sl = -1.; // Set below, first time through the loops 
 
           // --- For twilightzone we save some coefficients ----
-          printF("Save some coefficients for TZ\n");
+          // printF("Save some coefficients for TZ\n");
 
           realArray *ccPointer= & NCoeff; // not used by default
           if( multiDomainProblem )
@@ -765,8 +1174,14 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
               GridFaceDescriptor & myGFD = getInterfaceGridFaceDescriptor( grid, side, axis, parameters, sameSide );
               if( !myGFD.dbase.has_key("ccChamp") )
                 myGFD.dbase.put<RealArray>("ccChamp");
+
+              // -- for TZ we save some coefficients in the champ formula ---
               RealArray & cc = myGFD.dbase.get<RealArray>("ccChamp");
-              cc.redim(Ib1,Ib2,Ib3,6); 
+              const int numCC = orderOfAccuracy==2 ? 6 : 15;
+              Index Id1, Id2, Id3;
+              getBoundaryIndex(mg.gridIndexRange(),side,axis,Id1,Id2,Id3); // dimension this size for applyBC
+              cc.redim(Id1,Id2,Id3,numCC); 
+
               cc=0.;           
               ccPointer = &cc; 
             }
@@ -785,171 +1200,347 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
 
           Real maxDiff=0., maxCoeff=0.; // for testing compute any difference between coeff from Sijia and WDH
 
-          FOR_3IJD(i1,i2,i3,Ib1,Ib2,Ib3,j1,j2,j3,Jb1,Jb2,Jb3) // loop over points on BOTH SIDES of the interface 
+          bool fillMatrixWDH=false; 
+          if( orderOfAccuracy==2 || 
+              orderOfAccuracy==4 )
           {
-              
-            i1m=i1-is1, i2m=i2-is2, i3m=i3-is3; //  ghost point is (i1m,i2m,i3m)
+            // *new* way April 10, 2022
+            fillMatrixWDH=true; 
 
-            // ----- Evaluate variables in the champ conditions -----
-            evalChampVariables(); 
-            //printF("SL=%g,\n", Sl);
+            // assert( axis==0 && axis2==0 ); // ** FIX ME***
 
-            const Real hR = (1-2*side2)*drR[axis2]/b1R; // scaled grid spacing on right
-          
-            if( Sl<0 )
+            // Real Sl=-1.;
+            // const Real hR = (1-2*side2)*drR[axis2]; // scaled grid spacing on right
+            // if( Sl<0 )
+            // {
+            //   // We should probably always take Sl to be positive and consitently take the normal from the current side.
+
+
+            //   // Define Sl from the first grid point encountered   *** Do this for now ***  **** FIX ME ***
+            //   Sl = pl/fabs(hR);  // note hR may be negative 
+            //   // Sl = pl/hR;  // note hR may be negative 
+            //   // champParameters(4,side,axis,grid)=Sl; // save Sl
+            // }
+
+            if( axis==0 && axis2==0 )
             {
-              // Define Sl from the first grid point encountered   *** Do this for now ***
-              // Sl = pl/fabs(hR);  // note hR may be negative 
-              Sl = pl/hR;  // note hR may be negative 
-              champParameters(4,side,axis,grid)=Sl; // save Sl
-            }
-
-            const real a0 = Sl;
-            const real a1 = 1. + hR*Sl;
-            const real a2 = hR*(1.0 + .5*hR*Sl);
-
-            if( false ) 
-              printF(" FILL MATRIX BC FOR GHOST PT (i1m,i2m,i3m)=(%d,%d,%d) CURVILINEAR Sl=%g, hR=%g, (heatFluxInterface)\n",i1m,i2m,i3m,Sl,hR);
-
-            #Include "champ2InterfaceStencilCurvilinear.h"
-
-            printF("-------------------------------------------\n");
-            printF("    My coefficients: coefA =(%g,%g,%g,%g,%g,%g,%g,%g,%g)\n", coefA(-1,-1),coefA(0,-1),coefA(1,-1),coefA(-1,0),coefA(0,0),coefA(1,0),coefA(-1,1),coefA(0,1),coefA(1,1));
-
-            printF("===========================================\n");
-            
-            printF("Domain2= %i:  i1=%i, i2=%i, i3=%i, j1=%i, j2=%i, j3=%i \n",domain2,i1,i2,i3,j1,j2,j3);
-            printF("-------------------------------------------\n");
-            printF("    an1L=%g, an2L=%g \n",an1L,an2L);
-            printF("    b1L=%g, b2L=%g, c11L=%g, c12L=%g, c21L=%g, c22L=%g, c1L=%g, c2L=%g\n",
-                    b1L,b2L,c11L,c12L,c21L,c22L,c1L,c2L); 
-            printF("    b1R=%g, b2R=%g, c11R=%g, c12R=%g, c21R=%g, c22R=%g, c1R=%g, c2R=%g\n",
-                    b1R,b2R,c11R,c12R,c21R,c22R,c1R,c2R); 
-            printF("    b1Lr2=%g, b2Lr2=%g, b1Rr2=%g, b2Rr2=%g \n",b1Lr2,b2Lr2,b1Rr2,b2Rr2);
-            
-            printF("-------------------------------------------\n");
-
-            ForStencil(m1,m2,m3)
-            {
-              const int m  = M123(m1,m2,m3);        // the single-component coeff-index
-              // const int mm = M123CE(m1,m2,m3,c,e);  // the system coeff-index
-
-              //printF(" (i1,i2)=(%3d,%3d) (j1,j2)=(%3d,%3d) anl=(%g,%g) m=%d: xCoeff=%g yCoeff=%g r2Coeff=%g r2r2Coeff=%g \n",
-              //        i1,i2,j1,j2,an1L,an2L,m,xCoeff(m,i1,i2,i3),yCoeff(m,i1,i2,i3),r2Coeff(m,j1,j2,j3),r2r2Coeff(m,j1,j2,j3));
-              
-              //printF("    b1L=%g, b2L=%g, c11L=%g, c12L=%g, c21L=%g, c22L=%g c1L=%g c2L=%g\n",
-              //        b1L,b2L,c11L,c12L,c21L,c22L,c1L,c2L); 
-              //printF("    b1R=%g, b2R=%g, c11R=%g, c12R=%g, c21R=%g, c22R=%g c1R=%g c2R=%g\n",
-              //        b1R,b2R,c12R,c21R,c22R,c1R,c2R); 
-              //printF(" b1Lr2=%g, b2Lr2=%g, b1Rr2=%g, b2Rr2=%g \n",b1Lr2,b2Lr2,b1Rr2,b2Rr2);
-              
-              //printF("    b2Lb1Rr2=%g, b2Rb1Rr2=%g \n",b2Lb1Rr2,b2Rb1Rr2); 
-                             // Nlr = theta*nL*grad_L - b2*D_s
-              //printF("lapCoeff=%g \n",lapCoeff(m,i1,i2,i3));
-              
-              NCoeff(m) = theta*( an1L*xCoeff(m,i1,i2,i3) + an2L*yCoeff(m,i1,i2,i3) ) - b2R*r2Coeff(m,j1,j2,j3);
-              
-              // NOTE: Here we assume the tangential r derivatives are the same on both sides! (see champ4/notes) 
-              
-              LCoeff(m) = (b1R*b1R/c11R)*( beta*lapCoeff(m,i1,i2,i3) 
-                                          - (c12R+c21R)*( theta*( (b1L/b1R)*r1r2Coeff(m,i1,i2,i3) + (b2L/b1R)*r2r2Coeff(m,j1,j2,j3) + b2Lb1Rr2*r2Coeff(m,j1,j2,j3) )
-                                                          - b2Rb1Rr2*r2Coeff(m,j1,j2,j3) - (b2R/b1R)*r2r2Coeff(m,j1,j2,j3) )
-                                          - c22R*r2r2Coeff(m,j1,j2,j3) 
-                                          - (c1R/b1R)*NCoeff(m) 
-                                          - c2R*r2Coeff(m,j1,j2,j3) );
-
-              // LCoeff(m) = (b1R*b1R/c11R)*( beta*( xxCoeff(m,i1,i2,i3)  + yyCoeff(m,i1,i2,i3) ) ); // TEST 
-            }
-            //printF(" NCoeff=(%g,%g,%g,%g,%g,%g,%g,%g,%g)\n", NCoeff(0),NCoeff(1),NCoeff(2),NCoeff(3),NCoeff(4),NCoeff(5),NCoeff(6),NCoeff(7),NCoeff(8));
-            //printF(" LCoeff=(%g,%g,%g,%g,%g,%g,%g,%g,%g)\n", LCoeff(0),LCoeff(1),LCoeff(2),LCoeff(3),LCoeff(4),LCoeff(5),LCoeff(6),LCoeff(7),LCoeff(8));
-            
-            //printF(" a0=%g, a1=%g, a2=%g\n",a0,a1,a2);
-
-            if( twilightZoneFlow )
-            {
-              // --- For twilightZone we save some coefficients that go into the CHAMP matrix ---
-
-              // The next expressions are from champMacros.h:  addTwilightZoneCorrectionForChamp()
-              // 
-              // Nc = theta*( normal(Ib1,Ib2,Ib3,0)*uex + normal(Ib1,Ib2,Ib3,1)*uey ) + cc(Ib1,Ib2,Ib3,0)*uer2; 
-              // 
-              // interfaceData.u(Ib1,Ib2,Ib3,n) += Sl*ue   
-              //                                   + cc(Ib1,Ib2,Ib3,1)*( uexx + ueyy ) 
-              //                                   + cc(Ib1,Ib2,Ib3,2)*uer1r2 
-              //                                   + cc(Ib1,Ib2,Ib3,3)*uer2r2
-              //                                   + cc(Ib1,Ib2,Ib3,4)*uer2
-              //                                   + cc(Ib1,Ib2,Ib3,5)*Nc;
-
-              cc(i1,i2,i3,0) =    ( - b2R);                                                         // coeff of u2r in NCoeff
-              cc(i1,i2,i3,1) = a2*(b1R*b1R/c11R)*( beta                                        );   // coeff of Lap(u) in a2*LCoeff
-              cc(i1,i2,i3,2) = a2*(b1R*b1R/c11R)*( -(c12R+c21R)*theta*(b1L/b1R)                );   // coeff of Dr1r2 in a2*LCoeff
-              cc(i1,i2,i3,3) = a2*(b1R*b1R/c11R)*( -(c12R+c21R)*( (b2L/b1R) + (b2R/b1R)) -c22R );   // coeff of Dr2r2 in a2*LCoeff
-              cc(i1,i2,i3,4) = a2*(b1R*b1R/c11R)*( -(c12R+c21R)*(  b2Lb1Rr2 + b2Rb1Rr2 ) + c2R );   // coeff of Dr2 in a2*LCoeff
-              cc(i1,i2,i3,5) = a2*(b1R*b1R/c11R)*( (c1R/b1R) ) + a1;                                // coeff of NCoeff in  a1*NCoeff + a2*LCoeff
-
-            }
-
-            for( int e=eqnStart; e<=eqnEnd; e++ ) // equation eq1, eq2, ...
-            {
-              int c=0; // component number 
-              ForStencil(m1,m2,m3)
+              if( orderOfAccuracy==2 )
               {
-                int m  = M123(m1,m2,m3);        // the single-component coeff-index
-                int mm = M123CE(m1,m2,m3,c,e);  // the system coeff-index
-                // n.grad = n1*D_x + n2*D_y =
-                //        = ( n1*r.x + n2*r.y ) D_r + ( n1*s.x + n2*s.y ) D_s
-                //        = b1*D_r + b2*D_s 
+                #Include "champDiffusionCurvilinearCoefficientsOrder2NormalDir0.h"
+              }
+              else
+              {
+                #Include "champDiffusionCurvilinearCoefficientsOrder4NormalDir0.h"
+              }
+            }
+            else if( axis==1 && axis2==1 )
+            {
+             if( orderOfAccuracy==2 )
+              {
+                #Include "champDiffusionCurvilinearCoefficientsOrder2NormalDir1.h"
+              }
+              else
+              {
+                #Include "champDiffusionCurvilinearCoefficientsOrder4NormalDir1.h"
+              }
 
-                // Matrix for the Champ condition: 
-                coeff(mm,i1m,i2m,i3m) =  a0*idCoeff(m,i1,i2,i3) + a1*NCoeff(mm) + a2*LCoeff(mm); 
-                //printF("idCoef: (i1,i2,i3)=(%d,%d,%d) (m1,m2,m3)=(%d,%d,%d) coeff = %e\n",i1,i2,i3,m1,m2,m3,idCoeff(m,i1,i2,i3));
+            }
+            else
+            {
+              printF("champBC: ERROR: axis=%d and axis2=%d not currently supported\n",axis,axis2);
+              OV_ABORT("ERROR: FINISH ME BILL!");
+            }
+            // fillMatrixWDH=false; 
+          }
+          else
+          {
+            OV_ABORT("champBC: ERROR");
+          }
+
+          // FOR_3IJD(i1,i2,i3,Ib1,Ib2,Ib3,j1,j2,j3,Jb1,Jb2,Jb3) // loop over points on BOTH SIDES of the interface 
+          // {
+              
+          //   i1m=i1-is1, i2m=i2-is2, i3m=i3-is3; //  ghost point is (i1m,i2m,i3m)
+
+          //   // ----- Evaluate variables in the champ conditions -----
+          //   // *WDH This next macro is only for order=4 *** FIX ME **************************
+          //   evalChampVariables(); 
+
+
+          //   //printF("SL=%g,\n", Sl);
+
+          //   const Real hR = (1-2*side2)*drR[axis2]/b1R; // scaled grid spacing on right
+          
+          //   if( Sl<0 )
+          //   {
+          //     // Define Sl from the first grid point encountered   *** Do this for now ***
+          //     // Sl = pl/fabs(hR);  // note hR may be negative 
+          //     Sl = pl/hR;  // note hR may be negative 
+          //     champParameters(4,side,axis,grid)=Sl; // save Sl
+          //   }
+
+          //   const real a0 = Sl;
+          //   const real a1 = 1. + hR*Sl;
+          //   const real a2 = hR*(1.0 + .5*hR*Sl);
+
+          //   if( false ) 
+          //     printF(" FILL MATRIX BC FOR GHOST PT (i1m,i2m,i3m)=(%d,%d,%d) CURVILINEAR Sl=%g, hR=%g, (heatFluxInterface)\n",i1m,i2m,i3m,Sl,hR);
+
+          //   //#include "testCHAMP4.h"
+            
+          //   if( orderOfAccuracy==2 )
+          //   {
+          //     #include "champ2InterfaceStencilCurvilinear.h"
+          //   }
+          //   else if( orderOfAccuracy==4 )
+          //   {
+          //     //#include "champ4InterfaceStencilCurvilinear.h"
+
+          //     Real hI=drR[0];
+          //     #Include "champ4InterfaceStencilCurvilinearMacro.h"
+          //     evalChamp4StencilCurvilinear(hI,coefA);
+          //   }
+
+
+          //   //Real hI=drr;
+          //   //#Include "champ4InterfaceStencilCurvilinearMacro.h"
+          //   //evalChamp4StencilCurvilinear(hI,coefA);
+
+          //   //#include "champ2InterfaceStencilCurvilinear.h"
+
+          //   if( debug & 4 && orderOfAccuracy==4 )
+          //   {
+          //     printF("SH: order=4 coefA=(%10.3e,%10.3e,%10.3e,%10.3e,%10.3e,\n"
+          //            "                   %10.3e,%10.3e,%10.3e,%10.3e,%10.3e,\n"
+          //            "                   %10.3e,%10.3e,%10.3e,%10.3e,%10.3e,\n"
+          //            "                   %10.3e,%10.3e,%10.3e,%10.3e,%10.3e,\n"
+          //            "                   %10.3e,%10.3e,%10.3e,%10.3e,%10.3e )\n",
+          //             coefA(-2,-2),coefA(-1,-2),coefA(0,-2),coefA(1,-2),coefA(2,-2),\
+          //             coefA(-2,-1),coefA(-1,-1),coefA(0,-1),coefA(1,-1),coefA(2,-1),\
+          //             coefA(-2, 0),coefA(-1, 0),coefA(0, 0),coefA(1, 0),coefA(2, 0),\
+          //             coefA(-2, 1),coefA(-1, 1),coefA(0, 1),coefA(1, 1),coefA(2, 1),\
+          //             coefA(-2, 2),coefA(-1, 2),coefA(0, 2),coefA(1, 2),coefA(2, 2));
+
+          //     printF("===========================================\n");
+          //     //#Include "champ2InterfaceStencilCurvilinear.h"
+          //     //
+          //     //printF("    My coefficients: coefA =(%g,%g,%g,%g,%g,%g,%g,%g,%g)\n", coefA(-1,-1),coefA(0,-1),coefA(1,-1),coefA(-1,0),coefA(0,0),coefA(1,0),coefA(-1,1),coefA(0,1),coefA(1,1));
+
+              
+          //     printF("Domain2= %i:  i1=%i, i2=%i, i3=%i, j1=%i, j2=%i, j3=%i \n",domain2,i1,i2,i3,j1,j2,j3);
+          //     printF("-------------------------------------------\n");
+          //     printF("    an1L=%g, an2L=%g \n",an1L,an2L);
+          //     printF("    b1L=%g, b2L=%g, c11L=%g, c12L=%g, c21L=%g, c22L=%g, c1L=%g, c2L=%g\n",
+          //             b1L,b2L,c11L,c12L,c21L,c22L,c1L,c2L); 
+          //     printF("    b1R=%g, b2R=%g, c11R=%g, c12R=%g, c21R=%g, c22R=%g, c1R=%g, c2R=%g\n",
+          //             b1R,b2R,c11R,c12R,c21R,c22R,c1R,c2R); 
+          //     printF("    b1Lr2=%g, b2Lr2=%g, b1Rr2=%g, b2Rr2=%g \n",b1Lr2,b2Lr2,b1Rr2,b2Rr2);
+              
+          //     printF("     c2L =[%g,%g,%g,%g,%g;\n           \
+          //                        %g,%g,%g,%g,%g;\n           \
+          //                       %g,%g,%g,%g,%g;\n           \
+          //                       %g,%g,%g,%g,%g;\n           \
+          //                       %g,%g,%g,%g,%g];\n",\
+          //             c2Lm(i1-2,i2-2,i3),c2Lm(i1-2,i2-1,i3),c2Lm(i1-2,i2,i3),c2Lm(i1-2,i2+1,i3),c2Lm(i1-2,i2+2,i3),\
+          //             c2Lm(i1-1,i2-2,i3),c2Lm(i1-1,i2-1,i3),c2Lm(i1-1,i2,i3),c2Lm(i1-1,i2+1,i3),c2Lm(i1-1,i2+2,i3), \
+          //             c2Lm(i1  ,i2-2,i3),c2Lm(i1  ,i2-1,i3),c2Lm(i1  ,i2,i3),c2Lm(i1,  i2+1,i3),c2Lm(i1  ,i2+2,i3), \
+          //             c2Lm(i1+1,i2-2,i3),c2Lm(i1+1,i2-1,i3),c2Lm(i1+1,i2,i3),c2Lm(i1+1,i2+1,i3),c2Lm(i1+1,i2+2,i3), \         
+          //             c2Lm(i1+2,i2-2,i3),c2Lm(i1+2,i2-1,i3),c2Lm(i1+2,i2,i3),c2Lm(i1+2,i2+1,i3),c2Lm(i1+2,i2+2,i3));
+              
+          //     printF("     b2L =[%g,%g,%g,%g,%g;\n           \
+          //                        %g,%g,%g,%g,%g;\n           \
+          //                       %g,%g,%g,%g,%g;\n           \
+          //                       %g,%g,%g,%g,%g;\n           \
+          //                       %g,%g,%g,%g,%g];\n",\
+          //           b2Lm(i1-2,i2-2,i3,j1-2,j2-2,j3),b2Lm(i1-2,i2-1,i3,j1-2,j2-1,j3),b2Lm(i1-2,i2,i3,j1-2,j2,j3),b2Lm(i1-2,i2+1,i3,j1-2,j2+1,j3),b2Lm(i1-2,i2+2,i3,j1-2,j2+2,j3),\
+          //           b2Lm(i1-1,i2-2,i3,j1-1,j2-2,j3),b2Lm(i1-1,i2-1,i3,j1-1,j2-1,j3),b2Lm(i1-1,i2,i3,j1-1,j2,j3),b2Lm(i1-1,i2+1,i3,j1-1,j2+1,j3),b2Lm(i1-1,i2+2,i3,j1-1,j2+2,j3), \
+          //           b2Lm(i1  ,i2-2,i3,j1  ,j2-2,j3),b2Lm(i1  ,i2-1,i3,j1  ,j2-1,j3),b2Lm(i1  ,i2,i3,j1  ,j2,j3),b2Lm(i1,  i2+1,i3,j1  ,j2+1,j3),b2Lm(i1  ,i2+2,i3,j1  ,j2+2,j3), \
+          //           b2Lm(i1+1,i2-2,i3,j1+1,j2-2,j3),b2Lm(i1+1,i2-1,i3,j1+1,j2-1,j3),b2Lm(i1+1,i2,i3,j1+1,j2,j3),b2Lm(i1+1,i2+1,i3,j1+1,j2+1,j3),b2Lm(i1+1,i2+2,i3,j1+1,j2+2,j3), \         
+          //           b2Lm(i1+2,i2-2,i3,j1+2,j2-2,j3),b2Lm(i1+2,i2-1,i3,j1+2,j2-1,j3),b2Lm(i1+2,i2,i3,j1+2,j2,j3),b2Lm(i1+2,i2+1,i3,j1+2,j2+1,j3),b2Lm(i1+2,i2+2,i3,j1+2,j2+2,j3));
+                             
+
+          //     printF("-------------------------------------------\n");
+          //     printF("    c11Lr4=%10.3e; c11Lrr4=%10.3e; c11Ls4=%10.3e; c11Lss4=%10.3e; c11Lsss2=%10.3e; c11Lrs4=%10.3e;\n",c11Lr4,c11Lrr4,c11Ls4,c11Lss4,c11Lsss2,c11Lrs4);
+          //     printF("    c12Lr4=%10.3e; c12Lrr4=%10.3e; c12Ls4=%10.3e; c12Lss4=%10.3e; c12Lsss2=%10.3e; c12Lrs4=%10.3e;\n",c12Lr4,c12Lrr4,c12Ls4,c12Lss4,c12Lsss2,c12Lrs4);
+          //     printF("    c22Lr4=%10.3e; c22Lrr4=%10.3e; c22Ls4=%10.3e; c22Lss4=%10.3e; c22Lsss2=%10.3e; c22Lrs4=%10.3e;\n",c22Lr4,c22Lrr4,c22Ls4,c22Lss4,c22Lsss2,c22Lrs4);
+          //     printF("    c1Lr4=%10.3e; c1Lrr4=%10.3e; c1Ls4=%10.3e; c1Lss4=%10.3e; c1Lsss2=%10.3e; c1Lrs4=%10.3e;\n",c1Lr4,c1Lrr4,c1Ls4,c1Lss4,c1Lsss2,c1Lrs4);
+          //     printF("    c2Lr4=%10.3e; c2Lrr4=%10.3e; c2Ls4=%10.3e; c2Lss4=%10.3e; c2Lsss2=%10.3e; c2Lrs4=%10.3e;\n",c2Lr4,c2Lrr4,c2Ls4,c2Lss4,c2Lsss2,c2Lrs4);
+          //     printF("    b1Lr4=%10.3e; b1Lrr4=%10.3e; b1Ls4=%10.3e; b1Lss4=%10.3e; b1Lsss2=%10.3e; b1Lrs4=%10.3e;\n",b1Lr4,b1Lrr4,b1Ls4,b1Lss4,b1Lsss2,b1Lrs4);
+          //     printF("    b2Lr4=%10.3e; b2Lrr4=%10.3e; b2Ls4=%10.3e; b2Lss4=%10.3e; b2Lsss2=%10.3e; b2Lrs4=%10.3e;\n",b2Lr4,b2Lrr4,b2Ls4,b2Lss4,b2Lsss2,b2Lrs4);
+          //     printF("-------------------------------------------\n");
+          //     printF("    c11Rr4=%10.3e; c11Rrr4=%10.3e; c11Rs4=%10.3e; c11Rss4=%10.3e; c11Rsss2=%10.3e; c11Rrs4=%10.3e;\n",c11Rr4,c11Rrr4,c11Rs4,c11Rss4,c11Rsss2,c11Rrs4);
+          //     printF("    c12Rr4=%10.3e; c12Rrr4=%10.3e; c12Rs4=%10.3e; c12Rss4=%10.3e; c12Rsss2=%10.3e; c12Rrs4=%10.3e;\n",c12Rr4,c12Rrr4,c12Rs4,c12Rss4,c12Rsss2,c12Rrs4);
+          //     printF("    c22Rr4=%10.3e; c22Rrr4=%10.3e; c22Rs4=%10.3e; c22Rss4=%10.3e; c22Rsss2=%10.3e; c22Rrs4=%10.3e;\n",c22Rr4,c22Rrr4,c22Rs4,c22Rss4,c22Rsss2,c22Rrs4);
+          //     printF("    c1Rr4=%10.3e; c1Rrr4=%10.3e; c1Rs4=%10.3e; c1Rss4=%10.3e; c1Rsss2=%10.3e; c1Rrs4=%10.3e;\n",c1Rr4,c1Rrr4,c1Rs4,c1Rss4,c1Rsss2,c1Rrs4);
+          //     printF("    c2Rr4=%10.3e; c2Rrr4=%10.3e; c2Rs4=%10.3e; c2Rss4=%10.3e; c2Rsss2=%10.3e; c2Rrs4=%10.3e;\n",c2Rr4,c2Rrr4,c2Rs4,c2Rss4,c2Rsss2,c2Rrs4);
+          //     printF("    b1Rr4=%10.3e; b1Rrr4=%10.3e; b1Rs4=%10.3e; b1Rss4=%10.3e; b1Rsss2=%10.3e; b1Rrs4=%10.3e;\n",b1Rr4,b1Rrr4,b1Rs4,b1Rss4,b1Rsss2,b1Rrs4);
+          //     printF("    b2Rr4=%10.3e; b2Rrr4=%10.3e; b2Rs4=%10.3e; b2Rss4=%10.3e; b2Rsss2=%10.3e; b2Rrs4=%10.3e;\n",b2Rr4,b2Rrr4,b2Rs4,b2Rss4,b2Rsss2,b2Rrs4);
+          //     printF("-------------------------------------------\n");
+              
+          //   }
+
+          //   ForStencil(m1,m2,m3)
+          //   {
+          //     const int m  = M123(m1,m2,m3);        // the single-component coeff-index
+          //     // const int mm = M123CE(m1,m2,m3,c,e);  // the system coeff-index
+
+          //     //printF(" (i1,i2)=(%3d,%3d) (j1,j2)=(%3d,%3d) anl=(%g,%g) m=%d: xCoeff=%g yCoeff=%g r2Coeff=%g r2r2Coeff=%g \n",
+          //     //        i1,i2,j1,j2,an1L,an2L,m,xCoeff(m,i1,i2,i3),yCoeff(m,i1,i2,i3),r2Coeff(m,j1,j2,j3),r2r2Coeff(m,j1,j2,j3));
+              
+          //     //printF("    b1L=%g, b2L=%g, c11L=%g, c12L=%g, c21L=%g, c22L=%g c1L=%g c2L=%g\n",
+          //     //        b1L,b2L,c11L,c12L,c21L,c22L,c1L,c2L); 
+          //     //printF("    b1R=%g, b2R=%g, c11R=%g, c12R=%g, c21R=%g, c22R=%g c1R=%g c2R=%g\n",
+          //     //        b1R,b2R,c12R,c21R,c22R,c1R,c2R); 
+          //     //printF(" b1Lr2=%g, b2Lr2=%g, b1Rr2=%g, b2Rr2=%g \n",b1Lr2,b2Lr2,b1Rr2,b2Rr2);
+              
+          //     //printF("    b2Lb1Rr2=%g, b2Rb1Rr2=%g \n",b2Lb1Rr2,b2Rb1Rr2); 
+          //                    // Nlr = theta*nL*grad_L - b2*D_s
+          //     //printF("lapCoeff=%g \n",lapCoeff(m,i1,i2,i3));
+              
+          //     NCoeff(m) = theta*( an1L*xCoeff(m,i1,i2,i3) + an2L*yCoeff(m,i1,i2,i3) ) - b2R*r2Coeff(m,j1,j2,j3);
+              
+          //     // NOTE: Here we assume the tangential r derivatives are the same on both sides! (see champ4/notes) 
+              
+          //     LCoeff(m) = (b1R*b1R/c11R)*( beta*lapCoeff(m,i1,i2,i3) 
+          //                                 - (c12R+c21R)*( theta*( (b1L/b1R)*r1r2Coeff(m,i1,i2,i3) + (b2L/b1R)*r2r2Coeff(m,j1,j2,j3) + b2Lb1Rr2*r2Coeff(m,j1,j2,j3) )
+          //                                                 - b2Rb1Rr2*r2Coeff(m,j1,j2,j3) - (b2R/b1R)*r2r2Coeff(m,j1,j2,j3) )
+          //                                 - c22R*r2r2Coeff(m,j1,j2,j3) 
+          //                                 - (c1R/b1R)*NCoeff(m) 
+          //                                 - c2R*r2Coeff(m,j1,j2,j3) );
+
+          //     // LCoeff(m) = (b1R*b1R/c11R)*( beta*( xxCoeff(m,i1,i2,i3)  + yyCoeff(m,i1,i2,i3) ) ); // TEST 
+          //   }
+          //   //printF(" NCoeff=(%g,%g,%g,%g,%g,%g,%g,%g,%g)\n", NCoeff(0),NCoeff(1),NCoeff(2),NCoeff(3),NCoeff(4),NCoeff(5),NCoeff(6),NCoeff(7),NCoeff(8));
+          //   //printF(" LCoeff=(%g,%g,%g,%g,%g,%g,%g,%g,%g)\n", LCoeff(0),LCoeff(1),LCoeff(2),LCoeff(3),LCoeff(4),LCoeff(5),LCoeff(6),LCoeff(7),LCoeff(8));
+            
+          //   //printF(" a0=%g, a1=%g, a2=%g\n",a0,a1,a2);
+
+          //   // if( orderOfAccuracy==2 && twilightZoneFlow && !fillMatrixWDH )
+          //   if( orderOfAccuracy==2 && twilightZoneFlow  )
+          //   {
+          //     // --- For twilightZone we save some coefficients that go into the CHAMP matrix ---
+
+          //     // The next expressions are from champMacros.h:  addTwilightZoneCorrectionForChamp()
+          //     // 
+          //     // Nc = theta*( normal(Ib1,Ib2,Ib3,0)*uex + normal(Ib1,Ib2,Ib3,1)*uey ) + cc(Ib1,Ib2,Ib3,0)*uer2; 
+          //     // 
+          //     // interfaceData.u(Ib1,Ib2,Ib3,n) += Sl*ue   
+          //     //                                   + cc(Ib1,Ib2,Ib3,1)*( uexx + ueyy ) 
+          //     //                                   + cc(Ib1,Ib2,Ib3,2)*uer1r2 
+          //     //                                   + cc(Ib1,Ib2,Ib3,3)*uer2r2
+          //     //                                   + cc(Ib1,Ib2,Ib3,4)*uer2
+          //     //                                   + cc(Ib1,Ib2,Ib3,5)*Nc;
+
+          //     cc(i1,i2,i3,0) =    ( - b2R);                                                         // coeff of u2r in NCoeff
+          //     cc(i1,i2,i3,1) = a2*(b1R*b1R/c11R)*( beta                                        );   // coeff of Lap(u) in a2*LCoeff
+          //     cc(i1,i2,i3,2) = a2*(b1R*b1R/c11R)*( -(c12R+c21R)*theta*(b1L/b1R)                );   // coeff of Dr1r2 in a2*LCoeff
+          //     cc(i1,i2,i3,3) = a2*(b1R*b1R/c11R)*( -(c12R+c21R)*( (b2L/b1R) + (b2R/b1R)) -c22R );   // coeff of Dr2r2 in a2*LCoeff
+          //     cc(i1,i2,i3,4) = a2*(b1R*b1R/c11R)*( -(c12R+c21R)*(  b2Lb1Rr2 + b2Rb1Rr2 ) + c2R );   // coeff of Dr2 in a2*LCoeff
+          //     cc(i1,i2,i3,5) = a2*(b1R*b1R/c11R)*( (c1R/b1R) ) + a1;                                // coeff of NCoeff in  a1*NCoeff + a2*LCoeff
+
+          //   }
+
+          //   for( int e=eqnStart; e<=eqnEnd; e++ ) // equation eq1, eq2, ...
+          //   {
+          //     int c=0; // component number 
+          //     ForStencil(m1,m2,m3)
+          //     {
+          //       int m  = M123(m1,m2,m3);        // the single-component coeff-index
+          //       int mm = M123CE(m1,m2,m3,c,e);  // the system coeff-index
+          //       // n.grad = n1*D_x + n2*D_y =
+          //       //        = ( n1*r.x + n2*r.y ) D_r + ( n1*s.x + n2*s.y ) D_s
+          //       //        = b1*D_r + b2*D_s 
+
+          //       // Matrix for the Champ condition: 
+          //       if( !fillMatrixWDH )
+          //       {
+          //         if( mapleOption==0 )
+          //         {
+          //           coeff(mm,i1m,i2m,i3m) =  a0*idCoeff(m,i1,i2,i3) + a1*NCoeff(mm) + a2*LCoeff(mm); 
+          //         }
+          //         else if( mapleOption==1 )
+          //         {
+          //           //printF("---->Use MAPLE generated coefficients.\n");
+          //           coeff(mm,i1m,i2m,i3m) = coefA(m1,m2);
+          //         }
+          //       }
                 
-                //printF("LapCoef: (i1,i2,i3)=(%d,%d,%d) (m1,m2,m3)=(%d,%d,%d) coeff = %e\n",i1,i2,i3,m1,m2,m3,lapCoeff(m,i1,i2,i3));
+          //       //coeff(mm,i1m,i2m,i3m) =  a0*idCoeff(m,i1,i2,i3) + a1*NCoeff(mm) + a2*LCoeff(mm); 
+          //       //printF("idCoef: (i1,i2,i3)=(%d,%d,%d) (m1,m2,m3)=(%d,%d,%d) coeff = %e\n",i1,i2,i3,m1,m2,m3,idCoeff(m,i1,i2,i3));
                 
-                if( multiDomainProblem==0 )
-                { // debug info 
-                  printF("champBC: (i1,i2,i3)=(%3d,%3d,%d) (m1,m2,m3)=(%3d,%3d,%3d) coeff=%10.3e, coeff=%10.3e (new), diff=%9.2e\n",
-                       i1,i2,i3,m1,m2,m3,coeff(mm,i1m,i2m,i3m),coefA(m1,m2),coeff(mm,i1m,i2m,i3m)-coefA(m1,m2));
-                }
-                if( true )
-                {
-                  // for testing compute any difference between Sijia and WDH
-                  maxDiff = max(maxDiff, fabs(coeff(mm,i1m,i2m,i3m)-coefA(m1,m2)));
-                  maxCoeff = max( maxCoeff,abs(coeff(mm,i1m,i2m,i3m)) );
-                }                     
-
-                // Specify that the above coeff value is the coefficient of component c at the grid point (j1,j2,j3).
-                const int k1=i1+m1, k2=i2+m2, k3=i3+m3;   // the stencil is centred on the boundary pt (i1,i2,i3)
-                setEquationNumber(mm, e,i1m,i2m,i3m,  c,k1,k2,k3 );  // macro to set equationNumber
-
-                // Fill Ghost 2 -- extrapolation for now 
-                if( numGhost>1 )
-                {
-                  const int ghost=2;
-                  fillGhostExtrapolation(ghost); 
-                }                
-             }
-
-
-             if( maxDiff > 100.*REAL_EPSILON*maxCoeff )
-             {
-               printF("\n **** champBC:ERROR: CURVILINEAR: There is a difference between coeff from Sijia and WDH, maxDiff=%9.2e *** \n",maxDiff);
-               ForStencil(m1,m2,m3)  
-               {
-                 int mm = M123CE(m1,m2,m3,c,e);  // the system coeff-index
+          //       //printF("LapCoef: (i1,i2,i3)=(%d,%d,%d) (m1,m2,m3)=(%d,%d,%d) coeff = %e\n",i1,i2,i3,m1,m2,m3,lapCoeff(m,i1,i2,i3));
                 
-                 printF("champBC: (i1,i2,i3)=(%3d,%3d,%3d) (m1,m2,m3)=(%3d,%3d,%3d) coeff=%10.3e (WDH),  coeff=%10.3e (Sijia) diff=%9.2e\n",
-                       i1,i2,i3,m1,m2,m3,coeff(mm,i1m,i2m,i3m), coefA(m1,m2), coeff(mm,i1m,i2m,i3m)-coefA(m1,m2));
-               }             
-               // OV_ABORT("Stop here for now");
-             }
+          //       if( multiDomainProblem==0 )
+          //       { // debug info 
+          //         printF("champBC: (i1,i2,i3)=(%3d,%3d,%d) (m1,m2,m3)=(%3d,%3d,%3d) coeff=%10.3e, coeff=%10.3e (new), diff=%9.2e\n",
+          //              i1,i2,i3,m1,m2,m3,coeff(mm,i1m,i2m,i3m),coefA(m1,m2),coeff(mm,i1m,i2m,i3m)-coefA(m1,m2));
+          //       }
+          //       if( true )
+          //       {
+          //         // for testing compute any difference between Sijia and WDH
+          //         maxDiff = max(maxDiff, fabs(coeff(mm,i1m,i2m,i3m)-coefA(m1,m2)));
+          //         maxCoeff = max( maxCoeff,abs(coeff(mm,i1m,i2m,i3m)) );
+          //       }                     
 
-           }  // end for e
+          //       // Specify that the above coeff value is the coefficient of component c at the grid point (j1,j2,j3).
+          //       const int k1=i1+m1, k2=i2+m2, k3=i3+m3;   // the stencil is centred on the boundary pt (i1,i2,i3)
+          //       setEquationNumber(mm, e,i1m,i2m,i3m,  c,k1,k2,k3 );  // macro to set equationNumber
 
-          } // end FOR_3IJD
+          //       // Fill Ghost 2 -- extrapolation for now 
+          //       if( numGhost>1 )
+          //       {
+          //         const int ghost=2;
+          //         if( fillSecondGhostUsingExtrapolation )
+          //         {
+          //           fillGhostExtrapolation(ghost); 
+          //         }
+          //         else
+          //         {
+          //           //fillGhostChamp(ghost,drR[0]); 
+          //           const int i1m=i1-is1*ghost, i2m=i2-is2*ghost, i3m=i3-is3*ghost; //  ghost point is (i1m,i2m,i3m)
+          //           real hI=ghost*drR[0];
+          //           evalChamp4StencilCurvilinear(hI,coefAg);
+          //           coeff(mm,i1m,i2m,i3m) = coefAg(m1,m2);
+          //           const int j1=i1m + mm*is1, j2=i2m + mm*is2, j3=i3m + mm*is3;     // index of point "m" in extrap formula is shifted in the direction (is1,is2,is3)
+          //           setEquationNumber(mm, e,i1m,i2m,i3m,  c,j1,j2,j3 ); 
+          //         }
+          //       }                
+          //    }
 
-          if( true )
-            printF(">>>>>>> champBC::INFO max-diff in coeff between Sijia and WDH = %9.2e <<<<<<<<<\n",maxDiff);
+
+          //    if( orderOfAccuracy==2 && (maxDiff > 100.*REAL_EPSILON*maxCoeff) )
+          //    {
+          //      printF("\n **** champBC:ERROR: CURVILINEAR: There is a difference between coeff from Sijia and WDH, maxDiff=%9.2e *** \n",maxDiff);
+          //      ForStencil(m1,m2,m3)  
+          //      {
+          //        int mm = M123CE(m1,m2,m3,c,e);  // the system coeff-index
+                
+          //        printF("champBC: (i1,i2,i3)=(%3d,%3d,%3d) (m1,m2,m3)=(%3d,%3d,%3d) coeff=%10.3e (WDH),  coeff=%10.3e (Sijia) diff=%9.2e\n",
+          //              i1,i2,i3,m1,m2,m3,coeff(mm,i1m,i2m,i3m), coefA(m1,m2), coeff(mm,i1m,i2m,i3m)-coefA(m1,m2));
+          //      }             
+          //      // OV_ABORT("Stop here for now");
+          //    }
+
+          //  }  // end for e
+
+          // } // end FOR_3IJD
+
+          // if( debug& 4 && orderOfAccuracy==4 )
+          // {
+          //   printF("My ghost coefficients: coefAg=(%10.3e,%10.3e,%10.3e,%10.3e,%10.3e,\n                               \
+          //                                          %10.3e,%10.3e,%10.3e,%10.3e,%10.3e,\n                               \
+          //                                          %10.3e,%10.3e,%10.3e,%10.3e,%10.3e,\n                               \
+          //                                          %10.3e,%10.3e,%10.3e,%10.3e,%10.3e,\n                               \
+          //                                          %10.3e,%10.3e,%10.3e,%10.3e,%10.3e )\n",\
+          //             coefAg(-2,-2),coefAg(-1,-2),coefAg(0,-2),coefAg(1,-2),coefAg(2,-2),\
+          //             coefAg(-2,-1),coefAg(-1,-1),coefAg(0,-1),coefAg(1,-1),coefAg(2,-1),\
+          //             coefAg(-2, 0),coefAg(-1, 0),coefAg(0, 0),coefAg(1, 0),coefAg(2, 0),\
+          //             coefAg(-2, 1),coefAg(-1, 1),coefAg(0, 1),coefAg(1, 1),coefAg(2, 1),\
+          //             coefAg(-2, 2),coefAg(-1, 2),coefAg(0, 2),coefAg(1, 2),coefAg(2, 2));
+          // }
+
+          // if( true )
+          //   printF(">>>>>>> champBC::INFO max-diff in coeff between Sijia and WDH = %9.2e <<<<<<<<<\n",maxDiff);
 
           // // -- Save a copy fo the CHAMP coefficient matrix for computing the residual in champResidualOpt.bf90 ---
           // sameSide=true; 
@@ -961,120 +1552,121 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
           // coeffChamp = coeff(M,Ib1-is1,Ib2-is2,Ib3-is3);
 
 
-          if( false ) // --> residual is now computed else-where
-          {
-            // ---- DOUBLE CHECK THE CHAMP COEFFICIENTS ------
-            // Compute the residual in using the matrix coefficients:
-            //      A*u - ( difference stencil )
-            // 
-            // OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+          // if( false ) // --> residual is now computed else-where
+          // {
+          //   // ---- DOUBLE CHECK THE CHAMP COEFFICIENTS ------
+          //   // Compute the residual in using the matrix coefficients:
+          //   //      A*u - ( difference stencil )
+          //   // 
+          //   // OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
 
-            Index I1,I2,I3;
-            // Index Ig1,Ig2,Ig3;
-            getIndex(mg.dimension(),I1,I2,I3);  // no need to do so many points 
+          //   Index I1,I2,I3;
+          //   // Index Ig1,Ig2,Ig3;
+          //   getIndex(mg.dimension(),I1,I2,I3);  // no need to do so many points 
 
-            RealArray u(I1,I2,I3,1);
-            OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
-            // int rectangular=0;
-            // // Set u to exact solution (not really necessary)
-            // Real t=.1; /// jusr choose a value
-            // Range N=numberOfComponents;
-            // e.gd( u ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,I1,I2,I3,N,t);
+          //   RealArray u(I1,I2,I3,1);
+          //   OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
+          //   // int rectangular=0;
+          //   // // Set u to exact solution (not really necessary)
+          //   // Real t=.1; /// jusr choose a value
+          //   // Range N=numberOfComponents;
+          //   // e.gd( u ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,I1,I2,I3,N,t);
 
-            // Choose some u: 
-            u = 1. + xLocal(I1,I2,I3,0)*( .5 + .25*xLocal(I1,I2,I3,0) )
-                   + xLocal(I1,I2,I3,1)*( .5 + .25*xLocal(I1,I2,I3,1) );  
+          //   // Choose some u: 
+          //   u = 1. + xLocal(I1,I2,I3,0)*( .5 + .25*xLocal(I1,I2,I3,0) )
+          //          + xLocal(I1,I2,I3,1)*( .5 + .25*xLocal(I1,I2,I3,1) );  
 
-            getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-            // getGhostIndex(   mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
+          //   // *wdh* April 16, 2022 -- fix for periodic in tangnetial direction
+          //   getBoundaryIndex(mg.indexRange(),side,axis,Ib1,Ib2,Ib3);
+          //   // getGhostIndex(   mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
 
-            RealArray res(Ib1,Ib2,Ib3);
-            res =0.;  
-            FOR_3(i1,i2,i3,Ib1,Ib2,Ib3)
-            {
-              int i1m=i1-is1, i2m=i2-is2, i3m=i3-is3; //  ghost point is (i1m,i2m,i3m)
-              ForStencil(m1,m2,m3)
-              {
-                 const int m  = M123(m1,m2,m3);        // the single-component coeff-index
-                 // printF("(i1,i2)=(%3d,%3d) m=%4d (m1,m2)=(%2d,%2d) coeff=%10.2e\n ",i1,i2,m,m1,m2,coeff(m,i1m,i2m,i3m));
+          //   RealArray res(Ib1,Ib2,Ib3);
+          //   res =0.;  
+          //   FOR_3(i1,i2,i3,Ib1,Ib2,Ib3)
+          //   {
+          //     int i1m=i1-is1, i2m=i2-is2, i3m=i3-is3; //  ghost point is (i1m,i2m,i3m)
+          //     ForStencil(m1,m2,m3)
+          //     {
+          //        const int m  = M123(m1,m2,m3);        // the single-component coeff-index
+          //        // printF("(i1,i2)=(%3d,%3d) m=%4d (m1,m2)=(%2d,%2d) coeff=%10.2e\n ",i1,i2,m,m1,m2,coeff(m,i1m,i2m,i3m));
 
-                 res(i1,i2,i3) += coeff(m,i1m,i2m,i3m)*u(i1+m1,i2+m2,i3+m3);
-              }
-            }
-            // RealArray uexx(Ib1,Ib2,Ib3), ueyy(Ib1,Ib2,Ib3);
-            // e.gd( uex ,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,N,t);
-            // e.gd( uey ,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,N,t);
-            // e.gd( uexx,xLocal,mg.numberOfDimensions(),rectangular,0,2,0,0,Ib1,Ib2,Ib3,N,t);
-            // e.gd( ueyy,xLocal,mg.numberOfDimensions(),rectangular,0,0,2,0,Ib1,Ib2,Ib3,N,t); 
-
-
-            // Define d12 and d22 to use dr from the left: 
-            const Real dr22L[3] = { 1./(SQR(drL[0])), 1./(SQR(drL[1])), 1./(SQR(drL[2])) };        // for D+D- 
-            #define d12(dir) dr12L[dir]
-            #define d22(dir) dr22L[dir]
-
-            // Make some definitions for the macros in cgux2a.h 
-            #define U u 
-            #define UR2(I1,I2,I3,KD) ( (U(I1+1,I2,I3,KD)-U(I1-1,I2,I3,KD))*d12(0) )
-            #define US2(I1,I2,I3,KD) ( (U(I1,I2+1,I3,KD)-U(I1,I2-1,I3,KD))*d12(1) )
-            #define UT2(I1,I2,I3,KD) ( (U(I1,I2,I3+1,KD)-U(I1,I2,I3-1,KD))*d12(2) )
+          //        res(i1,i2,i3) += coeff(m,i1m,i2m,i3m)*u(i1+m1,i2+m2,i3+m3);
+          //     }
+          //   }
+          //   // RealArray uexx(Ib1,Ib2,Ib3), ueyy(Ib1,Ib2,Ib3);
+          //   // e.gd( uex ,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,N,t);
+          //   // e.gd( uey ,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,N,t);
+          //   // e.gd( uexx,xLocal,mg.numberOfDimensions(),rectangular,0,2,0,0,Ib1,Ib2,Ib3,N,t);
+          //   // e.gd( ueyy,xLocal,mg.numberOfDimensions(),rectangular,0,0,2,0,Ib1,Ib2,Ib3,N,t); 
 
 
-            // const Real dr22R[3] = { 1./(SQR(drR[0])), 1./(SQR(drR[1])), 1./(SQR(drR[2])) };        // for D+D- 
+          //   // Define d12 and d22 to use dr from the left: 
+          //   const Real dr22L[3] = { 1./(SQR(drL[0])), 1./(SQR(drL[1])), 1./(SQR(drL[2])) };        // for D+D- 
+          //   #define d12(dir) dr12L[dir]
+          //   #define d22(dir) dr22L[dir]
 
-            FOR_3IJD(i1,i2,i3,Ib1,Ib2,Ib3,j1,j2,j3,Jb1,Jb2,Jb3) // loop over points on BOTH SIDES of the interface 
-            {
+          //   // Make some definitions for the macros in cgux2a.h 
+          //   #define U u 
+          //   #define UR2(I1,I2,I3,KD) ( (U(I1+1,I2,I3,KD)-U(I1-1,I2,I3,KD))*d12(0) )
+          //   #define US2(I1,I2,I3,KD) ( (U(I1,I2+1,I3,KD)-U(I1,I2-1,I3,KD))*d12(1) )
+          //   #define UT2(I1,I2,I3,KD) ( (U(I1,I2,I3+1,KD)-U(I1,I2,I3-1,KD))*d12(2) )
 
-              // Evaluate variables in the champ conditions:
-              evalChampVariables();
 
-              const Real hR = (1-2*side2)*drR[axis2]/b1R; // scaled grid spacing on right
-              const real a0 = Sl;
-              const real a1 = 1. + hR*Sl;
-              const real a2 = hR*(1.0 + .5*hR*Sl);
+          //   // const Real dr22R[3] = { 1./(SQR(drR[0])), 1./(SQR(drR[1])), 1./(SQR(drR[2])) };        // for D+D- 
 
-              // 
-              // NCoeff(m) = theta*( an1L*xCoeff(m,i1,i2,i3) + an2L*yCoeff(m,i1,i2,i3) ) - b2R*r2Coeff(m,j1,j2,j3);
-              const Real ur2   =  US2(i1,i2,i3,0); // d(u)/(d r_2)
-              const Real ur1r2 = URS2(i1,i2,i3,0); // d^2(u)/(d r_1 d r_2 )
-              const Real ur2r2 = USS2(i1,i2,i3,0); // d^2(u)/(d (r_2)^2 )
+          //   FOR_3IJD(i1,i2,i3,Ib1,Ib2,Ib3,j1,j2,j3,Jb1,Jb2,Jb3) // loop over points on BOTH SIDES of the interface 
+          //   {
 
-              // NCoeff(m) = theta*( an1L*xCoeff(m,i1,i2,i3) + an2L*yCoeff(m,i1,i2,i3) ) - b2R*r2Coeff(m,j1,j2,j3); 
-              // LCoeff(m) = (b1R*b1R/c11R)*( beta*lapCoeff(m,i1,i2,i3) 
-              //                             - (c12R+c21R)*( theta*( (b1L/b1R)*r1r2Coeff(m,i1,i2,i3) + (b2L/b1R)*r2r2Coeff(m,j1,j2,j3) + b2Lb1Rr2*r2Coeff(m,j1,j2,j3) )
-              //                                             - b2Rb1Rr2*r2Coeff(m,j1,j2,j3) - (b2R/b1R)*r2r2Coeff(m,j1,j2,j3) )
-              //                             - c22R*r2r2Coeff(m,j1,j2,j3) 
-              //                             - (c1R/b1R)*NCoeff(m) 
-              //                             - c2R*r2Coeff(m,j1,j2,j3) ); 
+          //     // Evaluate variables in the champ conditions:
+          //     evalChampVariables();
 
-              // -- switch to rxLeft for computing ux and uy etc. on left              
-              #define inverseVertexDerivative rxLeft 
-              Real Nlr =  theta*( an1L*UX22(i1,i2,i3,0) + an2L*UY22(i1,i2,i3,0) ) - b2R*ur2 ;
+          //     const Real hR = (1-2*side2)*drR[axis2]/b1R; // scaled grid spacing on right
+          //     const real a0 = Sl;
+          //     const real a1 = 1. + hR*Sl;
+          //     const real a2 = hR*(1.0 + .5*hR*Sl);
 
-              Real Llr  = (b1R*b1R/c11R)*( beta*( UXX22(i1,i2,i3,0) + UYY22(i1,i2,i3,0) )
-                                          - (c12R+c21R)*( theta*( (b1L/b1R)*ur1r2 + (b2L/b1R)*ur2r2 + b2Lb1Rr2*ur2  ) 
-                                                         - b2Rb1Rr2*ur2 - (b2R/b1R)*ur2r2 )
-                                          - c22R*ur2r2
-                                          - (c1R/b1R)*Nlr 
-                                          - c2R*ur2
-                                         );
-              // Llr= (b1R*b1R/c11R)*( beta*( UXX22(i1,i2,i3,0) + UYY22(i1,i2,i3,0) ) ); // TEST 
+          //     // 
+          //     // NCoeff(m) = theta*( an1L*xCoeff(m,i1,i2,i3) + an2L*yCoeff(m,i1,i2,i3) ) - b2R*r2Coeff(m,j1,j2,j3);
+          //     const Real ur2   =  US2(i1,i2,i3,0); // d(u)/(d r_2)
+          //     const Real ur1r2 = URS2(i1,i2,i3,0); // d^2(u)/(d r_1 d r_2 )
+          //     const Real ur2r2 = USS2(i1,i2,i3,0); // d^2(u)/(d (r_2)^2 )
 
-              res(i1,i2,i3) -= a0*u(i1,i2,i3) + a1*Nlr + a2*Llr; 
-            }
+          //     // NCoeff(m) = theta*( an1L*xCoeff(m,i1,i2,i3) + an2L*yCoeff(m,i1,i2,i3) ) - b2R*r2Coeff(m,j1,j2,j3); 
+          //     // LCoeff(m) = (b1R*b1R/c11R)*( beta*lapCoeff(m,i1,i2,i3) 
+          //     //                             - (c12R+c21R)*( theta*( (b1L/b1R)*r1r2Coeff(m,i1,i2,i3) + (b2L/b1R)*r2r2Coeff(m,j1,j2,j3) + b2Lb1Rr2*r2Coeff(m,j1,j2,j3) )
+          //     //                                             - b2Rb1Rr2*r2Coeff(m,j1,j2,j3) - (b2R/b1R)*r2r2Coeff(m,j1,j2,j3) )
+          //     //                             - c22R*r2r2Coeff(m,j1,j2,j3) 
+          //     //                             - (c1R/b1R)*NCoeff(m) 
+          //     //                             - c2R*r2Coeff(m,j1,j2,j3) ); 
 
-            Real maxRes = max(fabs(res));
-            printF("CHAMP-MATRIX: max-residual=%8.2e\n",maxRes);
-            if( maxRes >1.e-10 )
-            {
-              OV_ABORT("residual is too large ??")
-            }
+          //     // -- switch to rxLeft for computing ux and uy etc. on left              
+          //     #define inverseVertexDerivative rxLeft 
+          //     Real Nlr =  theta*( an1L*UX22(i1,i2,i3,0) + an2L*UY22(i1,i2,i3,0) ) - b2R*ur2 ;
 
-          }
+          //     Real Llr  = (b1R*b1R/c11R)*( beta*( UXX22(i1,i2,i3,0) + UYY22(i1,i2,i3,0) )
+          //                                 - (c12R+c21R)*( theta*( (b1L/b1R)*ur1r2 + (b2L/b1R)*ur2r2 + b2Lb1Rr2*ur2  ) 
+          //                                                - b2Rb1Rr2*ur2 - (b2R/b1R)*ur2r2 )
+          //                                 - c22R*ur2r2
+          //                                 - (c1R/b1R)*Nlr 
+          //                                 - c2R*ur2
+          //                                );
+          //     // Llr= (b1R*b1R/c11R)*( beta*( UXX22(i1,i2,i3,0) + UYY22(i1,i2,i3,0) ) ); // TEST 
+
+          //     res(i1,i2,i3) -= a0*u(i1,i2,i3) + a1*Nlr + a2*Llr; 
+          //   }
+
+          //   Real maxRes = max(fabs(res));
+          //   printF("CHAMP-MATRIX: max-residual=%8.2e\n",maxRes);
+          //   if( maxRes >1.e-10 )
+          //   {
+          //     OV_ABORT("residual is too large ??")
+          //   }
+
+          // }
 
           
 
-        } // end curvlinear grid
+        } // end curvilinear grid
 
         if( !multiDomainProblem )
         {

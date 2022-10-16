@@ -333,7 +333,7 @@ checkInterfaceForConvergence( const int correct,
   const bool solveCoupledInterfaceEquations = parameters.dbase.get<bool>("solveCoupledInterfaceEquations");
 
   // Check how well the interface equations are satisfied
-  if( debug() & 4 ) printF("\n=== After takeTimeStep (correction=%i t=%9.3e)\n",correct,tNew);
+  if( debug() & 4 ) printF("\n=== checkInterfaceForConvergence: After takeTimeStep (correction=%i t=%9.3e)\n",correct,tNew);
   if( alwaysSetBoundaryData || !solveCoupledInterfaceEquations )
   {
     if( debug() & 2 )

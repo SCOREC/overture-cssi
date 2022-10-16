@@ -37,13 +37,13 @@
         ! real v(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)     ! ************************************ LOCALLY ALLOCATED
          real uTemp(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)    ! ************************************ LOCALLY ALLOCATED
          integer c,i1,i2,i3,n,gridType,orderOfAccuracy,orderOfAccuracyInTime,debug,computeUt,dir
-         integer addForcing,twilightZone,option,upwindSOS
+         integer addForcing,twilightZone,option,upwindSOS,numNans
          integer useWhereMask,useWhereMaskSave,grid,useVariableDissipation
          integer useConservative,combineDissipationWithAdvance
          integer u1c,u2c,u3c,pc
          integer v1c,v2c,v3c
          integer materialFormat,myid
-         logical useLowerOrderUpwindingOnBoundaries
+         logical useLowerOrderUpwindingOnBoundaries,checkForNans
          integer useSosupDissipation,preComputeUpwindUt,correction
          real adSosup,uDotFactor,sosupParameter, adxSosup(0:2) 
          real adSosup2,adSosup4,adSosup6,upwindScaleFactor 
@@ -1551,6 +1551,7 @@
          v1c = 0 
          v2c = 1
          v3c = 2
+         checkForNans = .false.
          if( orderOfAccuracy == 2 )then
            useLowerOrderUpwindingOnBoundaries=.false.
          else
@@ -1702,6 +1703,32 @@
                    end do
                    end do
                    end do
+                   if( checkForNans )then
+                     numNans=0
+                       do i3=nd3a,nd3b
+                       do i2=nd2a,nd2b
+                       do i1=nd1a,nd1b
+                       if( isnan( un(i1,i2,i3,u1c) ) )then 
+                         numNans = numNans+1 
+                       end if 
+                       if( isnan( un(i1,i2,i3,u2c) ) )then 
+                         numNans = numNans+1
+                       end if 
+                       if( nd.eq.3 )then
+                         if( isnan( un(i1,i2,i3,u3c) ) )then
+                           numNans = numNans+1 
+                         end if
+                       end if
+                       end do
+                       end do
+                       end do
+                     if( numNans.gt.0 )then
+                       write(*,'("advOptIsm: ERROR - nans found AfterUpdateBeforeUpwind")')
+                       stop 9876
+                     else
+                       write(*,'("advOptIsm: INFO: no nans found: AfterUpdateBeforeUpwind")')
+                     end if
+                   end if
              else
                    do i3=n3a,n3b
                    do i2=n2a,n2b
@@ -1717,6 +1744,32 @@
                    end do
                    end do
                    end do
+                   if( checkForNans )then
+                     numNans=0
+                       do i3=nd3a,nd3b
+                       do i2=nd2a,nd2b
+                       do i1=nd1a,nd1b
+                       if( isnan( un(i1,i2,i3,u1c) ) )then 
+                         numNans = numNans+1 
+                       end if 
+                       if( isnan( un(i1,i2,i3,u2c) ) )then 
+                         numNans = numNans+1
+                       end if 
+                       if( nd.eq.3 )then
+                         if( isnan( un(i1,i2,i3,u3c) ) )then
+                           numNans = numNans+1 
+                         end if
+                       end if
+                       end do
+                       end do
+                       end do
+                     if( numNans.gt.0 )then
+                       write(*,'("advOptIsm: ERROR - nans found AfterUpdateBeforeUpwind")')
+                       stop 9876
+                     else
+                       write(*,'("advOptIsm: INFO: no nans found: AfterUpdateBeforeUpwind")')
+                     end if
+                   end if
              end if
            else
              ! ----- Modified equation corrector stage ----
@@ -1764,6 +1817,32 @@
                    end do
                    end do
                    end do
+                   if( checkForNans )then
+                     numNans=0
+                       do i3=nd3a,nd3b
+                       do i2=nd2a,nd2b
+                       do i1=nd1a,nd1b
+                       if( isnan( un(i1,i2,i3,u1c) ) )then 
+                         numNans = numNans+1 
+                       end if 
+                       if( isnan( un(i1,i2,i3,u2c) ) )then 
+                         numNans = numNans+1
+                       end if 
+                       if( nd.eq.3 )then
+                         if( isnan( un(i1,i2,i3,u3c) ) )then
+                           numNans = numNans+1 
+                         end if
+                       end if
+                       end do
+                       end do
+                       end do
+                     if( numNans.gt.0 )then
+                       write(*,'("advOptIsm: ERROR - nans found AfterCorrector")')
+                       stop 9876
+                     else
+                       write(*,'("advOptIsm: INFO: no nans found: AfterCorrector")')
+                     end if
+                   end if
              else
                    do i3=n3a,n3b
                    do i2=n2a,n2b
@@ -1788,6 +1867,32 @@
                    end do
                    end do
                    end do
+                   if( checkForNans )then
+                     numNans=0
+                       do i3=nd3a,nd3b
+                       do i2=nd2a,nd2b
+                       do i1=nd1a,nd1b
+                       if( isnan( un(i1,i2,i3,u1c) ) )then 
+                         numNans = numNans+1 
+                       end if 
+                       if( isnan( un(i1,i2,i3,u2c) ) )then 
+                         numNans = numNans+1
+                       end if 
+                       if( nd.eq.3 )then
+                         if( isnan( un(i1,i2,i3,u3c) ) )then
+                           numNans = numNans+1 
+                         end if
+                       end if
+                       end do
+                       end do
+                       end do
+                     if( numNans.gt.0 )then
+                       write(*,'("advOptIsm: ERROR - nans found AfterCorrector")')
+                       stop 9876
+                     else
+                       write(*,'("advOptIsm: INFO: no nans found: AfterCorrector")')
+                     end if
+                   end if
              end if      
            end if
          elseif( option==1 )then 
@@ -2015,6 +2120,7 @@
                       do i3=nn3a,nn3b
                       do i2=nn2a,nn2b
                       do i1=nn1a,nn1b
+                      if( mask(i1,i2,i3)>0 )then
                         ! --- -FOURTH 4 ---
                           ! --- THREE DIMENSIONS ---
                              do dir=0,2
@@ -2026,6 +2132,7 @@
                             uTemp(i1,i2,i3,u1c)=un(i1,i2,i3,u1c)+(+6.*v(i1,i2,i3,u1c)-4.*(v(i1+1,i2,i3,u1c)+v(i1-1,i2,i3,u1c))+(v(i1+2,i2,i3,u1c)+v(i1-2,i2,i3,u1c)))*adxSosup(0)+(+6.*v(i1,i2,i3,u1c)-4.*(v(i1,i2+1,i3,u1c)+v(i1,i2-1,i3,u1c))+(v(i1,i2+2,i3,u1c)+v(i1,i2-2,i3,u1c)))*adxSosup(1)+(+6.*v(i1,i2,i3,u1c)-4.*(v(i1,i2,i3+1,u1c)+v(i1,i2,i3-1,u1c))+(v(i1,i2,i3+2,u1c)+v(i1,i2,i3-2,u1c)))*adxSosup(2)
                             uTemp(i1,i2,i3,u2c)=un(i1,i2,i3,u2c)+(+6.*v(i1,i2,i3,u2c)-4.*(v(i1+1,i2,i3,u2c)+v(i1-1,i2,i3,u2c))+(v(i1+2,i2,i3,u2c)+v(i1-2,i2,i3,u2c)))*adxSosup(0)+(+6.*v(i1,i2,i3,u2c)-4.*(v(i1,i2+1,i3,u2c)+v(i1,i2-1,i3,u2c))+(v(i1,i2+2,i3,u2c)+v(i1,i2-2,i3,u2c)))*adxSosup(1)+(+6.*v(i1,i2,i3,u2c)-4.*(v(i1,i2,i3+1,u2c)+v(i1,i2,i3-1,u2c))+(v(i1,i2,i3+2,u2c)+v(i1,i2,i3-2,u2c)))*adxSosup(2)
                             uTemp(i1,i2,i3,u3c)=un(i1,i2,i3,u3c)+(+6.*v(i1,i2,i3,u3c)-4.*(v(i1+1,i2,i3,u3c)+v(i1-1,i2,i3,u3c))+(v(i1+2,i2,i3,u3c)+v(i1-2,i2,i3,u3c)))*adxSosup(0)+(+6.*v(i1,i2,i3,u3c)-4.*(v(i1,i2+1,i3,u3c)+v(i1,i2-1,i3,u3c))+(v(i1,i2+2,i3,u3c)+v(i1,i2-2,i3,u3c)))*adxSosup(1)+(+6.*v(i1,i2,i3,u3c)-4.*(v(i1,i2,i3+1,u3c)+v(i1,i2,i3-1,u3c))+(v(i1,i2,i3+2,u3c)+v(i1,i2,i3-2,u3c)))*adxSosup(2)
+                    end if ! mask > 0 
                       end do
                       end do
                       end do
@@ -2037,12 +2144,40 @@
                  do i3=n3a,n3b
                  do i2=n2a,n2b
                  do i1=n1a,n1b
-                 un(i1,i2,i3,u1c)=uTemp(i1,i2,i3,u1c)
-                 un(i1,i2,i3,u2c)=uTemp(i1,i2,i3,u2c)
-                   un(i1,i2,i3,u3c)=uTemp(i1,i2,i3,u3c)
+                 if( mask(i1,i2,i3)>0 )then   
+                   un(i1,i2,i3,u1c)=uTemp(i1,i2,i3,u1c)
+                   un(i1,i2,i3,u2c)=uTemp(i1,i2,i3,u2c)
+                     un(i1,i2,i3,u3c)=uTemp(i1,i2,i3,u3c)
+                 end if
                  end do
                  end do
                  end do
+                 if( checkForNans )then
+                   numNans=0
+                     do i3=nd3a,nd3b
+                     do i2=nd2a,nd2b
+                     do i1=nd1a,nd1b
+                     if( isnan( un(i1,i2,i3,u1c) ) )then 
+                       numNans = numNans+1 
+                     end if 
+                     if( isnan( un(i1,i2,i3,u2c) ) )then 
+                       numNans = numNans+1
+                     end if 
+                     if( nd.eq.3 )then
+                       if( isnan( un(i1,i2,i3,u3c) ) )then
+                         numNans = numNans+1 
+                       end if
+                     end if
+                     end do
+                     end do
+                     end do
+                   if( numNans.gt.0 )then
+                     write(*,'("advOptIsm: ERROR - nans found AfterUpwind")')
+                     stop 9876
+                   else
+                     write(*,'("advOptIsm: INFO: no nans found: AfterUpwind")')
+                   end if
+                 end if
            else
              ! compute Ut inline in Gauss-Seidel fashion (this is more stable)
                ! Note: these next values are only used for rectangular grids. (curvilinear grid values are computed in the loops)
@@ -2229,6 +2364,7 @@
                       do i3=nn3a,nn3b
                       do i2=nn2a,nn2b
                       do i1=nn1a,nn1b
+                      if( mask(i1,i2,i3)>0 )then
                         ! --- -FOURTH 4 ---
                           ! --- THREE DIMENSIONS ---
                              do dir=0,2
@@ -2240,6 +2376,7 @@
                             uTemp(i1,i2,i3,u1c)=un(i1,i2,i3,u1c)+(+6.*Dztu(i1,i2,i3,u1c)-4.*(Dztu(i1+1,i2,i3,u1c)+Dztu(i1-1,i2,i3,u1c))+(Dztu(i1+2,i2,i3,u1c)+Dztu(i1-2,i2,i3,u1c)))*adxSosup(0)+(+6.*Dztu(i1,i2,i3,u1c)-4.*(Dztu(i1,i2+1,i3,u1c)+Dztu(i1,i2-1,i3,u1c))+(Dztu(i1,i2+2,i3,u1c)+Dztu(i1,i2-2,i3,u1c)))*adxSosup(1)+(+6.*Dztu(i1,i2,i3,u1c)-4.*(Dztu(i1,i2,i3+1,u1c)+Dztu(i1,i2,i3-1,u1c))+(Dztu(i1,i2,i3+2,u1c)+Dztu(i1,i2,i3-2,u1c)))*adxSosup(2)
                             uTemp(i1,i2,i3,u2c)=un(i1,i2,i3,u2c)+(+6.*Dztu(i1,i2,i3,u2c)-4.*(Dztu(i1+1,i2,i3,u2c)+Dztu(i1-1,i2,i3,u2c))+(Dztu(i1+2,i2,i3,u2c)+Dztu(i1-2,i2,i3,u2c)))*adxSosup(0)+(+6.*Dztu(i1,i2,i3,u2c)-4.*(Dztu(i1,i2+1,i3,u2c)+Dztu(i1,i2-1,i3,u2c))+(Dztu(i1,i2+2,i3,u2c)+Dztu(i1,i2-2,i3,u2c)))*adxSosup(1)+(+6.*Dztu(i1,i2,i3,u2c)-4.*(Dztu(i1,i2,i3+1,u2c)+Dztu(i1,i2,i3-1,u2c))+(Dztu(i1,i2,i3+2,u2c)+Dztu(i1,i2,i3-2,u2c)))*adxSosup(2)
                             uTemp(i1,i2,i3,u3c)=un(i1,i2,i3,u3c)+(+6.*Dztu(i1,i2,i3,u3c)-4.*(Dztu(i1+1,i2,i3,u3c)+Dztu(i1-1,i2,i3,u3c))+(Dztu(i1+2,i2,i3,u3c)+Dztu(i1-2,i2,i3,u3c)))*adxSosup(0)+(+6.*Dztu(i1,i2,i3,u3c)-4.*(Dztu(i1,i2+1,i3,u3c)+Dztu(i1,i2-1,i3,u3c))+(Dztu(i1,i2+2,i3,u3c)+Dztu(i1,i2-2,i3,u3c)))*adxSosup(1)+(+6.*Dztu(i1,i2,i3,u3c)-4.*(Dztu(i1,i2,i3+1,u3c)+Dztu(i1,i2,i3-1,u3c))+(Dztu(i1,i2,i3+2,u3c)+Dztu(i1,i2,i3-2,u3c)))*adxSosup(2)
+                    end if ! mask > 0 
                       end do
                       end do
                       end do
@@ -2251,12 +2388,40 @@
                  do i3=n3a,n3b
                  do i2=n2a,n2b
                  do i1=n1a,n1b
-                 un(i1,i2,i3,u1c)=uTemp(i1,i2,i3,u1c)
-                 un(i1,i2,i3,u2c)=uTemp(i1,i2,i3,u2c)
-                   un(i1,i2,i3,u3c)=uTemp(i1,i2,i3,u3c)
+                 if( mask(i1,i2,i3)>0 )then   
+                   un(i1,i2,i3,u1c)=uTemp(i1,i2,i3,u1c)
+                   un(i1,i2,i3,u2c)=uTemp(i1,i2,i3,u2c)
+                     un(i1,i2,i3,u3c)=uTemp(i1,i2,i3,u3c)
+                 end if
                  end do
                  end do
                  end do
+                 if( checkForNans )then
+                   numNans=0
+                     do i3=nd3a,nd3b
+                     do i2=nd2a,nd2b
+                     do i1=nd1a,nd1b
+                     if( isnan( un(i1,i2,i3,u1c) ) )then 
+                       numNans = numNans+1 
+                     end if 
+                     if( isnan( un(i1,i2,i3,u2c) ) )then 
+                       numNans = numNans+1
+                     end if 
+                     if( nd.eq.3 )then
+                       if( isnan( un(i1,i2,i3,u3c) ) )then
+                         numNans = numNans+1 
+                       end if
+                     end if
+                     end do
+                     end do
+                     end do
+                   if( numNans.gt.0 )then
+                     write(*,'("advOptIsm: ERROR - nans found AfterUpwind")')
+                     stop 9876
+                   else
+                     write(*,'("advOptIsm: INFO: no nans found: AfterUpwind")')
+                   end if
+                 end if
            end if
          elseif( option==2 )then
            ! --- evaluate the time derivative of v for method-of-lines schemes ---

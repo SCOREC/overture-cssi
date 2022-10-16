@@ -137,8 +137,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -321,8 +361,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -446,8 +526,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -568,8 +688,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -690,8 +850,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -874,8 +1074,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -1005,8 +1245,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -1132,8 +1412,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -1256,8 +1576,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -1383,8 +1743,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -1508,8 +1908,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -1630,8 +2070,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -1754,8 +2234,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -1876,8 +2396,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -1997,8 +2557,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -2173,8 +2773,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -2313,8 +2953,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -2448,8 +3128,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -2578,8 +3298,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -2703,8 +3463,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -2838,8 +3638,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -2969,8 +3809,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -3096,8 +3976,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -3220,8 +4140,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -3350,8 +4310,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -3477,8 +4477,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -3602,8 +4642,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -3724,8 +4804,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -3849,8 +4969,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -3973,8 +5133,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -4095,8 +5295,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -4216,8 +5456,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -4402,8 +5682,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -4553,8 +5873,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -4698,8 +6058,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -4837,8 +6237,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -4970,8 +6410,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -5096,8 +6576,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -5241,8 +6761,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -5381,8 +6941,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -5516,8 +7116,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -5646,8 +7286,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -5771,8 +7451,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -5910,8 +7630,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -6045,8 +7805,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -6176,8 +7976,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -6304,8 +8144,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -6428,8 +8308,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -6561,8 +8481,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -6691,8 +8651,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -6819,8 +8819,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -6944,8 +8984,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -7066,8 +9146,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -7192,8 +9312,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -7317,8 +9477,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -7441,8 +9641,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -7563,8 +9803,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb
@@ -7684,8 +9964,48 @@
         write(*,*) 'PolyFunction:ERROR invalid degreeTime'
         stop 1837
        end if
+      else if( dt.eq.5 )then
+       ! --- 5th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=(120.*a(5,n))
+       else if( degreeTime.eq.6 )then
+        time=(120.*a(5,n)+t*(720.*a(6,n)))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
+      else if( dt.eq.6 )then
+       ! --- 6th time derivative ---
+       if( degreeTime.eq.0 )then
+        time=0.
+       else if( degreeTime.eq.1 )then
+        time=0.
+       else if( degreeTime.eq.2 )then
+        time=0.
+       else if( degreeTime.eq.3 )then
+        time=0.
+       else if( degreeTime.eq.4 )then
+        time=0.
+       else if( degreeTime.eq.5 )then
+        time=0.
+       else if( degreeTime.eq.6 )then
+        time=(720.*a(6,n))
+       else
+        write(*,*) 'PolyFunction:ERROR invalid degreeTime'
+        stop 1837
+       end if
       else
-        write(*,*) 'PolyFunction:ERROR: too many time derivatives'
+        write(*,*) 'PolyFunction:ERROR: too many time derivatives=',dt
         stop 1838
       end if
       do i3=nta,ntb

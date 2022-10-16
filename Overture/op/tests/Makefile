@@ -232,6 +232,7 @@ findInterpNeighbours.f : findInterpNeighbours.bf; $(bpp) findInterpNeighbours.bf
 
 testExtrapInterpNeighbours= testExtrapInterpNeighbours.o Checker.o AssignInterpNeighbours.o findInterpNeighbours.o ../fortranDeriv/extrapolateOpt.o BoundaryOperators.o
 testExtrapInterpNeighbours= testExtrapInterpNeighbours.o Checker.o ../fortranDeriv/extrapolateOpt.o
+testExtrapInterpNeighbours= testExtrapInterpNeighbours.o Checker.o AssignInterpNeighbours.o 
 testExtrapInterpNeighbours: $(testExtrapInterpNeighbours) 
 	$(CC) $(CCFLAGS) -o testExtrapInterpNeighbours $(testExtrapInterpNeighbours) $(CLIBS) $(FLIBS) $(GLIBS)
 

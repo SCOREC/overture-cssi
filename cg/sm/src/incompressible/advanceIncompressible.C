@@ -50,6 +50,9 @@ extern "C"
 #define FN(m) fn[m+numberOfFunctions*(grid)]
 
 
+#define FOR_3D(i1,i2,i3,I1,I2,I3) int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); for(int i3=I3Base; i3<=I3Bound; i3++) for(int i2=I2Base; i2<=I2Bound; i2++) for(int i1=I1Base; i1<=I1Bound; i1++)
+
+#define FOR_3(i1,i2,i3,I1,I2,I3) I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); for(int i3=I3Base; i3<=I3Bound; i3++) for(int i2=I2Base; i2<=I2Bound; i2++) for(int i1=I1Base; i1<=I1Bound; i1++)
 
 
 // =======================================================================================
@@ -149,6 +152,7 @@ advanceIncompressible( int current, real t, real dt,
   // }
     
     const int useWhereMask = numberOfComponentGrids>1;  
+    const bool checkForNans=false;
 
     sizeOfLocalArraysForAdvance=0.;
 
@@ -519,7 +523,37 @@ advanceIncompressible( int current, real t, real dt,
                 assignInterfaceBoundaryConditions( next, t, dt );  // is this the right place to do this?
             }
 
+        if( checkForNans )
+        {
+      // --- check for nan's ---
+            int u1c=uc, u2c=vc, u3c=wc; 
+            bool nanFound=false;
+            for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+            {
+                MappedGrid & mg = cg[grid];
+                Index I1,I2,I3;
+                getIndex(mg.dimension(),I1,I2,I3);  
+                OV_GET_SERIAL_ARRAY(real,gf[next].u[grid]    ,unLocal);
+                FOR_3D(i1,i2,i3,I1,I2,I3)
+                {
+                    if( isnan(unLocal(i1,i2,i3,u1c)) ||
+                            isnan(unLocal(i1,i2,i3,u2c)) ||
+                            isnan(unLocal(i1,i2,i3,pc)) ||
+                            (numberOfDimensions==3 && isnan(unLocal(i1,i2,i3,u3c)) ) )
+                    {
+                        nanFound=true;
 
+                        printF("\n **** NAN FOUND AFTER INTERPOLATE AND APPLY BC's on grid=%d, at t=%9.3e\n",grid,t);
+                        printF("  (i1,i2,i3)=(%3d,%3d,%3d) u1=%12.3e, u2=%12.3e, u3=%12.3e, p=%12.3e\n",i1,i2,i3,
+                                        unLocal(i1,i2,i3,u1c),unLocal(i1,i2,i3,u2c),(numberOfDimensions==2 ? 0. : unLocal(i1,i2,i3,u3c)),unLocal(i1,i2,i3,pc) );
+                        OV_ABORT("ERROR- nan");            
+                        break;
+                    }
+                }   
+
+            }
+            printF("\n **** NO NANs FOUND AFTER INTERPOLATE AND APPLY BC's at t=%9.3e\n",t);
+        }
 
 
 
@@ -791,6 +825,40 @@ advanceIncompressible( int current, real t, real dt,
           // *** this does nothing currently ***
                     assignInterfaceBoundaryConditions( next, t, dt );  // is this the right place to do this?
                 }
+
+
+            if( checkForNans )
+            {
+        // --- check for nan's ---
+                int u1c=uc, u2c=vc, u3c=wc; 
+                bool nanFound=false;
+                for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+                {
+                    MappedGrid & mg = cg[grid];
+                    Index I1,I2,I3;
+                    getIndex(mg.dimension(),I1,I2,I3);  
+                    OV_GET_SERIAL_ARRAY(real,gf[next].u[grid]    ,unLocal);
+                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    {
+                        if( isnan(unLocal(i1,i2,i3,u1c)) ||
+                                isnan(unLocal(i1,i2,i3,u2c)) ||
+                                isnan(unLocal(i1,i2,i3,pc)) ||
+                                (numberOfDimensions==3 && isnan(unLocal(i1,i2,i3,u3c)) ) )
+                        {
+                            nanFound=true;
+
+                            printF("\n **** NAN FOUND AFTER UPWIND AND INTERPOLATE AND APPLY BC's on grid=%d, at t=%9.3e\n",grid,t);
+                            printF("  (i1,i2,i3)=(%3d,%3d,%3d) u1=%12.3e, u2=%12.3e, u3=%12.3e, p=%12.3e\n",i1,i2,i3,
+                                            unLocal(i1,i2,i3,u1c),unLocal(i1,i2,i3,u2c),(numberOfDimensions==2 ? 0. : unLocal(i1,i2,i3,u3c)),unLocal(i1,i2,i3,pc) );
+                            OV_ABORT("ERROR- nan");            
+                            break;
+                        }
+                    }   
+
+                }
+                printF("\n **** NO NANs FOUND AFTER UPWIND AND INTERPOLATE AND APPLY BC's at t=%9.3e\n",t);
+            }
+
         } // end if upwindSOS
 
 

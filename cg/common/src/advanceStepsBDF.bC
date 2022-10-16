@@ -423,6 +423,7 @@ initializeTimeSteppingBDF( real & t0, real & dt0 )
   // NOTE: the matrix will only be generated the first time through or if parameters.dbase.get<int >("globalStepNumber") % refactorFrequency == 0 
   // We want to factor the matrix here since it may be needed for computing the RHS
   formMatrixForImplicitSolve(dt,gf[mNew], gf[mCur] );
+  
 
   // **** To initialize the method we need to compute du/dt at times t and t-dt *****
 

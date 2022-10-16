@@ -10,12 +10,25 @@
 
 #include "Overture.h"
 
+// forward declarations
+class InterpolatePointsOnAGrid;
+class OGFunction;
+
+#define KK_DEBUG
+#include "DBase.hh"
+using namespace DBase;
 
 class AssignInterpNeighbours
 {
 public:
 
-AssignInterpNeighbours();
+  enum AssignmentTypeEnum
+  {
+    extrapolateInterpolationNeighbours=0,
+    interpolateInterpolationNeighbours
+  };
+
+AssignInterpNeighbours( AssignmentTypeEnum assignmentType = extrapolateInterpolationNeighbours );
 
 // copy constructor
 AssignInterpNeighbours( const AssignInterpNeighbours & x );
@@ -29,10 +42,21 @@ assign( realMappedGridFunction & uA, Range & C, const BoundaryConditionParameter
 // Call this routine when the grid has changed and we need to re-initialize
 int gridHasChanged();
 
+// Assign values to the unused points next to interpolation points
+int assignInterpolationNeighbours( realCompositeGridFunction & u, const Range & C = nullRange, OGFunction *TZFlow=NULL, real t=0. );
+
 AssignInterpNeighbours & operator= ( const AssignInterpNeighbours & x );
+
+void setAssignmentType( AssignmentTypeEnum assignmentType );
 
 // Provide the interpolation point array (used in serial only)
 void setInterpolationPoint( intArray & interpolationPoint );
+
+// For interpolating interp neighbours:
+int setInterpolationWidth( int width );
+
+// For interpolating interp neighbours:
+int setNumberOfValidGhostPoints( int numValidGhost );
 
 // return size of this object  
 real sizeOf(FILE *file = NULL ) const;
@@ -49,6 +73,7 @@ protected:
     errorInFindInterpolationNeighbours
   } errorStatus;
 
+
 // setup routine
 int 
 setup();
@@ -57,8 +82,12 @@ setup();
 int 
 findInterpolationNeighbours( MappedGrid & mg );
 
+// For interpolating interp neighbours:
+int setupInterpolation( CompositeGrid& cg );
+
 
 int isInitialized;
+AssignmentTypeEnum assignmentType;
 
 int numberOfInterpolationNeighbours;
 
@@ -68,6 +97,12 @@ IntegerArray *extrapolateInterpolationNeighboursDirection;
 IntegerArray *extrapolateInterpolationNeighboursVariableWidth;  
 
 intArray *interpolationPoint;
+
+// For interpolating interp-neighbours June 2022
+int ipogIsInitialized;
+InterpolatePointsOnAGrid *ipog;  // new way for parallel 
+IntegerArray periodicUpdateNeeded;
+
 
 static FILE *debugFile;  // make one debug file for all instances (we use the same name)
 
@@ -84,6 +119,9 @@ int *nas, **ias;  // list of points to send to other processor
   #else
     int AIN_COMM;
   #endif
+
+ // This database contains parameters and data *new way* June 2022.
+ DataBase dbase;    
 
 };
 

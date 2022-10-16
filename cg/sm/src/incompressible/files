@@ -3,7 +3,7 @@
 #
 
 # C++ source files:
-SRC_FILES += advanceIncompressible.C pressure.C projectLinearMode.C SmCylinderExactSolution.C
+SRC_FILES += advanceIncompressible.C pressure.C projectLinearMode.C SmCylinderExactSolution.C SmSphereExactSolution.C SmRectangleExactSolution.C
 
 
 # # *** fortran files the we always compile optimized ***
@@ -37,6 +37,10 @@ src/incompressible/pressure.C : src/incompressible/pressure.bC boundaryMacros.h;
 src/incompressible/projectLinearMode.C : src/incompressible/projectLinearMode.bC; $(BPP) -quiet -clean $<
 
 src/incompressible/SmCylinderExactSolution.C : src/incompressible/SmCylinderExactSolution.bC; $(BPP) -quiet -clean $<
+
+src/incompressible/SmSphereExactSolution.C : src/incompressible/SmSphereExactSolution.bC; $(BPP) -quiet -clean $<
+
+src/incompressible/SmRectangleExactSolution.C : src/incompressible/SmRectangleExactSolution.bC src/incompressible/ismStrip2dTractionTractionRoots.h src/incompressible/ismStrip2dTractionDisplacementRoots.h src/incompressible/ismStrip2dDisplacementDisplacementRoots.h ; $(BPP) -quiet -clean $<
 
 
 src/incompressible/advOptIsm.f90: src/incompressible/advOptIsm.bf90; $(BPP) -quiet -clean -I$(Overture)/include $<

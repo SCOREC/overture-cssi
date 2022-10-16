@@ -1,0 +1,665 @@
+// ==========================================================================================================
+// Class to define exact solutions for CgAd
+// 
+//   (1) DOUBLE ANNULUS
+// 
+// ==========================================================================================================
+
+
+#include "AdExactSolutions.h"
+
+#include "NurbsMapping.h"
+
+#include "PlotStuff.h"
+#include "ParallelUtility.h"
+
+#include <complex>
+
+
+typedef ::real LocalReal;
+// typedef ::real OV_real;
+
+typedef std::vector<std::complex<Real> > ComplexVector;
+
+#define FOR_3D(i1,i2,i3,I1,I2,I3)                                       \
+int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase(); \
+int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
+for(i3=I3Base; i3<=I3Bound; i3++)                                       \
+  for(i2=I2Base; i2<=I2Bound; i2++)                                     \
+    for(i1=I1Base; i1<=I1Bound; i1++)
+
+
+
+// ===============================================================================
+/// \brief  Default constructor for the class that defines exact solutions 
+/// \notes: Exact solutions are "doubleAnnulus" and "doubleRectangle"
+// ===============================================================================
+AdExactSolutions::
+AdExactSolutions( )
+{
+  setup(); 
+}
+
+
+// // ===============================================================================
+// /// \brief  Constructor for the class that defines exact solutions 
+// /// \param solution (input) : name of exact solution. 
+// ///    Exact solutions are "doubleAnnulus" and "doubleRectangle"
+// // ===============================================================================
+// AdExactSolutions::
+// AdExactSolutions( const aString & solution )
+// {
+//   setup( solution );
+// }
+
+// ===============================================================================
+/// \brief Setup routine.
+// ===============================================================================
+int AdExactSolutions::setup()
+{
+  dbase.put<aString>("exactSolution")="unknown";
+
+  // dbase.put<int>("numberOfDimensions");
+  dbase.put<bool>("initialized")=false;
+  dbase.put<int>("domain")=-1; 
+
+  dbase.put<Real>("sr") = -1.; // Re(s)
+  dbase.put<Real>("si") = -1.; // Im(s)
+
+}
+
+
+// ===============================================================================
+/// \brief destructor 
+// ===============================================================================
+AdExactSolutions::
+~AdExactSolutions()
+{
+  // if( dbase.has_key("nurbs") )
+  // {
+  //   NurbsMapping *nurbs = dbase.get<NurbsMapping*>("nurbs");
+  //   delete [] nurbs;
+  // }
+  
+
+}
+
+
+// // ===============================================================================
+// /// \brief Set the domain number for multidomain solutions such as
+// ///   the double annulus
+// // ===============================================================================
+// int AdExactSolutions::setDomain( int domain )
+// {
+//   dbase.get<int>("domain") = domain;
+//   return 0;
+// }
+
+
+// ===============================================================================
+/// \brief Return a solution parameter by name
+// ===============================================================================
+int AdExactSolutions::
+getParameter( const aString & name, Real & value )
+{
+  if( dbase.has_key(name) )
+  {
+    value = dbase.get<Real>(name);
+  }
+  else
+  {
+    printF("AdExactSolutions::getParameter: ERROR: unknown parameter=[%s]\n",(const char*)name);
+  }
+  return 0;
+}
+
+// // ----------------------------------------------------------------
+// // FindEvaluate the polar cooridinates from the cartesian coordinates 
+// // ----------------------------------------------------------------
+// #beginMacro getRadiusPolar(i1,i2,i3,r)
+//   Real x = xLocal(i1,i2,i3,0);
+//   Real y = xLocal(i1,i2,i3,1);
+//   Real r = sqrt( x*x + y*y );
+
+//   if( r < eps ) //  avoid division by zero
+//   {
+//     x=eps;           // avoid atan(0,0)
+//     y=eps;
+//     r=sqrt(2.)*eps;  // r=sqrt(x**2+y**2)
+//   }   
+// #endMacro
+
+
+
+// =======================================================================
+// Macro : Process the exact solution data and create Nurbs to evalue it.
+// =======================================================================
+#beginMacro getExactSolutionMacro(ra,rb,rc)
+
+
+
+  printF("AdExactSolutions: GET DATA FOR EXACT SOLUTION:\n  Ng=%d, ia=%d, ib=%d\n",Ng,ia,ib);
+  // printF("  ra=%g, rb=%g, rc=%g, sr=%g, si=%g, nth=%d\n",ra,rb,rc,sr,si,nth);
+
+  if( rCenter >= ra && rCenter<= rb )
+  {
+    domain=0; // inner domain 
+  }
+  else if( rCenter >= rb && rCenter<= rc )
+  {
+    domain=1; // outer domain
+  }
+  else
+  {
+    printF("AdExactSolutions:initialize:ERROR: rCenter=%g is not in one of thre domains!\n",rCenter);
+    OV_ABORT("error");
+  }
+  printF("  rCenter=%g --> setting domain=%d (0=inner, 1=outer)\n",rCenter,domain);
+
+  // Fill in variables with the "same" name but in outer-scope 
+  // ra_=ra; rb_=rb; sr_=sr; si_=si; nth_=nth; // assign variables in the outer scope
+
+  // Grid in r (includes ghost)
+  //         +--+--X--+--+--+-- ...   --+--+--X--+--+
+  //         1     ia                         ib    Ng
+  //               r=ra                      r=rb
+  //               0  1  2                    nr         <- base 0 
+  int nr = ib-ia+1;          // number of grid points
+  // int numGhost0 = ia-1;      // num ghost on left 
+  // int numGhost1 = Ng-ib;     // num ghost on right
+  // assert( numGhost0==numGhost1 ); 
+
+  int numGhost0 = numGhost;
+  int numGhost1 = numGhost;
+
+  IntegerArray dimension(2,3), gridIndexRange(2,3);
+  dimension=0;
+  gridIndexRange=0;
+
+  gridIndexRange(1,0)=nr-1;
+
+  dimension(0,0)=gridIndexRange(0,0)-numGhost0;
+  dimension(1,0)=gridIndexRange(1,0)+numGhost1;
+
+  int nurbsDegree=3; // **** WHAT SHOULD THIS BE *****
+
+  int xDegree[3] ={ nurbsDegree,nurbsDegree,nurbsDegree };  // 
+
+  int domainDimension=1, rangeDimension=2; 
+  RealArray x(Range(dimension(0,0),dimension(1,0)),1,1,1,rangeDimension);  // data 
+  // RealArray x(Ng,1,1,1,rangeDimension);  // data 
+
+  // Real *uReArray[]={ uLvRe, uRvRe }; // array of pointers to array of real-parts 
+  // Real *uImArray[]={ uLvIm, uRvIm }; // array of pointers to array of imaginary-parts 
+
+  Real *uRe = domain==0 ? uLvRe : uRvRe;
+  Real *uIm = domain==0 ? uLvIm : uRvIm;
+  const int offset = dimension(0,0); 
+  for( int i=dimension(0,0); i<=dimension(1,0); i++ )
+  {
+    // printF(" domain=%d: i=%4d i-offset=%4d, uRe=%g, uIm=%g\n",domain,i,i-offset,uRe[i-offset],uIm[i-offset]);
+    x(i,0,0,0,0) = uRe[i-offset];
+    x(i,0,0,0,1) = uIm[i-offset]; 
+  }
+
+  // --- Nurbs[n] holds the Re and Im parts of the solution ---
+  int n=0;
+  nurbs[n].interpolate( x,domainDimension,rangeDimension,dimension,gridIndexRange,
+                        NurbsMapping::parameterizeByIndex,xDegree );
+
+  if( 1==0 )
+  {
+    RealArray rv(1,1), wv(1,3);
+    rv=0.;
+
+    rv(0,0)=0.;
+    nurbs[n].map(rv,wv);
+    printF("r=%g, wv=[%g,%g]\n",rv(0,0),wv(0,0),wv(0,1));
+
+    rv(0,0)=1.;
+    nurbs[n].map(rv,wv);
+    printF("r=%g, wv=[%g,%g]\n",rv(0,0),wv(0,0),wv(0,1));    
+
+  }
+#endMacro
+
+
+// ===============================================================================
+/// \brief Initialize the exact solution.
+/// \param solution (input) : name of the case solution, 
+//       "doubleAnnulus" or "doubleRectangle".
+/// \param caseName (input) : 
+// ===============================================================================
+int AdExactSolutions::
+initialize( CompositeGrid & cg, const aString & solution, const aString & caseName )
+{
+
+  aString & exactSolution = dbase.get<aString>("exactSolution");
+  exactSolution=solution;
+
+  bool & initialized=dbase.get<bool>("initialized");
+  initialized=true;
+
+  int & domain = dbase.get<int>("domain"); 
+  // assert( domain>=0 );
+
+  // --- First find out which domain this is ---
+  int grid=0;
+  MappedGrid & mg = cg[grid];
+  const IntegerArray & gid = mg.gridIndexRange();
+  mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
+  OV_GET_SERIAL_ARRAY(real,mg.center(),xLocal);
+
+  int i1 = int( (gid(0,0)+gid(1,0))/2 );
+  int i2 = int( (gid(0,1)+gid(1,1))/2 );
+  int i3 = int( (gid(0,2)+gid(1,2))/2 );
+
+  // -- Variables assigned in the include file: 
+  Real & sr = dbase.get<Real>("sr");   // eigenvalue is saved here in data-base
+  Real & si = dbase.get<Real>("si");   // eigenvalue is saved here in data-base
+  
+  Real ra,rb,rc;
+  int nth;
+
+  // --- We fit the numerical exact solution to a spline ---
+
+  const int numNurbs = 1; // we just need 1 Nurbs to hold both Re and Im parts
+  NurbsMapping *nurbs = new NurbsMapping [numNurbs];
+
+  if( exactSolution=="doubleAnnulus" )
+  {
+    // Here is a radius near the center of the grid 
+    Real rCenter = sqrt( SQR(xLocal(i1,i2,i3,0)) + SQR(xLocal(i1,i2,i3,1)) ); 
+
+    // Real ra_=0.5, rb_=1., rc_=1.5, sr_=-1., si_=-1.; 
+    // int nth_=1;
+    // int numGhost_; 
+
+    // --- the next include file defines the exact solution, computed approximately ---
+    //   uLvRe[] = array of real part of uL 
+    //   uLvIm[] = array of imag part of uL 
+    //   uRvRe[] = array of real part of uR 
+    //   uRvIm[] = array of imag part of uR 
+
+    if( 1==0 && caseName == "doubleAnnulusDD" )
+    {
+      // Displacement displacement:
+      // >> from $ism/matlab/cylinderDiscreteEigFuncs/hollowCylinderEigFun_d_d.h
+      // #Include "src/incompressible/hollowCylinderEigFun_d_d.h"
+      // getExactSolutionMacro();
+    }
+    if( caseName == "doubleAnnulusCase4" )
+    {
+      // --- Advection diffusion case ---
+
+      // file created by AMP/champ4/codes/doubleAnnulus.maple
+      #Include "src/doubleAnnulusCase4.h"
+      getExactSolutionMacro(ra,rb,rc);
+      printF("  ra=%g, rb=%g, rc=%g, sr=%g, si=%g, nth=%d\n",ra,rb,rc,sr,si,nth);
+
+    }
+    else if( caseName == "doubleAnnulusCase5" )
+    {
+      // --- Diffusion case to match case we can solve analytically --
+
+      // file created by AMP/champ4/codes/doubleAnnulus.maple
+      #Include "src/doubleAnnulusCase5.h"
+      getExactSolutionMacro(ra,rb,rc);
+      printF("  ra=%g, rb=%g, rc=%g, sr=%g, si=%g, nth=%d\n",ra,rb,rc,sr,si,nth);
+    }  
+    else
+    {
+      printF("AdExactSolutions::initialize: unknown caseName=[%s]\n",(const char*)caseName);
+      OV_ABORT("error");
+
+    }
+    if( true )
+      printF("============= %s : caseName = %s, domain=%d =============\n",
+        (const char*)exactSolution,(const char*)caseName,domain);
+
+    if( 0==1 )
+    {
+      // Plot radial solution for testing 
+      GenericGraphicsInterface & gi = *Overture::getGraphicsInterface();
+      PlotStuffParameters psp;
+      psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
+      // plot the curve (x(r),y(r),z(r))
+      for( int n = 0 ; n<numNurbs; n++ )
+      {
+        psp.set(GI_TOP_LABEL,sPrintF("Nurbs[%d]",n));
+        PlotIt::plot( gi,nurbs[n], psp );
+      }
+
+      OV_ABORT("stop here for now");
+    }
+
+
+    // ---- Fill in Grid functions with the Real and Imaginary Parts of the Spatial Eigenfunction ----
+
+    realCompositeGridFunction & wRe = dbase.put<realCompositeGridFunction>("wRe");
+    realCompositeGridFunction & wIm = dbase.put<realCompositeGridFunction>("wIm");
+
+    const int numberOfDimensions = cg.numberOfDimensions();
+
+    const int numberOfComponents = 1; // 
+    Range all;
+    wRe.updateToMatchGrid(cg,all,all,all,numberOfComponents);
+    wIm.updateToMatchGrid(cg,all,all,all,numberOfComponents);
+
+    RealArray rv(1,1), wv(1,3);
+    rv=0.;
+
+    std::complex<LocalReal> I(0,1.); 
+    std::complex<LocalReal> u, expi; 
+
+    // exp( - I*omega*t )
+    // std::complex<LocalReal> expiOmegat = cos(omega*t) - I*sin(omega*t);
+
+    Real a,b;  // local values for inner and outer radii
+    if( domain==0 )
+    {
+      a=ra; b=rb;  // inner annulus
+    }
+    else
+    {
+      a=rb; b=rc; // outer annulus
+    }
+
+    printF("Eval the solution: ra=%g, rb=%g, rc=%g\n",ra,rb,rc);
+    const Real eps=1.e-9;   // ********************************** FIX ME *********
+    Index I1,I2,I3;
+    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+    {
+      MappedGrid & mg = cg[grid];
+      mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
+      getIndex( mg.dimension(),I1,I2,I3 );
+
+      OV_GET_SERIAL_ARRAY(real,mg.center(),xLocal);
+      OV_GET_SERIAL_ARRAY(real,wRe[grid],wReLocal);
+      OV_GET_SERIAL_ARRAY(real,wIm[grid],wImLocal);
+
+      int i1,i2,i3;
+      FOR_3D(i1,i2,i3,I1,I2,I3)
+      {
+
+        Real x = xLocal(i1,i2,i3,0);
+        Real y = xLocal(i1,i2,i3,1);
+        Real r = sqrt( x*x + y*y );
+        if( r < eps ) //  avoid division by zero
+        {
+          x=eps;           // avoid atan(0,0)
+          y=eps;
+          r=sqrt(2.)*eps;  // r=sqrt(x**2+y**2)
+        } 
+        const Real theta = atan2(y,x);
+
+        rv(0,0) = (r-a)/(b-a); // scale r to [0,1]
+
+        nurbs[0].map( rv,wv );  // eval Real and Im parts of u
+        u = ( wv(0,0) + I*wv(0,1) ) ;
+
+        // --- form the spatial part (complex) of the solution ---
+        // expi = exp(i*m*theta) * exp(i*kz*z ) = exp( i*( m*theta + kz*z ) )
+        expi = cos(nth*theta) + I*sin( nth*theta );
+
+        u = u*expi;  // complex solution (without time dependence ß)
+
+        wReLocal(i1,i2,i3,0) = std::real( u );
+        wImLocal(i1,i2,i3,0) = std::imag( u );
+
+
+      }
+
+    } // end for grid 
+
+
+    if( 0==1 )
+    {
+      // Plot wRe and wIm
+
+      GenericGraphicsInterface & gi = *Overture::getGraphicsInterface();
+      PlotStuffParameters psp;
+      psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
+      psp.set(GI_TOP_LABEL,sPrintF("wRe domain=%d",domain));
+      gi.erase();
+      PlotIt::contour( gi,wRe, psp );
+      gi.erase();
+      psp.set(GI_TOP_LABEL,sPrintF("wIm domain=%d",domain));
+      PlotIt::contour( gi,wIm, psp );
+      gi.erase();
+      // OV_ABORT("stop here for now");
+    }
+
+    // clean up 
+    delete [] nurbs;
+    
+  }
+
+  else if( exactSolution=="doubleRectangle" )
+  {
+    if( true )
+      printF("============= %s : caseName = %s, domain=%d =============\n",
+        (const char*)exactSolution,(const char*)caseName,domain);
+ 
+    Real rCenter = xLocal(i1,i2,i3,0);   // point at center of the domain
+
+    // --- solution parameters ---
+    Real & sr = dbase.get<Real>("sr");   
+    Real & si = dbase.get<Real>("si"); 
+
+    Real & ky = dbase.put<Real>("ky"); 
+    // std::complex<LocalReal> & aPlus  = dbase.put<complex<LocalReal> >("aPlus");  
+    // std::complex<LocalReal> & aMinus = dbase.put<complex<LocalReal> >("aMinus");  
+
+    // std::complex<LocalReal> & rPlus  = dbase.put<complex<LocalReal> >("rPlus");  
+    // std::complex<LocalReal> & rMinus = dbase.put<complex<LocalReal> >("rMinus");  
+
+    // --- variables assigned in the following include files ---
+
+    Real xa,xb,xc;
+    if( caseName == "doubleRectangleDL1KL1DR1KR1" )
+    {
+
+      #Include "doubleRectangleDL1KL1DR1KR1.h"
+      getExactSolutionMacro(xa,xb,xc);
+      printF("  xa=%g, xb=%g, xc=%g, sr=%g, si=%g, ky=%g\n",xa,xb,xc,sr,si,ky);
+    }
+
+    else if( caseName == "doubleRectangleDL0p9KL1DR0p8KR0p5" )
+    {
+
+      #Include "doubleRectangleDL0p9KL1DR0p8KR0p5.h"
+      getExactSolutionMacro(xa,xb,xc);
+      printF("  xa=%g, xb=%g, xc=%g, sr=%g, si=%g, ky=%g\n",xa,xb,xc,sr,si,ky);
+    }
+
+    else if( caseName == "doubleRectangleDL0p9KL1UL1DR0p8KR0p5URm1" )
+    {
+      // DL=.9 KL= 1 UL=1
+      // DR=.8 KR=.5 UR=-1
+      #Include "doubleRectangleDL0p9KL1UL1DR0p8KR0p5URm1.h"
+      getExactSolutionMacro(xa,xb,xc);
+      printF("  xa=%g, xb=%g, xc=%g, sr=%g, si=%g, ky=%g\n",xa,xb,xc,sr,si,ky);
+    }    
+
+    else if( caseName == "doubleRectangleDL0p9KL1UL1VL0p5DR0p8KR0p5URm1VR1" )
+    {
+      // DL=.9 KL= 1 UL=1   VL=.5
+      // DR=.8 KR=.5 UR=-1  VR=1
+      #Include "doubleRectangleDL0p9KL1UL1VL0p5DR0p8KR0p5URm1VR1.h"
+      getExactSolutionMacro(xa,xb,xc);
+      printF("  xa=%g, xb=%g, xc=%g, sr=%g, si=%g, ky=%g\n",xa,xb,xc,sr,si,ky);
+    }  
+
+    else
+    {
+      printF("AdExactSolutions:initialize:ERROR: unknown caseName=[%s]\n",(const char*)caseName);
+      OV_ABORT("ERROR");
+    }
+
+    Real a,b;  // local values for inner and outer radii
+    if( domain==0 )
+    {
+      a=xa; b=xb;  // left rectangle
+    }
+    else
+    {
+      a=xb; b=xc; // right rectangle
+    }
+
+    // ---- Fill in Grid functions with the Real and Imaginary Parts of the Spatial Eigenfunction ----
+
+    realCompositeGridFunction & wRe = dbase.put<realCompositeGridFunction>("wRe");
+    realCompositeGridFunction & wIm = dbase.put<realCompositeGridFunction>("wIm");
+
+    const int numberOfDimensions = cg.numberOfDimensions();
+
+    const int numberOfComponents = 1; // 
+    Range all;
+    wRe.updateToMatchGrid(cg,all,all,all,numberOfComponents);
+    wIm.updateToMatchGrid(cg,all,all,all,numberOfComponents);
+
+    std::complex<LocalReal> I(0,1.); 
+    std::complex<LocalReal> u, expi; 
+
+    RealArray rv(1,1), wv(1,3);
+    rv=0.;
+
+    Index I1,I2,I3;
+    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+    {
+      MappedGrid & mg = cg[grid];
+      mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
+      getIndex( mg.dimension(),I1,I2,I3 );
+
+      OV_GET_SERIAL_ARRAY(real,mg.center(),xLocal);
+      OV_GET_SERIAL_ARRAY(real,wRe[grid],wReLocal);
+      OV_GET_SERIAL_ARRAY(real,wIm[grid],wImLocal);
+
+      int i1,i2,i3;
+      FOR_3D(i1,i2,i3,I1,I2,I3)
+      {
+        Real x = xLocal(i1,i2,i3,0);
+        Real y = xLocal(i1,i2,i3,1);
+
+        rv(0,0) = (x-a)/(b-a); // scale r to [0,1]
+
+        nurbs[0].map( rv,wv );  // eval Real and Im parts of u
+        u = ( wv(0,0) + I*wv(0,1) ) ;
+
+        // --- form the spatial part (complex) of the solution ---
+        //   uHat(x)*exp( i*ky*y )
+        expi = cos( ky*y ) + I*sin( ky*y );
+
+        u = u*expi;  // complex solution (without time dependence ß)
+
+        wReLocal(i1,i2,i3,0) = std::real( u );
+        wImLocal(i1,i2,i3,0) = std::imag( u );
+
+
+      }
+
+    } // end for grid 
+
+
+    // const Real kypi = twoPi*ky; 
+
+    // Index I1,I2,I3;
+    // for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+    // {
+    //   MappedGrid & mg = cg[grid];
+    //   mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
+    //   getIndex( mg.dimension(),I1,I2,I3 );
+
+    //   OV_GET_SERIAL_ARRAY(real,mg.center(),xLocal);
+    //   OV_GET_SERIAL_ARRAY(real,wRe[grid],wReLocal);
+    //   OV_GET_SERIAL_ARRAY(real,wIm[grid],wImLocal);
+
+    //   int i1,i2,i3;
+    //   FOR_3D(i1,i2,i3,I1,I2,I3)
+    //   {
+    //     Real x = xLocal(i1,i2,i3,0);
+    //     Real y = xLocal(i1,i2,i3,1);
+
+    //     u = ( aPlus*exp( rPlus*x ) + aMinus*exp( rMinus*x ) )*exp( I*kypi*y ); 
+
+    //     wReLocal(i1,i2,i3,0) = std::real( u );
+    //     wImLocal(i1,i2,i3,0) = std::imag( u );
+    //   }
+    // } // end for grid 
+
+  }
+  else
+  {
+    printF("AdExactSolutions:initialize:ERROR: unknown exactSolution=[%s]\n",(const char*)exactSolution);
+    OV_ABORT("ERROR");
+
+  }
+  return 0;
+}
+
+
+
+
+//========================================================================================================
+/// \brief Evaluate the exact solution
+//========================================================================================================
+int AdExactSolutions::
+evalSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua, 
+             const Index & I1, const Index &I2, const Index &I3, 
+             int numberOfTimeDerivatives /* = 0 */  )
+{
+
+  const aString & exactSolution = dbase.get<aString>("exactSolution");
+
+  const bool & initialized=dbase.get<bool>("initialized");
+  if( !initialized )
+  {
+    OV_ABORT("AdExactSolutions:ERROR:evalSolution: Solution is NOT initialized!");
+  }
+
+
+  MappedGrid & mg = cg[grid];
+
+  OV_GET_SERIAL_ARRAY(real,ua,uLocal);
+
+  // -- Here are the real and imaginary parts of the spatial solution ---
+  realCompositeGridFunction & wRe = dbase.get<realCompositeGridFunction>("wRe");
+  realCompositeGridFunction & wIm = dbase.get<realCompositeGridFunction>("wIm");
+  OV_GET_SERIAL_ARRAY(real,wRe[grid],wReLocal);
+  OV_GET_SERIAL_ARRAY(real,wIm[grid],wImLocal);
+
+  const Real & sr = dbase.get<Real>("sr"); 
+  const Real & si = dbase.get<Real>("si"); 
+  Real omega = si; 
+  Real amp = exp(sr*t);
+  Real coswt, sinwt;
+  if( numberOfTimeDerivatives==0 )
+  {
+    coswt = cos(omega*t);  
+    sinwt = sin(omega*t);
+  }
+  else if( numberOfTimeDerivatives==1 )
+  {
+    coswt = -omega*sin(omega*t); 
+    sinwt =  omega*cos(omega*t);
+  }
+  else
+  {
+    OV_ABORT("error");
+  }
+  printF("AdExactSolutions:evalSolution: sr=%g, si=%g, coswt=%g, sinwt=%g, amp=%g, t=%g\n",sr,si,coswt,sinwt,amp,t);
+  int i1,i2,i3;
+  FOR_3D(i1,i2,i3,I1,I2,I3)
+  {
+    // solution = Re( (wRe+I*wIm)*exp( sr*t + I*si*t )
+    //          = Re( exp(sr*t)*( wRe + I*wIm )*( cos(si*t) + I*sin(si*t) )  )
+    //          = exp(sr*t)*( wRe*cos(si*t) - wIm*sin(si*t) )
+    uLocal(i1,i2,i3,0) = amp*(wReLocal(i1,i2,i3,0)*coswt - wImLocal(i1,i2,i3,0)*sinwt);   // *wdh* changed sign May 12, 2022
+
+  }
+
+  return 0;
+}
+
+

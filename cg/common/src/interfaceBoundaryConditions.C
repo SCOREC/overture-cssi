@@ -456,7 +456,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                         getGhostIndex(mg.gridIndexRange(),side,axis,K1,K2,K3,-1);
             // printF(" axis=%d, side=%d : boundary (I1,I2)=[%d,%d][%d,%d], First-line inside (K1,K2)=[%d,%d][%d,%d]\n",
             //           axis,side, I1.getBase(),I1.getBound(), I2.getBase(),I2.getBound(), K1.getBase(),K1.getBound(), K2.getBase(),K2.getBound() );
-                        if( isRectangular )
+                        if( true || isRectangular )  // use this always *wdh* April 12, 2022
                         {
               // -------------------------- RECTANGULAR --------------
                             real dx[3]={1.,1.,1.};
@@ -481,15 +481,15 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                                     f(J1,J2,J3,tc) += a[1]*( normal(I1,I2,I3,0)*ux + normal(I1,I2,I3,1)*uy + normal(I1,I2,I3,2)*uz );
                                 }
                             }
-                            if( debug() & 4 )
+                            if( debug() & 8 )
                             {
-                                    printP("interfaceRightHandSide:CHAMP-RHS (grid,side,axis) = (%d,%d,%d) \n"
-                                      "   I1=[%d,%d] I2=[%d,%d] I3=[%d,%d] : source (get) or source(set) \n" 
-                                      "   J1=[%d,%d] J2=[%d,%d] J3=[%d,%d] : target (get) or source (set) \n",
-                                      grid,side,axis,
-                                      I1.getBase(),I1.getBound(), I2.getBase(),I2.getBound(), I3.getBase(),I3.getBound(),
-                                      J1.getBase(),J1.getBound(), J2.getBase(),J2.getBound(), J3.getBase(),J3.getBound()
-                                      );
+                                printP("interfaceRightHandSide:CHAMP-RHS (grid,side,axis) = (%d,%d,%d) \n"
+                                  "   I1=[%d,%d] I2=[%d,%d] I3=[%d,%d] : source (get) or source(set) \n" 
+                                  "   J1=[%d,%d] J2=[%d,%d] J3=[%d,%d] : target (get) or source (set) \n",
+                                  grid,side,axis,
+                                  I1.getBase(),I1.getBound(), I2.getBase(),I2.getBound(), I3.getBase(),I3.getBound(),
+                                  J1.getBase(),J1.getBound(), J2.getBase(),J2.getBound(), J3.getBase(),J3.getBound()
+                                  );
                                 ::display(f(J1,J2,J3,tc) ,sPrintF("interfaceRHS: CHAMP RHS(h):  %f*u + %f*( u.n ) (before TZ corrections)",a[0],a[1]));
                             }
                             if( twilightZoneFlow ) // turn this off for testing the case where the same TZ holds across all domains
@@ -615,15 +615,15 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                             f(J1,J2,J3,tc) += a[1]*( normal(I1,I2,I3,0)*ux + normal(I1,I2,I3,1)*uy + normal(I1,I2,I3,2)*uz );
                         }
                     }
-                    if( debug() & 4 )
+                    if( debug() & 8 )
                     {
-                            printP("interfaceRightHandSide: (grid,side,axis) = (%d,%d,%d) \n"
-                              "   I1=[%d,%d] I2=[%d,%d] I3=[%d,%d] : source (get) or source(set) \n" 
-                              "   J1=[%d,%d] J2=[%d,%d] J3=[%d,%d] : target (get) or source (set) \n",
-                              grid,side,axis,
-                              I1.getBase(),I1.getBound(), I2.getBase(),I2.getBound(), I3.getBase(),I3.getBound(),
-                              J1.getBase(),J1.getBound(), J2.getBase(),J2.getBound(), J3.getBase(),J3.getBound()
-                              );
+                        printP("interfaceRightHandSide: (grid,side,axis) = (%d,%d,%d) \n"
+                          "   I1=[%d,%d] I2=[%d,%d] I3=[%d,%d] : source (get) or source(set) \n" 
+                          "   J1=[%d,%d] J2=[%d,%d] J3=[%d,%d] : target (get) or source (set) \n",
+                          grid,side,axis,
+                          I1.getBase(),I1.getBound(), I2.getBase(),I2.getBound(), I3.getBase(),I3.getBound(),
+                          J1.getBase(),J1.getBound(), J2.getBase(),J2.getBound(), J3.getBase(),J3.getBound()
+                          );
                         ::display(f(J1,J2,J3,tc) ,sPrintF("interfaceRHS: get heat-flux data:  %f*u + %f*( u.n ) (before TZ corrections)",a[0],a[1]));
                     }
                     if( twilightZoneFlow ) // turn this off for testing the case where the same TZ holds across all domains

@@ -26,6 +26,13 @@ doubleAnnulusGrids:
 	$(ogen) -noplot doubleAnnulusGrid -order=2 -interp=e -factor=16
 	$(ogen) -noplot doubleAnnulusGrid -order=2 -interp=e -factor=32
 	$(ogen) -noplot doubleAnnulusGrid -order=2 -interp=e -factor=64
+	$(ogen) -noplot doubleAnnulusGrid -order=4 -interp=e -factor=1
+	$(ogen) -noplot doubleAnnulusGrid -order=4 -interp=e -factor=2
+	$(ogen) -noplot doubleAnnulusGrid -order=4 -interp=e -factor=4
+	$(ogen) -noplot doubleAnnulusGrid -order=4 -interp=e -factor=8
+	$(ogen) -noplot doubleAnnulusGrid -order=4 -interp=e -factor=16
+	$(ogen) -noplot doubleAnnulusGrid -order=4 -interp=e -factor=32
+	$(ogen) -noplot doubleAnnulusGrid -order=4 -interp=e -factor=64	
 
 # convergence for concentric annulii, CHAMP and DN 
 doubleAnnulus:

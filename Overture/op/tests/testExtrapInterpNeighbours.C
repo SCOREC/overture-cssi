@@ -4,7 +4,7 @@
 // Examples:
 //   mpirun -np 1 testExtrapInterpNeighbours -g=cice2.order2 -useNew=1
 //   mpirun -np 1 testExtrapInterpNeighbours -g=sise2.order2 -useNew=1
-//   mpirun -np 1 testExtrapInterpNeighbours -g=bibe -useNew=1
+//   mpirun -np 1 testExtrapInterpNeighbours -g=bibe2.order2 -useNew=1
 //   mpirun -np 1 testExtrapInterpNeighbours -g=sibe1.order2 -useNew=1
 //   mpirun -np 1 testExtrapInterpNeighbours -g=cicSplit -useNew=1
 //   mpirun -np 1 testExtrapInterpNeighbours -g=cylBoxe1.order2 -useNew=1 
@@ -84,13 +84,15 @@ main(int argc, char **argv)
   const int myid=max(0,Communication_Manager::My_Process_Number);
   const int maxNumberOfGridsToTest=4;
   int numberOfGridsToTest=maxNumberOfGridsToTest;
-  aString gridName[maxNumberOfGridsToTest] =   { "sise2.order2", "cice2.order2", "cicSplit", "sibe1.order2" };
+  aString gridName[maxNumberOfGridsToTest] =   { "sise2.order2", "cice2.order2", "cicSplite2.order2", "sibe1.order2" };
+  // aString gridName[maxNumberOfGridsToTest] =   { "sise2.order2", "cice2.order2", "cicSplit", "sibe1.order2" };
   int degreex=1;
   int debug=0;
   AssignInterpNeighbours::debug=0;
 
   int numParallelGhost=2;
   int useNew=0;
+  int interpolateNeighbours=0; // set to 1 to interpolate instead of extrapolate
 
   if( argc > 1 )
   { 
@@ -103,32 +105,37 @@ main(int argc, char **argv)
       else if( len=line.matches("-degreex=") )
       {
         sScanF(line(len,line.length()-1),"%i",&degreex);
-	printF("Setting degree of polynomial to %i\n",degreex);
+        printF("Setting degree of polynomial to %i\n",degreex);
       }
       else if( len=line.matches("-debug=") )
       {
         sScanF(line(len,line.length()-1),"%i",&debug);
-	printF("Setting debug=%i\n",debug);
+        printF("Setting debug=%i\n",debug);
         AssignInterpNeighbours::debug=debug;
       }
       else if( len=line.matches("-numParallelGhost=") )
       {
         sScanF(line(len,line.length()-1),"%i",&numParallelGhost);
-	printF("Setting numParallelGhost=%i\n",numParallelGhost);
+        printF("Setting numParallelGhost=%i\n",numParallelGhost);
       }
       else if( len=line.matches("-useNew=") )
       {
         sScanF(line(len,line.length()-1),"%i",&useNew);
-	printF("Setting useNew=%i\n",useNew);
+        printF("Setting useNew=%i\n",useNew);
       }
+      else if( len=line.matches("-interpolateNeighbours=") )
+      {
+        sScanF(line(len,line.length()-1),"%i",&interpolateNeighbours);
+        printF("Setting interpolateNeighbours=%i\n",interpolateNeighbours);
+      }      
       else if( len=line.matches("-g=") )
       {
-	numberOfGridsToTest=1;
-	gridName[0]=line(len,line.length()-1);
+        numberOfGridsToTest=1;
+        gridName[0]=line(len,line.length()-1);
       }
       else
       {
-	printF("testExtrapInterpNeighbours:ERROR: unknown arg=[%s]\n",(const char*)line);
+        printF("testExtrapInterpNeighbours:ERROR: unknown arg=[%s]\n",(const char*)line);
       }
     }
   }
@@ -168,7 +175,7 @@ main(int argc, char **argv)
 
     printF("\n *****************************************************************\n"
            " ******** Checking grid: %s ************ \n"
-	   " *****************************************************************\n\n",(const char*)nameOfOGFile);
+           " *****************************************************************\n\n",(const char*)nameOfOGFile);
 
     CompositeGrid cg;
     getFromADataBase(cg,nameOfOGFile);
@@ -217,24 +224,24 @@ main(int argc, char **argv)
       spatialCoefficientsForTZ(0,0,0,n)=1.;      
       if( degreeSpace>0 )
       {
-	spatialCoefficientsForTZ(1,0,0,n)=1.*ni;
-	spatialCoefficientsForTZ(0,1,0,n)=.5*ni;
-	spatialCoefficientsForTZ(0,0,1,n)= cg.numberOfDimensions()==3 ? .25*ni : 0.;
+        spatialCoefficientsForTZ(1,0,0,n)=1.*ni;
+        spatialCoefficientsForTZ(0,1,0,n)=.5*ni;
+        spatialCoefficientsForTZ(0,0,1,n)= cg.numberOfDimensions()==3 ? .25*ni : 0.;
       }
       if( degreeSpace>1 )
       {
-	spatialCoefficientsForTZ(2,0,0,n)=.5*ni;
-	spatialCoefficientsForTZ(0,2,0,n)=.25*ni;
-	spatialCoefficientsForTZ(0,0,2,n)= cg.numberOfDimensions()==3 ? .125*ni : 0.;
-	spatialCoefficientsForTZ(1,1,0,n)=.125*ni;
-	spatialCoefficientsForTZ(1,0,1,n)=-.125*ni;
-	spatialCoefficientsForTZ(0,1,1,n)=.25*ni;
+        spatialCoefficientsForTZ(2,0,0,n)=.5*ni;
+        spatialCoefficientsForTZ(0,2,0,n)=.25*ni;
+        spatialCoefficientsForTZ(0,0,2,n)= cg.numberOfDimensions()==3 ? .125*ni : 0.;
+        spatialCoefficientsForTZ(1,1,0,n)=.125*ni;
+        spatialCoefficientsForTZ(1,0,1,n)=-.125*ni;
+        spatialCoefficientsForTZ(0,1,1,n)=.25*ni;
       }
       if( degreeSpace>2 )
       {
-	spatialCoefficientsForTZ(3,0,0,n)=-.5*ni;
-	spatialCoefficientsForTZ(0,3,0,n)=-.25*ni;
-	spatialCoefficientsForTZ(0,0,3,n)= cg.numberOfDimensions()==3 ? -.125*ni : 0.;
+        spatialCoefficientsForTZ(3,0,0,n)=-.5*ni;
+        spatialCoefficientsForTZ(0,3,0,n)=-.25*ni;
+        spatialCoefficientsForTZ(0,0,3,n)= cg.numberOfDimensions()==3 ? -.125*ni : 0.;
         spatialCoefficientsForTZ(1,2,0,n)=-.125*ni;
         spatialCoefficientsForTZ(2,1,0,n)=.25*ni;
         spatialCoefficientsForTZ(0,1,2,n)=.125*ni;
@@ -244,29 +251,29 @@ main(int argc, char **argv)
       }
       if( degreeSpace>3 )
       {
-	spatialCoefficientsForTZ(4,0,0,n)=.25*ni;
-	spatialCoefficientsForTZ(0,4,0,n)=.125*ni;
-	spatialCoefficientsForTZ(0,0,4,n)= cg.numberOfDimensions()==3 ? .25*ni : 0.;
+        spatialCoefficientsForTZ(4,0,0,n)=.25*ni;
+        spatialCoefficientsForTZ(0,4,0,n)=.125*ni;
+        spatialCoefficientsForTZ(0,0,4,n)= cg.numberOfDimensions()==3 ? .25*ni : 0.;
 
-	spatialCoefficientsForTZ(2,2,0,n)=.125*ni;
-	spatialCoefficientsForTZ(2,0,2,n)=-.25*ni;
-	spatialCoefficientsForTZ(0,2,2,n)=.125*ni;
-	spatialCoefficientsForTZ(3,1,0,n)=.25*ni;
-	spatialCoefficientsForTZ(1,0,3,n)=-.25*ni;
-	spatialCoefficientsForTZ(0,3,1,n)=.125*ni;
-	spatialCoefficientsForTZ(1,3,0,n)=.25*ni;
+        spatialCoefficientsForTZ(2,2,0,n)=.125*ni;
+        spatialCoefficientsForTZ(2,0,2,n)=-.25*ni;
+        spatialCoefficientsForTZ(0,2,2,n)=.125*ni;
+        spatialCoefficientsForTZ(3,1,0,n)=.25*ni;
+        spatialCoefficientsForTZ(1,0,3,n)=-.25*ni;
+        spatialCoefficientsForTZ(0,3,1,n)=.125*ni;
+        spatialCoefficientsForTZ(1,3,0,n)=.25*ni;
       }
       if( degreeSpace>4 )
       {
-	spatialCoefficientsForTZ(5,0,0,n)=.125*ni;
-	spatialCoefficientsForTZ(0,5,0,n)=-.125*ni;
-	spatialCoefficientsForTZ(0,0,5,n)= cg.numberOfDimensions()==3 ? .125*ni : 0.;
+        spatialCoefficientsForTZ(5,0,0,n)=.125*ni;
+        spatialCoefficientsForTZ(0,5,0,n)=-.125*ni;
+        spatialCoefficientsForTZ(0,0,5,n)= cg.numberOfDimensions()==3 ? .125*ni : 0.;
       }
     }
     for( n=0; n<numberOfComponents; n++ )
     {
       for( int i=0; i<=4; i++ )
-	timeCoefficientsForTZ(i,n)= i<=degreeTime ? 1./(i+1) : 0. ;
+        timeCoefficientsForTZ(i,n)= i<=degreeTime ? 1./(i+1) : 0. ;
     }
     exact.setCoefficients( spatialCoefficientsForTZ,timeCoefficientsForTZ ); 
 
@@ -281,10 +288,50 @@ main(int argc, char **argv)
     
     CompositeGridOperators cgop(cg);
 
+    realCompositeGridFunction ucg(cg);
+
+    if( interpolateNeighbours )
+    {
+      // --- INTERPOLATE neighbours of interpolation points -----
+      for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+      {
+        MappedGrid & mg = cg[grid];  
+        getIndex(mg.dimension(),I1,I2,I3);
+        OV_GET_SERIAL_ARRAY(real,ucg[grid],uLocal);
+        OV_GET_SERIAL_ARRAY(real,ue[grid],ueLocal);
+        OV_GET_SERIAL_ARRAY(int,mg.mask(),maskLocal);
+
+        int includeGhost=1; // we must assign true solution on parallel ghost below
+        bool ok = ParallelUtility::getLocalArrayBounds(mg.mask(),maskLocal,I1,I2,I3,includeGhost);
+
+        // ------- fill in exact solution but put bogus values at unused points ----
+        uLocal=9999.;
+        if( ok )
+        {
+          where( maskLocal(I1,I2,I3)!=0 )
+            uLocal(I1,I2,I3,0)=ueLocal(I1,I2,I3,0);
+        }        
+      }     
+
+      AssignInterpNeighbours interpNeighbours(AssignInterpNeighbours::interpolateInterpolationNeighbours);
+
+      int interpolationWidth = 3;  // ** FIX ME --> CHECK GRID FOR ORDER
+      
+      interpNeighbours.setInterpolationWidth(interpolationWidth);
+      // ain.setupInterpolation( cg );
+      Range C=numberOfComponents;
+      Real t=0.;
+      interpNeighbours.assignInterpolationNeighbours( ucg, C, &exact, t  );
+
+
+      // OV_ABORT("testExtrapNeighbours: Stop here for now");
+
+    }
+
     // loop over all component grids
     for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
     {
-//      cout << "+++++++Checking component grid = " << grid << "+++++++" << endl;
+      //   cout << "+++++++Checking component grid = " << grid << "+++++++" << endl;
 
       MappedGrid & mg = cg[grid]; 
       checker.setLabel(mg.getName(),1);
@@ -293,95 +340,102 @@ main(int argc, char **argv)
 
 
 
-      realMappedGridFunction u(mg);
+      realMappedGridFunction & u = ucg[grid];
 
-#ifdef USE_PPP
-      intSerialArray maskLocal; getLocalArrayWithGhostBoundaries(mg.mask(),maskLocal);
-      realSerialArray uLocal; getLocalArrayWithGhostBoundaries(u,uLocal);
-      realSerialArray ueLocal; getLocalArrayWithGhostBoundaries(ue[grid],ueLocal);
-#else
-      const intSerialArray & maskLocal = mg.mask();
-      realSerialArray & uLocal = u;
-      realSerialArray & ueLocal = ue[grid];
-#endif
+      OV_GET_SERIAL_ARRAY(int,mg.mask(),maskLocal);
+      OV_GET_SERIAL_ARRAY(real,u,uLocal);
+      OV_GET_SERIAL_ARRAY(real,ue[grid],ueLocal);
+
+// #ifdef USE_PPP
+//       intSerialArray maskLocal; getLocalArrayWithGhostBoundaries(mg.mask(),maskLocal);
+//       realSerialArray uLocal; getLocalArrayWithGhostBoundaries(u,uLocal);
+//       realSerialArray ueLocal; getLocalArrayWithGhostBoundaries(ue[grid],ueLocal);
+// #else
+//       const intSerialArray & maskLocal = mg.mask();
+//       realSerialArray & uLocal = u;
+//       realSerialArray & ueLocal = ue[grid];
+// #endif
 
 
       int component=0;
+      BoundaryConditionParameters extrapParams;
+      extrapParams.orderOfExtrapolation=3;
+      Range C=numberOfComponents;
+
 
       // MappedGridOperators operators(mg);                     // define some differential operators
       MappedGridOperators & operators=cgop[grid];
       u.setOperators( operators );                           // Tell u which operators to use
 
-      // ****************************************************************
-      //       extrapolateInterpolationNeighbours
-      // ****************************************************************
 
-      // Note: the extendedIndexRange includes ghost lines on bc==0 boundaries
-      // getIndex(mg.extendedIndexRange(),I1,I2,I3,1);  // include 1 ghost line
-      getIndex(mg.dimension(),I1,I2,I3); 
-
-//       if( debug & 1 )
-//       {
-// 	::display(mg.extendedIndexRange(),"mg.extendedIndexRange()");
-// 	::display(mg.gridIndexRange(),"mg.gridIndexRange()");
-//       }
-      
-
-      int includeGhost=1; // we must assign true solution on parallel ghost below
-      bool ok = ParallelUtility::getLocalArrayBounds(mg.mask(),maskLocal,I1,I2,I3,includeGhost);
-
-      uLocal=99.;
-      if( ok )
+      if( !interpolateNeighbours ) 
       {
-	where( maskLocal(I1,I2,I3)!=0 )
-	  uLocal(I1,I2,I3,0)=ueLocal(I1,I2,I3,0);
-      }
-      
-      // u.display("u before extrapolateInterpolationNeighbour");
-//       time=CPU();
-//       u.applyBoundaryCondition(component,BCTypes::extrapolateInterpolationNeighbours);
-//       time1=CPU()-time;
+        // ****************************************************************
+        //       extrapolateInterpolationNeighbours
+        // ****************************************************************
+
+        // Note: the extendedIndexRange includes ghost lines on bc==0 boundaries
+        // getIndex(mg.extendedIndexRange(),I1,I2,I3,1);  // include 1 ghost line
+        getIndex(mg.dimension(),I1,I2,I3); 
+
+        //   if( debug & 1 )
+        //   {
+        //  ::display(mg.extendedIndexRange(),"mg.extendedIndexRange()");
+        //  ::display(mg.gridIndexRange(),"mg.gridIndexRange()");
+        //   }
+        
+
+        int includeGhost=1; // we must assign true solution on parallel ghost below
+        bool ok = ParallelUtility::getLocalArrayBounds(mg.mask(),maskLocal,I1,I2,I3,includeGhost);
+
+        // ------- fill in exact solution but put bogus values at unused points ----
+        uLocal=99.;
+        if( ok )
+        {
+          where( maskLocal(I1,I2,I3)!=0 )
+            uLocal(I1,I2,I3,0)=ueLocal(I1,I2,I3,0);
+        }
+        
+        // u.display("u before extrapolateInterpolationNeighbour");
+        //       time=CPU();
+        //       u.applyBoundaryCondition(component,BCTypes::extrapolateInterpolationNeighbours);
+        //       time1=CPU()-time;
 
 
-      
+   
+        if( (bool)useNew )
+        {
+          // new way 
+          printF(" *********** Call AssignInterpNeighbours ***************\n");
+          
 
-      BoundaryConditionParameters extrapParams;
-      extrapParams.orderOfExtrapolation=3;
-      Range C=numberOfComponents;
+          AssignInterpNeighbours ain;
+          ain.setInterpolationPoint( cg.interpolationPoint[grid] );
 
-      if( (bool)useNew )
-      {
-	// new way 
-	// printF(" *********** Use AssignInterpNeighbours ***************\n");
-	
+          time1=CPU();
+          ain.assign( u, C, extrapParams );
+          time1=CPU()-time1;
 
-	AssignInterpNeighbours ain;
-	ain.setInterpolationPoint( cg.interpolationPoint[grid] );
+          // Call again for timing without initialization
+          time=CPU();
+          ain.assign( u, C, extrapParams );
+          time=CPU()-time;
+        }
+        else
+        {
+          time1=CPU();
+          u.applyBoundaryCondition(component,BCTypes::extrapolateInterpolationNeighbours);
+          time1=CPU()-time1;
 
-        time1=CPU();
-	ain.assign( u, C, extrapParams );
-        time1=CPU()-time1;
+          time=CPU();
+          u.applyBoundaryCondition(component,BCTypes::extrapolateInterpolationNeighbours);
+          time=CPU()-time;
 
-        // Call again for timing without initialization
-        time=CPU();
-        ain.assign( u, C, extrapParams );
-        time=CPU()-time;
-      }
-      else
-      {
-        time1=CPU();
-	u.applyBoundaryCondition(component,BCTypes::extrapolateInterpolationNeighbours);
-        time1=CPU()-time1;
+        }
 
-        time=CPU();
-	u.applyBoundaryCondition(component,BCTypes::extrapolateInterpolationNeighbours);
-        time=CPU()-time;
-
-      }
-      
+      } // end extrapolate interp neighbours 
 
 
- 
       // cicSplit illustrates a hard case: Discr. pt A needs point B (5x5 stencil)
       //  
       //       E--I--D--D--D--       D=discretization pt, 
@@ -389,8 +443,6 @@ main(int argc, char **argv)
       //       E--I--A--D--D--       E=mask=0, extrap. interp. neighbour
       //       E--2--2--2--2--       2=ghost pt with mask>0
       //       B--2--2--2--2--
-
-
 
 
       // extrap 2nd ghost line extended
@@ -411,114 +463,114 @@ main(int argc, char **argv)
       // these next checks assume there are 2 ghost !!
 
       getIndex(mg.gridIndexRange(),I1,I2,I3);
-      includeGhost=0;
-      ok = ParallelUtility::getLocalArrayBounds(mg.mask(),maskLocal,I1,I2,I3,includeGhost);
+      int includeGhost=0;
+      bool ok = ParallelUtility::getLocalArrayBounds(mg.mask(),maskLocal,I1,I2,I3,includeGhost);
 
-//       if( debug & 2  && mg.numberOfDimensions()==2 )
-//       {
-// 	displayMask(maskLocal,sPrintF(" mask on grid=%i",grid));
-//       }
+      //    if( debug & 2  && mg.numberOfDimensions()==2 )
+      //    {
+      //      displayMask(maskLocal,sPrintF(" mask on grid=%i",grid));
+      //    }
 
       if( ok )
       {
         Index J1,J2,J3=I3;
-	int i1,i2,i3, j1,j2,j3;
-	if( mg.numberOfDimensions()==2 )
-	{
-	  FOR_3D(i1,i2,i3,I1,I2,I3)
-	  {
+        int i1,i2,i3, j1,j2,j3;
+        if( mg.numberOfDimensions()==2 )
+        {
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
             int i1p=i1+1, i1m=i1-1, i2p=i2+1, i2m=i2-1;
             // look for a discretization pt that is next to an interp. pt: 
-	    if( maskLocal(i1,i2,i3)>0 && 
- 		( maskLocal(i1m,i2m,i3 )<0 || maskLocal(i1 ,i2m,i3 )<0 || maskLocal(i1p,i2m,i3 )<0 ||
- 		  maskLocal(i1m,i2 ,i3 )<0 ||                             maskLocal(i1p,i2 ,i3 )<0 ||
- 		  maskLocal(i1m,i2p,i3 )<0 || maskLocal(i1 ,i2p,i3 )<0 || maskLocal(i1p,i2p,i3 )<0 ) )
-	    {
-	      // This is a valid discretization point -- check the 5 point stencil for unused pts:
-	      J1=Range(i1-2,i1+2);
-	      J2=Range(i2-2,i2+2);
-	      FOR_3D(j1,j2,j3,J1,J2,J3)
-	      {
-		if( maskLocal(j1,j2,j3)==0 )
-		{
-		  // this unused point (j1,j2,j3) is needed 
-		  real err = fabs( uLocal(j1,j2,j3,0)-ueLocal(j1,j2,j3,0) );
-		  error=max(error,err);
-		  if( true && err>1. )
-		  {
-		    printf(" TEIN: myid=%i Error is large for neighbour pt j=(%i,%i,%i) "
+            if( maskLocal(i1,i2,i3)>0 && 
+                ( maskLocal(i1m,i2m,i3 )<0 || maskLocal(i1 ,i2m,i3 )<0 || maskLocal(i1p,i2m,i3 )<0 ||
+                  maskLocal(i1m,i2 ,i3 )<0 ||                             maskLocal(i1p,i2 ,i3 )<0 ||
+                  maskLocal(i1m,i2p,i3 )<0 || maskLocal(i1 ,i2p,i3 )<0 || maskLocal(i1p,i2p,i3 )<0 ) )
+            {
+              // This is a valid discretization point -- check the 5 point stencil for unused pts:
+              J1=Range(i1-2,i1+2);
+              J2=Range(i2-2,i2+2);
+              FOR_3D(j1,j2,j3,J1,J2,J3)
+              {
+                if( maskLocal(j1,j2,j3)==0 )
+                {
+                  // this unused point (j1,j2,j3) is needed 
+                  real err = fabs( uLocal(j1,j2,j3,0)-ueLocal(j1,j2,j3,0) );
+                  error=max(error,err);
+                  if( true && err>1. )
+                  {
+                    printf(" TEIN: myid=%i Error is large for neighbour pt j=(%i,%i,%i) "
                            "mask(j)=%i u=%12.6e ue=%12.6e err=%8.2e\n",
-			   myid,j1,j2,j3,maskLocal(j1,j2,j3),uLocal(j1,j2,j3,0),ueLocal(j1,j2,j3,0),err);
+                           myid,j1,j2,j3,maskLocal(j1,j2,j3),uLocal(j1,j2,j3,0),ueLocal(j1,j2,j3,0),err);
                     int maski = maskLocal(i1,i2,i3);
-		    maski = maski>0 ? 1 : (maski<0 ? -1 : 0);
+                    maski = maski>0 ? 1 : (maski<0 ? -1 : 0);
                     printf("     : grid=%i, disc. pt i=(%i,%i,%i) mask(i)=%i\n",grid,i1,i2,i3,maski);
 
-		  }
-		}
-	      }
-	    }
-	  }
-	}
-	else
-	{
-	  FOR_3D(i1,i2,i3,I1,I2,I3)
-	  {
+                  }
+                }
+              }
+            }
+          }
+        }
+        else
+        {
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
             int i1p=i1+1, i1m=i1-1, i2p=i2+1, i2m=i2-1, i3p=i3+1, i3m=i3-1;
             // look for a discretization pt that is next to an interp. pt: 
-	    if( maskLocal(i1,i2,i3)>0 && 
- 		( maskLocal(i1m,i2m,i3m)<0 || maskLocal(i1 ,i2m,i3m)<0 || maskLocal(i1p,i2m,i3m)<0 ||
- 		  maskLocal(i1m,i2 ,i3m)<0 || maskLocal(i1 ,i2 ,i3m)<0 || maskLocal(i1p,i2 ,i3m)<0 ||
- 		  maskLocal(i1m,i2p,i3m)<0 || maskLocal(i1 ,i2p,i3m)<0 || maskLocal(i1p,i2p,i3m)<0 ||
- 		  maskLocal(i1m,i2m,i3 )<0 || maskLocal(i1 ,i2m,i3 )<0 || maskLocal(i1p,i2m,i3 )<0 ||
- 		  maskLocal(i1m,i2 ,i3 )<0 ||                             maskLocal(i1p,i2 ,i3 )<0 ||
- 		  maskLocal(i1m,i2p,i3 )<0 || maskLocal(i1 ,i2p,i3 )<0 || maskLocal(i1p,i2p,i3 )<0 ||
- 		  maskLocal(i1m,i2m,i3p)<0 || maskLocal(i1 ,i2m,i3p)<0 || maskLocal(i1p,i2m,i3p)<0 ||
- 		  maskLocal(i1m,i2 ,i3p)<0 || maskLocal(i1 ,i2 ,i3p)<0 || maskLocal(i1p,i2 ,i3p)<0 ||
- 		  maskLocal(i1m,i2p,i3p)<0 || maskLocal(i1 ,i2p,i3p)<0 || maskLocal(i1p,i2p,i3p)<0 ) )
-	    {
-	      // This is a valid discretization point -- check the 5 point stencil for unused pts:
-	      J1=Range(i1-2,i1+2);
-	      J2=Range(i2-2,i2+2);
-	      J3=Range(i3-2,i3+2);
+            if( maskLocal(i1,i2,i3)>0 && 
+                ( maskLocal(i1m,i2m,i3m)<0 || maskLocal(i1 ,i2m,i3m)<0 || maskLocal(i1p,i2m,i3m)<0 ||
+                  maskLocal(i1m,i2 ,i3m)<0 || maskLocal(i1 ,i2 ,i3m)<0 || maskLocal(i1p,i2 ,i3m)<0 ||
+                  maskLocal(i1m,i2p,i3m)<0 || maskLocal(i1 ,i2p,i3m)<0 || maskLocal(i1p,i2p,i3m)<0 ||
+                  maskLocal(i1m,i2m,i3 )<0 || maskLocal(i1 ,i2m,i3 )<0 || maskLocal(i1p,i2m,i3 )<0 ||
+                  maskLocal(i1m,i2 ,i3 )<0 ||                             maskLocal(i1p,i2 ,i3 )<0 ||
+                  maskLocal(i1m,i2p,i3 )<0 || maskLocal(i1 ,i2p,i3 )<0 || maskLocal(i1p,i2p,i3 )<0 ||
+                  maskLocal(i1m,i2m,i3p)<0 || maskLocal(i1 ,i2m,i3p)<0 || maskLocal(i1p,i2m,i3p)<0 ||
+                  maskLocal(i1m,i2 ,i3p)<0 || maskLocal(i1 ,i2 ,i3p)<0 || maskLocal(i1p,i2 ,i3p)<0 ||
+                  maskLocal(i1m,i2p,i3p)<0 || maskLocal(i1 ,i2p,i3p)<0 || maskLocal(i1p,i2p,i3p)<0 ) )
+            {
+              // This is a valid discretization point -- check the 5 point stencil for unused pts:
+              J1=Range(i1-2,i1+2);
+              J2=Range(i2-2,i2+2);
+              J3=Range(i3-2,i3+2);
               bool notOk=false;
-	      FOR_3D(j1,j2,j3,J1,J2,J3)
-	      {
-		if( maskLocal(j1,j2,j3)==0 )
-		{
-		  // this unused point (j1,j2,j3) is needed 
-		  real err = fabs( uLocal(j1,j2,j3,0)-ueLocal(j1,j2,j3,0) );
-		  error=max(error,err);
-		  if( true && err>1. )
-		  {
+              FOR_3D(j1,j2,j3,J1,J2,J3)
+              {
+                if( maskLocal(j1,j2,j3)==0 )
+                {
+                  // this unused point (j1,j2,j3) is needed 
+                  real err = fabs( uLocal(j1,j2,j3,0)-ueLocal(j1,j2,j3,0) );
+                  error=max(error,err);
+                  if( true && err>1. )
+                  {
                     notOk=true;
-		    printF(" TEIN: Error is large for neighbour pt j=(%i,%i,%i) mask(j)=%i u=%12.6e ue=%12.6e err=%8.2e\n",
-			   j1,j2,j3,maskLocal(j1,j2,j3),uLocal(j1,j2,j3,0),ueLocal(j1,j2,j3,0),err);
+                    printF(" TEIN: Error is large for neighbour pt j=(%i,%i,%i) mask(j)=%i u=%12.6e ue=%12.6e err=%8.2e\n",
+                           j1,j2,j3,maskLocal(j1,j2,j3),uLocal(j1,j2,j3,0),ueLocal(j1,j2,j3,0),err);
                     int maski = maskLocal(i1,i2,i3);
-		    maski = maski>0 ? 1 : (maski<0 ? -1 : 0);
+                    maski = maski>0 ? 1 : (maski<0 ? -1 : 0);
                     printF("     : grid=%i, disc. pt i=(%i,%i,%i) mask(i)=%i\n",grid,i1,i2,i3,maski);
-		  }
-		}
-	      }
-	      if( notOk )
-	      {
-		printf("mask near i=(%i,%i,%i)\n",i1,i2,i3);
-		FOR_3D(j1,j2,j3,J1,J2,J3)
-		{
-		  int maski = maskLocal(j1,j2,j3);
-		  maski = maski>0 ? 1 : (maski<0 ? -1 : 0);
-		  printf(" %2i ",maski);
-		  if( j1==i1+2 ) 
-		  {
-		    printf("\n");
-		    if( j2==i2+2 ) printf("\n");
-		  }
-		}
-	      }
+                  }
+                }
+              }
+              if( notOk )
+              {
+                printf("mask near i=(%i,%i,%i)\n",i1,i2,i3);
+                FOR_3D(j1,j2,j3,J1,J2,J3)
+                {
+                  int maski = maskLocal(j1,j2,j3);
+                  maski = maski>0 ? 1 : (maski<0 ? -1 : 0);
+                  printf(" %2i ",maski);
+                  if( j1==i1+2 ) 
+                  {
+                    printf("\n");
+                    if( j2==i2+2 ) printf("\n");
+                  }
+                }
+              }
 
-	    }
-	  }
-	}
-	
+            }
+          }
+        }
+        
       }
       error=ParallelUtility::getMaxValue(error);
       worstError=max(worstError,error);
@@ -536,7 +588,7 @@ main(int argc, char **argv)
   printF("\n\n ************************************************************************************************\n");
   if( worstError > 1. )
     printF(" ************** Warning, there is a large error somewhere, worst error =%8.2e ******************\n",
-	   worstError);
+           worstError);
   else
     printF(" ************** Test apparently successful, worst error =%8.2e ******************\n",worstError);
   printF(" **************************************************************************************************\n\n");

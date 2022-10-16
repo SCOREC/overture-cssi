@@ -1,3 +1,635 @@
+set champ4 = ~/Dropbox/AMP/champ4
+
+
+********************************
+***** Sat June 11, 2022
+
+START FOUR DISK WITH SEPRATE DOMAINS
+
+BDF44 -- differenet parameters:
+conv.p multiDomainCHT.conv -problem=fourDisk1234ChampTrig -cg=fourDiskDomainGrid -domain1=outerDomain -domain2=diskDomain1 -tz=trig -ts=bdf -order=4 -useChamp=1 -D=1 1.2 1.3 1.4 1.5 -K=.5 .4 .3 .2 .1 -tf=.5 -tp=.5 -dtMax=.05 -nMode=1 -mRoot=0 -fx=2 -ng=4
+
+convRate: numberOfComponents=1 (from header)
+                grid  & N &  $T$ & r 
+fourDiskDomainGride1 &     1 & 3.16e-04 &       
+fourDiskDomainGride2 &     2 & 1.47e-05 & 21.50 
+fourDiskDomainGride4 &     4 & 7.54e-07 & 19.50 
+fourDiskDomainGride8 &     8 & 4.09e-08 & 18.44 
+Convergence rates: c0=4.30 
+
+ ****Output written to ./fourDisk1234ChampTrigChampOrder4.ConvTable.tex *****
+
+
+BDF22 -- differenet parameters:
+conv.p multiDomainCHT.conv -problem=fourDisk1234ChampTrig -cg=fourDiskDomainGrid -domain1=outerDomain -domain2=diskDomain1 -tz=trig -ts=bdf -order=2 -useChamp=1 -D=1 1.2 1.3 1.4 1.5 -K=.5 .4 .3 .2 .1 -tf=.5 -tp=.5 -dtMax=.05 -nMode=1 -mRoot=0 -fx=2 -ng=4
+
+
+
+
+
+
+
+
+BDF44 **TROUBLE**
+conv.p multiDomainCHT.conv -problem=fourDisk1234ChampTrig -cg=fourDiskDomainGrid -domain1=outerDomain -domain2=diskDomain1 -tz=trig -ts=bdf -order=4 -useChamp=1 -D=1 2 3 4 5 -K=5 4 3 2 1 -tf=.5 -tp=.5 -dtMax=.05 -nMode=1 -mRoot=0 -fx=2 -ng=4
+
+tf=.1
+                grid  & N &  $T$ & r 
+fourDiskDomainGride1 &     1 & 1.39e-03 &       
+fourDiskDomainGride2 &     2 & 6.67e-05 & 20.84 
+fourDiskDomainGride4 &     4 & 3.62e-06 & 18.43 
+Convergence rates: c0=4.29 
+
+
+BDF22
+conv.p multiDomainCHT.conv -problem=fourDiskChampTrig -cg=fourDiskDomainGrid -domain1=outerDomain -domain2=diskDomain1 -tz=trig -ts=bdf -order=2 -useChamp=1 -D=1 2 3 4 5 -K=5 4 3 2 1 -tf=.1 -tp=.1 -dtMax=.05 -nMode=1 -mRoot=0 -fx=2 -ng=3
+
+                grid  & N &  $T$ & r 
+fourDiskDomainGride1 &     1 & 5.35e-03 &       
+fourDiskDomainGride2 &     2 & 1.06e-03 &  5.05 
+fourDiskDomainGride4 &     4 & 2.19e-04 &  4.84 
+Convergence rates: c0=2.31 
+
+
+********************************
+***** Sat June 11, 2022
+
+REVISIT FOUR DISKS : MANUFACTURED SOLUTION 
+
+BDF44 **BROKEN**
+conv.p twoDomainsCHT.conv -problem=fourDiskChampTrig -cg=fourDiskArrayGrid -tz=trig -ts=bdf -order=4 -useChamp=1 -kappa1=2 -ktc1=1 -kappa2=1 -ktc2=.5 -tp=.5 -tf=.5 -dtMax=.05 -nMode=1 -mRoot=0 -fx=2 -ng=4
+
+                grid  & N &  $T$ & r 
+ fourDiskArrayGride1 &     1 & 5.67e-04 &       
+ fourDiskArrayGride2 &     2 & 4.01e-05 & 14.14 
+ fourDiskArrayGride4 &     4 & 2.66e-06 & 15.08 
+ fourDiskArrayGride8 &     8 & 1.71e-07 & 15.56 
+Convergence rates: c0=3.90 
+
+
+
+********************************
+***** Wed May 18, 2022
+
+double annulus with advection 
+
+
+BDF44
+conv.p twoDomainsCHT.conv -problem=doubleAnnulusAdvectionChamp -cg=doubleAnnulusGrid -advx1=0.5 -advy1=0.3 -advx2=0.4 -advy2=0.6 -kappa1=.9 -ktc1=1 -kappa2=.8 -ktc2=.5 -known=doubleAnnulus -caseName=doubleAnnulusCase4 -varCoeff=radial -ts=bdf -order=4 -useChamp=1 -tp=.1 -tf=.1 -dtMax=.01 -nMode=1 -mRoot=0 -ng=4
+
+                grid  & N &  $T$ & r 
+ doubleAnnulusGride1 &     1 & 2.71e-03 &       
+ doubleAnnulusGride2 &     2 & 1.14e-04 & 23.77 
+ doubleAnnulusGride4 &     4 & 4.09e-06 & 27.87 
+ doubleAnnulusGride8 &     8 & 1.40e-07 & 29.21 
+Convergence rates: c0=4.75 
+
+
+BDF22
+conv.p twoDomainsCHT.conv -problem=doubleAnnulusAdvectionChamp -cg=doubleAnnulusGrid -advx1=0.5 -advy1=0.3 -advx2=0.4 -advy2=0.6 -kappa1=.9 -ktc1=1 -kappa2=.8 -ktc2=.5 -known=doubleAnnulus -caseName=doubleAnnulusCase4 -varCoeff=radial -ts=bdf -order=2 -useChamp=1 -tp=.1 -tf=.1 -dtMax=.01 -nMode=1 -mRoot=0 -ng=4
+
+                grid  & N &  $T$ & r 
+ doubleAnnulusGride1 &     1 & 6.12e-03 &       
+ doubleAnnulusGride2 &     2 & 2.07e-03 &  2.96 
+ doubleAnnulusGride4 &     4 & 6.67e-04 &  3.10 
+ doubleAnnulusGride8 &     8 & 1.87e-04 &  3.57 
+doubleAnnulusGride16 &    16 & 4.94e-05 &  3.79 
+Convergence rates: c0=1.74 
+
+
+
+cgmp twoDomainsCHT.cmd -g=doubleAnnulusGride4.order4.hdf -useChamp=1 -domain1=innerDomain -domain2=outerDomain -advx1=0.5 -advy1=0.3 -advx2=0.4 -advy2=0.6 -kappa1=.9 -ktc1=1 -kappa2=.8 -ktc2=.5 -known=doubleAnnulus -caseName=doubleAnnulusCase4 -varCoeff=radial -ncc=1 -mcc=0 -tf=.1 -tp=.01 -ts=bdf -bdfOrder=4 -useMultiStage=1 -nc=10 -coupled=0 -itol=1e-12 -debug=1 -projectT=0 -dtMax=.005 -debug=3 -go=halt
+
+********************************
+***** Fri May 13, 2022
+
+
+DOUBLE RECTANGLE EXACT SOLUTION WITH ADVECTION
+conv.p twoDomainsCHT.conv -problem=doubleRectangle -cg=twoNonSquaresInterface -periodic=p -domain1=leftDomain -domain2=rightDomain -known=doubleRectangle -caseName=doubleRectangleDL0p9KL1UL1VL0p5DR0p8KR0p5URm1VR1 -tz=trig -ts=bdf -order=4 -useChamp=1 -kappa1=.9 -ktc1=1 -kappa2=.8 -ktc2=.5 -advx1=1 -advy1=.5 -advx2=-1 -advy2=1 -tp=.1 -tf=.1 -dtMax=.01 -nMode=1 -mRoot=0 -ng=3
+
+
+
+
+                grid  & N &  $T$ & r 
+twoNonSquaresInterfacee1 &     1 & 5.49e-04 &       
+twoNonSquaresInterfacee2 &     2 & 2.24e-05 & 24.51 
+twoNonSquaresInterfacee4 &     4 & 1.14e-06 & 19.65 
+twoNonSquaresInterfacee8 &     8 & 6.37e-08 & 17.90 
+Convergence rates: c0=4.35 
+
+
+
+
+
+cgmp twoDomainsCHT.cmd -g=twoNonSquaresInterfacee4p.order4 -domain1=leftDomain -domain2=rightDomain -useChamp=1 -bdfOrder=4 -useMultiStage=1 -advx1=1 -advy1=.5 -advx2=-1 -advy2=1 -kappa1=.9 -ktc1=1 -kappa2=.8 -ktc2=.5 -known=doubleRectangle -caseName=doubleRectangleDL0p9KL1UL1VL0p5DR0p8KR0p5URm1VR1 -tf=.2 -tp=.01 -ts=bdf -nc=10 -coupled=0 -itol=1e-12 -dtMax=0.005 -debug=3
+
+
+
+
+********************************
+***** Wed May 4, 2022
+
+TEST CHAMP -- double annulus
+
+conv.p twoDomainsCHT.conv -problem=doubleAnnulusChamp -cg=doubleAnnulusGrid -tz=trig -ts=bdf -order=4 -useChamp=1 -kappa1=.9 -ktc1=1 -kappa2=.8 -ktc2=.5 -tp=.2 -tf=.2 -dtMax=.05 -nMode=1 -mRoot=0 -ng=3
+
+
+                grid  & N &  $T$ & r 
+ doubleAnnulusGride1 &     1 & 1.59e-02 &       
+ doubleAnnulusGride2 &     2 & 1.44e-03 & 11.04 
+ doubleAnnulusGride4 &     4 & 1.05e-04 & 13.71 
+ doubleAnnulusGride8 &     8 & 6.91e-06 & 15.20 
+Convergence rates: c0=3.73 
+
+ ****Output written to ./doubleAnnulusChampChampOrder4.ConvTable.tex *****
+
+
+********************************
+***** Tues May 3, 2022
+
+**BUGS FOUND**
+CHAMP CURVILINEAR ADVECTION
+
+
+BDF44 
+conv.p twoDomainsCHT.conv -problem=twoNonSquaresPlaneInterfaceMode1234 -cg=twoNonSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=10 -ts=bdf -domain1=leftDomain -domain2=rightDomain -kappa1=.5 -kappa2=.75 -ktc1=1 -ktc2=2 -advx1=1 -advy1=.5 -advx2=.6 -advy2=.7   -tp=.5 -tf=.5 -order=4 -ng=3
+
+                grid  & N &  $T$ & r 
+twoNonSquaresInterfacee1 &     1 & 5.61e-05 &       
+twoNonSquaresInterfacee2 &     2 & 2.31e-06 & 24.29 
+twoNonSquaresInterfacee4 &     4 & 8.70e-08 & 26.55 
+twoNonSquaresInterfacee8 &     8 & 3.60e-09 & 24.17 
+Convergence rates: c0=4.65 
+
+
+
+
+********************************
+***** Mon May 2, 2022
+
+*bug* found -- exact solution in C++
+
+BDF44 *trouble**
+conv.p twoDomainsCHT.conv -problem=twoNonSquaresPlaneInterfaceMode1234 -cg=twoNonSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=10 -ts=bdf -domain1=leftDomain -domain2=rightDomain -kappa1=.5 -kappa2=.75 -ktc1=1 -ktc2=2 -advx1=1 -advy1=.5 -advx2=.6 -advy2=.7   -tp=.5 -tf=.5 -order=4 -ng=3
+
+                grid  & N &  $T$ & r 
+twoNonSquaresInterfacee1 &     1 & 5.60e-05 &       
+twoNonSquaresInterfacee2 &     2 & 2.31e-06 & 24.24 
+twoNonSquaresInterfacee4 &     4 & 2.51e-07 &  9.20 
+twoNonSquaresInterfacee8 &     8 & 3.46e-08 &  7.25 
+Convergence rates: c0=3.52 
+
+BDF44 
+conv.p twoDomainsCHT.conv -problem=twoNonSquaresPlaneInterfaceMode1234 -cg=twoNonSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=10 -ts=bdf -domain1=leftDomain -domain2=rightDomain -kappa1=.5 -kappa2=.75 -ktc1=1 -ktc2=2 -advx1=0 -advy1=1 -advx2=1 -advy2=.5 -tp=.5 -tf=.5 -order=4 -ng=3
+
+
+-advx1=0 -advy1=1 -advx2=1 -advy2=.5
+
+twoNonSquaresInterfacee1 &     1 & 2.50e-04 &       
+twoNonSquaresInterfacee2 &     2 & 1.18e-05 & 21.19 
+twoNonSquaresInterfacee4 &     4 & 4.45e-07 & 26.52 
+twoNonSquaresInterfacee8 &     8 & 4.54e-08 &  9.80 
+
+
+advx1=1 **TROUBLE***
+                grid  & N &  $T$ & r 
+twoNonSquaresInterfacee1 &     1 & 4.90e-05 &       
+twoNonSquaresInterfacee2 &     2 & 7.50e-06 &  6.53 
+twoNonSquaresInterfacee4 &     4 & 1.11e-06 &  6.76 
+Convergence rates: c0=2.73 
+
+advy1=1 advy2=.5
+                grid  & N &  $T$ & r 
+twoNonSquaresInterfacee1 &     1 & 2.51e-04 &       
+twoNonSquaresInterfacee2 &     2 & 1.18e-05 & 21.27 
+twoNonSquaresInterfacee4 &     4 & 4.47e-07 & 26.40 
+Convergence rates: c0=4.57 
+
+
+BDF44 -- no advection *trouble* --> ***FIXED***
+conv.p twoDomainsCHT.conv -problem=twoNonSquaresPlaneInterfaceMode1234 -cg=twoNonSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=10 -ts=bdf -domain1=leftDomain -domain2=rightDomain -kappa1=.5 -kappa2=.75 -ktc1=1 -ktc2=2  -tp=.5 -tf=.5 -order=4 -ng=4
+
+
+                grid  & N &  $T$ & r 
+twoNonSquaresInterfacee1 &     1 & 8.59e-05 &       
+twoNonSquaresInterfacee2 &     2 & 3.94e-06 & 21.80 
+twoNonSquaresInterfacee4 &     4 & 1.52e-07 & 25.92 
+twoNonSquaresInterfacee8 &     8 & 5.49e-09 & 27.69 
+Convergence rates: c0=4.65
+
+
+
+BDF22 - advection : compare to matlab case: **TROUBLE** --> FIXED
+conv.p twoDomainsCHT.conv -problem=twoNonSquaresPlaneInterfaceMode1234 -cg=twoNonSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=10 -ts=bdf -domain1=leftDomain -domain2=rightDomain -kappa1=.5 -kappa2=.75 -ktc1=1 -ktc2=2 -advx1=1 -advy1=.5 -advx2=.6 -advy2=.7   -tp=.5 -tf=.5 -order=2 -ng=3
+
+                grid  & N &  $T$ & r 
+twoNonSquaresInterfacee1 &     1 & 2.07e-03 &       
+twoNonSquaresInterfacee2 &     2 & 5.18e-04 &  4.00 
+twoNonSquaresInterfacee4 &     4 & 1.30e-04 &  3.98 
+Convergence rates: c0=2.00 
+
+
+OK: no vertical velocity: 
+conv.p twoDomainsCHT.conv -problem=twoNonSquaresPlaneInterfaceMode1234 -cg=twoNonSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=10 -ts=bdf -domain1=leftDomain -domain2=rightDomain -kappa1=.5 -kappa2=.75 -ktc1=1 -ktc2=2 -advx1=1 -advy1=.0 -advx2=.6 -advy2=.0   -tp=.5 -tf=.5 -order=2 -ng=3
+
+                grid  & N &  $T$ & r 
+twoNonSquaresInterfacee1 &     1 & 1.26e-03 &       
+twoNonSquaresInterfacee2 &     2 & 3.17e-04 &  3.97 
+twoNonSquaresInterfacee4 &     4 & 7.98e-05 &  3.97 
+Convergence rates: c0=1.99 
+
+BDF22 - advection 
+conv.p twoDomainsCHT.conv -problem=twoNonSquaresPlaneInterfaceMode1234 -cg=twoNonSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=10 -ts=bdf -domain1=leftDomain -domain2=rightDomain -advx1=1 -advx2=.8 -ktc1=1 -ktc2=.5 -kappa1=1 -kappa2=.7 -tp=.5 -tf=.5 -order=2 -ng=3
+
+                grid  & N &  $T$ & r 
+twoNonSquaresInterfacee1 &     1 & 1.82e-03 &       
+twoNonSquaresInterfacee2 &     2 & 4.65e-04 &  3.91 
+twoNonSquaresInterfacee4 &     4 & 1.17e-04 &  3.97 
+Convergence rates: c0=1.98 
+
+
+BDF22 - advection 
+conv.p twoDomainsCHT.conv -problem=twoNonSquaresPlaneInterfaceMode1234 -cg=twoNonSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=10 -ts=bdf -domain1=leftDomain -domain2=rightDomain -kappa1=1 -ktc1=1 -advx1=1 -advy1=1 -kappa2=1 -ktc2=1 -advx2=1 -advy2=1 -tp=1 -tf=1 -order=2 -ng=3
+
+                grid  & N &  $T$ & r 
+twoNonSquaresInterfacee1 &     1 & 1.75e-03 &       
+twoNonSquaresInterfacee2 &     2 & 4.42e-04 &  3.96 
+twoNonSquaresInterfacee4 &     4 & 1.11e-04 &  3.98 
+Convergence rates: c0=1.99
+
+
+********************************
+***** Wed April 27, 2022
+
+START ON CHAMP + ADVECTION
+
+very small advection:
+conv.p twoDomainsCHT.conv -problem=twoNonSquaresPlaneInterfaceMode1234 -cg=twoNonSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=10 -ts=bdf -domain1=leftDomain -domain2=rightDomain -kappa1=0.3 -ktc1=0.1 -advx1=0 -advy1=.5e-6 -kappa2=0.4 -ktc2=0.2 -advx2=0 -advy2=1e-6 -tp=1 -tf=1 -order=2 -ng=3
+
+
+
+BDF22 - advection OK if v1=v2
+conv.p twoDomainsCHT.conv -problem=twoNonSquaresPlaneInterfaceMode1234 -cg=twoNonSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=10 -ts=bdf -domain1=leftDomain -domain2=rightDomain -kappa1=1 -ktc1=1 -advx1=1 -advy1=1 -kappa2=1 -ktc2=1 -advx2=1 -advy2=1 -tp=1 -tf=1 -order=2 -ng=3
+
+u1=2 u2=1 v1=v2=1
+                grid  & N &  $T$ & r 
+twoNonSquaresInterfacee1 &     1 & 1.23e-03 &       
+twoNonSquaresInterfacee2 &     2 & 3.17e-04 &  3.88 
+twoNonSquaresInterfacee4 &     4 & 8.18e-05 &  3.88 
+twoNonSquaresInterfacee8 &     8 & 3.16e-05 &  2.59 
+Convergence rates: c0=1.78 
+
+u1=u2=1 v1=v2=1
+                grid  & N &  $T$ & r 
+twoNonSquaresInterfacee1 &     1 & 1.75e-03 &       
+twoNonSquaresInterfacee2 &     2 & 4.42e-04 &  3.96 
+twoNonSquaresInterfacee4 &     4 & 1.11e-04 &  3.98 
+twoNonSquaresInterfacee8 &     8 & 2.77e-05 &  4.01 
+Convergence rates: c0=1.99 
+
+
+
+v1=v2=1
+twoNonSquaresInterfacee1 &     1 & 2.44e-03 &       
+twoNonSquaresInterfacee2 &     2 & 6.18e-04 &  3.95 
+twoNonSquaresInterfacee4 &     4 & 1.56e-04 &  3.96 
+twoNonSquaresInterfacee8 &     8 & 3.90e-05 &  4.00 
+Convergence rates: c0=1.99 
+
+
+
+
+BDF22 - advection **trouble***
+conv.p twoDomainsCHT.conv -problem=twoNonSquaresPlaneInterfaceMode1234 -cg=twoNonSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=10 -ts=bdf -domain1=leftDomain -domain2=rightDomain -kappa1=0.3 -ktc1=0.1 -advx1=0 -advy1=.5 -kappa2=0.4 -ktc2=0.2 -advx2=0 -advy2=1 -tp=1 -tf=1 -order=2 -ng=3
+
+-advx1=0 -advy1=.5 -advx2=0 -advy2=1 
+                grid  & N &  $T$ & r 
+twoNonSquaresInterfacee1 &     1 & 6.68e-03 &       
+twoNonSquaresInterfacee2 &     2 & 7.37e-03 &  0.91 
+twoNonSquaresInterfacee4 &     4 & 7.56e-03 &  0.97 
+Convergence rates: c0=-0.0
+
+
+
+-advy1=1 -advy2=1
+                grid  & N &  $T$ & r 
+twoNonSquaresInterfacee1 &     1 & 4.36e-03 &       
+twoNonSquaresInterfacee2 &     2 & 1.12e-03 &  3.89 
+twoNonSquaresInterfacee4 &     4 & 2.80e-04 &  4.00 
+twoNonSquaresInterfacee8 &     8 & 7.00e-05 &  4.00 
+Convergence rates: c0=1.99 
+
+-advy=1 -advy2=0
+twoNonSquaresInterfacee1 &     1 & 1.25e-02 &       
+twoNonSquaresInterfacee2 &     2 & 1.19e-02 &  1.05 
+twoNonSquaresInterfacee4 &     4 & 1.18e-02 &  1.01 
+Convergence rates: c0=0.04 
+
+BDF22 - advection
+conv.p twoDomainsCHT.conv -problem=twoNonSquaresPlaneInterfaceMode1234 -cg=twoNonSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=10 -ts=bdf -domain1=leftDomain -domain2=rightDomain -kappa1=0.3 -ktc1=0.1 -advx1=1 -kappa2=0.4 -ktc2=0.2 -advx2=1 -tp=1 -tf=1 -order=2 -ng=3
+
+                grid  & N &  $T$ & r 
+twoNonSquaresInterfacee1 &     1 & 1.11e-03 &       
+twoNonSquaresInterfacee2 &     2 & 1.55e-04 &  7.16 
+twoNonSquaresInterfacee4 &     4 & 3.31e-05 &  4.68 
+twoNonSquaresInterfacee8 &     8 & 4.22e-05 &  0.78 
+Convergence rates: c0=1.64 
+
+
+BDF22 - no advection
+conv.p twoDomainsCHT.conv -problem=twoSquaresPlaneInterfaceMode1234 -cg=twoSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=1 -ts=bdf -domain1=leftDomain -domain2=rightDomain -ktc1=0.1 -ktc2=0.2 -kappa1=0.3 -kappa2=0.4 -tp=1 -tf=1 -order=2 -ng=5
+
+                grid  & N &  $T$ & r 
+twoSquaresInterfacee1 &     1 & 1.57e-03 &       
+twoSquaresInterfacee2 &     2 & 3.95e-04 &  3.97 
+twoSquaresInterfacee4 &     4 & 9.95e-05 &  3.97 
+Convergence rates: c0=1.99 
+
+********************************
+***** Sat April 23, 2022
+
+FOUR DISKS : MANUFACTURED SOLUTION 
+
+BDF44
+conv.p twoDomainsCHT.conv -problem=fourDiskChampTrig -cg=fourDiskArrayGrid -tz=trig -ts=bdf -order=4 -useChamp=1 -kappa1=2 -ktc1=1 -kappa2=1 -ktc2=.5 -tp=.5 -tf=.5 -dtMax=.05 -nMode=1 -mRoot=0 -fx=2 -ng=4
+
+                grid  & N &  $T$ & r 
+ fourDiskArrayGride1 &     1 & 5.67e-04 &       
+ fourDiskArrayGride2 &     2 & 4.01e-05 & 14.14 
+ fourDiskArrayGride4 &     4 & 2.66e-06 & 15.08 
+ fourDiskArrayGride8 &     8 & 1.71e-07 & 15.56 
+Convergence rates: c0=3.90 
+
+ ****Output written to ./fourDiskChampTrigChampOrder4.ConvTable.tex *****
+Saving the results file as ./results.fourDiskChampTrigChampOrder4
+Matlab results written to file [./fourDiskChampTrigChampOrder4.m].
+
+
+BDF22
+conv.p twoDomainsCHT.conv -problem=fourDiskChampTrig -cg=fourDiskArrayGrid -tz=trig -ts=bdf -order=2 -useChamp=1 -kappa1=2 -ktc1=1 -kappa2=1 -ktc2=.5 -tp=.5 -tf=.5 -dtMax=.05 -nMode=1 -mRoot=0 -fx=2 -ng=4
+
+
+                grid  & N &  $T$ & r 
+ fourDiskArrayGride1 &     1 & 4.42e-03 &       
+ fourDiskArrayGride2 &     2 & 8.94e-04 &  4.94 
+ fourDiskArrayGride4 &     4 & 1.77e-04 &  5.05 
+ fourDiskArrayGride8 &     8 & 4.10e-05 &  4.32 
+Convergence rates: c0=2.26 
+
+
+
+
+
+
+********************************
+***** Wed April 20, 2022
+
+
+CHAMP4:
+
++++++++++++ DOUBLE ANNULUS TRIG: ++++++++++++++
+
+conv.p twoDomainsCHT.conv -problem=doubleAnnulusChampTrig -cg=doubleAnnulusGrid -tz=trig -ts=bdf -order=4 -useChamp=1 -kappa1=.9 -ktc1=1 -kappa2=.8 -ktc2=.5 -tp=.7 -tf=.7 -dtMax=.05 -nMode=1 -mRoot=0 -ng=4
+
+                grid  & N &  $T$ & r 
+ doubleAnnulusGride1 &     1 & 1.96e-02 &       
+ doubleAnnulusGride2 &     2 & 1.83e-03 & 10.71 
+ doubleAnnulusGride4 &     4 & 1.28e-04 & 14.30 
+ doubleAnnulusGride8 &     8 & 8.33e-06 & 15.37 
+Convergence rates: c0=3.74
+
+conv.p twoDomainsCHT.conv -problem=doubleAnnulusChamp -cg=doubleAnnulusGrid -tz=trig -ts=bdf -order=4 -useChamp=1 -kappa1=.9 -ktc1=1 -kappa2=.8 -ktc2=.5 -tp=.2 -tf=.2 -dtMax=.05 -nMode=1 -mRoot=0 -ng=3
+
+tf=.2, dtMax=.05
+
+                grid  & N &  $T$ & r 
+ doubleAnnulusGride1 &     1 & 1.59e-02 &       
+ doubleAnnulusGride2 &     2 & 1.44e-03 & 11.04 
+ doubleAnnulusGride4 &     4 & 1.05e-04 & 13.71 
+ doubleAnnulusGride8 &     8 & 6.91e-06 & 15.20 
+Convergence rates: c0=3.73 
+
+
+conv.p twoDomainsCHT.conv -problem=doubleAnnulusChamp -cg=doubleAnnulusGrid -tz=trig -ts=bdf -order=4 -useChamp=1 -kappa1=.9 -ktc1=1 -kappa2=.8 -ktc2=.5 -tp=.2 -tf=.2 -dtMax=.05 -nMode=1 -mRoot=0 -ng=3
+
+
+-dtMax=.004
+                grid  & N &  $T$ & r 
+ doubleAnnulusGride1 &     1 & 1.12e-02 &       
+ doubleAnnulusGride2 &     2 & 1.41e-03 &  7.94 
+ doubleAnnulusGride4 &     4 & 1.15e-04 & 12.26 
+ doubleAnnulusGride8 &     8 & 8.08e-06 & 14.23 
+Convergence rates: c0=3.49
+
+
+++++++++++++ DOUBLE ANNULUS EXACT SOLUTION +++++++
+
+
+BDF22
+conv.p twoDomainsCHT.conv -problem=doubleAnnulusChamp -cg=doubleAnnulusGrid -known=concentricCylinders -ts=bdf -order=2 -useChamp=1 -kappa1=.9 -ktc1=1 -kappa2=.8 -ktc2=.5 -tp=.3 -tf=.3 -dtMax=.05 -nMode=1 -mRoot=0 -ng=5
+
+
+BDF44
+conv.p twoDomainsCHT.conv -problem=doubleAnnulusChamp -cg=doubleAnnulusGrid -known=concentricCylinders -ts=bdf -order=4 -useChamp=1 -kappa1=.9 -ktc1=1 -kappa2=.8 -ktc2=.5 -tp=.3 -tf=.3 -dtMax=.05 -nMode=1 -mRoot=0 -ng=3
+
+tf=.3
+                grid  & N &  $T$ & r 
+ doubleAnnulusGride1 &     1 & 1.18e-03 &       
+ doubleAnnulusGride2 &     2 & 5.44e-05 & 21.69 
+ doubleAnnulusGride4 &     4 & 2.80e-06 & 19.43 
+ doubleAnnulusGride8 &     8 & 1.51e-07 & 18.54 
+Convergence rates: c0=4.31 
+
+
+tf=.2
+                grid  & N &  $T$ & r 
+ doubleAnnulusGride1 &     1 & 2.00e-03 &       
+ doubleAnnulusGride2 &     2 & 8.44e-05 & 23.70 
+ doubleAnnulusGride4 &     4 & 4.42e-06 & 19.10 
+ doubleAnnulusGride8 &     8 & 2.38e-07 & 18.57 
+doubleAnnulusGride16 &    16 & 1.22e-08 & 19.51 
+Convergence rates: c0=4.31 
+
+
+                grid  & N &  $T$ & r 
+ doubleAnnulusGride1 &     1 & 2.00e-03 &       
+ doubleAnnulusGride2 &     2 & 8.44e-05 & 23.70 
+ doubleAnnulusGride4 &     4 & 4.42e-06 & 19.10 
+ doubleAnnulusGride8 &     8 & 2.38e-07 & 18.57 
+Convergence rates: c0=4.34 
+
+
+
+conv.p twoDomainsCHT.conv -problem=doubleAnnulusChamp -cg=doubleAnnulusGrid -known=concentricCylinders -ts=bdf -order=4 -useChamp=1 -kappa1=.9 -ktc1=1 -kappa2=.8 -ktc2=.5 -tp=.1 -tf=.1 -dtMax=.004 -nMode=1 -mRoot=0 -ng=3
+
+                grid  & N &  $T$ & r 
+ doubleAnnulusGride1 &     1 & 1.53e-05 &       
+ doubleAnnulusGride2 &     2 & 8.92e-07 & 17.15 
+ doubleAnnulusGride4 &     4 & 2.04e-07 &  4.37 
+ doubleAnnulusGride8 &     8 & 3.44e-08 &  5.93 
+Convergence rates: c0=2.85 
+
+
+BDF22
+conv.p twoDomainsCHT.conv -problem=doubleAnnulusChamp -cg=doubleAnnulusGrid -known=concentricCylinders -ts=bdf -order=2 -useChamp=1 -kappa1=.9 -ktc1=1 -kappa2=.8 -ktc2=.5 -tp=.1 -tf=.1 -dtMax=.004 -nMode=1 -mRoot=0 -ng=3
+
+                grid  & N &  $T$ & r 
+ doubleAnnulusGride1 &     1 & 4.11e-04 &       
+ doubleAnnulusGride2 &     2 & 1.45e-04 &  2.83 
+ doubleAnnulusGride4 &     4 & 4.27e-05 &  3.40 
+ doubleAnnulusGride8 &     8 & 1.16e-05 &  3.68 
+Convergence rates: c0=1.72
+
+********************************
+***** Sat April 16, 2022
+
+TEST NEW CHAMP4 -- double annulus solution decays rapidly : choose small tf and dtMax
+
+BDF44
+conv.p twoDomainsCHT.conv -problem=doubleAnnulusChamp -cg=doubleAnnulusGrid -known=concentricCylinders -ts=bdf -order=4 -useChamp=1 -kappa1=.9 -ktc1=1 -kappa2=.8 -ktc2=.5 -tp=.1 -tf=.1 -dtMax=.004 -nMode=1 -mRoot=0 -ng=3
+
+BDF22
+conv.p twoDomainsCHT.conv -problem=doubleAnnulusChamp -cg=doubleAnnulusGrid -known=concentricCylinders -ts=bdf -order=2 -useChamp=1 -kappa1=.9 -ktc1=1 -kappa2=.8 -ktc2=.5 -tp=.1 -tf=.1 -dtMax=.004 -nMode=1 -mRoot=0 -ng=3
+
+TS=BDF
+                grid  & N &  $T$ & r 
+ doubleAnnulusGride1 &     1 & 4.11e-04 &       
+ doubleAnnulusGride2 &     2 & 1.45e-04 &  2.83 
+ doubleAnnulusGride4 &     4 & 4.27e-05 &  3.40 
+ doubleAnnulusGride8 &     8 & 1.16e-05 &  3.68 
+Convergence rates: c0=1.72 
+
+
+
+TS=IM
+                grid  & N &  $T$ & r 
+ doubleAnnulusGride1 &     1 & 4.71e-04 &       
+ doubleAnnulusGride2 &     2 & 1.58e-04 &  2.98 
+ doubleAnnulusGride4 &     4 & 4.59e-05 &  3.44 
+ doubleAnnulusGride8 &     8 & 1.24e-05 &  3.70 
+Convergence rates: c0=1.75 
+
+
+********************************
+***** Sat April 16, 2022
+
+TEST NEW CHAMP2 using new curvilinear --> looks OK 
+
+conv.p twoDomainsCHT.conv -problem=doubleAnnulusChamp -cg=doubleAnnulusGrid -known=concentricCylinders -useChamp=1 -tp=.3 -tf=.3 -nMode=1 -mRoot=0 -ng=2
+
+                grid  & N &  $T$ & r 
+ doubleAnnulusGride1 &     1 & 1.73e-03 &       
+ doubleAnnulusGride2 &     2 & 6.79e-04 &  2.55 
+ doubleAnnulusGride4 &     4 & 2.33e-04 &  2.91 
+ doubleAnnulusGride8 &     8 & 6.56e-05 &  3.55 
+Convergence rates: c0=1.57 
+
+********************************
+***** Fri April 15, 2022
+
+TEST CHAMP order=4 curvilinear: 
+
+ANNULUS --> FIX PERIODIC BOUNDARIES
+
+conv.p twoDomainsCHT.conv -problem=doubleAnnulusChamp -cg=doubleAnnulusGrid -known=concentricCylinders -useChamp=1 -tp=.3 -tf=.3 -nMode=1 -mRoot=0 -order=4 -ng=2
+
+
+conv.p twoDomainsCHT.conv -problem=doubleAnnulusChamp -cg=doubleAnnulusGrid -known=concentricCylinders -useChamp=1 -tp=.3 -tf=.3 -nMode=1 -mRoot=0 -ng=6
+
+                grid  & N &  $ & r 
+ doubleAnnulusGride1 &     1 & 1.73e-03 &       
+ doubleAnnulusGride2 &     2 & 6.79e-04 &  2.55 
+ doubleAnnulusGride4 &     4 & 2.33e-04 &  2.91 
+ doubleAnnulusGride8 &     8 & 6.56e-05 &  3.55 
+doubleAnnulusGride16 &    16 & 1.73e-05 &  3.79 
+doubleAnnulusGride32 &    32 & 4.44e-06 &  3.90 
+Convergence rates: c0=1.74 
+
+
+
+conv.p twoDomainsCHT.conv -problem=twoNonSquaresPlaneInterfaceMode1234 -cg=twoNonSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=1 -ts=bdf -domain1=leftDomain -domain2=rightDomain -ktc1=0.1 -ktc2=0.2 -kappa1=0.3 -kappa2=0.4 -tp=1 -tf= -order=4 -ng=4
+
+                grid  & N &  $T$ & r 
+twoNonSquaresInterfacee1 &     1 & 7.11e-05 &       
+twoNonSquaresInterfacee2 &     2 & 3.25e-06 & 21.88 
+twoNonSquaresInterfacee4 &     4 & 1.29e-07 & 25.19 
+twoNonSquaresInterfacee8 &     8 & 4.84e-09 & 26.65 
+Convergence rates: c0=4.62 
+
+********************************
+***** Thurs April 7, 2022
+
+
+FIX output names
+
+conv.p twoDomainsCHT.conv -problem=twoSquaresPlaneInterfaceMode1234 -cg=twoSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=1 -ts=bdf -domain1=leftDomain -domain2=rightDomain -ktc1=0.1 -ktc2=0.2 -kappa1=0.3 -kappa2=0.4 -tp=1 -tf= -order=4 -ng=5
+
+twoSquaresInterfacee1 &     1 & 7.11e-05 &       
+twoSquaresInterfacee2 &     2 & 3.25e-06 & 21.88 
+twoSquaresInterfacee4 &     4 & 1.29e-07 & 25.19 
+twoSquaresInterfacee8 &     8 & 4.84e-09 & 26.65 
+twoSquaresInterfacee16 &    16 & 1.90e-10 & 25.47 
+Convergence rates: c0=4.64 
+
+conv.p twoDomainsCHT.conv -problem=twoSquaresPlaneInterfaceMode1234 -cg=twoSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=1 -ts=bdf -domain1=leftDomain -domain2=rightDomain -ktc1=0.1 -ktc2=0.2 -kappa1=0.3 -kappa2=0.4 -tp=1 -tf= -order=2 -ng=5
+
+                grid  & N &  $T$ & r 
+twoSquaresInterfacee1 &     1 & 2.14e-03 &       
+twoSquaresInterfacee2 &     2 & 5.43e-04 &  3.94 
+twoSquaresInterfacee4 &     4 & 1.37e-04 &  3.96 
+twoSquaresInterfacee8 &     8 & 3.43e-05 &  3.99 
+twoSquaresInterfacee16 &    16 & 8.05e-06 &  4.26 
+Convergence rates: c0=2.01 
+
+********************************
+***** Tues April 5, 2022
+
+START TEST CHAMP4
+
+
+NON-SQUARES BDF44 **TROUBLE**
+conv.p twoDomainsCHT.conv -problem=planeInterfaceMode -cg=twoNonSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=1 -ts=bdf -domain1=leftDomain -domain2=rightDomain -ktc1=0.1 -ktc2=0.2 -kappa1=0.3 -kappa2=0.4 -tp=1 -tf= -order=4 -ng=3
+
+Oges:generateMatrix:ERROR matrix has a row with all zero coefficients 
+The offending equation is (i1,i2,i3,n,grid)=(11,10,0,0,0)
+...classify(i1,i2,i3,n)=3
+
+
+
+BDF44  -- OK
+conv.p twoDomainsCHT.conv -problem=planeInterfaceMode -cg=twoSquaresInterface -known=planeInterfaceMode -useChamp=1 -nc=1 -ts=bdf -domain1=leftDomain -domain2=rightDomain -ktc1=0.1 -ktc2=0.2 -kappa1=0.3 -kappa2=0.4 -tp=1 -tf= -order=4 -ng=3
+
+-- nc=1
+
+                grid  & N &  $T$ & r 
+twoSquaresInterfacee1 &     1 & 7.11e-05 &       
+twoSquaresInterfacee2 &     2 & 3.25e-06 & 21.88 
+twoSquaresInterfacee4 &     4 & 1.29e-07 & 25.19 
+twoSquaresInterfacee8 &     8 & 4.84e-09 & 26.65 
+Convergence rates: c0=4.62 
+
+-- nc=21
+                grid  & N &  $T$ & r 
+twoSquaresInterfacee1 &     1 & 7.11e-05 &       
+twoSquaresInterfacee2 &     2 & 3.25e-06 & 21.88 
+twoSquaresInterfacee4 &     4 & 1.29e-07 & 25.19 
+twoSquaresInterfacee8 &     8 & 4.84e-09 & 26.65 
+Convergence rates: c0=4.62 
+
+
+BDF44 ** trouble ***
+conv.p twoDomainsCHT.conv -problem=planeInterfaceMode -cg=twoSquaresInterface -known=planeInterfaceMode -useChamp=1 -ts=bdf -domain1=leftDomain -domain2=rightDomain -kappa1=0.1 -ktc1=0.1 -kappa2=0.3 -ktc2=0.2 -tp=.5 -tf=.5 -order=4 -ng=2
+
+
+BDF22
+conv.p twoDomainsCHT.conv -problem=planeInterfaceMode -cg=twoSquaresInterface -known=planeInterfaceMode -useChamp=1 -ts=bdf -domain1=leftDomain -domain2=rightDomain -tp=.7 -tf=.7 -order=2 -ng=2
+
+                grid  & N &  $T$ & r 
+twoSquaresInterfacee1 &     1 & 8.10e-04 &       
+twoSquaresInterfacee2 &     2 & 1.25e-04 &  6.48 
+twoSquaresInterfacee4 &     4 & 2.23e-05 &  5.61 
+Convergence rates: c0=2.59 
+
 
 ********************************
 ***** Fri Dec 10, 2021

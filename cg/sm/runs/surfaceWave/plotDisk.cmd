@@ -7,6 +7,9 @@
 # plotStuff plotDisk -show=diskDisplacementG8 -name=diskDisplacementG8 -solution=7
 # plotStuff plotDisk -show=diskDisplacementG16 -name=diskDisplacementG16 -solution=7
 #
+# Surface wave:
+#   plotStuff plotDisk -show=diskTractionMode51Num1G32 -name=diskTractionMode51Num1G32 -solution=7
+#
 # -- annulus 
 #   plotStuff plotDisk -show=annulusTTG4 -name=annulusTTG4 -solution=7
 #   plotStuff plotDisk -show=annulusTTG8 -name=annulusTTG8 -solution=7
@@ -39,6 +42,9 @@ displacement
 exit this menu
 DISPLAY SQUARES:0 0
 DISPLAY AXES:0 0
+# displacement
+# pause
+#
 line width scale factor:0 3
 hardcopy vertical resolution:0 2048
 hardcopy horizontal resolution:0 2048
@@ -46,6 +52,7 @@ hardcopy horizontal resolution:0 2048
 displacement
 exit 
 #
+pause
 $plotName = $name . "DisplacementMesh.ps"; 
 hardcopy file name:0 $plotName
 hardcopy save:0
@@ -54,6 +61,7 @@ erase
 #   ------ CONTOURS -------------
 contour
   plot:displacementNorm
+   plot contour lines (toggle)
   # optionally set the min and max
   if( $max > $min ){ $cmd ="min max $min $max"; }else{ $cmd="#"; }
   $cmd 
@@ -70,10 +78,28 @@ hardcopy file name:0 $plotName
 hardcopy save:0
 pause
 #
+#
+plot:u1
+$plotName = $name . "u1.ps"; 
+hardcopy file name:0 $plotName
+hardcopy save:0
+pause
+#  
+plot:u2
+$plotName = $name . "u2.ps"; 
+hardcopy file name:0 $plotName
+hardcopy save:0 
+#  
+plot:p
+$plotName = $name . "p.ps"; 
+hardcopy file name:0 $plotName
+hardcopy save:0 
+#
 plot:u1Error
 $plotName = $name . "u1Error.ps"; 
 hardcopy file name:0 $plotName
 hardcopy save:0
+pause
 #  
 plot:pError
 $plotName = $name . "pError.ps"; 

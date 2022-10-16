@@ -47,6 +47,9 @@ virtual void
 buildImplicitSolvers(CompositeGrid & cg);
 
 virtual int 
+buildRunTimeDialog();
+
+virtual int 
 buildTimeSteppingDialog(DialogData & dialog );
 
 virtual void 
@@ -123,6 +126,17 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                         GridFaceDescriptor & info, 
                         GridFaceDescriptor & gfd, 
 			int gfIndex, real t, bool saveTimeHistory = false );
+
+virtual int 
+plot(const real & t, 
+     const int & optionIn,
+     real & tFinal,
+     int solutionToPlot = -1 );
+
+// -- project interface values such as Temperature for conjugate heat transfer  ---
+virtual int
+projectInterface(real t, real dt, GridFunction & cgf );
+
 
 virtual void
 saveShowFileComments( Ogshow &show );

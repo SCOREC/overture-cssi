@@ -7,6 +7,11 @@
 #include "TimeFunction.h"
 #include "BeamModel.h"
 
+#include "incompressible/SmCylinderExactSolution.h"
+#include "incompressible/SmSphereExactSolution.h"
+#include "incompressible/SmRectangleExactSolution.h"
+
+
 #define rotatingDiskSVK   EXTERN_C_NAME(rotatingdisksvk)
 #define evalFibShearSolid EXTERN_C_NAME(evalfibshearsolid)
 #define evalRadialFibShearSolid EXTERN_C_NAME(evalradialfibshearsolid)
@@ -78,6 +83,13 @@ for(int i3=I3Base; i3<=I3Bound; i3++) \
 for(int i2=I2Base; i2<=I2Bound; i2++) \
 for(int i1=I1Base; i1<=I1Bound; i1++)
 
+#define FOR_3(i1,i2,i3,I1,I2,I3) \
+I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  \
+I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
+for(int i3=I3Base; i3<=I3Bound; i3++) \
+for(int i2=I2Base; i2<=I2Bound; i2++) \
+for(int i1=I1Base; i1<=I1Bound; i1++)  
+
 // Macro to get the vertex array
 #define GET_VERTEX_ARRAY(x)                                     \
 mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);       \
@@ -86,9 +98,12 @@ OV_GET_SERIAL_ARRAY_CONST(real,mg.vertex(),x);
 
 // --------------------------------------------------------------------------------
 // Assign the incompressible annulus solution
+// Output: uNorm : Return the norm of the solution
 // --------------------------------------------------------------------------------
-#beginMacro assignIncompressibleAnnulusSolution()
+#beginMacro assignIncompressibleAnnulusSolution( t,uNorm )
   Real ur,vr,pr; 
+  Real u1Max=0., u2Max=0., u3Max=0., pMax=0.; 
+  uNorm=0; 
   if( numberOfDimensions==2 )
   {
     FOR_3D(i1,i2,i3,I1,I2,I3)
@@ -102,31 +117,33 @@ OV_GET_SERIAL_ARRAY_CONST(real,mg.vertex(),x);
           
       annulusMacro(r,theta,t,ur,vr,pr);
       // (u1,u2) = ur*rHat + vr*thetaHat 
-      u(i1,i2,i3,u1c) = ur*cosTheta - vr*sinTheta;
+      u(i1,i2,i3,u1c) = ur*cosTheta - vr*sinTheta; 
       u(i1,i2,i3,u2c) = ur*sinTheta + vr*cosTheta;
       u(i1,i2,i3,pc ) = pr;
+
+      u1Max=max(u1Max,u(i1,i2,i3,u1c));
+      u2Max=max(u2Max,u(i1,i2,i3,u2c));
+      pMax =max(pMax, u(i1,i2,i3,pc));
     }
+    uNorm = max(u1Max,u2Max,u3Max,pMax);
+    // if( scale==0. )
+    // {
+    //   printF("UDKS: ERROR: annulus solution is zero! scale=%e\n",scale);
+    //   OV_ABORT("ERROR");
+    // }
+    // scale = 1./scale;
+    // c4 *= scale;  // set this so the velocity and acceleration are scaled too
+    // FOR_3(i1,i2,i3,I1,I2,I3)
+    // {
+    //   u(i1,i2,i3,u1c) *= scale;
+    //   u(i1,i2,i3,u2c) *= scale;
+    //   u(i1,i2,i3,pc ) *= scale;
+    // }    
+
   }
   else
   {
-    // ----- use 2D solution for now ----
-    FOR_3D(i1,i2,i3,I1,I2,I3)
-    {
-      Real x = vertex(i1,i2,i3,0);
-      Real y = vertex(i1,i2,i3,1);
-      Real z = vertex(i1,i2,i3,2);
-      Real r = sqrt( x*x + y*y );
-      Real theta = atan2(y,x); 
-      Real cosTheta = x/r;
-      Real sinTheta = y/r;
-          
-      annulusMacro(r,theta,t,ur,vr,pr);
-      // (u1,u2) = ur*rHat + vr*thetaHat 
-      u(i1,i2,i3,u1c) = ur*cosTheta - vr*sinTheta;
-      u(i1,i2,i3,u2c) = ur*sinTheta + vr*cosTheta;
-      u(i1,i2,i3,u3c) = 0.;
-      u(i1,i2,i3,pc ) = pr;
-    }
+    OV_ABORT("UDKS:ERROR: annulus solution : 3D called");
   }
 #endMacro 
 
@@ -155,13 +172,15 @@ OV_GET_SERIAL_ARRAY_CONST(real,mg.vertex(),x);
 // --------------------------------------------------------------------------------
 // Assign the incompressible disk solution
 // --------------------------------------------------------------------------------
-#beginMacro assignIncompressibleDiskSolution()
+#beginMacro assignIncompressibleDiskSolution( t,uNorm )
   Real ur,vr,pr; 
   int i1,i2,i3;
   Real theta; 
   const Real eps=1.e-9;   // ********************************** FIX ME *********
   if( t<= dt )
     printF("\n *** WARNING *** need a better fix for disk solution at r=0 ******\n\n");
+
+  Real u1Max=0., u2Max=0., u3Max=0., pMax=0.; 
   if( numberOfDimensions==2 )
   {
     FOR_3D(i1,i2,i3,I1,I2,I3)
@@ -187,11 +206,23 @@ OV_GET_SERIAL_ARRAY_CONST(real,mg.vertex(),x);
       u(i1,i2,i3,u1c) = ur*cosTheta - vr*sinTheta;
       u(i1,i2,i3,u2c) = ur*sinTheta + vr*cosTheta;
       u(i1,i2,i3,pc ) = pr;
+
+      if( maskLocal(i1,i2,i3) > 0 )
+      {
+        u1Max=max(u1Max,u(i1,i2,i3,u1c));
+        u2Max=max(u2Max,u(i1,i2,i3,u2c));
+        pMax =max(pMax, u(i1,i2,i3,pc));
+      }
+ 
     }
+    uNorm = max(u1Max,u2Max,u3Max,pMax);
+
   }
   else
   {
     // ** FOR NOW USE THE 2D SOLUTION ***
+    OV_ABORT("UDKS:ERROR: disk solution : 3D called");
+
     FOR_3D(i1,i2,i3,I1,I2,I3)
     {
       Real x = vertex(i1,i2,i3,0);
@@ -453,7 +484,55 @@ OV_GET_SERIAL_ARRAY_CONST(real,mg.vertex(),x);
 
 
 
+// =======================================================================
+// Macro: INITIALIZE variables for the method of lines approach
+// This should only be done at the INITIAL TIME (identified by t<0)
+//      velocity
+//      acceleration
+//      pressure 
+// =======================================================================
+#beginMacro initializeMethodOfLinesVariablesKnownSolution( knownSolution )
 
+  if( computeVelocity )
+  {
+    printF("\n $$$$$$$$$$ userDefinedKnownSolution: EVALUATE VELOCITY, ACCEL and PRESSURE AT PAST TIMES for knownSolution "
+           "t=%9.3e dt=%16.6e $$$$$$$\n\n",t,dt);
+    assert( dt>0. );
+    assert( vgf!=NULL );
+    const int currentVelocity = dbase.get<int>("currentVelocity");
+    assert( currentVelocity>=0 && currentVelocity<numberOfVelocityFunctions );
+
+    // fill in t0=0 and some past time levels
+    for( int level=0; level<numberOfVelocityFunctions; level++ )
+    {
+      real tc = 0. - level*dt;
+      const int prevVelocity = (currentVelocity - level + numberOfVelocityFunctions) % numberOfVelocityFunctions;
+
+      // eval velocity 
+      int numberOfTimeDerivatives=1; 
+      knownSolution.evalSolution( tc, cg, grid, vgf[prevVelocity][grid], I1,I2,I3, numberOfTimeDerivatives );
+
+      // eval acceleration      
+      numberOfTimeDerivatives=2; 
+      knownSolution.evalSolution( tc, cg, grid, vtgf[prevVelocity][grid], I1,I2,I3, numberOfTimeDerivatives );
+    }
+    
+    // --- save pressure for time extrapolation ---
+    const int currentPressure = dbase.get<int>("currentPressure");
+    assert( currentPressure>=0 && currentPressure<max(1,numberOfPressureFunctions) );
+    for( int level=0; level<numberOfPressureFunctions; level++ )
+    {
+      real tc = 0. - (level+3)*dt;  // -- save pressure starting at t-3*dt 
+
+      const int prevPressure = (currentPressure - level + numberOfPressureFunctions) % numberOfPressureFunctions;
+      assert( pgf !=NULL );
+
+      int numberOfTimeDerivatives=-1; // this means only compute the pressure 
+      knownSolution.evalSolution( tc, cg, grid, pgf[prevPressure][grid], I1,I2,I3, numberOfTimeDerivatives ); 
+
+    }
+  }
+#endMacro
 
 int SmParameters::
 getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua, 
@@ -667,6 +746,59 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 
   }
 
+  else if ( userKnownSolution=="incompressibleHollowCylinder" ||
+            userKnownSolution=="incompressibleSolidCylinder" ) 
+  {
+    SmCylinderExactSolution & cylExact = dbase.get<SmCylinderExactSolution>("cylExact");
+
+    printF("UDKS: evaluate hollow or solid cylinder exact solution at t=%9.3e\n",t);
+
+    cylExact.evalSolution( t, cg, grid, ua, I1,I2,I3, numberOfTimeDerivatives );
+    if( computeVelocity )
+    {
+      printF("\n $$$$$$$$$$ userDefinedKnownSolution: EVALUATE VELOCITY, ACCEL and PRESSURE AT PAST TIMES t=%9.3e dt=%16.6e $$$$$$$\n\n",t,dt);
+      assert( dt>0. );
+      
+      OV_ABORT("UDKS: FINISH ME");
+
+    }    
+
+  }
+
+  else if ( userKnownSolution=="incompressibleHollowSphere" ||
+            userKnownSolution=="incompressibleSolidSphere" ) 
+  {
+    SmSphereExactSolution & sphereExact = dbase.get<SmSphereExactSolution>("sphereExact");
+
+    if( t<2*dt )
+      printF("UDKS: evaluate hollow or solid sphere exact solution at t=%9.3e\n",t);
+
+    sphereExact.evalSolution( t, cg, grid, ua, I1,I2,I3, numberOfTimeDerivatives );
+    if( computeVelocity )
+    {
+      printF("\n $$$$$$$$$$ userDefinedKnownSolution: EVALUATE VELOCITY, ACCEL and PRESSURE AT PAST TIMES t=%9.3e dt=%16.6e $$$$$$$\n\n",t,dt);
+      assert( dt>0. );
+      
+      OV_ABORT("UDKS: FINISH ME");
+
+    }    
+
+  } 
+
+  else if ( userKnownSolution=="incompressibleRectangleEigenmode" )
+  {
+    SmRectangleExactSolution & rectangleExact = dbase.get<SmRectangleExactSolution>("rectangleExact");
+
+    if( t<2*dt )
+      printF("UDKS: evaluate rectangle exact solution at t=%9.3e\n",t);
+
+    rectangleExact.evalSolution( t, cg, grid, ua, I1,I2,I3, numberOfTimeDerivatives );
+
+    initializeMethodOfLinesVariablesKnownSolution( rectangleExact );
+    
+
+  }     
+
   else if( userKnownSolution=="incompressibleSurfaceWave" )
   {
     // --- incompressible surface wave -----
@@ -844,7 +976,34 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
         // }
 
       }              
-    }    
+    }
+    else if( iswCase==5 )
+    {
+      // -- traction - displacement strip 
+      if( numberOfDimensions==2 )
+      {
+        #Include "incompressible/ismStripTractionDisplacementCase5k2pi.h"
+        int i1,i2,i3;
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
+          // Reference coordinates:
+          Real x = vertex(i1,i2,i3,0);
+          Real y = vertex(i1,i2,i3,1);
+
+          u(i1,i2,i3,u1c) = u1e(x,y,t);
+          u(i1,i2,i3,u2c) = u2e(x,y,t);
+          u(i1,i2,i3,pc ) = pe(x,y,t);
+        } 
+
+        // At the initial time we initialize some MOL variables
+        initializeMethodOfLinesVariables(); 
+      }
+      else
+      {
+  
+        OV_ABORT("UDKS: finish me - case 5 ");
+      }
+    }        
     else
     {
       OV_ABORT("finish me");
@@ -875,19 +1034,39 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     //   OV_ABORT("UDKS: finish me -- computeVelocity");
     // }
 
-    Real C4 =1.; // defines the scale
+    // Real C4 =1.; // defines the scale
 
+    // annulusScaling : scale annulus solution to be size one
+    if( !db.has_key("annulusScaling") )
+    {
+      db.put<Real>("annulusScaling") = -1.;  // this means scaling has not be set 
+    }
+    Real & annulusScaling = db.get<Real>("annulusScaling");
+    Real uNorm; 
     if( iswCase==1 )
     {
       // ---- Annulus : displacement-displacement ----
       // printF("UDKS: EVAL NEW ANNULUS SOLUTION displacement-displacement\n");
       // int n=1, m=2; 
-      Real c4=1./4.; 
+      Real c4=1./4.;  // old scaling 
 
       #Include "incompressible/ismAnnulusDisplacementDisplacementRoots.h"
       #Include "incompressible/ismAnnulusDisplacementDisplacement.h"
 
-      assignIncompressibleAnnulusSolution();
+      if( annulusScaling <= 0. )
+      { // -- first time: compute the norm of the solution so we can scale to be size one
+        Real t0=0.; 
+        assignIncompressibleAnnulusSolution( t0,uNorm );
+        if( uNorm==0. )
+        {
+          printF("UDKS: ERROR: annulus solution is zero! uNorm=%e\n",uNorm);
+          OV_ABORT("ERROR");
+        }        
+        annulusScaling = c4/uNorm;
+      }
+      c4 = annulusScaling; 
+
+      assignIncompressibleAnnulusSolution( t,uNorm );
 
       initializeMethodOfLinesVariablesAnnulus();
 
@@ -902,7 +1081,20 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       #Include "incompressible/ismAnnulusTractionDisplacementRoots.h"
       #Include "incompressible/ismAnnulusTractionDisplacement.h"
 
-      assignIncompressibleAnnulusSolution();
+      if( annulusScaling <= 0. )
+      { // -- first time: compute the norm of the solution so we can scale to be size one
+        Real t0=0.; 
+        assignIncompressibleAnnulusSolution( t0,uNorm );
+        if( uNorm==0. )
+        {
+          printF("UDKS: ERROR: annulus solution is zero! uNorm=%e\n",uNorm);
+          OV_ABORT("ERROR");
+        }        
+        annulusScaling = c4/uNorm;
+      }
+      c4 = annulusScaling; 
+
+      assignIncompressibleAnnulusSolution( t,uNorm );
 
       initializeMethodOfLinesVariablesAnnulus();
 
@@ -917,7 +1109,20 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       #Include "incompressible/ismAnnulusTractionTractionRoots.h"
       #Include "incompressible/ismAnnulusTractionTraction.h"
 
-      assignIncompressibleAnnulusSolution();
+      if( annulusScaling <= 0. )
+      { // -- first time: compute the norm of the solution so we can scale to be size one
+        Real t0=0.; 
+        assignIncompressibleAnnulusSolution( t0,uNorm );
+        if( uNorm==0. )
+        {
+          printF("UDKS: ERROR: annulus solution is zero! uNorm=%e\n",uNorm);
+          OV_ABORT("ERROR");
+        }        
+        annulusScaling = c4/uNorm;
+      }
+      c4 = annulusScaling; 
+
+      assignIncompressibleAnnulusSolution( t,uNorm );
 
       initializeMethodOfLinesVariablesAnnulus();
 
@@ -954,7 +1159,8 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     assert( pc>=0 );
 
     MappedGrid & mg = cg[grid];
-    mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
+    mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter | MappedGrid::THEmask );
+    OV_GET_SERIAL_ARRAY_CONST(int,mg.mask(),maskLocal);
     OV_GET_SERIAL_ARRAY_CONST(real,mg.vertex(),vertex);
     RealArray & u = ua;
 
@@ -967,18 +1173,40 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 
     const Real eps=1.e-9;   // ********************************** FIX ME *********
 
+    // diskScaling : scale annulus solution to be size one
+    if( !db.has_key("diskScaling") )
+    {
+      db.put<Real>("diskScaling") = -1.;  // this means scaling has not be set 
+    }
+    Real & diskScaling = db.get<Real>("diskScaling");
+    Real uNorm; 
+
     // Real C4 =1.; // defines the scale
     if( iswCase==1 )
     {
       // ---- Disks : displacement ----
       // printF("UDKS: EVAL NEW DISK SOLUTION displacement-displacement\n");
 
-      Real c3=1./4.; 
+      Real c3=1./4.;   // old scaling 
 
       #Include "incompressible/ismDiskDisplacementRoots.h"
       #Include "incompressible/ismDiskDisplacement.h"
 
-      assignIncompressibleDiskSolution();
+      if( diskScaling <= 0. )
+      { // -- first time: compute the norm of the solution so we can scale to be size one
+        Real t0=0.; 
+        assignIncompressibleDiskSolution( t0,uNorm );
+        if( uNorm==0. )
+        {
+          printF("UDKS: ERROR: disk solution is zero! uNorm=%e\n",uNorm);
+          OV_ABORT("ERROR");
+        }        
+        diskScaling = c3/uNorm;
+        printF("\n +++++ UDKS: uNorm=%9.2e +++++",uNorm);
+      }
+      c3 = diskScaling;       
+
+      assignIncompressibleDiskSolution( t,uNorm );
 
       initializeMethodOfLinesVariablesDisk();
 
@@ -989,11 +1217,46 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       // printF("UDKS: EVAL NEW DISK SOLUTION\n");
 
       Real c3=1./4.; 
+      if( diskScaling>0 )
+        c3 = diskScaling;
 
       #Include "incompressible/ismDiskTractionRoots.h"
       #Include "incompressible/ismDiskTraction.h"
 
-      assignIncompressibleDiskSolution();
+      if( diskScaling <= 0. )
+      { 
+        // -- first time: compute the norm of the solution so we can scale to be size one
+        // ** WE NEED TO LOOP OVER ALL GRIDS **
+        Real t0=0.;
+        uNorm=0.; 
+        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+        {
+          MappedGrid & mg = cg[grid];
+          mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
+          OV_GET_SERIAL_ARRAY_CONST(real,mg.vertex(),vertex);
+          Index I1,I2,I3;
+          getIndex(mg.gridIndexRange(),I1,I2,I3);
+          const int numberOfComponents=3; // u1,u2,p
+          RealArray u(I1,I2,I3,numberOfComponents);    // temp array
+
+          Real gridNorm=0.;
+          assignIncompressibleDiskSolution( t0,gridNorm );
+          printF(" +++++ UDKS: grid=%d : gridNorm=%9.2e numberOfTimeDerivatives=%d +++++",
+               grid,gridNorm,numberOfTimeDerivatives);
+          uNorm = max(uNorm,gridNorm);
+        }
+        if( uNorm==0. )
+        {
+          printF("UDKS: ERROR: disk solution is zero! uNorm=%e\n",uNorm);
+          OV_ABORT("ERROR");
+        }        
+        diskScaling = c3/uNorm;
+        printF("\n +++++ UDKS: uNorm=%9.2e +++++",uNorm);
+      }
+      printF("\n +++++ UDKS: t=%9.3e, diskScaling=%9.2e +++++",t, diskScaling);
+      c3 = diskScaling;       
+
+      assignIncompressibleDiskSolution( t,uNorm );
 
       initializeMethodOfLinesVariablesDisk();
 
@@ -1002,24 +1265,6 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     {
       OV_ABORT("error");
     }
-
-
-    // if( iswCase==1 )
-    // {
-    //   // files generated from AMP/ism/maple/DiskAnnulusSolutionWDH.mw
-    //   // C4 = 1./50.;  // pressure was size 100 with C4=1
-    //   #Include "incompressible/ismDiskDisplacementWDH.h"
-    //   assignIncompressibleDiskSolution();
-    // }
-    // else if( iswCase==2 )
-    // {
-    //   #Include "incompressible/ismDiskTractionWDH.h"
-    //   assignIncompressibleDiskSolution();
-    // }
-    // else
-    // {
-    //   OV_ABORT("UDKS: unknown icase=");
-    // }
 
   }
 
@@ -1812,10 +2057,14 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       }
 
   }
+
   else 
   {
     // look for a solution in the base class
     Parameters::getUserDefinedKnownSolution( t, cg, grid, ua, I1,I2,I3 );
+
+
+
   }
   
   // else
@@ -1862,10 +2111,14 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       "no known solution",
       "rotating disk",  // for cgsm SVK model
       "linear beam exact solution",
+      "incompressible rectangle eigenmodes",
       "incompressible surface wave",
       "incompressible annulus solution",
       "incompressible disk solution",
       "gaussian plane wave",
+      "incompressible hollow cylinder",
+      "incompressible hollow sphere",
+      "incompressible solid sphere",
       "choose a common known solution",
       "done",
       ""
@@ -2106,6 +2359,110 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
 
     }        
+    else if( answer=="incompressible hollow cylinder" ||
+             answer=="incompressible solid cylinder"  )
+    {
+      if( answer=="incompressible hollow cylinder" )
+        userKnownSolution="incompressibleHollowCylinder";
+      else
+        userKnownSolution="incompressibleSolidCylinder";
+      dbase.get<bool>("knownSolutionIsTimeDependent")=true;  // known solution IS time dependent
+
+      printF("--- Incompressible hollow or solid cylinder ---\n"
+             " This is an exact solution to the incompressible linear elastic equations.\n");
+
+      aString caseName="hollowCylinderDD"; 
+      gi.inputString(caseName,"Enter the caseName (hollowCylinderDD, hollowCylinderTT, solidCylinderD, solidCylinderT )");
+      if( !dbase.has_key("SmCylinderExactSolution") )
+      {
+        dbase.put<SmCylinderExactSolution>("cylExact");
+      }
+
+      // // int & iswCase = db.get<int>("iswCase");
+      // int iswCase=0; // FINISH ME 
+      // int n=1, m=1;
+      // gi.inputString(answer,"Enter iswCase, n,m");
+      // sScanF(answer,"%i %i %i",&iswCase,&n,&m);
+      // printF("Setting iswCase=%d, n=%d, m=%d\n",iswCase,n,m);
+      // ipar[0]=n;
+      // ipar[1]=m;
+
+
+      SmCylinderExactSolution & cylExact = dbase.get<SmCylinderExactSolution>("cylExact");
+      cylExact.initialize( cg, caseName );
+
+    }
+    else if( answer=="incompressible hollow sphere" ||
+             answer=="incompressible solid sphere"  )
+    {
+      if( answer=="incompressible hollow sphere" )
+        userKnownSolution="incompressibleHollowSphere";
+      else
+        userKnownSolution="incompressibleSolidSphere";
+      
+      dbase.get<bool>("knownSolutionIsTimeDependent")=true;  // known solution IS time dependent
+
+      printF("--- Incompressible hollow or solid sphere ---\n"
+             " This is an exact solution to the incompressible linear elastic equations.\n");
+
+      aString caseName="solidSphereD"; 
+      gi.inputString(caseName,"Enter the caseName (solidSphereD, solidSphereT )");
+      if( !dbase.has_key("SmSphereExactSolution") )
+      {
+        dbase.put<SmSphereExactSolution>("sphereExact");
+      }
+
+      // // int & iswCase = db.get<int>("iswCase");
+      // int iswCase=0; // FINISH ME 
+      // int n=1, m=1;
+      // gi.inputString(answer,"Enter iswCase, n,m");
+      // sScanF(answer,"%i %i %i",&iswCase,&n,&m);
+      // printF("Setting iswCase=%d, n=%d, m=%d\n",iswCase,n,m);
+      // ipar[0]=n;
+      // ipar[1]=m;
+
+
+      SmSphereExactSolution & sphereExact = dbase.get<SmSphereExactSolution>("sphereExact");
+      sphereExact.initialize( cg, caseName );
+
+
+    } 
+    else if( answer=="incompressible rectangle eigenmodes" )
+    {
+      userKnownSolution="incompressibleRectangleEigenmode";
+
+      
+      dbase.get<bool>("knownSolutionIsTimeDependent")=true;  // known solution IS time dependent
+
+      printF("--- Eigenmodes of an incompressible solid on a rectangular domain ---\n"
+             " This is an exact solution to the incompressible linear elastic equations.\n"
+             "       u1 = uHat(x) * exp( 2*pi*my*y ) * exp( i omega t).\n"
+             "       omega = omega(mx,my), mx=1,2,...,  my=1,2,...\n"
+             " caseName:\n"
+             "   rectangleDD : periodic in y, BC=displacement on left and right.\n"
+             "   rectangleDD : periodic in y, BC=traction on left and BC=dispplacement on right.\n"
+             "   rectangleTT : periodic in y, BC=traction on left and right.\n"
+             );
+
+      aString caseName="rectangleTT"; 
+      gi.inputString(caseName,"Enter the caseName (rectangleDD, rectangleTD, rectangleTT )");
+      printF("Setting caseName=[%s]\n",(const char*)caseName);
+      if( !dbase.has_key("SmRectangleExactSolution") )
+      {
+        dbase.put<SmRectangleExactSolution>("rectangleExact");
+      }
+
+      int mx=2, my=1, mz=1;
+      gi.inputString(answer,"Enter mode numbers: mx,my,mz");
+      sScanF(answer,"%i %i %i",&mx,&my,&mz);
+
+      SmRectangleExactSolution & rectangleExact = dbase.get<SmRectangleExactSolution>("rectangleExact");
+      rectangleExact.initialize( cg, caseName );
+      rectangleExact.setParameter( "mx",mx );
+      rectangleExact.setParameter( "my",my );
+      rectangleExact.setParameter( "mz",mz );
+
+    }    
 
     else
     {

@@ -1,0 +1,136 @@
+\clearpage
+\section{Comparison of Ogmg to Algebraic Multigrid (AMG) and Krylov solvers} \label{sec:comparisonKrylovAndAMG}
+
+Here are some comparisons of Ogmg to the AMG solver boomerAMG from HYPRE.
+
+\begin{table}[hbt]
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|} \hline
+  \multicolumn{6}{|c|}{} & \multicolumn{3}{|c|}{CPU time (s)} & storage  \\ \hline
+    Grid & ord &   Solver          &    pts  & its  & $\|{\rm res}\|_\infty$ & total    & setup    & solve & reals/pt \\ \hline
+%
+ square1024 &  2  &  Ogmg V[2,1]       &   1.1M  &    9  &    9.2e-08       &    0.58  &    0.02  &    0.56  &     8.7 \\
+ square1024 &  2  &  AMG               &   1.1M  &   12  &    2.0e-07       &    7.90  &    4.58  &    3.32  &    97.0 \\
+ square1024 &  2  &  Bi-CG-Stab ILU(1) &   1.1M  &  402  &    2.7e-07       &   36.98  &    3.26  &   33.72  &    56.9 \\
+ square1024 &  2  &  GMRES ILU(3)      &   1.1M  & 1307  &    9.3e-08       &   84.51  &    3.47  &   81.04  &    79.3 \\
+\hline
+ square1024 &  4  &  Ogmg V[2,1]       &   1.1M  &    9  &    1.7e-08       &    0.73  &    0.01  &    0.72  &     8.8 \\
+ square1024 &  4  &  AMG               &   1.1M  &   21  &    3.3e-08       &   16.65  &    7.32  &    9.33  &   166.1 \\
+ square1024 &  4  &  Bi-CG-Stab ILU(1) &   1.1M  &  270  &    1.3e-08       &   35.54  &    5.73  &   29.81  &   101.8 \\
+ square1024 &  4  &  GMRES ILU(3)      &   1.1M  &  657  &    1.1e-08       &   68.09  &    7.13  &   60.95  &   144.9 \\
+\hline
+ cice32 &  2  &  Ogmg V[2,1]       &   1.7M  &    9  &    4.7e-09       &    1.34  &    0.07  &    1.27  &     9.4 \\
+ cice32 &  2  &  AMG               &   1.7M  &   35  &    2.2e-09       &   23.70  &    7.25  &   16.45  &   112.5 \\
+ cice32 &  2  &  Bi-CG-Stab ILU(1) &   1.7M  &  510  &    6.9e-09       &   71.37  &    4.87  &   66.49  &    54.3 \\
+ cice32 &  2  &  GMRES ILU(3)      &   1.7M  & 1600  &    2.6e-09       &  150.63  &    5.18  &  145.45  &    76.0 \\
+\hline
+ cice32 &  4  &  Ogmg V[2,1]       &   1.7M  &    9  &    3.6e-09       &    1.68  &    0.13  &    1.54  &    10.7 \\
+ cice32 &  4  &  AMG               &   1.7M  &  132  &    4.9e-09       &  103.16  &   11.28  &   91.88  &   170.2 \\
+ cice32 &  4  &  Bi-CG-Stab ILU(1) &   1.7M  &  367  &    2.9e-09       &   72.61  &    8.57  &   64.03  &    98.2 \\
+ cice32 &  4  &  GMRES ILU(3)      &   1.7M  &  632  &    3.4e-09       &  103.38  &   11.03  &   92.35  &   140.3 \\
+\hline
+ shapesBige16 &  2  &  Ogmg V[2,1]       &   1M  &    9  &    8.2e-10       &    1.88  &    0.32  &    1.56  &    13.9 \\
+ shapesBige16 &  2  &  AMG               &   1M  &   34  &    1.1e-09       &   13.62  &    4.26  &    9.35  &   111.9 \\
+ shapesBige16 &  2  &  Bi-CG-Stab ILU(1) &   1M  &  441  &    5.7e-09       &   38.79  &    2.85  &   35.94  &    54.7 \\
+ shapesBige16 &  2  &  GMRES ILU(3)      &   1M  &  783  &    9.7e-10       &   48.42  &    2.97  &   45.45  &    76.4 \\
+\hline
+ shapesBige16 &  4  &  Ogmg V[2,1]       &   1.1M  &    9  &    2.0e-08       &    2.70  &    0.55  &    2.15  &    18.7 \\
+ shapesBige16 &  4  &  AMG               &   1.1M  &  241  &    3.7e-08       &  106.83  &    7.19  &   99.64  &   168.6 \\
+ shapesBige16 &  4  &  Bi-CG-Stab ILU(1) &   1.1M  &  273  &    1.9e-08       &   34.53  &    5.13  &   29.40  &    99.7 \\
+ shapesBige16 &  4  &  GMRES ILU(3)      &   1.1M  &  338  &    2.6e-08       &   37.09  &    6.80  &   30.29  &   141.5 \\
+\hline
+
+\end{tabular}
+\end{center}
+\caption{Ogmg comparison to Krylov (Bi-CG-Stab+ILU(1), GMRES+ILU(3)) and AMG (HYPRE/boomerAMG) solvers. }
+\label{tab:comparisonAMG} 
+\end{table}
+
+
+\begin{figure}[hbt]
+\begin{center}
+  \includegraphics[width=.32\linewidth]{fig/relativesolveTimessquare}
+  \includegraphics[width=.32\linewidth]{fig/relativesolveTimescic}
+  \includegraphics[width=.32\linewidth]{fig/relativesolveTimesshapes}
+  \end{center} 
+\caption{CPU times to solve (no setup) relative to the time for Ogmg.}
+\label{fig:relativeSolveTimes}
+\end{figure}
+
+\begin{figure}[hbt]
+\begin{center}
+  \includegraphics[width=.32\linewidth]{fig/relativesolveTimesHorizontalBarssquare}
+  \includegraphics[width=.32\linewidth]{fig/relativesolveTimesHorizontalBarscic}
+  \includegraphics[width=.32\linewidth]{fig/relativesolveTimesHorizontalBarsshapes}
+  \end{center} 
+\caption{CPU times to solve (no setup) relative to the time for Ogmg.}
+\label{fig:relativeSolveTimes}
+\end{figure}
+
+\begin{figure}[hbt]
+\begin{center}
+  \includegraphics[width=.32\linewidth]{fig/memoryUsageHorizontalBarssquare}
+  \includegraphics[width=.32\linewidth]{fig/memoryUsageHorizontalBarscic}
+  \includegraphics[width=.32\linewidth]{fig/memoryUsageHorizontalBarsshapes}
+  \end{center} 
+\caption{Memory usage in reals/grid-point.}
+\label{fig:memoryUsage}
+\end{figure}
+
+
+\medskip\noindent
+The memory usage in reported in reals/pt (number of doubles per grid point). The memory usage
+is computed by taking the total memory in use by the program and subtracting the memory used
+by the program before calling the solver (this should approximately remove baseline memory used by libraries etc.)
+% Memory usage is now estimated by subtracting the approximate memory used by libraries.
+
+\medskip\noindent
+GMRES used a restart length of 20.
+The AMG solver is called through PETSc (v 3.4.5) and uses HYPRE version 2.9.1a. 
+The results reported here were computed using a Intel Xeon 2.7 GHz processor.
+
+
+\medskip
+\noindent Notes and observations on the AMG solver:
+\begin{enumerate}
+  \item AMG solved the same (overset grid) equations as Ogmg.
+  \item It is hard to perform a fair comparison since there are many options for each solver (Ogmg or Hypre).
+      We have tried to choose parameters to optimize the run-time for both solvers.
+  \item AMG is generally faster than Bi-CG-stab which is faster than GMRES. 
+  \item The AMG solver uses a lot more memory than Ogmg, somewhat more than the memory for GMRES+ILU(3). Ogmg 
+     is using roughly 10-20 doubles per grid point in these examples. Ogmg is a matrix free method and so does not
+     need to store the matrix coefficients (although on curvilinear grids, grid metrics are stored).
+  \item Ogmg is roughly 3-5 times faster than the AMG solver in the examples shown.
+  \item The setup time for AMG is much larger (70 times larger ?) than the setup time for Ogmg. The fast setup time
+    for Ogmg is an advantage for moving grid problems where the matrix changes at every time-step.
+  \item Note that the condition number of the Poisson matrix for finite difference methods is always $O(h^{-2})$
+         at any order of accuracy.
+  \item Most complex geometry problems that do not use overset grids will likely use FEM methods and unstructured grids.
+     Note that the condition number for FEM approximations usually gets worse as the order of accuracy increases; and this will likely
+     slow the convergence without special preconditioners.
+  \item Most the of CPU time in Ogmg is spent in the smoothers. Very likely these can be sped-up by a factor of 2 or more
+     using techniques such as those proposed by Ulrich R\"ude et. al~\cite{??}.
+  \item Ogmg CPU times for order four are roughly 30-50\% larger than CPU times for order two.
+\end{enumerate}
+
+
+% \clearpage
+% \section{Comparison of Ogmg to Algebraic Multigrid (AMG) and Krylov solvers} \label{sec:comparisonKrylovAndAMG}
+
+% Here are some comparisons of Ogmg to the AMG solver boomerAMG from HYPRE.
+
+% \medskip\noindent
+% Memory usage is now estimated by subtracting the approximate memory used by libraries.
+
+% \medskip\noindent
+% GMRES used an ILU(3) preconditioner with a restart length of 20.
+
+
+% Check memory usage: Ogmg may report RSS while tcm3 may report estimated solver size ?
+
+
+% Background memory for ogmgt is 40 Mb ?? (RSS?)  *check this*
+
+% Background memory (solver size) for tcm3 is 40 Kb ?? *check this*
+% tcm3: RSS 961M --> 119 reals/pt
+

@@ -22,7 +22,7 @@
        real rpar(0:*)
      !     ---- local variables -----
       integer i1,i2,i3,n,gridType,orderOfAccuracy,orderInTime,debug,numGhost,numGhost0
-      integer addForcing,option,twilightZone,useCurlCurlBoundaryCondition
+      integer addForcing,option,twilightZone,useCurlCurlBoundaryCondition,numNans
       integer useWhereMask,grid
       ! integer useConservative
       integer u1c,u2c,u3c,pc
@@ -44,6 +44,7 @@
       integer startGhost
       integer numSmooths,smooth
       real omega
+      logical checkForNans
       integer rectangular,curvilinear
       parameter( rectangular=0, curvilinear=1 )
      !...........start statement function
@@ -1173,6 +1174,7 @@
       ! cdt=cc*dt
       ! c1dtsq=c1*dtsq
       ! c2dtsq=c2*dtsq
+       checkForNans=.false.
       if( t<=2*dt )then
         write(*,'("## pressureIsm3dOrder2c: dt=",1pe12.4," u1c,u2c,u3c,pc=",4i3," t=",1pe12.3)') dt,u1c,u2c,u3c,pc,t
         write(*,'("     nd=",i2," debug=",i3," addForcing=",i4," cdv=",f5.2," twilightZone=",i2)') nd,debug,addForcing,cdv,twilightZone
@@ -1213,6 +1215,24 @@
          end do
          end do
          end do
+         if( checkForNans )then
+           numNans=0
+             do i3=nd3a,nd3b
+             do i2=nd2a,nd2b
+             do i1=nd1a,nd1b
+             if( isnan( f(i1,i2,i3) ) )then 
+               numNans = numNans+1 
+             end if 
+             end do
+             end do
+             end do
+           if( numNans.gt.0 )then
+             write(*,'("pIsmOpt: ERROR - nans found in pressure RHS pIsmOptAfterDiv, grid=",i3)') grid
+             stop 9876
+           else
+             write(*,'("pIsmOpt: INFO: no nans in pressureRHS found: pIsmOptAfterDiv, grid=",i3)') grid
+           end if
+         end if
        ! -- smooth divergence damping ---
        numSmooths=0
        omega=.5 
@@ -1455,7 +1475,14 @@
                    !       2*mu* n^T [ n1*ux+n2*uy+n3*uz ]
                    !                 [ n1*vx+n2*vy+n3*vz ] 
                    !                 [ n1*wx+n2*wy+n3*wz ] 
-                   f(i1,i2,i3) = 2.*mu*( an1*( an1*unx23(i1,i2,i3,u1c) + an2*uny23(i1,i2,i3,u1c) + an3*unz23(i1,i2,i3,u1c) ) + an2*( an1*unx23(i1,i2,i3,u2c) + an2*uny23(i1,i2,i3,u2c) + an3*unz23(i1,i2,i3,u2c) ) + an3*( an1*unx23(i1,i2,i3,u3c) + an2*uny23(i1,i2,i3,u3c) + an3*unz23(i1,i2,i3,u3c) ) )                                   
+                   f(i1,i2,i3) = 2.*mu*( an1*( an1*unx23(i1,i2,i3,u1c) + an2*uny23(i1,i2,i3,u1c) + an3*unz23(i1,i2,i3,u1c) ) + an2*( an1*unx23(i1,i2,i3,u2c) + an2*uny23(i1,i2,i3,u2c) + an3*unz23(i1,i2,i3,u2c) ) + an3*( an1*unx23(i1,i2,i3,u3c) + an2*uny23(i1,i2,i3,u3c) + an3*unz23(i1,i2,i3,u3c) ) ) 
+                   if( isnan( f(i1,i2,i3) ) )then
+                     write(*,'("pRHS: Traction BC: nan found, grid=",i3," i1,i2,i3=",3i3)') grid,i1,i2,i3 
+                     write(*,'("    : an1,an2,an3=",3(1pe12.4,1x))') an1,an2,an3
+                     write(*,'("    : u1x,u1y,u1z=",3(1pe12.4,1x))') unx23(i1,i2,i3,u1c),uny23(i1,i2,i3,u1c),unz23(i1,i2,i3,u1c)
+                     write(*,'("    : u2x,u2y,u2z=",3(1pe12.4,1x))') unx23(i1,i2,i3,u2c),uny23(i1,i2,i3,u2c),unz23(i1,i2,i3,u2c)
+                     write(*,'("    : u3x,u3y,u3z=",3(1pe12.4,1x))') unx23(i1,i2,i3,u3c),uny23(i1,i2,i3,u3c),unz23(i1,i2,i3,u3c)
+                   end if                                  
                  if( twilightZone.eq.1 )then
                      call ogDeriv(ep,0,0,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,pc,pe)
                      call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,u1c,uex)
@@ -1628,6 +1655,24 @@
         end do ! end side
         end do ! end axis
        ! ---------- END LOOP OVER BOUNDARIES -------
+         if( checkForNans )then
+           numNans=0
+             do i3=nd3a,nd3b
+             do i2=nd2a,nd2b
+             do i1=nd1a,nd1b
+             if( isnan( f(i1,i2,i3) ) )then 
+               numNans = numNans+1 
+             end if 
+             end do
+             end do
+             end do
+           if( numNans.gt.0 )then
+             write(*,'("pIsmOpt: ERROR - nans found in pressure RHS pIsmOptAfterFillBC, grid=",i3)') grid
+             stop 9876
+           else
+             write(*,'("pIsmOpt: INFO: no nans in pressureRHS found: pIsmOptAfterFillBC, grid=",i3)') grid
+           end if
+         end if
      !  #If "curvilinear" eq "rectangular"
      !
      !    #If "2" eq "2" 

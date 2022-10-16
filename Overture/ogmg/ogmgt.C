@@ -36,7 +36,7 @@ pauseForInput(const aString & comment, real total, bool checkMemoryUsage=false)
 
 //   printF(" ===>%s my total = %5.1f M, A++ array=%5.1f M A++ total=%5.1f M \n\n",
 //          (const char*)comment,total/1.e6,
-// 	 Diagnostic_Manager::getTotalArrayMemoryInUse()/1.e6,Diagnostic_Manager::getTotalMemoryInUse()/1.e6);
+//       Diagnostic_Manager::getTotalArrayMemoryInUse()/1.e6,Diagnostic_Manager::getTotalMemoryInUse()/1.e6);
 
   if( checkMemoryUsage )
   {
@@ -82,8 +82,12 @@ main(int argc, char *argv[])
   Overture::start(argc,argv);  // initialize Overture
   Optimization_Manager::setForceVSG_Update(Off);
 
+
+
   // This macro will initialize the PETSc solver if OVERTURE_USE_PETSC is defined.
   INIT_PETSC_SOLVER();
+
+
 
   const int maxBuff=300;
   char buff[maxBuff];
@@ -101,6 +105,8 @@ main(int argc, char *argv[])
   bool runTests=false;
   int degreex=-1;  // degreex of space polynomial can be changed on the command line
   int numParallelGhost=2;
+  int solveTwice=false;
+
 
   if( argc > 1 )
   { // look at arguments for "noplot" or some other name
@@ -119,8 +125,8 @@ main(int argc, char *argv[])
       else if( (len=line.matches("levels=")) || (len=line.matches("-levels=")) )
       {
         int length=line.length();
-	sScanF(line(len,length-1),"%i",&maximumNumberOfLevels);
-	maximumNumberOfExtraLevels=maximumNumberOfLevels-1;
+        sScanF(line(len,length-1),"%i",&maximumNumberOfLevels);
+        maximumNumberOfExtraLevels=maximumNumberOfLevels-1;
         printF("maximumNumberOfExtraLevels=%i \n",maximumNumberOfExtraLevels);
       }
       else if( line=="-test" )
@@ -130,31 +136,37 @@ main(int argc, char *argv[])
       else if( (len=line.matches("debug=")) || (len=line.matches("-debug=")) )
       {
         int length=line.length();
-	sScanF(line(len,length-1),"%i",&Ogmg::debug);
+        sScanF(line(len,length-1),"%i",&Ogmg::debug);
         printF("Ogmg::debug=%i \n",Ogmg::debug);
       }
       else if( (len=line.matches("-degreex=")) )
       {
         int length=line.length();
-	sScanF(line(len,length-1),"%i",&degreex);
+        sScanF(line(len,length-1),"%i",&degreex);
         printF("Ogmg::degree of the spatial polynomial is degreex=%i \n",degreex);
       }
       else if( (len=line.matches("-numParallelGhost=")) )
       {
-	sScanF(line(len,line.length()-1),"%i",&numParallelGhost);
+        sScanF(line(len,line.length()-1),"%i",&numParallelGhost);
         printF("Ogmg::number of parallel ghost lines is=%i \n",numParallelGhost);
       }
       else if( (len=line.matches("-numberOfParallelGhost=")) )
       {
-	sScanF(line(len,line.length()-1),"%i",&numParallelGhost);
+        sScanF(line(len,line.length()-1),"%i",&numParallelGhost);
         printF("Ogmg::number of parallel ghost lines is=%i \n",numParallelGhost);
       }
       else if( (len=line.matches("-maxits=")) )
       {
         int length=line.length();
-	sScanF(line(len,length-1),"%i",&maximumNumberOfIterations);
+        sScanF(line(len,length-1),"%i",&maximumNumberOfIterations);
         printF("Ogmg::maximumNumberOfIterations=%i \n",maximumNumberOfIterations);
       }
+      else if( (len=line.matches("-solveTwice=")) )
+      {
+        int length=line.length();
+        sScanF(line(len,length-1),"%i",&solveTwice);
+        printF("Ogmg::set solveTwice=%i \n",solveTwice);
+      }      
       else if( commandFileName=="" )
         commandFileName=line;    
     }
@@ -282,7 +294,7 @@ main(int argc, char *argv[])
 //     {
 //       CompositeGrid & m =cg.multigridLevel[level];
 //       printF("level=%i, numberOfComponentGrids()=%i, numberOfGrids()=%i, numberOfBaseGrids()=%i\n",level,
-// 	     m.numberOfComponentGrids(),m.numberOfGrids(),m.numberOfBaseGrids());
+//           m.numberOfComponentGrids(),m.numberOfGrids(),m.numberOfBaseGrids());
 //       m.numberOfInterpolationPoints.display(sPrintF(buff,"level=%i, numberOfInterpolationPoints",level));
       
 //       // for( int grid=0; grid<m.numberOfComponentGrids(); grid++ )
@@ -333,7 +345,7 @@ main(int argc, char *argv[])
   bcData=0.;
 
   aString name,answer,answer2, option="s";
-	 
+         
   aString mainMenu[]=
   {
     "!ogmgt",
@@ -494,29 +506,29 @@ main(int argc, char *argv[])
       if( bcName=="d" )
         bcType=dirichlet;
       else if( bcName=="n" )
-	bcType=neumann;
+        bcType=neumann;
       else if( bcName=="m" )
-	bcType=mixed;
+        bcType=mixed;
       else if( bcName=="e" )
-	bcType=extrapolate;
+        bcType=extrapolate;
       else 
       {
-	printF("ERROR: unknown bcName=[%s]. Will set to dirichlet\n",(const char*)bcName);
-	bcName="d";
+        printF("ERROR: unknown bcName=[%s]. Will set to dirichlet\n",(const char*)bcName);
+        bcName="d";
         bcType=dirichlet;
       }
       
       for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
       {
-	ForBoundary(side,axis) 
-	{
-	  if( cg[grid].boundaryCondition(side,axis)==bcNumber )
-	  {
-	    bc(side,axis,grid)=bcType;
-	    printF(" Setting bc=%s for grid =%i (%s) (side,axis)=(%i,%i)\n",(const char*)bcName,grid,
-		   (const char*)cg[grid].getName(),side,axis);
-	  }
-	}
+        ForBoundary(side,axis) 
+        {
+          if( cg[grid].boundaryCondition(side,axis)==bcNumber )
+          {
+            bc(side,axis,grid)=bcType;
+            printF(" Setting bc=%s for grid =%i (%s) (side,axis)=(%i,%i)\n",(const char*)bcName,grid,
+                   (const char*)cg[grid].getName(),side,axis);
+          }
+        }
       }
     }
     else if( answer(0,1)=="bc" )
@@ -542,7 +554,7 @@ main(int argc, char *argv[])
       ps.inputString(answer2,sPrintF(buff,"Enter fx,fy,fz (default =%f,%f,%f)",fx,fy,fz));
       if( answer2!="" )
       {
-	sScanF(answer2,"%e %e %e",&fx,&fy,&fz);
+        sScanF(answer2,"%e %e %e",&fx,&fy,&fz);
         printF(" fx=%f, fy=%f, fz=%f\n",fx,fy,fz);
       }
     }
@@ -560,7 +572,7 @@ main(int argc, char *argv[])
       ps.inputString(answer2,sPrintF(buff,"Enter the debug parameter (default =%i)",Ogmg::debug));
       if( answer2!="" )
       {
-	sScanF(answer2,"%i",&Ogmg::debug);
+        sScanF(answer2,"%i",&Ogmg::debug);
         printF(" Ogmg::debug=%i\n",Ogmg::debug);
       }
     } 
@@ -569,7 +581,7 @@ main(int argc, char *argv[])
 //        ps.inputString(answer2,sPrintF(buff,"Enter the order of accuracy (2/4) (default =%i)",orderOfAccuracy));
 //        if( answer2!="" )
 //        {
-//  	sScanF(answer2,"%i",&orderOfAccuracy);
+//      sScanF(answer2,"%i",&orderOfAccuracy);
 //          mgSolver.setOrderOfAccuracy(orderOfAccuracy);
 //        }
 //      }
@@ -610,18 +622,18 @@ main(int argc, char *argv[])
   if( false )
   {
     printF("cg.numberOfComponentGrids()=%i, cg.numberOfGrids()=%i , cg.numberOfBaseGrids()=%i \n",
-	   cg.numberOfComponentGrids(),cg.numberOfGrids(),cg.numberOfBaseGrids());
+           cg.numberOfComponentGrids(),cg.numberOfGrids(),cg.numberOfBaseGrids());
     if( cg.numberOfMultigridLevels() > 1 )
     {
       for( level=0; level<cg.numberOfMultigridLevels(); level++ )
       {
-	CompositeGrid & m =cg.multigridLevel[level];
-	printF("level=%i, numberOfComponentGrids()=%i, numberOfGrids()=%i, numberOfBaseGrids()=%i\n",level,
-	       m.numberOfComponentGrids(),m.numberOfGrids(),m.numberOfBaseGrids());
-	m.numberOfInterpolationPoints.display(sPrintF(buff,"level=%i, numberOfInterpolationPoints",level));
+        CompositeGrid & m =cg.multigridLevel[level];
+        printF("level=%i, numberOfComponentGrids()=%i, numberOfGrids()=%i, numberOfBaseGrids()=%i\n",level,
+               m.numberOfComponentGrids(),m.numberOfGrids(),m.numberOfBaseGrids());
+        m.numberOfInterpolationPoints.display(sPrintF(buff,"level=%i, numberOfInterpolationPoints",level));
       
-	// for( int grid=0; grid<m.numberOfComponentGrids(); grid++ )
-	//   m.variableInterpolationWidth[grid].display("variableInterpolationWidth");
+        // for( int grid=0; grid<m.numberOfComponentGrids(); grid++ )
+        //   m.variableInterpolationWidth[grid].display("variableInterpolationWidth");
       
       }
     }
@@ -643,18 +655,18 @@ main(int argc, char *argv[])
     {
       ForBoundary(side,axis)
       {
-	if( m[grid].boundaryCondition(side,axis) > 0 )
-	{
+        if( m[grid].boundaryCondition(side,axis) > 0 )
+        {
           m[grid].boundaryCondition()(side,axis)=bc(side,axis,grid);
-	  if( m[grid].boundaryCondition(side,axis)!=neumann )
-	    problemIsSingular=false;
-	}
-	
+          if( m[grid].boundaryCondition(side,axis)!=neumann )
+            problemIsSingular=false;
+        }
+        
       }
       if( Ogmg::debug & 8 && myid==0 )
         display(m[grid].boundaryCondition(),
                sPrintF(buff,"level=%i boundary condition on grid=%i, dirichlet=%i neumann=%i",
-		       level,grid,dirichlet,neumann));
+                       level,grid,dirichlet,neumann));
     }
   }
   if( Ogmg::debug & 8 && myid==0 )
@@ -662,8 +674,8 @@ main(int argc, char *argv[])
     for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ ) 
     {
       display(cg[grid].boundaryCondition(),
-	      sPrintF(buff,"cg[grid]: boundary condition on grid=%i, dirichlet=%i neumann=%i",
-		      grid,dirichlet,neumann));
+              sPrintF(buff,"cg[grid]: boundary condition on grid=%i, dirichlet=%i neumann=%i",
+                      grid,dirichlet,neumann));
     }
   }
   
@@ -735,60 +747,60 @@ main(int argc, char *argv[])
 
       if( equationToSolve==OgesParameters::laplaceEquation )
       {
-	if( adjustSingularEquations && grid==grids )
-	{
-	  // Change the equation at one point:
-	  //     Delta(u) + alphas*u = f + alphas*uExact
+        if( adjustSingularEquations && grid==grids )
+        {
+          // Change the equation at one point:
+          //     Delta(u) + alphas*u = f + alphas*uExact
 
-	  alphas = coeff[grids](mDiag,i1s,i2s,i3s);
+          alphas = coeff[grids](mDiag,i1s,i2s,i3s);
 
-	  printF("\n *** Adjust the singular problem at grid=%i, pt (i1,i2,i3)=(%i,%i,%i) mDiag=%i "
-		 " alphas=%e (setDirichlet=%i) ***\n\n",
-		 grids,i1s,i2s,i3s,mDiag,alphas,(int)setDirichlet);
-	  
-	
-	  if( !setDirichlet )
-	  {
-	    // Adjust the equation: 
-	    coeff[grids](mDiag,i1s,i2s,i3s) += alphas; // change the diagonal
-	  }
-	  else
-	  { // set a dirichlet equation at one point
-	    coeff[grids](all,i1s,i2s,i3s)=0.;
-	    coeff[grids](mDiag,i1s,i2s,i3s) = alphas;
-	  }
+          printF("\n *** Adjust the singular problem at grid=%i, pt (i1,i2,i3)=(%i,%i,%i) mDiag=%i "
+                 " alphas=%e (setDirichlet=%i) ***\n\n",
+                 grids,i1s,i2s,i3s,mDiag,alphas,(int)setDirichlet);
+          
+        
+          if( !setDirichlet )
+          {
+            // Adjust the equation: 
+            coeff[grids](mDiag,i1s,i2s,i3s) += alphas; // change the diagonal
+          }
+          else
+          { // set a dirichlet equation at one point
+            coeff[grids](all,i1s,i2s,i3s)=0.;
+            coeff[grids](mDiag,i1s,i2s,i3s) = alphas;
+          }
 
-	}
-	
+        }
+        
       }
       else if( equationToSolve==OgesParameters::heatEquationOperator )
       {
         // equationCoefficients(0,grid)*ue+equationCoefficients(1,grid)*uLap;
 
         #ifdef USE_PPP
-  	  realSerialArray coeffLocal; getLocalArrayWithGhostBoundaries(coeff[grid],coeffLocal);
+          realSerialArray coeffLocal; getLocalArrayWithGhostBoundaries(coeff[grid],coeffLocal);
         #else
-  	  realSerialArray & coeffLocal = coeff[grid];
+          realSerialArray & coeffLocal = coeff[grid];
         #endif
 
 
-	coeffLocal *= equationCoefficients(1,grid);
+        coeffLocal *= equationCoefficients(1,grid);
 
-	int md; // diagonal term
-	if( cg.numberOfDimensions()==2 )
-	  md=(width*width)/2; // 4 or 12 ;
-	else if( cg.numberOfDimensions()==3 )
-	  md=(width*width*width)/2; // 13 or 62;
-	else
-	  md=width/2; // 1;
+        int md; // diagonal term
+        if( cg.numberOfDimensions()==2 )
+          md=(width*width)/2; // 4 or 12 ;
+        else if( cg.numberOfDimensions()==3 )
+          md=(width*width*width)/2; // 13 or 62;
+        else
+          md=width/2; // 1;
 
         coeffLocal(md,all,all,all) += equationCoefficients(0,grid);
-	
+        
       }
       else
       {
-	printF("ogmgt:ERROR: equationToSolve=%i not defined yet for non-predefined!\n",(int)equationToSolve);
-	OV_ABORT("error");
+        printF("ogmgt:ERROR: equationToSolve=%i not defined yet for non-predefined!\n",(int)equationToSolve);
+        OV_ABORT("error");
       }
       
 
@@ -821,23 +833,23 @@ main(int argc, char *argv[])
       if( cg[grid].boundaryCondition(side,axis)==mixed ||
           cg[grid].boundaryCondition(side,axis)==neumann )
       {
-	if( !cg[grid].isRectangular() )
-	{
-	  cg[grid].update(MappedGrid::THEvertexBoundaryNormal);
-	}
+        if( !cg[grid].isRectangular() )
+        {
+          cg[grid].update(MappedGrid::THEvertexBoundaryNormal);
+        }
       }
       
 
       if( cg[grid].boundaryCondition(side,axis)==mixed)
       { // set the coefficients of the mixed BC: a(0)*u + a(1)*u.n
-	bcData(0,side,axis,grid)=a(0);
-	bcData(1,side,axis,grid)=a(1);
+        bcData(0,side,axis,grid)=a(0);
+        bcData(1,side,axis,grid)=a(1);
       }
       else if( cg[grid].boundaryCondition(side,axis)==extrapolate )
       {
-	bcData(0,side,axis,grid)=extrapolationBoundaryOrderOfExtrapolation;  // supply the order of extrapolation
+        bcData(0,side,axis,grid)=extrapolationBoundaryOrderOfExtrapolation;  // supply the order of extrapolation
       }
-	
+        
     }
   }
 
@@ -898,7 +910,7 @@ main(int argc, char *argv[])
     {
       printF("***GEOMETRY before buildPredefinedEquations\n");
       for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	cg[grid].displayComputedGeometry();
+        cg[grid].displayComputedGeometry();
     }
     
 //     int numData=3;
@@ -908,7 +920,7 @@ main(int argc, char *argv[])
     
     if( equationToSolve==OgesParameters::divScalarGradOperator ||
         equationToSolve==OgesParameters::variableHeatEquationOperator ||
-	equationToSolve==OgesParameters::divScalarGradHeatEquationOperator )
+        equationToSolve==OgesParameters::divScalarGradHeatEquationOperator )
     {
       variableCoefficients = new realCompositeGridFunction(cg);
 
@@ -952,7 +964,7 @@ main(int argc, char *argv[])
           for( int i1=I1.getBase(); i1<=I1.getBound(); i1++ )
           {
             real r1=(-1.+2.*rand()/RAND_MAX); // random number between [-1,1]
-		
+                
             uLocal(i1,i2,i3)=r1;
               
           }
@@ -985,11 +997,11 @@ main(int argc, char *argv[])
       else
       {
         Mapping & map = mg.mapping().getMapping();
-	RealArray r(2,3),x(2,3);
-	r=0.; x=0.;
-	r(1,axis)=1.;
-	map.mapS(r,x);
-	length = sqrt( SQR(x(1,0)-x(0,0)) + SQR(x(1,1)-x(0,1))+ SQR(x(1,2)-x(0,2)) );
+        RealArray r(2,3),x(2,3);
+        r=0.; x=0.;
+        r(1,axis)=1.;
+        map.mapS(r,x);
+        length = sqrt( SQR(x(1,0)-x(0,0)) + SQR(x(1,1)-x(0,1))+ SQR(x(1,2)-x(0,2)) );
       }
       assert( length>0. );
 
@@ -999,12 +1011,12 @@ main(int argc, char *argv[])
       
       printF("ogmgt:INFO: axis=%i is derivative periodic with length=%9.3e,\n"
              " I will adjust the trig function to match: fx=%9.3e, fy=%9.3e, fz=%9.3e.\n",axis,length,
-	     fx,fy,fz);
+             fx,fy,fz);
       
       if( twilightZone==2 )
       {
-	printF("ogmgt:ERROR: polynomial TZ function will not work with derivative periodic grid\n");
-	OV_ABORT("error");
+        printF("ogmgt:ERROR: polynomial TZ function will not work with derivative periodic grid\n");
+        OV_ABORT("error");
       }
       
     }
@@ -1087,9 +1099,9 @@ main(int argc, char *argv[])
 
       if( cg.numberOfDimensions()==3 )
       {
-	spatialCoefficientsForTZ(0,0,1)= .6;   // z 
-	spatialCoefficientsForTZ(0,0,2)=-.3;   // z^2
-	spatialCoefficientsForTZ(0,0,4)= .1;   // z^4
+        spatialCoefficientsForTZ(0,0,1)= .6;   // z 
+        spatialCoefficientsForTZ(0,0,2)=-.3;   // z^2
+        spatialCoefficientsForTZ(0,0,4)= .1;   // z^4
 
       }
     }
@@ -1110,9 +1122,9 @@ main(int argc, char *argv[])
 
       if( cg.numberOfDimensions()==3 )
       {
-	spatialCoefficientsForTZ(0,0,1)= .6;
-	spatialCoefficientsForTZ(0,0,2)=-.3;
-	spatialCoefficientsForTZ(0,0,4)= .1;
+        spatialCoefficientsForTZ(0,0,1)= .6;
+        spatialCoefficientsForTZ(0,0,2)=-.3;
+        spatialCoefficientsForTZ(0,0,4)= .1;
 
       }
     }
@@ -1135,29 +1147,29 @@ main(int argc, char *argv[])
       for( int side=0; side<=1; side++ )
       {
         if( mg.boundaryCondition(side,axis) > 0 )
-	{
+        {
           // bc(side,axis,grid)=[1=dirichlet][2=neumann][3=mixed]
           if( bc(side,axis,grid)==dirichlet )
-	  {
-	    bcLabel+="D";
-	  }
-	  else if( bc(side,axis,grid)==neumann )
-	  {
-	    bcLabel+="N";
-	  }
-	  else
-	  {
-	    bcLabel+="M";
-	  }
-	}
-	else if( mg.boundaryCondition(side,axis)==0 )
-	{
+          {
+            bcLabel+="D";
+          }
+          else if( bc(side,axis,grid)==neumann )
+          {
+            bcLabel+="N";
+          }
+          else
+          {
+            bcLabel+="M";
+          }
+        }
+        else if( mg.boundaryCondition(side,axis)==0 )
+        {
           bcLabel+="I";   // interpolation
-	}
-	else
-	{
+        }
+        else
+        {
           bcLabel+="P";   // periodic
-	}
+        }
       }
     }
     if( grid<cg.numberOfComponentGrids()-1 )
@@ -1183,8 +1195,8 @@ main(int argc, char *argv[])
   sPrintF(Ogmg::infoFileCaption[1],"%s.",(const char*)bcLabel);
   Ogmg::infoFileCaption[2]=orderOfAccuracy==2 ? "Second-order accurate." : "Fourth-order accurate.";
   sPrintF(Ogmg::infoFileCaption[3],"%s.",
-	  (twilightZone==1 ? "Trigonometric solution" :
-	   twilightZone==2 ? "Polynomial solution" : "Constant forcing"));
+          (twilightZone==1 ? "Trigonometric solution" :
+           twilightZone==2 ? "Polynomial solution" : "Constant forcing"));
 
   real cpu0=getCPU();
   if( Ogmg::debug & 2 )
@@ -1226,17 +1238,17 @@ main(int argc, char *argv[])
     {
       getIndex(c[grid].dimension(),I1,I2,I3);
       #ifdef USE_PPP
-	realSerialArray uLocal;  getLocalArrayWithGhostBoundaries(u[grid],uLocal);
-	realSerialArray ffLocal; getLocalArrayWithGhostBoundaries(ff[grid],ffLocal);
-	realSerialArray xLocal;  getLocalArrayWithGhostBoundaries(c[grid].center(),xLocal);
+        realSerialArray uLocal;  getLocalArrayWithGhostBoundaries(u[grid],uLocal);
+        realSerialArray ffLocal; getLocalArrayWithGhostBoundaries(ff[grid],ffLocal);
+        realSerialArray xLocal;  getLocalArrayWithGhostBoundaries(c[grid].center(),xLocal);
 
-	ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1,I2,I3,1);
-	if( !ok ) continue;
-	  
+        ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1,I2,I3,1);
+        if( !ok ) continue;
+          
       #else
-	realSerialArray & uLocal = u[grid];
-	realSerialArray & ffLocal = ff[grid];
-	const realSerialArray & xLocal = c[grid].center();
+        realSerialArray & uLocal = u[grid];
+        realSerialArray & ffLocal = ff[grid];
+        const realSerialArray & xLocal = c[grid].center();
       #endif
 
       const bool isRectangular=false;  // do this for now
@@ -1248,12 +1260,12 @@ main(int argc, char *argv[])
       uLap+=ue;
       if( c.numberOfDimensions()==3 )
       {
-	nxd=0; nyd=0; nzd=2;
-	tz.gd( ue,xLocal,cg.numberOfDimensions(),isRectangular,ntd,nxd,nyd,nzd,I1,I2,I3,0,0.); // e.zz
-	uLap+=ue;
+        nxd=0; nyd=0; nzd=2;
+        tz.gd( ue,xLocal,cg.numberOfDimensions(),isRectangular,ntd,nxd,nyd,nzd,I1,I2,I3,0,0.); // e.zz
+        uLap+=ue;
       }
       nxd=0; nyd=0; nzd=0;
-      tz.gd( ue,xLocal,cg.numberOfDimensions(),isRectangular,ntd,nxd,nyd,nzd,I1,I2,I3,0,0.);	 // e
+      tz.gd( ue,xLocal,cg.numberOfDimensions(),isRectangular,ntd,nxd,nyd,nzd,I1,I2,I3,0,0.);     // e
       
       if( equationToSolve==OgesParameters::heatEquationOperator )
       {
@@ -1270,183 +1282,183 @@ main(int argc, char *argv[])
       
       if( false && problemIsSingular )
       {
-	f+=1.;   // for testing
+        f+=1.;   // for testing
       }
       
       if( adjustSingularEquations && grid==grids )
       {
         #ifdef USE_PPP
-	  OV_ABORT("finish me");
+          OV_ABORT("finish me");
         #endif
         real xs = xLocal(i1s,i2s,i3s,0), ys=xLocal(i1s,i2s,i3s,1);
-	real zs = cg.numberOfDimensions()==2 ? 0. : xLocal(i1s,i2s,i3s,2);
-	
+        real zs = cg.numberOfDimensions()==2 ? 0. : xLocal(i1s,i2s,i3s,2);
+        
         real ue = tz(xs,ys,zs,0,0.);
-	if( !setDirichlet )
-	  ffLocal(i1s,i2s,i3s) += alphas*ue;
-	else	
-	  ffLocal(i1s,i2s,i3s) = alphas*ue;
+        if( !setDirichlet )
+          ffLocal(i1s,i2s,i3s) += alphas*ue;
+        else    
+          ffLocal(i1s,i2s,i3s) = alphas*ue;
       }
       
 
       // Assign Boundary Conditions 
       ForBoundary(side,axis)
       {
-	if( c[grid].boundaryCondition(side,axis)<=0 ) 
+        if( c[grid].boundaryCondition(side,axis)<=0 ) 
           continue;
-	
+        
         Index I1b,I2b,I3b,I1g,I2g,I3g;
-	if( c[grid].boundaryCondition(side,axis)==dirichlet )
-	{
+        if( c[grid].boundaryCondition(side,axis)==dirichlet )
+        {
           int extra=orderOfAccuracy/2;
-	  getBoundaryIndex(c[grid].gridIndexRange(),side,axis,I1b,I2b,I3b,extra);
-	  getGhostIndex   (c[grid].gridIndexRange(),side,axis,I1g,I2g,I3g,1,extra);
+          getBoundaryIndex(c[grid].gridIndexRange(),side,axis,I1b,I2b,I3b,extra);
+          getGhostIndex   (c[grid].gridIndexRange(),side,axis,I1g,I2g,I3g,1,extra);
 
-	  ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1b,I2b,I3b,1);
-	  ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1g,I2g,I3g,1);
-	  if( !ok ) continue;
+          ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1b,I2b,I3b,1);
+          ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1g,I2g,I3g,1);
+          if( !ok ) continue;
 
-	  ffLocal(I1b,I2b,I3b)=ue(I1b,I2b,I3b);
-	  uLocal(I1b,I2b,I3b)=ffLocal(I1b,I2b,I3b);    // added 030330
-	  
+          ffLocal(I1b,I2b,I3b)=ue(I1b,I2b,I3b);
+          uLocal(I1b,I2b,I3b)=ffLocal(I1b,I2b,I3b);    // added 030330
+          
           if( orderOfAccuracy==2 )
-	  {
-  	    ffLocal(I1g,I2g,I3g)=0.; // extrap
-	  }
+          {
+            ffLocal(I1g,I2g,I3g)=0.; // extrap
+          }
           else
-	  {
+          {
             // for 4th order we fill in the eqn at the bndry as the rhs at the ghost point
-	    if( equationToSolve==OgesParameters::heatEquationOperator )
-	      ffLocal(I1g,I2g,I3g)=equationCoefficients(0,grid)*ue(I1b,I2b,I3b)+
- 		                   equationCoefficients(1,grid)*uLap(I1b,I2b,I3b);
+            if( equationToSolve==OgesParameters::heatEquationOperator )
+              ffLocal(I1g,I2g,I3g)=equationCoefficients(0,grid)*ue(I1b,I2b,I3b)+
+                                   equationCoefficients(1,grid)*uLap(I1b,I2b,I3b);
             else
-	      ffLocal(I1g,I2g,I3g)=uLap(I1b,I2b,I3b); // tz.laplacian(cg[grid],I1b,I2b,I3b);
-	  }
-	}
-	else if( c[grid].boundaryCondition(side,axis)==extrapolate )
-	{
+              ffLocal(I1g,I2g,I3g)=uLap(I1b,I2b,I3b); // tz.laplacian(cg[grid],I1b,I2b,I3b);
+          }
+        }
+        else if( c[grid].boundaryCondition(side,axis)==extrapolate )
+        {
           int extra=orderOfAccuracy/2;
-	  getGhostIndex(c[grid].gridIndexRange(),side,axis,I1g,I2g,I3g,1,extra);
-	  ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1g,I2g,I3g,1);
-	  if( !ok ) continue;
+          getGhostIndex(c[grid].gridIndexRange(),side,axis,I1g,I2g,I3g,1,extra);
+          ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1g,I2g,I3g,1);
+          if( !ok ) continue;
 
           ffLocal(I1g,I2g,I3g)=0.; // extrap
           if( orderOfAccuracy==4 )
-	  {
+          {
             // what should we do here ??
-	    getGhostIndex(c[grid].gridIndexRange(),side,axis,I1g,I2g,I3g,2,extra);  // 2nd ghost line 
-	    ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1g,I2g,I3g,1);
-	    if( !ok ) continue;
-	    ffLocal(I1g,I2g,I3g)=0.;
+            getGhostIndex(c[grid].gridIndexRange(),side,axis,I1g,I2g,I3g,2,extra);  // 2nd ghost line 
+            ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1g,I2g,I3g,1);
+            if( !ok ) continue;
+            ffLocal(I1g,I2g,I3g)=0.;
 
-	  }
-	}
+          }
+        }
         else if( c[grid].boundaryCondition(side,axis)==neumann || c[grid].boundaryCondition(side,axis)==mixed )
-	{
-	  getBoundaryIndex(c[grid].gridIndexRange(),side,axis,I1b,I2b,I3b);
-	  getGhostIndex   (c[grid].gridIndexRange(),side,axis,I1g,I2g,I3g);
+        {
+          getBoundaryIndex(c[grid].gridIndexRange(),side,axis,I1b,I2b,I3b);
+          getGhostIndex   (c[grid].gridIndexRange(),side,axis,I1g,I2g,I3g);
 
-	  ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1b,I2b,I3b,1);
-	  ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1g,I2g,I3g,1);
-	  if( !ok ) continue;
+          ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1b,I2b,I3b,1);
+          ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1g,I2g,I3g,1);
+          if( !ok ) continue;
 
-	  realSerialArray uex(I1b,I2b,I3b), uey(I1b,I2b,I3b), uez;
-	  nxd=1; nyd=0; nzd=0;
+          realSerialArray uex(I1b,I2b,I3b), uey(I1b,I2b,I3b), uez;
+          nxd=1; nyd=0; nzd=0;
           tz.gd( uex,xLocal,cg.numberOfDimensions(),isRectangular,ntd,nxd,nyd,nzd,I1,I2,I3,0,0.); // e.x
-	  nxd=0; nyd=1; nzd=0;
+          nxd=0; nyd=1; nzd=0;
           tz.gd( uey,xLocal,cg.numberOfDimensions(),isRectangular,ntd,nxd,nyd,nzd,I1,I2,I3,0,0.); // e.y
-	  if( c.numberOfDimensions()==3 )
-	  {
-	    uez.redim(I1b,I2b,I3b);
-	    nxd=0; nyd=0; nzd=1;
-	    tz.gd( uez,xLocal,cg.numberOfDimensions(),isRectangular,ntd,nxd,nyd,nzd,I1,I2,I3,0,0.); // e.zz
-	  }
+          if( c.numberOfDimensions()==3 )
+          {
+            uez.redim(I1b,I2b,I3b);
+            nxd=0; nyd=0; nzd=1;
+            tz.gd( uez,xLocal,cg.numberOfDimensions(),isRectangular,ntd,nxd,nyd,nzd,I1,I2,I3,0,0.); // e.zz
+          }
           // ***** neumann BC *****
           if( c[grid].isRectangular() )
-	  {
-	    if( axis==axis1 )
-	      ffLocal(I1g,I2g,I3g)=uex(I1b,I2b,I3b)*(2*side-1.); // normal is 2*side-1
-	    else if( axis==axis2 )
-	      ffLocal(I1g,I2g,I3g)=uey(I1b,I2b,I3b)*(2*side-1.);
+          {
+            if( axis==axis1 )
+              ffLocal(I1g,I2g,I3g)=uex(I1b,I2b,I3b)*(2*side-1.); // normal is 2*side-1
+            else if( axis==axis2 )
+              ffLocal(I1g,I2g,I3g)=uey(I1b,I2b,I3b)*(2*side-1.);
             else
-	      ffLocal(I1g,I2g,I3g)=uez(I1b,I2b,I3b)*(2*side-1.);
-	  }
-	  else
-	  {
-	    c[grid].update(MappedGrid::THEvertexBoundaryNormal );
+              ffLocal(I1g,I2g,I3g)=uez(I1b,I2b,I3b)*(2*side-1.);
+          }
+          else
+          {
+            c[grid].update(MappedGrid::THEvertexBoundaryNormal );
             #ifdef USE_PPP
               const realSerialArray & normal = c[grid].vertexBoundaryNormalArray(side,axis);
             #else
               const realSerialArray & normal = c[grid].vertexBoundaryNormal(side,axis);
             #endif
 
-	    if( c.numberOfDimensions()==2 )
-	      ffLocal(I1g,I2g,I3g)=(normal(I1b,I2b,I3b,0)*uex(I1b,I2b,I3b)+
-				    normal(I1b,I2b,I3b,1)*uey(I1b,I2b,I3b));
-	    else 
-	      ffLocal(I1g,I2g,I3g)=(normal(I1b,I2b,I3b,0)*uex(I1b,I2b,I3b)+
-				    normal(I1b,I2b,I3b,1)*uey(I1b,I2b,I3b)+
-				    normal(I1b,I2b,I3b,2)*uez(I1b,I2b,I3b));
-	  }
-	  
+            if( c.numberOfDimensions()==2 )
+              ffLocal(I1g,I2g,I3g)=(normal(I1b,I2b,I3b,0)*uex(I1b,I2b,I3b)+
+                                    normal(I1b,I2b,I3b,1)*uey(I1b,I2b,I3b));
+            else 
+              ffLocal(I1g,I2g,I3g)=(normal(I1b,I2b,I3b,0)*uex(I1b,I2b,I3b)+
+                                    normal(I1b,I2b,I3b,1)*uey(I1b,I2b,I3b)+
+                                    normal(I1b,I2b,I3b,2)*uez(I1b,I2b,I3b));
+          }
+          
           if( c[grid].boundaryCondition(side,axis)==mixed )
-	  {
-	    ffLocal(I1g,I2g,I3g)=bcParams.a(0)*ue(I1b,I2b,I3b)+bcParams.a(1)*ffLocal(I1g,I2g,I3g);
-	  }
+          {
+            ffLocal(I1g,I2g,I3g)=bcParams.a(0)*ue(I1b,I2b,I3b)+bcParams.a(1)*ffLocal(I1g,I2g,I3g);
+          }
 
-	  if( orderOfAccuracy==4 )
-	  { // *wdh* 2013/11/29 -- set 2nd ghost to zero
-	    printF("ogmgt:INFO: set f at 2nd ghost line to zero...\n");
-	    
-	    getGhostIndex(c[grid].gridIndexRange(),side,axis,I1g,I2g,I3g,2); // 2nd ghost line
+          if( orderOfAccuracy==4 )
+          { // *wdh* 2013/11/29 -- set 2nd ghost to zero
+            printF("ogmgt:INFO: set f at 2nd ghost line to zero...\n");
+            
+            getGhostIndex(c[grid].gridIndexRange(),side,axis,I1g,I2g,I3g,2); // 2nd ghost line
 
             ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1g,I2g,I3g,1);
-	    if( !ok ) continue;
-	    ffLocal(I1g,I2g,I3g)=0.;
-	    
-	  }
-	  
+            if( !ok ) continue;
+            ffLocal(I1g,I2g,I3g)=0.;
+            
+          }
+          
 
 
-	  if( false && orderOfAccuracy==4 ) // This is not needed anymore
-	  {
-	    getGhostIndex(c[grid].gridIndexRange(),side,axis,I1g,I2g,I3g,2); // 2nd ghost line
+          if( false && orderOfAccuracy==4 ) // This is not needed anymore
+          {
+            getGhostIndex(c[grid].gridIndexRange(),side,axis,I1g,I2g,I3g,2); // 2nd ghost line
 
             const real a0=bcParams.a(0), a1=bcParams.a(1), nsign=2*side-1.;
             
             if( c.numberOfDimensions()==2 && c[grid].isRectangular() )
-	    {
-	      if( axis==axis1 )
-	      {
-		realArray uxxx; uxxx = tz.gd(0,3,0,0,c[grid],I1b,I2b,I3b);
-		realArray uxyy; uxyy = tz.gd(0,1,2,0,c[grid],I1b,I2b,I3b);
-		ff[grid](I1g,I2g,I3g)=a0*f[grid](I1b,I2b,I3b)+a1*nsign*( uxxx+uxyy ) - nsign*uxyy;
-	      }
-	      else if( axis==axis2 )
-	      {
-		realArray uxxy; uxxy = tz.gd(0,2,1,0,c[grid],I1b,I2b,I3b);
-		realArray uyyy; uyyy = tz.gd(0,0,3,0,c[grid],I1b,I2b,I3b);
-		ff[grid](I1g,I2g,I3g)=a0*f[grid](I1b,I2b,I3b)+a1*nsign*( uxxy+uyyy ) - nsign*uxxy;
-	      }
-	      else
-	      {
-		Overture::abort();
-	      }
-	    }
-	    else
-	    {
-	      // Overture::abort();
+            {
+              if( axis==axis1 )
+              {
+                realArray uxxx; uxxx = tz.gd(0,3,0,0,c[grid],I1b,I2b,I3b);
+                realArray uxyy; uxyy = tz.gd(0,1,2,0,c[grid],I1b,I2b,I3b);
+                ff[grid](I1g,I2g,I3g)=a0*f[grid](I1b,I2b,I3b)+a1*nsign*( uxxx+uxyy ) - nsign*uxyy;
+              }
+              else if( axis==axis2 )
+              {
+                realArray uxxy; uxxy = tz.gd(0,2,1,0,c[grid],I1b,I2b,I3b);
+                realArray uyyy; uyyy = tz.gd(0,0,3,0,c[grid],I1b,I2b,I3b);
+                ff[grid](I1g,I2g,I3g)=a0*f[grid](I1b,I2b,I3b)+a1*nsign*( uxxy+uyyy ) - nsign*uxxy;
+              }
+              else
+              {
+                Overture::abort();
+              }
+            }
+            else
+            {
+              // Overture::abort();
               // we don't fill in this info in this case
-	    }
-	  } // end if orderOfAccuracy==4
-	  
-	}
-	else if( c[grid].boundaryCondition(side,axis)>0 )
-	{
-	  printF("ERROR: unknown bc=%i for grid=%i\n",c[grid].boundaryCondition(side,axis),grid);
-	  OV_ABORT("error");
-	}
-	
+            }
+          } // end if orderOfAccuracy==4
+          
+        }
+        else if( c[grid].boundaryCondition(side,axis)>0 )
+        {
+          printF("ERROR: unknown bc=%i for grid=%i\n",c[grid].boundaryCondition(side,axis),grid);
+          OV_ABORT("error");
+        }
+        
       }
     }
     if( false && problemIsSingular )
@@ -1458,7 +1470,7 @@ main(int argc, char *argv[])
       real alpha=0., leftNorm=0.;
       for( int grid=0; grid<c.numberOfComponentGrids(); grid++ )
       {
-	getIndex(cg[grid].dimension(),I1,I2,I3);
+        getIndex(cg[grid].dimension(),I1,I2,I3);
         alpha+=sum(leftNullVector[grid](I1,I2,I3)*ff[grid](I1,I2,I3));
         leftNorm+=sum(leftNullVector[grid](I1,I2,I3)*leftNullVector[grid](I1,I2,I3));
       }
@@ -1472,7 +1484,7 @@ main(int argc, char *argv[])
 //       alpha/=sqrt(leftNorm);
 //       for( int grid=0; grid<c.numberOfComponentGrids(); grid++ )
 //       {
-// 	getIndex(cg[grid].dimension(),I1,I2,I3);
+//      getIndex(cg[grid].dimension(),I1,I2,I3);
 //         ff[grid]-=alpha*leftNullVector[grid];
 //       }
       
@@ -1489,10 +1501,10 @@ main(int argc, char *argv[])
       printF(" before: coeff[grid](4,i1,i2,i3) = %e \n",coeff[0](4,i1,i2,i3));
       for( int level=0; level<cg.numberOfMultigridLevels(); level++ )
       {
-	assert( cg[grid].mask()(i1,i2,i3)>0 );
-	coeff[grid](4,i1,i2,i3)-=1000.;
+        assert( cg[grid].mask()(i1,i2,i3)>0 );
+        coeff[grid](4,i1,i2,i3)-=1000.;
         // coeff.multigridLevel[level][grid](all,i1,i2,i3)=0.;
-	// coeff.multigridLevel[level][grid](4,i1,i2,i3)=1.;
+        // coeff.multigridLevel[level][grid](4,i1,i2,i3)=1.;
       }
     }
   }  
@@ -1504,14 +1516,14 @@ main(int argc, char *argv[])
     for( int grid=0; grid<c.numberOfComponentGrids(); grid++ )
     {
       #ifdef USE_PPP
-	realSerialArray uLocal;  getLocalArrayWithGhostBoundaries(u[grid],uLocal);
-	realSerialArray ffLocal; getLocalArrayWithGhostBoundaries(ff[grid],ffLocal);
-	ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1,I2,I3,1);
-	if( !ok ) continue;
-	  
+        realSerialArray uLocal;  getLocalArrayWithGhostBoundaries(u[grid],uLocal);
+        realSerialArray ffLocal; getLocalArrayWithGhostBoundaries(ff[grid],ffLocal);
+        ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1,I2,I3,1);
+        if( !ok ) continue;
+          
       #else
-	realSerialArray & uLocal = u[grid];
-	realSerialArray & ffLocal = ff[grid];
+        realSerialArray & uLocal = u[grid];
+        realSerialArray & ffLocal = ff[grid];
       #endif
 
       const real lapValue=1.;
@@ -1520,37 +1532,37 @@ main(int argc, char *argv[])
       // Assign Boundary Conditions 
       ForBoundary(side,axis)
       {
-	Index I1b,I2b,I3b,I1g,I2g,I3g;
-	getBoundaryIndex(c[grid].gridIndexRange(),side,axis,I1b,I2b,I3b);
-	getGhostIndex   (c[grid].gridIndexRange(),side,axis,I1g,I2g,I3g);
+        Index I1b,I2b,I3b,I1g,I2g,I3g;
+        getBoundaryIndex(c[grid].gridIndexRange(),side,axis,I1b,I2b,I3b);
+        getGhostIndex   (c[grid].gridIndexRange(),side,axis,I1g,I2g,I3g);
 
-	ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1b,I2b,I3b,1);
-	ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1g,I2g,I3g,1);
-	if( !ok ) continue;
+        ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1b,I2b,I3b,1);
+        ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1g,I2g,I3g,1);
+        if( !ok ) continue;
 
-	if( c[grid].boundaryCondition(side,axis)==dirichlet )
-	{
-	  ffLocal(I1b,I2b,I3b)=0.;
-	  uLocal(I1b,I2b,I3b)=ffLocal(I1b,I2b,I3b);    // added 030330
+        if( c[grid].boundaryCondition(side,axis)==dirichlet )
+        {
+          ffLocal(I1b,I2b,I3b)=0.;
+          uLocal(I1b,I2b,I3b)=ffLocal(I1b,I2b,I3b);    // added 030330
 
           if( orderOfAccuracy==2 )
-	  {
-  	    ffLocal(I1g,I2g,I3g)=0.; // extrap
-	  }
+          {
+            ffLocal(I1g,I2g,I3g)=0.; // extrap
+          }
           else
-	  {
+          {
             // for 4th order we fill in the eqn at the bndry as the rhs at the ghost point *wdh* 100723
-	    if( equationToSolve==OgesParameters::heatEquationOperator )
-	      ffLocal(I1g,I2g,I3g)=(equationCoefficients(0,grid)*uLocal(I1b,I2b,I3b)+
-				    equationCoefficients(1,grid)*lapValue);
+            if( equationToSolve==OgesParameters::heatEquationOperator )
+              ffLocal(I1g,I2g,I3g)=(equationCoefficients(0,grid)*uLocal(I1b,I2b,I3b)+
+                                    equationCoefficients(1,grid)*lapValue);
             else
-	      ffLocal(I1g,I2g,I3g)=lapValue;
-	  }
-	}
-	else
-	{
-	  ffLocal(I1g,I2g,I3g)=0.; // extrap
-	}
+              ffLocal(I1g,I2g,I3g)=lapValue;
+          }
+        }
+        else
+        {
+          ffLocal(I1g,I2g,I3g)=0.; // extrap
+        }
       }
     }
     
@@ -1579,53 +1591,86 @@ main(int argc, char *argv[])
 //    }
 
 
-  if( FALSE )
-  {
-    // call twice in a row to make sure there nothing funny happens.
-    par.setResidualTolerance(1.e-4);
-    par.setErrorTolerance(1.e-3);
-    mgSolver.solve(u,f);            // **** solve the problem with multigrid *****
 
-    printF("Call solve again..\n");
-    par.setResidualTolerance(1.e-12);
-    par.setErrorTolerance(1.e-6);
-    mgSolver.solve(u,f);            // **** solve the problem with multigrid *****
-  }
-  else // if( option=="solve" || option=="s" )
+  if( true ) // ---- Here is where we solve ---
   {
     if( checkGeometryArrays )
     {
       printF("***GEOMETRY before solve\n");
       for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	cg[grid].displayComputedGeometry();
+        cg[grid].displayComputedGeometry();
     }
       
     // mgSolver.solve(u,f);  
     if( cg.numberOfMultigridLevels()==1 )
     {
-      mgSolver.solve(u,f);  
+      printF("maximumNumberOfExtraLevels=%i \n",maximumNumberOfExtraLevels);
 
-      if( false )
+      Real rtolSave;
+      if( maximumNumberOfExtraLevels==0 && solveTwice )
+      { // For testing the direct solver, initially set the max coarse grid iterations to 1 so we can measure 
+        // the actual start-up cost of the direct solver
+        printF(">>>> SETTING maxIterationsCoarseGrid=1, rtol=.999\n");
+
+        mgSolver.parameters.get(OgmgParameters::THEresidualTolerance,rtolSave);        
+        mgSolver.parameters.dbase.get<int>( "maxIterationsCoarseGrid")=1;
+        mgSolver.parameters.set(OgmgParameters::THEresidualTolerance,.999);
+        // mgSolver.directSolver.set(OgesParameters::THErelativeTolerance,1e10);
+      }
+
+
+      Real cpu0 = getCPU();
+      mgSolver.solve(u,f);  
+      Real cpu1 = getCPU()-cpu0;
+
+      if( maximumNumberOfExtraLevels==0 && solveTwice )
+      { 
+        // --- adjust Ogmg timings: 
+        // Real & ogmgInitTime = mgSolver.tm[Ogmg::timeForInitialize];
+        mgSolver.tm[Ogmg::timeForInitialize]   = cpu1;
+        mgSolver.tm[Ogmg::timeForDirectSolver] = 0.;
+        mgSolver.tm[Ogmg::timeForSolve]       -=cpu1;
+
+        printF("\n *** TIME FOR FIRST SOLVE: cpu=%9.3e (s) (1 iteration, to estimate setup time)\n",cpu1);
+        printF("  *** ESTIMATED SETUP TIME =%9.3e (s)\n",cpu1);
+        mgSolver.parameters.set(OgmgParameters::THEresidualTolerance,rtolSave); // reset 
+      }
+      else
+      {
+        printF("\n *** TIME FOR FIRST SOLVE: cpu=%9.3e (s)\n",cpu1);
+      }
+
+      if( solveTwice )
       { // for testing solve again
-	u=0.;
-	mgSolver.solve(u,f);
+        if( maximumNumberOfExtraLevels==0 && solveTwice )
+        { // Reset  max coarse grid iterations 
+          mgSolver.parameters.dbase.get<int>( "maxIterationsCoarseGrid")=10000;
+        }        
+        Real cpu0 = getCPU();
+        u=0.;
+        mgSolver.solve(u,f);
+        Real cpu2 = getCPU()-cpu0;
+        if( maximumNumberOfExtraLevels==0 )
+          printF("\n *** TIME TO SOLVE AGAIN: cpu=%9.3e (s) (no setup)\n",cpu2);
+        else
+          printF("\n *** TIME TO SOLVE AGAIN: cpu=%9.3e (s)  --> setup-time=%9.3e\n",cpu2,cpu1-cpu2);
       }
       
 
       if( false )
       {
-	printF("\n **************Call mgSolver.updateToMatchGrid(cg) and solve again ...\n");
-	
-	mgSolver.updateToMatchGrid(cg);
+        printF("\n **************Call mgSolver.updateToMatchGrid(cg) and solve again ...\n");
+        
+        mgSolver.updateToMatchGrid(cg);
 
-	if( true )
-	{
-	  ::display(cg.numberOfInterpolationPoints(),"ogmgt: cg.numberOfInterpolationPoints()");
-	}
+        if( true )
+        {
+          ::display(cg.numberOfInterpolationPoints(),"ogmgt: cg.numberOfInterpolationPoints()");
+        }
 
         // u.updateToMatchGrid(cg);
-	
-	mgSolver.solve(u,f);  
+        
+        mgSolver.solve(u,f);  
       }
       
     }
@@ -1680,7 +1725,7 @@ main(int argc, char *argv[])
   
 
   printF("\n *****After solve: max residual = %8.2e (%i cycles)****\n\n",mgSolver.getMaximumResidual(),
-	 mgSolver.getNumberOfIterations());
+         mgSolver.getNumberOfIterations());
   mgSolver.printStatistics();
     
   // printF(" +++++ time for setting up the coefficients = %e \n",timeForSettingUpCoefficients);
@@ -1720,63 +1765,63 @@ main(int argc, char *argv[])
     {
       for( int grid=0; grid<cg0.numberOfComponentGrids(); grid++ )     
       {
-	MappedGrid & mg = cg0[grid];
+        MappedGrid & mg = cg0[grid];
       
-	getIndex(mg.gridIndexRange(),I1,I2,I3,numGhost);         // include ghost points 
+        getIndex(mg.gridIndexRange(),I1,I2,I3,numGhost);         // include ghost points 
         bool ok=true;
 #ifdef USE_PPP
-	realSerialArray uLocal;  getLocalArrayWithGhostBoundaries(u[grid],uLocal);
-	realSerialArray eLocal; getLocalArrayWithGhostBoundaries(e[grid],eLocal);
-	realSerialArray xLocal;  getLocalArrayWithGhostBoundaries(mg.center(),xLocal);
-	intSerialArray maskLocal;  getLocalArrayWithGhostBoundaries(mg.mask(),maskLocal);
+        realSerialArray uLocal;  getLocalArrayWithGhostBoundaries(u[grid],uLocal);
+        realSerialArray eLocal; getLocalArrayWithGhostBoundaries(e[grid],eLocal);
+        realSerialArray xLocal;  getLocalArrayWithGhostBoundaries(mg.center(),xLocal);
+        intSerialArray maskLocal;  getLocalArrayWithGhostBoundaries(mg.mask(),maskLocal);
 
-	ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1,I2,I3,1);
+        ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1,I2,I3,1);
 #else
-	realSerialArray & uLocal = u[grid];
-	realSerialArray & eLocal = e[grid];
-	const realSerialArray & xLocal = mg.center();
-	const intSerialArray & maskLocal = mg.mask();
+        realSerialArray & uLocal = u[grid];
+        realSerialArray & eLocal = e[grid];
+        const realSerialArray & xLocal = mg.center();
+        const intSerialArray & maskLocal = mg.mask();
 #endif
 
-	uMax=REAL_MIN*100.;
-	error(grid)=0.;
+        uMax=REAL_MIN*100.;
+        error(grid)=0.;
         if( ok )
-	{
-	  realSerialArray uExact(I1,I2,I3);
-	  int ntd=0, nxd=0, nyd=0, nzd=0;
-	  const bool isRectangular=false;  // do this for now
-	  tz.gd( uExact,xLocal,cg0.numberOfDimensions(),isRectangular,ntd,nxd,nyd,nzd,I1,I2,I3,0,0.); // e
+        {
+          realSerialArray uExact(I1,I2,I3);
+          int ntd=0, nxd=0, nyd=0, nzd=0;
+          const bool isRectangular=false;  // do this for now
+          tz.gd( uExact,xLocal,cg0.numberOfDimensions(),isRectangular,ntd,nxd,nyd,nzd,I1,I2,I3,0,0.); // e
 
-	  where( maskLocal(I1,I2,I3)!=0 )
-	  {
-	    uMax=max(fabs(uExact));
-	
-	    eLocal(I1,I2,I3)=fabs(uLocal(I1,I2,I3)-uExact);
-	    error(grid)=max(fabs(eLocal(I1,I2,I3)));
-	  }
-	}
-	uMax=ParallelUtility::getMaxValue(uMax);
-	error(grid)=ParallelUtility::getMaxValue(error(grid));
-	  
-	maximumError=max(maximumError,error(grid));
-	printF("Maximum error on grid: %15s = %8.2e, max relative error=%8.2e (includes %i ghost)\n",
-	       (const char *)cg0[grid].mapping().getName(Mapping::mappingName),error(grid),error(grid)/uMax,
-	       numGhost );
-// 	if( numGhost==0 && checkFile!=NULL )
-// 	{
-// 	  fprintf(checkFile,"Maximum error on grid: %15s = %8.2e, max relative error=%8.2e (includes %i ghost)\n",
-// 		  (const char *)cg0[grid].mapping().getName(Mapping::mappingName),
-// 		  error(grid),error(grid)/uMax,numGhost);
-// 	}
+          where( maskLocal(I1,I2,I3)!=0 )
+          {
+            uMax=max(fabs(uExact));
+        
+            eLocal(I1,I2,I3)=fabs(uLocal(I1,I2,I3)-uExact);
+            error(grid)=max(fabs(eLocal(I1,I2,I3)));
+          }
+        }
+        uMax=ParallelUtility::getMaxValue(uMax);
+        error(grid)=ParallelUtility::getMaxValue(error(grid));
+          
+        maximumError=max(maximumError,error(grid));
+        printF("Maximum error on grid: %15s = %8.2e, max relative error=%8.2e (includes %i ghost)\n",
+               (const char *)cg0[grid].mapping().getName(Mapping::mappingName),error(grid),error(grid)/uMax,
+               numGhost );
+//      if( numGhost==0 && checkFile!=NULL )
+//      {
+//        fprintf(checkFile,"Maximum error on grid: %15s = %8.2e, max relative error=%8.2e (includes %i ghost)\n",
+//                (const char *)cg0[grid].mapping().getName(Mapping::mappingName),
+//                error(grid),error(grid)/uMax,numGhost);
+//      }
  
       }
 
       if( numGhost==0 && checkFile!=NULL )
       {
-	// The last line in the check file is used by the convergence tests
-	int numberOfComponents=1, component=0;
+        // The last line in the check file is used by the convergence tests
+        int numberOfComponents=1, component=0;
         real t=mgSolver.getNumberOfIterations();
-	fprintf(checkFile,"%8.1e %i %i %8.2e %8.2e\n",t,numberOfComponents,component,maximumError,uMax);
+        fprintf(checkFile,"%8.1e %i %i %8.2e %8.2e\n",t,numberOfComponents,component,maximumError,uMax);
       }
     }
       
@@ -1784,14 +1829,14 @@ main(int argc, char *argv[])
     {
       if( u.numberOfMultigridLevels()>1 )
       {
-	realCompositeGridFunction & u0 = u.multigridLevel[0];
-	u0.display("soln including ghost points","%8.2e ");
+        realCompositeGridFunction & u0 = u.multigridLevel[0];
+        u0.display("soln including ghost points","%8.2e ");
       }
       else
       {
-	u.display("soln including ghost points","%8.2e ");
+        u.display("soln including ghost points","%8.2e ");
       }
-	
+        
       e.display("error including ghost points","%6.2e ");
     }
       
@@ -1809,11 +1854,11 @@ main(int argc, char *argv[])
       CompositeGrid & cgCoarse = mgcg.multigridLevel[1];
 
 //          for( int grid=0; grid<cgCoarse.numberOfComponentGrids(); grid++ )
-//  	{
-//  	  MappedGrid & mg = cgCoarse[grid];
-//  	  displayMask(mg.mask(),sPrintF(buff,"Ogmg:: mask for grid %i, level=%i ",grid,level));
-//  	}
-	
+//      {
+//        MappedGrid & mg = cgCoarse[grid];
+//        displayMask(mg.mask(),sPrintF(buff,"Ogmg:: mask for grid %i, level=%i ",grid,level));
+//      }
+        
       aString fileName="coarseLevel.hdf";
       aString gridName="coarseLevel";
       HDF_DataBase dataFile;
@@ -1875,9 +1920,9 @@ main(int argc, char *argv[])
       bool ok =ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1,I2,I3,1);
       if( ok )
       {
-	vLocal(I1,I2,I3,0)=uLocal(I1,I2,I3);
-	vLocal(I1,I2,I3,1)=eLocal(I1,I2,I3);
-	vLocal(I1,I2,I3,2)=defectLocal(I1,I2,I3);
+        vLocal(I1,I2,I3,0)=uLocal(I1,I2,I3);
+        vLocal(I1,I2,I3,1)=eLocal(I1,I2,I3);
+        vLocal(I1,I2,I3,2)=defectLocal(I1,I2,I3);
       }
     }
     
@@ -1885,14 +1930,14 @@ main(int argc, char *argv[])
     aString menu[]=
       {
         "contour",
-	// "solution",
-	// "error",
-	"defect",
-	"grid",
+        // "solution",
+        // "error",
+        "defect",
+        "grid",
         "rhs (for Ogmg)",
         "plot parallel dist.",
-	"exit",
-	""
+        "exit",
+        ""
       };
     
     for( ;; )
@@ -1900,45 +1945,45 @@ main(int argc, char *argv[])
       ps.getMenuItem(menu,answer,"choose an option");
       if( answer=="exit" )
       {
-	break;
+        break;
       }
       else if( answer=="contour" )
       {
-	psp.set(GI_TOP_LABEL,"Ogmg:"); 
-	PlotIt::contour(ps,v,psp);
+        psp.set(GI_TOP_LABEL,"Ogmg:"); 
+        PlotIt::contour(ps,v,psp);
       }
 //       else if( answer=="solution" )
 //       {
-// 	psp.set(GI_TOP_LABEL,"Solution u"); 
-// 	PlotIt::contour(ps,u,psp);
+//      psp.set(GI_TOP_LABEL,"Solution u"); 
+//      PlotIt::contour(ps,u,psp);
 //       }
 //       else if( answer=="error" )
 //       {
-// 	psp.set(GI_TOP_LABEL,"error"); 
-// 	PlotIt::contour(ps,e,psp);
+//      psp.set(GI_TOP_LABEL,"error"); 
+//      PlotIt::contour(ps,e,psp);
 //       }
       else if( answer=="defect" )
       {
-	psp.set(GI_TOP_LABEL,"defect"); 
-	mgSolver.computeDefect(0);
-	PlotIt::contour(ps,mgSolver.getDefect().multigridLevel[0],psp);
+        psp.set(GI_TOP_LABEL,"defect"); 
+        mgSolver.computeDefect(0);
+        PlotIt::contour(ps,mgSolver.getDefect().multigridLevel[0],psp);
       }
       else if( answer=="rhs (for Ogmg)" )
       {
-	psp.set(GI_TOP_LABEL,"rhs"); 
-	PlotIt::contour(ps,mgSolver.getRhs(),psp);
+        psp.set(GI_TOP_LABEL,"rhs"); 
+        PlotIt::contour(ps,mgSolver.getRhs(),psp);
       }
       else if( answer=="grid" )
       {
-	psp.set(GI_TOP_LABEL,"grid"); 
-	PlotIt::plot(ps,mgSolver.getCompositeGrid(),psp);
+        psp.set(GI_TOP_LABEL,"grid"); 
+        PlotIt::plot(ps,mgSolver.getCompositeGrid(),psp);
       }
       else if( answer=="plot parallel dist." )
       {
-	ps.erase();
-	psp.set(GI_TOP_LABEL,"Parallel distribution");
-	PlotIt::plotParallelGridDistribution(mgSolver.getCompositeGrid(),ps,psp);
-	ps.erase();
+        ps.erase();
+        psp.set(GI_TOP_LABEL,"Parallel distribution");
+        PlotIt::plotParallelGridDistribution(mgSolver.getCompositeGrid(),ps,psp);
+        ps.erase();
       }
       
     }

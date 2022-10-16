@@ -1110,6 +1110,15 @@ outputSolution( const realMappedGridFunction & u, const real & t )
 //  Overture::abort("error");
 }
 
+// -- project interface values such as Temperature for conjugate heat transfer  ---
+int DomainSolver::
+projectInterface(real t, real dt, GridFunction & cgf )
+{
+  printF("DomainSolver::projectInterface : ERROR: base class function called!\n");
+  OV_ABORT("error");
+  return 0;
+}
+
 void DomainSolver::
 setName(const aString & name_ )
 // =========================================================================================

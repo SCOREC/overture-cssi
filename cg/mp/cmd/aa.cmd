@@ -59,7 +59,7 @@ $degreex1=2; $degreet1=2; $a1=0.; $b1=0.;
 $degreex2=2; $degreet2=2; $a2=0.; $b2=0.; 
 $kappa1=.1; $kappa2=.1; 
 $ktc1=-1.; $ktc2=-1.;   # by default set ktc equal to kappa
-$iTol=1.e-3; $iOmega=1.; $useNewInterfaceTransfer=0; 
+$itol=1.e-3; $iOmega=1.; $useNewInterfaceTransfer=0; 
 #
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal, "bg=s"=>\$backGround,\
@@ -67,7 +67,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal, "bg=s"=>\$backGround,\
  "degreex2=i"=>\$degreex2, "degreet2=i"=>\$degreet2,"show=s"=>\$show,"ts=s"=>\$ts,"go=s"=>\$go,\
  "debug=i"=>\$debug,"nc=i"=> \$numberOfCorrections,"iOmega=f"=>\$iOmega,"noplot=s"=>\$noplot,\
  "kappa1=f"=>\$kappa1,"kappa2=f"=>\$kappa2,"ktc1=f"=>\$ktc1,"ktc2=f"=>\$ktc2,"coupled=i"=>\$coupled,\
- "useNewInterfaceTransfer=i"=>\$useNewInterfaceTransfer );
+ "useNewInterfaceTransfer=i"=>\$useNewInterfaceTransfer,"itol=f"=>\$itol );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $ts eq "fe" ){ $ts="forward Euler";  $tsd="forward Euler"; }
@@ -112,7 +112,7 @@ include $ENV{CG}/mp/cmd/adDomain.h
 #  midpoint
   $ts 
   number of PC corrections $numberOfCorrections
-  OBPDE:interface tolerance $iTol
+  OBPDE:interface tolerance $itol
   OBPDE:interface omega $iOmega
   OBPDE:solve coupled interface equations $coupled
   OBPDE:use new interface transfer $useNewInterfaceTransfer

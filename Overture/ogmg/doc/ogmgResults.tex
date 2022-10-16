@@ -56,6 +56,7 @@
 \setcounter{bottomnumber}{50}
 
 \newcommand{\red}{\color{red}}
+\newcommand{\blue}{\color{blue}}
 \newcommand{\green}{\color{green}}
 
 
@@ -81,6 +82,8 @@
 \newcommand{\tablefontsize}{\footnotesize}
 \newcommand{\clipfig}{}
 
+\newcommand{\bogus}[1]{}
+
 \input wdhDefinitions.tex
 
 
@@ -103,7 +106,7 @@ Troy, NY, USA, 12180.
 \vspace{4\baselineskip}
 
 \noindent{\bf Abstract:}
-This document contains convergence and performance results for~\Ogmg for a variety
+This document contains convergence and run-time performance results for~\Ogmg for a variety
 of different grids.
 
 \end{flushleft}
@@ -127,6 +130,7 @@ of different grids.
 \input numericalResults
 
 
+\input tex/performanceComparison.tex
 
 \clearpage
 \section{References}

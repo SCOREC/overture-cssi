@@ -1,7 +1,11 @@
 ! This file automatically generated from advOptIsm.bf90 with bpp.
+!=============================================================================
 !
-! Advance the equations of solid mechanics
+! Advance the equations of INCOMPRESSIBLE solid mechanics
 !
+!=============================================================================
+
+
 ! These next include files will define the macros that will define the difference approximations
 ! The actual macro is called below
 ! Use this next macro to declare the statement functions that are defined below
@@ -59,6 +63,11 @@
 
 
 
+! ==============================================================
+! Macro: Check for nans
+! ==============================================================
+
+
 ! ===================================================================================================
 ! Macro: advance the solution
 !   FORCING : NOFORCING or TWILIGHTZONEFORCING
@@ -68,6 +77,8 @@
 ! Macro: advance the solution SOS -- CORRECTOR 
 !   FORCING : NOFORCING or TWILIGHTZONEFORCING
 ! ===================================================================================================
+
+
 
 
 ! ===================================================================================================
@@ -128,6 +139,7 @@
 !   ORDER : 2 or 4   
 !   GRIDTYPE : rectangular or curvilinear
 ! ========================================================================================
+
 
 ! =========================================================================================
 ! Macro: COMPUTE uDot = (un -um )

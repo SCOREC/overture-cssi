@@ -14,12 +14,12 @@
 # --- set default values for parameters ---
 # 
 $noplot=""; $backGround="square"; $grid="square10"; $mu=1.; $lambda=1.; $pv="nc"; $ts="me"; 
-$Rg=8.314/27.; $yield=1.e10; $basePress=0.0; $c0=2.0; $cl=1.0; $hgFlag=2; $hgVisc=4.e-2; $rho=1.;
+# $Rg=8.314/27.; $yield=1.e10; $basePress=0.0; $c0=2.0; $cl=1.0; $hgFlag=2; $hgVisc=4.e-2; $rho=1.;
 # turn off Q:
-$Rg=8.314/27.; $yield=1.e10; $basePress=0.0; $c0=0.0; $cl=0.0; $hgFlag=0; $hgVisc=4.e-2;
-$apr=0.0; $bpr=0.0; $cpr=0.0; $dpr=0.4;
+# $Rg=8.314/27.; $yield=1.e10; $basePress=0.0; $c0=0.0; $cl=0.0; $hgFlag=0; $hgVisc=4.e-2;
+# $apr=0.0; $bpr=0.0; $cpr=0.0; $dpr=0.4;
 $debug = 0;  $tPlot=.1; $bcn="sf"; $cons=0; $godunovOrder=2; $iw=2; 
-$diss=.0; $dissOrder=2;  $filter=1; $filterOrder=6; $filterStages=2;
+# $diss=.0; $dissOrder=2;  $filter=1; $filterOrder=6; $filterStages=2;
 $tz = "poly"; $degreex=2; $degreet=2; $fx=2.; $fy=$fx; $fz=$fx; $ft=$fx;
 $order = 2; $go="run"; 
 $tFinal=5.; $cfl=.9; $dsf=.2; $p0=2.; $p1=1.; $modem=1; $moden=0; 
@@ -31,11 +31,12 @@ $cdv=1.;           # divergence damping
 $known="strip"; $bc1="t"; $bc2="d"; $bc3="d"; $bc4="d"; $bc5="d"; $bc4="d"; 
 $icase=1; $useCurlCurl=1; $skipLastPressureSolve=0; 
 $n=1; $m=1; # Jn, lambda_nm
+$caseName="rectangleTT"; $mx=2; $my=1; $mz=1; # mode for periodic strip 
 $orderInTime=-1; # -1 = use default
 $psolver="yale"; $iluLevels=1; $ogesDebug=0; $rtolp=1.e-3; $atolp=1.e-4;  # For the pressure solve
 #
 # ----------------------------- get command line arguments ---------------------------------------
-GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"known=s"=>\$known, \
+GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"known=s"=>\$known,"caseName=s"=>\$caseName, \
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug,"ad=f"=>\$ad,"ad4=f"=>\$ad4, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bc1=s"=>\$bc1,"bc2=s"=>\$bc2,"bc3=s"=>\$bc3,"bc4=s"=>\$bc4,\
  "go=s"=>\$go,"noplot=s"=>\$noplot,"iw=i"=>\$iw,\
@@ -44,7 +45,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"known=s"=>\$known, \
   "c0=f"=>\$c0,"cl=f"=>\$cl,"filter=i"=>\$filter,"filterOrder=i"=>\$filterOrder,"filterStages=i"=>\$filterStages,\
   "upwindSOS=i"=>\$upwindSOS,"cdv=f"=>\$cdv,"useCurlCurl=i"=>\$useCurlCurl,"orderInTime=i"=>\$orderInTime,\
   "skipLastPressureSolve=i"=>\$skipLastPressureSolve,"psolver=s"=>\$psolver,"rtolp=f"=>\$rtolp,"atolp=f"=>\$atolp,\
-  "iluLevels=i"=>\$iluLevels,"n=i"=>\$n,"m=i"=>\$m );
+  "iluLevels=i"=>\$iluLevels,"n=i"=>\$n,"m=i"=>\$m,"mx=i"=>\$mx,"my=i"=>\$my,"mz=i"=>\$mz );
 # -------------------------------------------------------------------------------------------------
 if( $psolver eq "best" ){ $psolver="choose best iterative solver"; }
 if( $psolver eq "mg" ){ $psolver="multigrid"; }
@@ -99,7 +100,10 @@ if( $pv eq "godunov" && $iw eq 2 ){ $cmds = "reduce interpolation width\n $iw"; 
 $cmds
 # 
 OBTZ:user defined known solution 
-  if( $known eq "strip"   ){ $cmd="incompressible surface wave\n $icase 1"; }
+  # old if( $known eq "strip" || $known eq "strip3d"   ){ $cmd="incompressible surface wave\n $icase 1"; }
+  if( $known eq "strip3d"   ){ $cmd="incompressible surface wave\n $icase 1"; }
+  # New solution defined in SmRectangleExactSolution
+  if( $known eq "strip"  ){ $cmd="incompressible rectangle eigenmodes\n $caseName\n $mx $my $mz"; }
   if( $known eq "annulus" ){ $cmd="incompressible annulus solution\n $icase $n $m"; }
   if( $known eq "disk" ){ $cmd="incompressible disk solution\n $icase $n $m"; }
   $cmd

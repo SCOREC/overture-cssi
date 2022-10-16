@@ -15,6 +15,7 @@
 
 #include <complex>
 
+
 typedef ::real LocalReal;
 // typedef ::real OV_real;
 
@@ -109,6 +110,84 @@ getParameter( const aString & name, Real & value )
 #endMacro
 
 
+
+// ====================================================================
+// Macro : Read the exact solution data and create Nurbs to evalue it.
+// ====================================================================
+#beginMacro getExactSolutionMacro()
+
+  // --- this next file defines the radial part of the exact solution, computed with finite differences ---
+  //   urRe[] = array of real part of ur
+  //   urIm[] = array of imag part of ur
+  //   uThetaRe[] = array of real part of uTheta
+  //   uThetaIm[] = array of imag part of uTheta
+
+  // Synthetic data for testing:
+  // #Include "src/incompressible/cylExactTest.h"
+
+  // >> from $ism/matlab/cylinderDiscreteEigFuncs/hollowCylinderEigFun_d_d.h
+  // >> from $ism/matlab/cylinderDiscreteEigFuncs/hollowCylinderEigFun_t_t.h
+  // Traction-traction
+  // #Include "src/incompressible/hollowCylinderEigFun_t_t.h"
+
+  // Displacement displacement:
+  // #Include "src/incompressible/hollowCylinderEigFun_d_d.h"
+
+  printF("SmCylinderExactSolution: GET DATA FOR EXACT SOLUTION:\n  omega=%g, Ng=%d, ia=%d, ib=%d\n",omega,Ng,ia,ib);
+  printF("  ra=%g, rb=%g, m=%d, za=%g, zb=%g, kz=%g\n",ra,rb,m, za,zb,kz);
+
+  // Fill in variables with the "same" name but in outer-scope 
+  ra_=ra; rb_=rb; za_=za; zb_=zb; kz_=kz; omega_=omega;  m_=m;
+
+  // Grid in r (includes ghost)
+  //         +--+--X--+--+--+-- ...   --+--+--X--+--+
+  //         1     ia                         ib    Ng
+  //               r=ra                      r=rb
+  //               0  1  2                    nr         <- base 0 
+  int nr = ib-ia+1;          // number of grid points
+  int numGhost0 = ia-1;      // num ghost on left 
+  int numGhost1 = Ng-ib;     // num ghost on right
+  assert( numGhost0==numGhost1 ); 
+
+  IntegerArray dimension(2,3), gridIndexRange(2,3);
+  dimension=0;
+  gridIndexRange=0;
+
+  gridIndexRange(1,0)=nr-1;
+
+  dimension(0,0)=gridIndexRange(0,0)-numGhost0;
+  dimension(1,0)=gridIndexRange(1,0)+numGhost1;
+
+  int nurbsDegree=3; 
+  int xDegree[3] ={ nurbsDegree,nurbsDegree,nurbsDegree };  // 
+
+  int domainDimension=1, rangeDimension=2; 
+  RealArray x(Range(dimension(0,0),dimension(1,0)),1,1,1,rangeDimension);  // data 
+  // RealArray x(Ng,1,1,1,rangeDimension);  // data 
+
+  Real *uReArray[]={ urRe, uThetaRe, uzRe, pRe }; // array of pointers to array of real-parts 
+  Real *uImArray[]={ urIm, uThetaIm, uzIm, pIm }; // array of pointers to array of imaginary-parts 
+  for( int n=0; n<numNurbs; n++ )
+  {
+
+    Real *uRe = uReArray[n];
+    Real *uIm = uImArray[n];
+    // for( int i=0; i<Ng; i++ )
+    const int offset = dimension(0,0); 
+    for( int i=dimension(0,0); i<=dimension(1,0); i++ )
+    {
+      // printF(" n=%d: i=%d uRe=%g, uIm=%g\n",n,i,uRe[i],uIm[i]);
+      x(i,0,0,0,0) = uRe[i-offset];
+      x(i,0,0,0,1) = uIm[i-offset]; 
+    }
+    // --- Nurbs[n] holds the Re and Im parts of the radial solutions ---
+    nurbs[n].interpolate( x,domainDimension,rangeDimension,dimension,gridIndexRange,
+                          NurbsMapping::parameterizeByIndex,xDegree );
+  }
+
+#endMacro
+
+
 // ===============================================================================
 /// \brief Initialize the exact solution.
 // ===============================================================================
@@ -136,74 +215,46 @@ initialize( CompositeGrid & cg, const aString & caseName )
 
   Real ra_=0., rb_=1., za_=0., zb_=1., kz_=1., omega_=1.; 
   int m_=1; 
-  if( true )
+
+  if( caseName == "hollowCylinderDD" )
   {
-    // --- this next file defines the radial part of the exact solution, computed with finite differences ---
-    //   urRe[] = array of real part of ur
-    //   urIm[] = array of imag part of ur
-    //   uThetaRe[] = array of real part of uTheta
-    //   uThetaIm[] = array of imag part of uTheta
-
-    // Synthetic data for testing:
-    // #Include "src/incompressible/cylExactTest.h"
-
-    // >> from $ism/matlab/cylinderDiscreteEigFuncs/hollowCylinderEigFun_t_t.h
-    // Traction-traction
-    // #Include "src/incompressible/hollowCylinderEigFun_t_t.h"
-
     // Displacement displacement:
+    // >> from $ism/matlab/cylinderDiscreteEigFuncs/hollowCylinderEigFun_d_d.h
     #Include "src/incompressible/hollowCylinderEigFun_d_d.h"
-
-    printF("SmCylinderExactSolution: GET DATA FOR EXACT SOLUTION:\n  omega=%g, Ng=%d, ia=%d, ib=%d\n",omega,Ng,ia,ib);
-    printF("  ra=%g, rb=%g, m=%d, za=%g, zb=%g, kz=%g\n",ra,rb,m, za,zb,kz);
-
-    // Fill in variables with the "same" name but in outer-scope 
-    ra_=ra; rb_=rb; za_=za; zb_=zb; kz_=kz; omega_=omega;  m_=m;
-
-    // Grid in r (includes ghost)
-    //         +--+--X--+--+--+-- ...   --+--+--X--+--+
-    //         1     ia                         ib    Ng
-    //               r=ra                      r=rb
-    //               0  1  2                    nr         <- base 0 
-    int nr = ib-ia+1;          // number of grid points
-    int numGhost0 = ia-1;      // num ghost on left 
-    int numGhost1 = Ng-ib;     // num ghost on right
-    assert( numGhost0==numGhost1 ); 
-
-    IntegerArray dimension(2,3), gridIndexRange(2,3);
-    dimension=0;
-    gridIndexRange=0;
-
-    gridIndexRange(1,0)=nr-1;
-
-    dimension(0,0)=gridIndexRange(0,0)-numGhost0;
-    dimension(1,0)=gridIndexRange(1,0)+numGhost1;
-
-    int nurbsDegree=3; 
-    // here is the new interpolate: 
-    int xDegree[3] ={ nurbsDegree,nurbsDegree,nurbsDegree };  // 
-
-    int domainDimension=1, rangeDimension=2; 
-    RealArray x(Ng,1,1,1,rangeDimension);  // data 
-
-    Real *uReArray[]={ urRe, uThetaRe, uzRe, pRe }; // array of pointers to array of real-parts 
-    Real *uImArray[]={ urIm, uThetaIm, uzIm, pIm }; // array of pointers to array of imaginary-parts 
-    for( int n=0; n<numNurbs; n++ )
-    {
-
-      Real *uRe = uReArray[n];
-      Real *uIm = uImArray[n];
-      for( int i=0; i<Ng; i++ )
-      {
-        // printF(" n=%d: i=%d uRe=%g, uIm=%g\n",n,i,uRe[i],uIm[i]);
-        x(i,0,0,0,0) = uRe[i];
-        x(i,0,0,0,1) = uIm[i]; 
-      }
-      // --- Nurbs[n] holds the Re and Im parts of the radial solutions ---
-      nurbs[n].interpolate( x,domainDimension,rangeDimension,dimension,gridIndexRange,
-                            NurbsMapping::parameterizeByIndex,xDegree );
-    }
+    getExactSolutionMacro();
   }
+  else if( caseName == "hollowCylinderTT" )
+  {
+    // Traction-traction    
+    // >> from $ism/matlab/cylinderDiscreteEigFuncs/hollowCylinderEigFun_t_t.h
+    #Include "src/incompressible/hollowCylinderEigFun_t_t.h"
+    getExactSolutionMacro();
+  }
+  else if( caseName == "solidCylinderD" )
+  {
+    // Solid cylinder, displacement BCs
+    // >> from $ism/matlab/solidCylinderEigFun_d.h
+    #Include "src/incompressible/solidCylinderEigFun_d.h"
+    // From Don:
+    // #Include "src/incompressible/dataForBill.h"
+    getExactSolutionMacro();
+  } 
+  else if( caseName == "solidCylinderT" )
+  {
+    // Solid cylinder, traction BCs
+    // >> from $ism/matlab/solidCylinderEigFun_t.h
+    #Include "src/incompressible/solidCylinderEigFun_t.h"
+    getExactSolutionMacro();
+  }    
+  else
+  {
+    printF("SmCylinderExactSolution::initialize: unknown caseName=[%s]\n",(const char*)caseName);
+    OV_ABORT("error");
+
+  }
+  if( true )
+    printF("============= caseName = %s =============\n",(const char*)caseName);
+
 
   Real ra=ra_, rb=rb_, za=za_, zb=zb_, kz=kz_;
   omega=omega_; // set value in the dbase
@@ -216,7 +267,11 @@ initialize( CompositeGrid & cg, const aString & caseName )
     PlotStuffParameters psp;
     psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
     // plot the curve (x(r),y(r),z(r))
-    PlotIt::plot( gi,nurbs[0], psp );
+    for( int n = 0 ; n<numNurbs; n++ )
+    {
+      psp.set(GI_TOP_LABEL,sPrintF("Nurbs[%d]",n));
+      PlotIt::plot( gi,nurbs[n], psp );
+    }
 
     OV_ABORT("stop here for now");
   }
@@ -292,6 +347,11 @@ initialize( CompositeGrid & cg, const aString & caseName )
       nurbs[3].map( rv,wv );  // eval radial component of p
       p      = ( wv(0,0) + I*wv(0,1) ) ; 
 
+      // if( fabs(r-ra)<1.e-5  || fabs(r-rb)<1.e-5 )
+      // {
+      //   printF("eval: r=%9.3e ur=%9.3e + I %9.3e\n",r,std::real(ur),std::imag(ur));
+      // }
+
       // --- form the spatial part (complex) of the solution ---
       // expi = exp(i*m*theta) * exp(i*kz*z ) = exp( i*( m*theta + kz*z ) )
       expi = ( cos(m*theta + kz*z ) + I*sin(m*theta + kz*z ) );
@@ -364,7 +424,19 @@ evalSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua,
   OV_GET_SERIAL_ARRAY(real,wIm[grid],wImLocal);
 
   const Real & omega = dbase.get<Real>("omega"); 
-  const Real coswt = cos(omega*t), sinwt=sin(omega*t);
+  Real coswt, sinwt;
+  if( numberOfTimeDerivatives==0 )
+  {
+    coswt = cos(omega*t);  sinwt = sin(omega*t);
+  }
+  else if( numberOfTimeDerivatives==1 )
+  {
+    coswt = -omega*sin(omega*t); sinwt = omega*cos(omega*t);
+  }
+  else
+  {
+    OV_ABORT("error");
+  }
   int i1,i2,i3;
   FOR_3D(i1,i2,i3,I1,I2,I3)
   {

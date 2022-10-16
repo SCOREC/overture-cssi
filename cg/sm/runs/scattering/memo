@@ -1,4 +1,14 @@
 *************************
+**** Fri May 13, 2022
+
+REVIST SCATTERING FOR ISM PAPER 
+
+
+cgsm -noplot scattering.cmd -g=rpiGride4p.order2.hdf -kx=0 -ky=1 -ax=1 -ay=0 -beta=20 -k0=5 -y0=-2.0 -ts=me -tf=2 -tp=.1 -cfl=0.9 -cdv=.25 -upwindSOS=1 -go=og 
+
+
+
+*************************
 **** Fri Oct 22, 2021
 
 OK (compiled dbg)  problems compiled opt !!

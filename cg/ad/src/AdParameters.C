@@ -65,6 +65,9 @@ AdParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
 
  dbase.put<bool>("assignKnownSolutionAtBoundaries")=false; // if true set values at Dirichlet BCs to the known solution
 
+
+ dbase.get<bool>("saveAugmentedSolutionToShowFile")=true; // *wdh* April 20, 2022 -- so errors are saved in the show file
+
   // initialize the items that we time: 
   initializeTimings();
 }
@@ -638,6 +641,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
              answer.matches("b") ||
              answer.matches("c") )
     {
+      // printF("answer=[%s]\n",(const char*)answer);
       aString name = answer.matches("kappa") ? "kappa" : answer.matches("a") ? "a" : answer.matches("b") ? "b" : "c";
       int n = name=="kappa" ? 0 : name=="a" ? 1 : name=="b" ? 2 : 3;
       len = name.length();
@@ -659,6 +663,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
         par[m]=val[m];
         line += sPrintF(buff,"%g ",par[m]);
       }
+      // printF("a[0]=%g, b[0]=%g, c[0]=%g\n",a[0],b[0],c[0]);
       
       dialog.setTextLabel(name,line);
     }

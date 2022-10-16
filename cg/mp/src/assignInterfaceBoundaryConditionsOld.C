@@ -1356,7 +1356,7 @@ getInterfaceResidualsOld( real t, real dt, std::vector<int> & gfIndex, std::vect
         if( debug() & 2 )
         {
           fPrintF(interfaceFile,
-                  "interface %i step=%i: residuals: [u]=%8.2e [k*u.n]=%8.2e (omega=%9.3e,tol=%8.2e)\n",
+                  "interfaceOld %i step=%i: residuals: [u]=%8.2e [k*u.n]=%8.2e (omega=%9.3e,tol=%8.2e)\n",
                   inter,parameters.dbase.get<int >("globalStepNumber"),jumpInU,jumpInUn,
                   parameters.dbase.get<real>("interfaceOmega"),interfaceDescriptor.interfaceTolerance);
         }

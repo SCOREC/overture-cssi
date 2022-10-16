@@ -30,14 +30,14 @@ destroy()
         {
             for( int p=0; p<npr; p++ ) 
             {
-      	delete [] ipa(p,grid);
+                delete [] ipa(p,grid);
             }
             for( int p=0; p<nps; p++ ) 
             {
-      	delete [] ila(p,grid);
-      	delete [] cia(p,grid);
-      	if( coeffaAllocated )
-        	  delete [] coeffa(p,grid);
+                delete [] ila(p,grid);
+                delete [] cia(p,grid);
+                if( coeffaAllocated )
+                    delete [] coeffa(p,grid);
             }
         }
     }
@@ -112,19 +112,19 @@ sizeOf(FILE *file /* = NULL */ ) const
             const int numberOfProcessors=Communication_Manager::Number_Of_Processors;
             for( int grid=0; grid<numberOfComponentGrids; grid++ )
             {
-      	for( int p=0; p<nps; p++ ) 
-      	{
-        	  int nil=nila(p,grid);
-        	  size+= nil*(numberOfDimensions+1)*sizeof(int);   // ila
-        	  size+= nil*(numberOfDimensions+1)*sizeof(real);  // cia
-        	  if( coeffaAllocated )
-          	    size+= nil*(coeffWidthDimension)*sizeof(real);   // coeffa -- assumes coeffa has been allocated
-      	}
+                for( int p=0; p<nps; p++ ) 
+                {
+                    int nil=nila(p,grid);
+                    size+= nil*(numberOfDimensions+1)*sizeof(int);   // ila
+                    size+= nil*(numberOfDimensions+1)*sizeof(real);  // cia
+                    if( coeffaAllocated )
+                        size+= nil*(coeffWidthDimension)*sizeof(real);   // coeffa -- assumes coeffa has been allocated
+                }
                 for( int p=0; p<npr; p++ )
-      	{
-        	  int nip=nipa(p,grid);
-        	  size+= nip*sizeof(int);   // ipa holds indirection array
-      	}
+                {
+                    int nip=nipa(p,grid);
+                    size+= nip*sizeof(int);   // ipa holds indirection array
+                }
             }
         }
         
@@ -184,12 +184,12 @@ setExplicitInterpolationStorageOption( ExplicitInterpolationStorageOptionEnum op
 // ==========================================================================================
 int InterpolatePointsOnAGrid::
 parallelSetup( CompositeGrid & cg,
-             	       const RealArray & xp, 
-             	       const IntegerArray & numberOfInterpolationPoints, 
-             	       const RealArray *interpolationCoordinates, 
-             	       const IntegerArray *indirection, 
-             	       const IntegerArray *interpoleeLocation,
-             	       const IntegerArray *variableInterpolationWidth )
+                              const RealArray & xp, 
+                              const IntegerArray & numberOfInterpolationPoints, 
+                              const RealArray *interpolationCoordinates, 
+                              const IntegerArray *indirection, 
+                              const IntegerArray *interpoleeLocation,
+                              const IntegerArray *variableInterpolationWidth )
 {
 
 #ifndef USE_PPP
@@ -239,9 +239,9 @@ parallelSetup( CompositeGrid & cg,
             for( int i=0; i<numberOfInterpolationPoints(grid); i++ )
             {
                 int ii=ia(i);
-      	fprintf(debugFile,"  i=%i ia=%i x=(%8.2e,%8.2e) r=(%8.2e,%8.2e) il=(%i,%i) width=%i\n",
+                fprintf(debugFile,"  i=%i ia=%i x=(%8.2e,%8.2e) r=(%8.2e,%8.2e) il=(%i,%i) width=%i\n",
                                 i,ii,xp(ii,0),xp(ii,1),ci(i,0),ci(i,1),il(i,0),il(i,1),viw(i));
-      	
+                
             }
             
         }
@@ -306,13 +306,13 @@ parallelSetup( CompositeGrid & cg,
                 
       // count of reals sent:
             numToSend(1,sp)+=numberOfRealsSentPerInterpoleePoint;
-      	
+                
             mipa.get(sp,grid)++;   // this point will be evaluated on proc. sp and sent to this proc.
 
             if( !pointsSent[sp] ) // is this the first time we have encountered this value of sp ?
             {
-      	numToSend(0,sp)+=2; // leave space for a header of [count grid]
-      	pointsSent[sp]=true;
+                numToSend(0,sp)+=2; // leave space for a header of [count grid]
+                pointsSent[sp]=true;
             }
         } // end for i
 
@@ -457,7 +457,7 @@ parallelSetup( CompositeGrid & cg,
         const int pp = mapr(p);  // pp is the actual processor id in [0,np-1]
         if( debug )
             fprintf(debugFile," => myid=%i: will send (int=%i,real=%i) to p=%i \n",
-            	      myid,numToSend(0,pp),numToSend(1,pp),pp);
+                            myid,numToSend(0,pp),numToSend(1,pp),pp);
 
     // number of int's to be sent to processor pp:
         int nis = numToSend(0,pp);
@@ -473,7 +473,7 @@ parallelSetup( CompositeGrid & cg,
         const int pp = maps(p);  // pp is the actual processor id in [0,np-1]
         if( debug )
             fprintf(debugFile," => myid=%i: will receive=(%i,%i) from p=%i\n",
-            	      myid,numToReceive(0,pp),numToReceive(1,pp),pp);
+                            myid,numToReceive(0,pp),numToReceive(1,pp),pp);
 
     // number of int's to be received from processor p
         int nir = numToReceive(0,pp);
@@ -501,7 +501,7 @@ parallelSetup( CompositeGrid & cg,
             const int nip=nipa(p,grid);
             if( nip>0 )
             {
-      	ipa.get(p,grid) = new int [nip];  // holds ia(i)
+                ipa.get(p,grid) = new int [nip];  // holds ia(i)
             }
         }
     }
@@ -563,8 +563,8 @@ parallelSetup( CompositeGrid & cg,
             
             #ifdef POGIP_DEBUG
                 if( debug )
-        	  fprintf(debugFile,"++++Setup: il: myid=%i, grid=%i i=%i, ils=[%i,%i] iws=%i "
-                	  	  "index=[%i,%i] lives on sp=%i\n",myid,grid,i,ils(i,0),ils(i,1),iws(i),index[0],index[1],spp);
+                    fprintf(debugFile,"++++Setup: il: myid=%i, grid=%i i=%i, ils=[%i,%i] iws=%i "
+                                    "index=[%i,%i] lives on sp=%i\n",myid,grid,i,ils(i,0),ils(i,1),iws(i),index[0],index[1],spp);
             #endif
 
             int & n = numi[sp];
@@ -574,40 +574,40 @@ parallelSetup( CompositeGrid & cg,
 
             for( axis=0; axis<numberOfDimensions; axis++ )
             {
-      	sbuffi[sp][n]=ils(i,axis); n++;
+                sbuffi[sp][n]=ils(i,axis); n++;
             }
 
       // copy ci(i,axis)
             int & nr=numr[sp];
             for( axis=0; axis<numberOfDimensions; axis++ )
             {
-      	sbuffr[sp][nr]=cis(i,axis); nr++;
+                sbuffr[sp][nr]=cis(i,axis); nr++;
             }
 
             int & ns = numToSendInterpolee[sp];  // note reference 
             IPA(ns,sp)=ia(i);                    // save indirection value
             ns++;
-      	
+                
         } // end for i
             
         for( int p=0; p<npr; p++ )
         {
             if( numToSendInterpolee[p]>0 )
             {
-	// we only send the header info if count is bigger than zero
+        // we only send the header info if count is bigger than zero
                 const int pp = mapr(p);  // pp is the actual processor id in [0,np-1]
 
-      	assert( numi[p]<=numToSend(0,pp) );  // sanity check for buffer sizes
-      	assert( numr[p]<=numToSend(1,pp) );
+                assert( numi[p]<=numToSend(0,pp) );  // sanity check for buffer sizes
+                assert( numr[p]<=numToSend(1,pp) );
 
-	// save the header values: [count grid]
-      	sbuffi[p][numiStart[p]  ]=numToSendInterpolee[p];  
-      	sbuffi[p][numiStart[p]+1]=grid;   
+        // save the header values: [count grid]
+                sbuffi[p][numiStart[p]  ]=numToSendInterpolee[p];  
+                sbuffi[p][numiStart[p]+1]=grid;   
 
             }
             else
             { // if the counts are zero then we don't need a header,
-      	numi[p]=numiStart[p];  // reset numi[p]
+                numi[p]=numiStart[p];  // reset numi[p]
             }
         }
             
@@ -634,7 +634,7 @@ parallelSetup( CompositeGrid & cg,
         if( debug ) 
         {
             fprintf(debugFile,"Setup: II: il: myid=%i: send %i (ints) for %i interp pts to p=%i : values=",myid,
-           	     numToSend(0,pp),numi[p],pp);
+                          numToSend(0,pp),numi[p],pp);
             if( debug & 4 )
                 for( int j=0; j<numi[p]; j++ ) fprintf(debugFile,"%i ",sbuffi[p][j]); 
             else
@@ -665,9 +665,9 @@ parallelSetup( CompositeGrid & cg,
             assert( numild==num );
 
             fprintf(debugFile,"Setup: III: il/ip: myid=%i: received msg from p=%i, tag=%i p=%i values=",
-            	      myid,receiveStatus[p].MPI_SOURCE,receiveStatus[p].MPI_TAG,pp);
+                            myid,receiveStatus[p].MPI_SOURCE,receiveStatus[p].MPI_TAG,pp);
             if( debug & 4  )
-      	for( j=0; j<numild; j++ ) fprintf(debugFile,"%i ",rbuffi[p][j]);
+                for( j=0; j<numild; j++ ) fprintf(debugFile,"%i ",rbuffi[p][j]);
             else
                 fprintf(debugFile,"not printed");
             
@@ -733,12 +733,12 @@ parallelSetup( CompositeGrid & cg,
 
             for( j=0; j<numil; j++ )
             {
- 	// int iai  =rbuffi[p][k]; k++;
-      	int width=rbuffi[p][k]; k++; 
-      	for( axis=0; axis<numberOfDimensions; axis++ )
-      	{
-        	  k++;   // il(i,axis)
-      	}
+        // int iai  =rbuffi[p][k]; k++;
+                int width=rbuffi[p][k]; k++; 
+                for( axis=0; axis<numberOfDimensions; axis++ )
+                {
+                    k++;   // il(i,axis)
+                }
                 nila.get(sp,grid)++;
             } // end for j 
 
@@ -747,7 +747,7 @@ parallelSetup( CompositeGrid & cg,
         {
             fprintf(debugFile," ** p=%i nila(p,grid)=",p);
             for( int grid=0; grid<numberOfComponentGrids; grid++ )
-      	fprintf(debugFile," %i",nila(p,grid));
+                fprintf(debugFile," %i",nila(p,grid));
             fprintf(debugFile,"\n");
         }
         
@@ -764,8 +764,8 @@ parallelSetup( CompositeGrid & cg,
             const int nil=nila(p,grid);
             if( nil>0 )
             {
-      	ila.get(p,grid) = new int [nil*(numberOfDimensions+1)];
-      	cia.get(p,grid) = new real [nil*(numberOfDimensions)];
+                ila.get(p,grid) = new int [nil*(numberOfDimensions+1)];
+                cia.get(p,grid) = new real [nil*(numberOfDimensions)];
             }
         }
     }
@@ -815,7 +815,7 @@ parallelSetup( CompositeGrid & cg,
             const int grid =rbuffi[p][k];  k++;
 
             if( debug & 3 )
-      	fprintf(debugFile,"receive: k=%i, count=numil=%i, grid=%i,\n",k,numil,grid);
+                fprintf(debugFile,"receive: k=%i, count=numil=%i, grid=%i,\n",k,numil,grid);
 
       // kr=current index into the real-buffer rbuffr
             int & kr = numr[p];
@@ -827,8 +827,8 @@ parallelSetup( CompositeGrid & cg,
             
             for( int p2=0; p2<nps; p2++ )
             { // for efficiency, look up pointers
-      	ilap[p2] = ila(p2,grid);
-      	ciap[p2] = cia(p2,grid);
+                ilap[p2] = ila(p2,grid);
+                ciap[p2] = cia(p2,grid);
 
                 nLocal[p2]=nilb(p2,grid);   // save starting values in temp arrays
             }
@@ -841,32 +841,32 @@ parallelSetup( CompositeGrid & cg,
             {
         // sp : send result to this processor
 
-      	int & n = nLocal[sp];
+                int & n = nLocal[sp];
         // IPA(n,sp) = rbuffi[p][k]; k++;
         // int ia0  = rbuffi[p][k]; k++; // do we need this value ????
-      	int width = rbuffi[p][k]; k++;  // save this in local too
-      	maxInterpolationWidth=max(maxInterpolationWidth,width);
+                int width = rbuffi[p][k]; k++;  // save this in local too
+                maxInterpolationWidth=max(maxInterpolationWidth,width);
 
                 ILA(n,0,sp)=width; // save the interp-width here 
 
-      	for( axis=0; axis<numberOfDimensions; axis++ )
-      	{
+                for( axis=0; axis<numberOfDimensions; axis++ )
+                {
                     ILA(n,axis+1,sp)=rbuffi[p][k];   k++;
-        	  CIA(n,axis  ,sp)=rbuffr[p][kr];  kr++;
-      	}
-      	#ifdef POGIP_DEBUG
+                    CIA(n,axis  ,sp)=rbuffr[p][kr];  kr++;
+                }
+                #ifdef POGIP_DEBUG
                   if( debug )
-        	  fprintf(debugFile,"receive: j=%i grid=%i, p=%i sp=%i n=%i width=%i il=[%i,%i]\n",j,grid,pp,spp,n,
+                    fprintf(debugFile,"receive: j=%i grid=%i, p=%i sp=%i n=%i width=%i il=[%i,%i]\n",j,grid,pp,spp,n,
                                     width[0],ILA(n,axis1+1,sp),ILA(n,axis2+1,sp) );
                 #endif
-      	n++;
+                n++;
 
             } // end for j 
 
 
             for( int p2=0; p2<nps; p2++ )
             { // copy back the sums
-        	if( nLocal[p2]>0 ) nilb.get(p2,grid)=nLocal[p2];
+                if( nLocal[p2]>0 ) nilb.get(p2,grid)=nLocal[p2];
             }
 
         } // end while
@@ -988,6 +988,15 @@ initializeExplicitInterpolation(CompositeGrid & cg)
     int grid,grid2,axis,i,p,m,m1,m2,m3;
 
     
+    if( explicitInterpolationStorageOption==precomputeNoCoefficients && 
+            maxInterpolationWidth>5 )
+    {
+        printF("\n +++++++ InterpolatePointsOnAGrid:: SETTING setExplicitInterpolationStorageOption to precomputeAllCoefficients +++++\n"
+                          " +++++++ SINCE sparse interpolation is not available yet for interpolationWidth>5. FIX ME BILL!  +++++ \n\n");
+    // interpolator.setExplicitInterpolationStorageOption(InterpolatePointsOnAGrid::precomputeSomeCoefficients);
+        setExplicitInterpolationStorageOption(InterpolatePointsOnAGrid::precomputeAllCoefficients);
+    }  
+
   // --- choose the sparse option  ----
   // Note: default is explicitInterpolationStorageOption==precomputeNoCoefficients;
     bool useSparseInterpolation = explicitInterpolationStorageOption==precomputeNoCoefficients &&
@@ -1005,6 +1014,7 @@ initializeExplicitInterpolation(CompositeGrid & cg)
         {
             printf("InterpolatePointsOnAGrid::WARNING: optimized sparse interpolation not available for interpolation width=%i\n",
                             maxInterpolationWidth);
+
         }
         
         coeffWidthDimension=1;
@@ -1025,7 +1035,7 @@ initializeExplicitInterpolation(CompositeGrid & cg)
             #endif
             if( nil>0 )
             {
-      	coeffa.get(p,grid) = new real [nil*coeffWidthDimension];
+                coeffa.get(p,grid) = new real [nil*coeffWidthDimension];
             }
         }
     }
@@ -1059,7 +1069,7 @@ initializeExplicitInterpolation(CompositeGrid & cg)
                 const int nil=nila(p,grid);
             #endif
             if( nil<=0 ) continue;
-      	
+                
             #undef IL
             #undef CI
             #undef VIW
@@ -1094,97 +1104,97 @@ initializeExplicitInterpolation(CompositeGrid & cg)
             const real shift=isCC(axis1) ? -.5 : 0.;
             if( useSparseInterpolation )
             {
-	// Save "alpha" for the Lagrange interpolation formula
-      	for( int i=0; i<nil; i++ )
-      	{
-        	  for( axis=0; axis<numberOfDimensions; axis++ )
-        	  {
-          	    ili=IL(i,axis); 
-          	    coeffg(i,axis,0,0)=CI(i,axis)/dr(axis)+ir(Start,axis) -ili + shift;
+        // Save "alpha" for the Lagrange interpolation formula
+                for( int i=0; i<nil; i++ )
+                {
+                    for( axis=0; axis<numberOfDimensions; axis++ )
+                    {
+                        ili=IL(i,axis); 
+                        coeffg(i,axis,0,0)=CI(i,axis)/dr(axis)+ir(Start,axis) -ili + shift;
 
                         #ifdef POGIP_DEBUG
-          	    if( debug & 4 )
-            	      fprintf(debugFile,"POGIP:initExplInterp: grid=%i p=%i i=%i axis=%i il=%i ir=%i dr=%8.2e "
-                  		      "shift=%8.2e VIW=%i ci=%9.3e alpha=%9.3e\n",
-                  		      grid,p,i,axis,ili,ir(Start,axis),dr(axis),shift,VIW(i),CI(i,axis),coeffg(i,axis,0,0));
+                        if( debug & 4 )
+                            fprintf(debugFile,"POGIP:initExplInterp: grid=%i p=%i i=%i axis=%i il=%i ir=%i dr=%8.2e "
+                                            "shift=%8.2e VIW=%i ci=%9.3e alpha=%9.3e\n",
+                                            grid,p,i,axis,ili,ir(Start,axis),dr(axis),shift,VIW(i),CI(i,axis),coeffg(i,axis,0,0));
                         #endif
-        	  }
-      	} // end for i 
+                    }
+                } // end for i 
             }
             else
             {
-      	for( int i=0; i<nil; i++ )
-      	{
-        	  for( axis=0; axis<numberOfDimensions; axis++ )
-        	  {
-          	    ili=IL(i,axis); 
+                for( int i=0; i<nil; i++ )
+                {
+                    for( axis=0; axis<numberOfDimensions; axis++ )
+                    {
+                        ili=IL(i,axis); 
 
-          	    relativeOffset=CI(i,axis)/dr(axis)+ir(Start,axis);
+                        relativeOffset=CI(i,axis)/dr(axis)+ir(Start,axis);
 
-          	    px[axis] = isCC(axis) ? relativeOffset-ili-.5 : relativeOffset-ili;
-        	  }
-        	  const int interpWidth=VIW(i);
+                        px[axis] = isCC(axis) ? relativeOffset-ili-.5 : relativeOffset-ili;
+                    }
+                    const int interpWidth=VIW(i);
 
 //           if( interpWidth!=3 )
 //             printf(" ERROR: <><> g=[%i,%i] p=%i i=%i interpWidth=%i il=[%i,%i]\n",grid,grid2,p,i,interpWidth,
 //                   IL(i,0),IL(i,1));
 
-        	  switch( interpWidth )  
-        	  {
-        	  case 3:
-	    //........quadratic interpolation
-          	    for( axis=0; axis<numberOfDimensions; axis++ )
-          	    {
-            	      q(axis,0)=Q12(px[axis]);
-            	      q(axis,1)=Q22(px[axis]);
-            	      q(axis,2)=Q32(px[axis]);
-            	      for( m=3; m<maxInterpolationWidth; m++ ) q(axis,m)=0.;
-          	    }
-          	    break;
-        	  case 2:
-	    //.......linear interpolation
-          	    for( axis=0; axis<numberOfDimensions; axis++ )
-          	    {
-            	      q(axis,0)=Q11(px[axis]);
-            	      q(axis,1)=Q21(px[axis]);
-            	      for( m=2; m<maxInterpolationWidth; m++ ) q(axis,m)=0.;
-          	    }
-          	    break;
-        	  default:
-	    // .....order >3 - compute lagrange interpolation
-          	    for( axis=0; axis<numberOfDimensions; axis++ )
-          	    {
-            	      for(m1=0; m1<width[axis]; m1++ ) 
-            	      {
-            		q(axis,m1)=1.;
-            		for( m2=0; m2<width[axis]; m2++ )
-              		  if( m1 != m2  )
-                		    q(axis,m1)*=(px[axis]-m2)/(m1-m2);
-            	      }
-          	    }
-        	  }
-        	  if( numberOfDimensions==2 )
-        	  {
-          	    for( m3=0; m3< width[axis3]; m3++ ) 
-            	      for( m2=0; m2< width[axis2]; m2++ ) 
-            		for( m1=0; m1< width[axis1]; m1++ ) 
-              		  coeffg(i,m1,m2,m3)=q(axis1,m1)*q(axis2,m2);
-        	  }
-        	  else if( numberOfDimensions==3 )
-        	  {
-          	    for( m3=0; m3< width[axis3]; m3++ ) 
-            	      for( m2=0; m2< width[axis2]; m2++ ) 
-            		for( m1=0; m1< width[axis1]; m1++ ) 
-              		  coeffg(i,m1,m2,m3)=q(axis1,m1)*q(axis2,m2)*q(axis3,m3);
-        	  }
-        	  else
-        	  {
-          	    for( m3=0; m3< width[axis3]; m3++ ) 
-            	      for( m2=0; m2< width[axis2]; m2++ ) 
-            		for( m1=0; m1< width[axis1]; m1++ ) 
-              		  coeffg(i,m1,m2,m3)=q(axis1,m1);
-        	  }
-      	} // end for i
+                    switch( interpWidth )  
+                    {
+                    case 3:
+            //........quadratic interpolation
+                        for( axis=0; axis<numberOfDimensions; axis++ )
+                        {
+                            q(axis,0)=Q12(px[axis]);
+                            q(axis,1)=Q22(px[axis]);
+                            q(axis,2)=Q32(px[axis]);
+                            for( m=3; m<maxInterpolationWidth; m++ ) q(axis,m)=0.;
+                        }
+                        break;
+                    case 2:
+            //.......linear interpolation
+                        for( axis=0; axis<numberOfDimensions; axis++ )
+                        {
+                            q(axis,0)=Q11(px[axis]);
+                            q(axis,1)=Q21(px[axis]);
+                            for( m=2; m<maxInterpolationWidth; m++ ) q(axis,m)=0.;
+                        }
+                        break;
+                    default:
+            // .....order >3 - compute lagrange interpolation
+                        for( axis=0; axis<numberOfDimensions; axis++ )
+                        {
+                            for(m1=0; m1<width[axis]; m1++ ) 
+                            {
+                                q(axis,m1)=1.;
+                                for( m2=0; m2<width[axis]; m2++ )
+                                    if( m1 != m2  )
+                                        q(axis,m1)*=(px[axis]-m2)/(m1-m2);
+                            }
+                        }
+                    }
+                    if( numberOfDimensions==2 )
+                    {
+                        for( m3=0; m3< width[axis3]; m3++ ) 
+                            for( m2=0; m2< width[axis2]; m2++ ) 
+                                for( m1=0; m1< width[axis1]; m1++ ) 
+                                    coeffg(i,m1,m2,m3)=q(axis1,m1)*q(axis2,m2);
+                    }
+                    else if( numberOfDimensions==3 )
+                    {
+                        for( m3=0; m3< width[axis3]; m3++ ) 
+                            for( m2=0; m2< width[axis2]; m2++ ) 
+                                for( m1=0; m1< width[axis1]; m1++ ) 
+                                    coeffg(i,m1,m2,m3)=q(axis1,m1)*q(axis2,m2)*q(axis3,m3);
+                    }
+                    else
+                    {
+                        for( m3=0; m3< width[axis3]; m3++ ) 
+                            for( m2=0; m2< width[axis2]; m2++ ) 
+                                for( m1=0; m1< width[axis1]; m1++ ) 
+                                    coeffg(i,m1,m2,m3)=q(axis1,m1);
+                    }
+                } // end for i
             }
         } // for p
     }  // end for grid
@@ -1288,10 +1298,10 @@ initializeExplicitInterpolation(CompositeGrid & cg)
 
 int InterpolatePointsOnAGrid::
 parallelInterpolate( RealArray & ui,                       // save results here
-                 		     const realCompositeGridFunction & u,        // interpolate from this grid function.
-                 		     const Range & C0 /* = nullRange */,   // optionally specify components to interpolate
-                 		     const Range & C1 /* = nullRange */,  
-                 		     const Range & C2 /* = nullRange */ )
+                                          const realCompositeGridFunction & u,        // interpolate from this grid function.
+                                          const Range & C0 /* = nullRange */,   // optionally specify components to interpolate
+                                          const Range & C1 /* = nullRange */,  
+                                          const Range & C2 /* = nullRange */ )
 {
   // printF("InterpolatePointsOnAGrid::WARNING: restricted interpolation not implemented -- will interpolate all grids\n");
     return parallelInternalInterpolate(ui,u,C0,C1,C2);
@@ -1315,10 +1325,10 @@ parallelInterpolate( RealArray & ui,                       // save results here
 // ==============================================================================================
 int InterpolatePointsOnAGrid::
 parallelInternalInterpolate( RealArray & ui,                       // save results here
-                       			     const realCompositeGridFunction & u,        // interpolate from this grid function. 
-                       			     const Range & C0, 
-                       			     const Range & C1,
-                       			     const Range & C2 )
+                                                          const realCompositeGridFunction & u,        // interpolate from this grid function. 
+                                                          const Range & C0, 
+                                                          const Range & C1,
+                                                          const Range & C2 )
 {
     if( u.getCompositeGrid()->numberOfBaseGrids()<=0 )
       return 0;
@@ -1472,7 +1482,7 @@ parallelInternalInterpolate( RealArray & ui,                       // save resul
       // interpolate the points that will be sent to processor p:
             const int nil=nila(p,grid);
             if( nil==0 ) continue; // no points to interpolate *wdh* 040327
-      	
+                
             int & k = niv[p];
             real cr0,cr1,cr2,cr3,cr4,cr5,cr6,cr7,cr8;
             real cs0,cs1,cs2,cs3,cs4,cs5,cs6,cs7,cs8;
@@ -1504,95 +1514,228 @@ parallelInternalInterpolate( RealArray & ui,                       // save resul
 
             if( checkForValidInterpolation )
             {
-	// *** double check that the interpolation is valid ***
-      // 	checkDonorMask();
-              MappedGrid & mg= cg[grid];
-              #ifdef USE_PPP
-                  intSerialArray mask; getLocalArrayWithGhostBoundaries(mg.mask(),mask);
-              #else
-                  const intSerialArray & mask = mg.mask();
-              #endif
-              const int *maskp = mask.Array_Descriptor.Array_View_Pointer2;
-              const int maskDim0=mask.getRawDataSize(0);
-              const int maskDim1=mask.getRawDataSize(1);
-              #define MASK(i0,i1,i2) maskp[i0+maskDim0*(i1+maskDim1*(i2))]
-              int i3a=0, i3b=0;
-              for( int j=0; j<nil; j++ )
-              {
-                    int iw=VIW(j);
-                    int i1a=IL1(j),   i2a=IL2(j);
-                    int i1b=i1a+iw-1, i2b=i2a+iw-1;
-                    if( numberOfDimensions==3 )
-                    {
-                        i3a=IL3(j); i3b=i3a+iw-1;
-                    }
-                    bool ok=true;
-                    for( int i3=i3a; i3<=i3b; i3++ )
-                    for( int i2=i2a; i2<=i2b; i2++ )
-                    for( int i1=i1a; i1<=i1b; i1++ )
-                    {
-                        if( MASK(i1,i2,i3)==0 )
+        // *** double check that the interpolation is valid ***
+        // checkDonorMask();
+                  MappedGrid & mg= cg[grid];
+                  #ifdef USE_PPP
+                      intSerialArray mask; getLocalArrayWithGhostBoundaries(mg.mask(),mask);
+                  #else
+                      const intSerialArray & mask = mg.mask();
+                  #endif
+                  const int *maskp = mask.Array_Descriptor.Array_View_Pointer2;
+                  const int maskDim0=mask.getRawDataSize(0);
+                  const int maskDim1=mask.getRawDataSize(1);
+                  #define MASK(i0,i1,i2) maskp[i0+maskDim0*(i1+maskDim1*(i2))]
+                  int i3a=0, i3b=0;
+                  for( int j=0; j<nil; j++ )
+                  {
+                        int iw=VIW(j);
+                        int i1a=IL1(j),   i2a=IL2(j);
+                        int i1b=i1a+iw-1, i2b=i2a+iw-1;
+                        if( numberOfDimensions==3 )
                         {
-                  	ok=false;
-                  	break;
+                            i3a=IL3(j); i3b=i3a+iw-1;
                         }
-                    }
-                    if( !ok )
-                    {
-                        numberOfInvalidPoints++;
-                        printf("InterpolatePointsOnAGrid::internalInterpolate:ERROR donor stencil is INVALID. mask==0 at some pts.\n"
-                                      "    : myid=%i, grid=%i, j=%i, width=%i, il=(%i,%i,%i)\n",myid,grid,j,width[0],i1a,i2a,i3a);
-                    }
-              }
+                        bool ok=true;
+                        for( int i3=i3a; i3<=i3b; i3++ )
+                        for( int i2=i2a; i2<=i2b; i2++ )
+                        for( int i1=i1a; i1<=i1b; i1++ )
+                        {
+                            if( MASK(i1,i2,i3)==0 )
+                            {
+                                ok=false;
+                                break;
+                            }
+                        }
+                        if( !ok )
+                        {
+                            numberOfInvalidPoints++;
+                            printf("InterpolatePointsOnAGrid::internalInterpolate:ERROR donor stencil is INVALID. mask==0 at some pts.\n"
+                                          "    : myid=%i, grid=%i, j=%i, width=%i, il=(%i,%i,%i)\n",myid,grid,j,width[0],i1a,i2a,i3a);
+                        }
+                  }
             } 
 
             if( numberOfDimensions==2 )
             {
-      	real *&vsp = vs.Array_Descriptor.Array_View_Pointer2;
-      	const int vsDim0=vs.getRawDataSize(0);
-      	const int vsDim1=vs.getRawDataSize(1);
+                real *&vsp = vs.Array_Descriptor.Array_View_Pointer2;
+                const int vsDim0=vs.getRawDataSize(0);
+                const int vsDim1=vs.getRawDataSize(1);
 #undef VS
 #define VS(i0,i1,i2) vsp[i0+vsDim0*(i1+vsDim1*(i2))]
 
-      	if( debug & 4 )
-      	{
-        	  for( j=0; j<nil; j++ )
-        	  {
-          	    int iw=VIW(j), il0=IL1(j), il1=IL2(j);
-          	    fprintf(debugFile,"+++ [grid=%i] proc: %i interp pt j=%i iw=%i il=(%i,%i) ci=(%4.3f,%4.3f) \n",
-                		    grid,myid,j,iw,il0,il1,ciLocal(j,0,p),ciLocal(j,1,p));
+                if( debug & 4 )
+                {
+                    for( j=0; j<nil; j++ )
+                    {
+                        int iw=VIW(j), il0=IL1(j), il1=IL2(j);
+                        fprintf(debugFile,"+++ [grid=%i] proc: %i interp pt j=%i iw=%i il=(%i,%i) ci=(%4.3f,%4.3f) \n",
+                                        grid,myid,j,iw,il0,il1,ciLocal(j,0,p),ciLocal(j,1,p));
 
-          	    int i1=il0, i2=il1, c1=c1Base;
-          	    fprintf(debugFile,
-                		    " donor values: %6.4f %6.4f %6.4f \n"
-                		    "               %6.4f %6.4f %6.4f \n"
-                		    "               %6.4f %6.4f %6.4f \n",
-                		    VS(i1  ,i2  ,c1),VS(i1+1,i2  ,c1),VS(i1+2,i2  ,c1),
-                		    VS(i1  ,i2+1,c1),VS(i1+1,i2+1,c1),VS(i1+2,i2+1,c1),
-                		    VS(i1  ,i2+2,c1),VS(i1+1,i2+2,c1),VS(i1+2,i2+2,c1));
+                        int i1=il0, i2=il1, c1=c1Base;
+                        fprintf(debugFile,
+                                        " donor values: %6.4f %6.4f %6.4f \n"
+                                        "               %6.4f %6.4f %6.4f \n"
+                                        "               %6.4f %6.4f %6.4f \n",
+                                        VS(i1  ,i2  ,c1),VS(i1+1,i2  ,c1),VS(i1+2,i2  ,c1),
+                                        VS(i1  ,i2+1,c1),VS(i1+1,i2+1,c1),VS(i1+2,i2+1,c1),
+                                        VS(i1  ,i2+2,c1),VS(i1+1,i2+2,c1),VS(i1+2,i2+2,c1));
 
-          	    if( explicitInterpolationStorageOption!=precomputeAllCoefficients )
-          	    {
+                        if( explicitInterpolationStorageOption!=precomputeAllCoefficients )
+                        {
                             fprintf(debugFile," maxInterpolationWidth=%i, alpha = [%8.2e,%8.2e]\n",maxInterpolationWidth,
                                                                     cfs(j,0),cfs(j,1));
-          	    }
+                        }
 
-        	  }
-      	}
+                    }
+                }
 
 
-      	if( maxInterpolationWidth==3 )
-      	{
-        	  if( explicitInterpolationStorageOption==precomputeAllCoefficients )
-        	  {
-          // 	    loops2d(sum[p][k]=(cf(j,0,0)*VS(il0,il1  ,c1)+cf(j,1,0)*VS(il0+1,il1  ,c1)+cf(j,2,0)*VS(il0+2,il1  ,c1)+			       cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1)+cf(j,2,1)*VS(il0+2,il1+1,c1)+			       cf(j,0,2)*VS(il0,il1+2,c1)+cf(j,1,2)*VS(il0+1,il1+2,c1)+cf(j,2,2)*VS(il0+2,il1+2,c1)););
+                if( maxInterpolationWidth==3 )
+                {
+                    if( explicitInterpolationStorageOption==precomputeAllCoefficients )
+                    {
+            // loops2d(sum[p][k]=(cf(j,0,0)*VS(il0,il1  ,c1)+cf(j,1,0)*VS(il0+1,il1  ,c1)+cf(j,2,0)*VS(il0+2,il1  ,c1)+cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1)+cf(j,2,1)*VS(il0+2,il1+1,c1)+cf(j,0,2)*VS(il0,il1+2,c1)+cf(j,1,2)*VS(il0+1,il1+2,c1)+cf(j,2,2)*VS(il0+2,il1+2,c1)););
+            //   if( false && c1Base==c1Bound )
+            //   {
+            //     for( int c1=c1Base; c1<=c1Bound; c1++ )
+            //     for( j=0; j<nil; j++ )
+            //     {
+            //       int il0=IL1(j), il1=IL2(j);
+            //       sum[p][k]=(cf(j,0,0)*VS(il0,il1,c1)+cf(j,1,0)*VS(il0+1,il1,c1)+cf(j,2,0)*VS(il0+2,il1,c1)+cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1)+cf(j,2,1)*VS(il0+2,il1+1,c1)+cf(j,0,2)*VS(il0,il1+2,c1)+cf(j,1,2)*VS(il0+1,il1+2,c1)+cf(j,2,2)*VS(il0+2,il1+2,c1));
+            //       k++;
+            //     }
+            //   }
+                          for( j=0; j<nil; j++ )
+                          for( int c1=c1Base; c1<=c1Bound; c1++ )
+                          {
+                              int il0=IL1(j), il1=IL2(j);
+                              sum[p][k]=(cf(j,0,0)*VS(il0,il1,c1)+cf(j,1,0)*VS(il0+1,il1,c1)+cf(j,2,0)*VS(il0+2,il1,c1)+cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1)+cf(j,2,1)*VS(il0+2,il1+1,c1)+cf(j,0,2)*VS(il0,il1+2,c1)+cf(j,1,2)*VS(il0+1,il1+2,c1)+cf(j,2,2)*VS(il0+2,il1+2,c1));
+                              k++;
+                          }
+                    }
+                    else
+                    {
+            // interpSparseStorage33(sum[p][k]);
+                        for( j=0; j<nil; j++ )
+                        {
+                            iw=VIW(j);
+                            i1=IL1(j);
+                            i2=IL2(j);
+                            if( iw==3 )
+                            {
+                // interp33(sum[p][k]);
+                                    cr0 = q30(cfs(j,0));
+                                    cs0 = q30(cfs(j,1));
+                                    cr1 = q31(cfs(j,0));
+                                    cs1 = q31(cfs(j,1));
+                                    cr2 = q32(cfs(j,0));
+                                    cs2 = q32(cfs(j,1));
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1)+cr2*VS(i1+2,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1)+cr2*VS(i1+2,i2+1,c1))+cs2*(cr0*VS(i1  ,i2+2,c1)+cr1*VS(i1+1,i2+2,c1)+cr2*VS(i1+2,i2+2,c1));
+                                        k++;
+                                    }
+                            }
+                            else if( iw==2 )
+                            {
+                // interp22(sum[p][k]);
+                                    cr0 = q20(cfs(j,0));
+                                    cs0 = q20(cfs(j,1));
+                                    cr1 = q21(cfs(j,0));
+                                    cs1 = q21(cfs(j,1));
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1));
+                                        k++; 
+                                    }
+                            }
+                            else if( iw==1 )
+                            {
+                // interp11(sum[p][k]);
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = VS(i1  ,i2  ,c1);
+                                        k++; 
+                                    }
+                            }
+                            else
+                            {
+                                Overture::abort("ERROR: unexpected interp width");
+                            }
+                        }
+                    }
+                }
+                else if( maxInterpolationWidth==2 )
+                {
+                    if( explicitInterpolationStorageOption==precomputeAllCoefficients )
+                    {
+            // loops2d(sum[p][k]=(cf(j,0,0)*VS(il0,il1  ,c1)+cf(j,1,0)*VS(il0+1,il1  ,c1)+cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1)););
+            //   if( false && c1Base==c1Bound )
+            //   {
+            //     for( int c1=c1Base; c1<=c1Bound; c1++ )
+            //     for( j=0; j<nil; j++ )
+            //     {
+            //       int il0=IL1(j), il1=IL2(j);
+            //       sum[p][k]=(cf(j,0,0)*VS(il0,il1,c1)+cf(j,1,0)*VS(il0+1,il1,c1)+cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1));
+            //       k++;
+            //     }
+            //   }
+                          for( j=0; j<nil; j++ )
+                          for( int c1=c1Base; c1<=c1Bound; c1++ )
+                          {
+                              int il0=IL1(j), il1=IL2(j);
+                              sum[p][k]=(cf(j,0,0)*VS(il0,il1,c1)+cf(j,1,0)*VS(il0+1,il1,c1)+cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1));
+                              k++;
+                          }
+                    }
+                    else
+                    {
+            // interpSparseStorage22(sum[p][k]);
+                        for( j=0; j<nil; j++ )
+                        {
+                            iw=VIW(j);
+                            i1=IL1(j);
+                            i2=IL2(j);
+                            if( iw==2 )
+                            {
+                // interp22(sum[p][k]);
+                                    cr0 = q20(cfs(j,0));
+                                    cs0 = q20(cfs(j,1));
+                                    cr1 = q21(cfs(j,0));
+                                    cs1 = q21(cfs(j,1));
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1));
+                                        k++; 
+                                    }
+                            }
+                            else if( iw==1 )
+                            {
+                // interp11(sum[p][k]);
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = VS(i1  ,i2  ,c1);
+                                        k++; 
+                                    }
+                            }
+                            else
+                            {
+                                Overture::abort("ERROR: unexpected interp width");
+                            }
+                        }
+                    }
+                }
+                else if( maxInterpolationWidth==1 )
+                {
+          // loops2d(sum[p][k]=VS(il0,il1,c1);)
           //   if( false && c1Base==c1Bound )
           //   {
           //     for( int c1=c1Base; c1<=c1Bound; c1++ )
           //     for( j=0; j<nil; j++ )
           //     {
           //       int il0=IL1(j), il1=IL2(j);
-          //       sum[p][k]=(cf(j,0,0)*VS(il0,il1,c1)+cf(j,1,0)*VS(il0+1,il1,c1)+cf(j,2,0)*VS(il0+2,il1,c1)+			cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1)+cf(j,2,1)*VS(il0+2,il1+1,c1)+			cf(j,0,2)*VS(il0,il1+2,c1)+cf(j,1,2)*VS(il0+1,il1+2,c1)+cf(j,2,2)*VS(il0+2,il1+2,c1));
+          //       sum[p][k]=VS(il0,il1,c1);
           //       k++;
           //     }
           //   }
@@ -1600,274 +1743,141 @@ parallelInternalInterpolate( RealArray & ui,                       // save resul
                       for( int c1=c1Base; c1<=c1Bound; c1++ )
                       {
                           int il0=IL1(j), il1=IL2(j);
-                          sum[p][k]=(cf(j,0,0)*VS(il0,il1,c1)+cf(j,1,0)*VS(il0+1,il1,c1)+cf(j,2,0)*VS(il0+2,il1,c1)+			cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1)+cf(j,2,1)*VS(il0+2,il1+1,c1)+			cf(j,0,2)*VS(il0,il1+2,c1)+cf(j,1,2)*VS(il0+1,il1+2,c1)+cf(j,2,2)*VS(il0+2,il1+2,c1));
+                          sum[p][k]=VS(il0,il1,c1);
                           k++;
                       }
-        	  }
-        	  else
-        	  {
-          // 	    interpSparseStorage33(sum[p][k]);
-                    for( j=0; j<nil; j++ )
-                    {
-                        iw=VIW(j);
-                        i1=IL1(j);
-                        i2=IL2(j);
-                        if( iw==3 )
-                        {
-              // interp33(sum[p][k]);
-                                cr0 = q30(cfs(j,0));
-                                cs0 = q30(cfs(j,1));
-                                cr1 = q31(cfs(j,0));
-                                cs1 = q31(cfs(j,1));
-                                cr2 = q32(cfs(j,0));
-                                cs2 = q32(cfs(j,1));
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1)+cr2*VS(i1+2,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1)+cr2*VS(i1+2,i2+1,c1))+cs2*(cr0*VS(i1  ,i2+2,c1)+cr1*VS(i1+1,i2+2,c1)+cr2*VS(i1+2,i2+2,c1));
-                                    k++;
-                                }
                         }
-                        else if( iw==2 )
-                        {
-              // interp22(sum[p][k]);
-                                cr0 = q20(cfs(j,0));
-                                cs0 = q20(cfs(j,1));
-                                cr1 = q21(cfs(j,0));
-                                cs1 = q21(cfs(j,1));
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1));
-                                    k++; 
-                                }
-                        }
-                        else if( iw==1 )
-                        {
-              // interp11(sum[p][k]);
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = VS(i1  ,i2  ,c1);
-                                    k++; 
-                                }
-                        }
-                        else
-                        {
-                            Overture::abort("ERROR: unexpected interp width");
-                        }
-                    }
-        	  }
-      	}
-      	else if( maxInterpolationWidth==2 )
-      	{
-        	  if( explicitInterpolationStorageOption==precomputeAllCoefficients )
-        	  {
-          // 	    loops2d(sum[p][k]=(cf(j,0,0)*VS(il0,il1  ,c1)+cf(j,1,0)*VS(il0+1,il1  ,c1)+			       cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1)););
-          //   if( false && c1Base==c1Bound )
-          //   {
-          //     for( int c1=c1Base; c1<=c1Bound; c1++ )
-          //     for( j=0; j<nil; j++ )
-          //     {
-          //       int il0=IL1(j), il1=IL2(j);
-          //       sum[p][k]=(cf(j,0,0)*VS(il0,il1,c1)+cf(j,1,0)*VS(il0+1,il1,c1)+			cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1));
-          //       k++;
-          //     }
-          //   }
-                      for( j=0; j<nil; j++ )
-                      for( int c1=c1Base; c1<=c1Bound; c1++ )
-                      {
-                          int il0=IL1(j), il1=IL2(j);
-                          sum[p][k]=(cf(j,0,0)*VS(il0,il1,c1)+cf(j,1,0)*VS(il0+1,il1,c1)+			cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1));
-                          k++;
-                      }
-        	  }
-        	  else
-        	  {
-          // 	    interpSparseStorage22(sum[p][k]);
-                    for( j=0; j<nil; j++ )
-                    {
-                        iw=VIW(j);
-                        i1=IL1(j);
-                        i2=IL2(j);
-                        if( iw==2 )
-                        {
-              // interp22(sum[p][k]);
-                                cr0 = q20(cfs(j,0));
-                                cs0 = q20(cfs(j,1));
-                                cr1 = q21(cfs(j,0));
-                                cs1 = q21(cfs(j,1));
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1));
-                                    k++; 
-                                }
-                        }
-                        else if( iw==1 )
-                        {
-              // interp11(sum[p][k]);
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = VS(i1  ,i2  ,c1);
-                                    k++; 
-                                }
-                        }
-                        else
-                        {
-                            Overture::abort("ERROR: unexpected interp width");
-                        }
-                    }
-        	  }
-      	}
-      	else if( maxInterpolationWidth==1 )
-      	{
-        // 	  loops2d(sum[p][k]=VS(il0,il1,c1);)
-        //   if( false && c1Base==c1Bound )
-        //   {
-        //     for( int c1=c1Base; c1<=c1Bound; c1++ )
-        //     for( j=0; j<nil; j++ )
-        //     {
-        //       int il0=IL1(j), il1=IL2(j);
-        //       sum[p][k]=VS(il0,il1,c1);
-        //       k++;
-        //     }
-        //   }
-                  for( j=0; j<nil; j++ )
-                  for( int c1=c1Base; c1<=c1Bound; c1++ )
-                  {
-                      int il0=IL1(j), il1=IL2(j);
-                      sum[p][k]=VS(il0,il1,c1);
-                      k++;
-                  }
-          	    }
-      	else if( maxInterpolationWidth==5 ) // *wdh* 040207
-      	{
+                else if( maxInterpolationWidth==5 ) // *wdh* 040207
+                {
 #define IW5(m1) (cf(j,0,m1)*VS(il0  ,il1+m1,c1)+cf(j,1,m1)*VS(il0+1,il1+m1,c1)+cf(j,2,m1)*VS(il0+2,il1+m1,c1)+cf(j,3,m1)*VS(il0+3,il1+m1,c1)+cf(j,4,m1)*VS(il0+4,il1+m1,c1))
 
-        	  if( explicitInterpolationStorageOption==precomputeAllCoefficients )
-        	  {
-          // 	    loops2d(sum[p][k]=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);)
-          //   if( false && c1Base==c1Bound )
-          //   {
-          //     for( int c1=c1Base; c1<=c1Bound; c1++ )
-          //     for( j=0; j<nil; j++ )
-          //     {
-          //       int il0=IL1(j), il1=IL2(j);
-          //       sum[p][k]=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);
-          //       k++;
-          //     }
-          //   }
-                      for( j=0; j<nil; j++ )
-                      for( int c1=c1Base; c1<=c1Bound; c1++ )
-                      {
-                          int il0=IL1(j), il1=IL2(j);
-                          sum[p][k]=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);
-                          k++;
-                      }
-            	      }
-        	  else
-        	  {
-          // 	    interpSparseStorage55(sum[p][k]);
-                    for( j=0; j<nil; j++ )
+                    if( explicitInterpolationStorageOption==precomputeAllCoefficients )
                     {
-                        iw=VIW(j);
-                        i1=IL1(j);
-                        i2=IL2(j);
-                        if( iw==5 )
+            // loops2d(sum[p][k]=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);)
+            //   if( false && c1Base==c1Bound )
+            //   {
+            //     for( int c1=c1Base; c1<=c1Bound; c1++ )
+            //     for( j=0; j<nil; j++ )
+            //     {
+            //       int il0=IL1(j), il1=IL2(j);
+            //       sum[p][k]=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);
+            //       k++;
+            //     }
+            //   }
+                          for( j=0; j<nil; j++ )
+                          for( int c1=c1Base; c1<=c1Bound; c1++ )
+                          {
+                              int il0=IL1(j), il1=IL2(j);
+                              sum[p][k]=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);
+                              k++;
+                          }
+                            }
+                    else
+                    {
+            // interpSparseStorage55(sum[p][k]);
+                        for( j=0; j<nil; j++ )
                         {
-              // interp55(sum[p][k]);
-                                cr0 = q50(cfs(j,0));
-                                cs0 = q50(cfs(j,1));
-                                cr1 = q51(cfs(j,0));
-                                cs1 = q51(cfs(j,1));
-                                cr2 = q52(cfs(j,0));
-                                cs2 = q52(cfs(j,1));
-                                cr3 = q53(cfs(j,0));
-                                cs3 = q53(cfs(j,1));
-                                cr4 = q54(cfs(j,0));
-                                cs4 = q54(cfs(j,1));
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1)+cr2*VS(i1+2,i2  ,c1)+cr3*VS(i1+3,i2  ,c1)+cr4*VS(i1+4,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1)+cr2*VS(i1+2,i2+1,c1)+cr3*VS(i1+3,i2+1,c1)+cr4*VS(i1+4,i2+1,c1))+cs2*(cr0*VS(i1  ,i2+2,c1)+cr1*VS(i1+1,i2+2,c1)+cr2*VS(i1+2,i2+2,c1)+cr3*VS(i1+3,i2+2,c1)+cr4*VS(i1+4,i2+2,c1))+cs3*(cr0*VS(i1  ,i2+3,c1)+cr1*VS(i1+1,i2+3,c1)+cr2*VS(i1+2,i2+3,c1)+cr3*VS(i1+3,i2+3,c1)+cr4*VS(i1+4,i2+3,c1))+cs4*(cr0*VS(i1  ,i2+4,c1)+cr1*VS(i1+1,i2+4,c1)+cr2*VS(i1+2,i2+4,c1)+cr3*VS(i1+3,i2+4,c1)+cr4*VS(i1+4,i2+4,c1));
-                                    k++;
-                                }
-                        }
-                        else if( iw==4 )
-                        {
-              // interp44(sum[p][k]);
-                                cr0 = q40(cfs(j,0));
-                                cs0 = q40(cfs(j,1));
-                                cr1 = q41(cfs(j,0));
-                                cs1 = q41(cfs(j,1));
-                                cr2 = q42(cfs(j,0));
-                                cs2 = q42(cfs(j,1));
-                                cr3 = q43(cfs(j,0));
-                                cs3 = q43(cfs(j,1));
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1)+cr2*VS(i1+2,i2  ,c1)+cr3*VS(i1+3,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1)+cr2*VS(i1+2,i2+1,c1)+cr3*VS(i1+3,i2+1,c1))+cs2*(cr0*VS(i1  ,i2+2,c1)+cr1*VS(i1+1,i2+2,c1)+cr2*VS(i1+2,i2+2,c1)+cr3*VS(i1+3,i2+2,c1))+cs3*(cr0*VS(i1  ,i2+3,c1)+cr1*VS(i1+1,i2+3,c1)+cr2*VS(i1+2,i2+3,c1)+cr3*VS(i1+3,i2+3,c1));
-                                    k++;
-                                }
-                        }
-                        else if( iw==3 )
-                        {
-              // interp33(sum[p][k]);
-                                cr0 = q30(cfs(j,0));
-                                cs0 = q30(cfs(j,1));
-                                cr1 = q31(cfs(j,0));
-                                cs1 = q31(cfs(j,1));
-                                cr2 = q32(cfs(j,0));
-                                cs2 = q32(cfs(j,1));
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1)+cr2*VS(i1+2,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1)+cr2*VS(i1+2,i2+1,c1))+cs2*(cr0*VS(i1  ,i2+2,c1)+cr1*VS(i1+1,i2+2,c1)+cr2*VS(i1+2,i2+2,c1));
-                                    k++;
-                                }
-                        }
-                        else if( iw==2 )
-                        {
-              // interp22(sum[p][k]);
-                                cr0 = q20(cfs(j,0));
-                                cs0 = q20(cfs(j,1));
-                                cr1 = q21(cfs(j,0));
-                                cs1 = q21(cfs(j,1));
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1));
-                                    k++; 
-                                }
-                        }
-                        else if( iw==1 )
-                        {
-              // interp11(sum[p][k]);
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = VS(i1  ,i2  ,c1);
-                                    k++; 
-                                }
-                        }
-                        else
-                        {
-                            Overture::abort("ERROR: unexpected interp width");
+                            iw=VIW(j);
+                            i1=IL1(j);
+                            i2=IL2(j);
+                            if( iw==5 )
+                            {
+                // interp55(sum[p][k]);
+                                    cr0 = q50(cfs(j,0));
+                                    cs0 = q50(cfs(j,1));
+                                    cr1 = q51(cfs(j,0));
+                                    cs1 = q51(cfs(j,1));
+                                    cr2 = q52(cfs(j,0));
+                                    cs2 = q52(cfs(j,1));
+                                    cr3 = q53(cfs(j,0));
+                                    cs3 = q53(cfs(j,1));
+                                    cr4 = q54(cfs(j,0));
+                                    cs4 = q54(cfs(j,1));
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1)+cr2*VS(i1+2,i2  ,c1)+cr3*VS(i1+3,i2  ,c1)+cr4*VS(i1+4,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1)+cr2*VS(i1+2,i2+1,c1)+cr3*VS(i1+3,i2+1,c1)+cr4*VS(i1+4,i2+1,c1))+cs2*(cr0*VS(i1  ,i2+2,c1)+cr1*VS(i1+1,i2+2,c1)+cr2*VS(i1+2,i2+2,c1)+cr3*VS(i1+3,i2+2,c1)+cr4*VS(i1+4,i2+2,c1))+cs3*(cr0*VS(i1  ,i2+3,c1)+cr1*VS(i1+1,i2+3,c1)+cr2*VS(i1+2,i2+3,c1)+cr3*VS(i1+3,i2+3,c1)+cr4*VS(i1+4,i2+3,c1))+cs4*(cr0*VS(i1  ,i2+4,c1)+cr1*VS(i1+1,i2+4,c1)+cr2*VS(i1+2,i2+4,c1)+cr3*VS(i1+3,i2+4,c1)+cr4*VS(i1+4,i2+4,c1));
+                                        k++;
+                                    }
+                            }
+                            else if( iw==4 )
+                            {
+                // interp44(sum[p][k]);
+                                    cr0 = q40(cfs(j,0));
+                                    cs0 = q40(cfs(j,1));
+                                    cr1 = q41(cfs(j,0));
+                                    cs1 = q41(cfs(j,1));
+                                    cr2 = q42(cfs(j,0));
+                                    cs2 = q42(cfs(j,1));
+                                    cr3 = q43(cfs(j,0));
+                                    cs3 = q43(cfs(j,1));
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1)+cr2*VS(i1+2,i2  ,c1)+cr3*VS(i1+3,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1)+cr2*VS(i1+2,i2+1,c1)+cr3*VS(i1+3,i2+1,c1))+cs2*(cr0*VS(i1  ,i2+2,c1)+cr1*VS(i1+1,i2+2,c1)+cr2*VS(i1+2,i2+2,c1)+cr3*VS(i1+3,i2+2,c1))+cs3*(cr0*VS(i1  ,i2+3,c1)+cr1*VS(i1+1,i2+3,c1)+cr2*VS(i1+2,i2+3,c1)+cr3*VS(i1+3,i2+3,c1));
+                                        k++;
+                                    }
+                            }
+                            else if( iw==3 )
+                            {
+                // interp33(sum[p][k]);
+                                    cr0 = q30(cfs(j,0));
+                                    cs0 = q30(cfs(j,1));
+                                    cr1 = q31(cfs(j,0));
+                                    cs1 = q31(cfs(j,1));
+                                    cr2 = q32(cfs(j,0));
+                                    cs2 = q32(cfs(j,1));
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1)+cr2*VS(i1+2,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1)+cr2*VS(i1+2,i2+1,c1))+cs2*(cr0*VS(i1  ,i2+2,c1)+cr1*VS(i1+1,i2+2,c1)+cr2*VS(i1+2,i2+2,c1));
+                                        k++;
+                                    }
+                            }
+                            else if( iw==2 )
+                            {
+                // interp22(sum[p][k]);
+                                    cr0 = q20(cfs(j,0));
+                                    cs0 = q20(cfs(j,1));
+                                    cr1 = q21(cfs(j,0));
+                                    cs1 = q21(cfs(j,1));
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1));
+                                        k++; 
+                                    }
+                            }
+                            else if( iw==1 )
+                            {
+                // interp11(sum[p][k]);
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = VS(i1  ,i2  ,c1);
+                                        k++; 
+                                    }
+                            }
+                            else
+                            {
+                                Overture::abort("ERROR: unexpected interp width");
+                            }
                         }
                     }
-        	  }
 #undef IW5
-      	}
-      	else
-      	{
-	  // general case
-        	  for( int c1=c1Base; c1<=c1Bound; c1++ )
-          	    for( j=0; j<nil; j++ )
-          	    {
-            	      int il0=IL1(j), il1=IL2(j);
+                }
+                else
+                {
+          // general case
+                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                        for( j=0; j<nil; j++ )
+                        {
+                            int il0=IL1(j), il1=IL2(j);
                             real value=0.;
-            	      for( m2=0; m2< width[axis2]; m2++ ) 
-            		for( m1=0; m1< width[axis1]; m1++ ) 
-              		  value+=cf(j,m1,m2)*VS(il0+m1,il1+m2,c1);
+                            for( m2=0; m2< width[axis2]; m2++ ) 
+                                for( m1=0; m1< width[axis1]; m1++ ) 
+                                    value+=cf(j,m1,m2)*VS(il0+m1,il1+m2,c1);
 
-            	      sum[p][k]=value;
-            	      k++;
-          	    }
-      	}
-        	  
+                            sum[p][k]=value;
+                            k++;
+                        }
+                }
+                    
             }
             else if( numberOfDimensions==3 )
             {
@@ -1875,29 +1885,29 @@ parallelInternalInterpolate( RealArray & ui,                       // save resul
 #undef c
 #define c(i,m1,m2,m3) coeffgp[m1+width[0]*(m2+width[1]*m3)][i]
 
-      	real *&vsp = vs.Array_Descriptor.Array_View_Pointer3;
-      	const int vsDim0=vs.getRawDataSize(0);
-      	const int vsDim1=vs.getRawDataSize(1);
-      	const int vsDim2=vs.getRawDataSize(2);
+                real *&vsp = vs.Array_Descriptor.Array_View_Pointer3;
+                const int vsDim0=vs.getRawDataSize(0);
+                const int vsDim1=vs.getRawDataSize(1);
+                const int vsDim2=vs.getRawDataSize(2);
 #undef VS
 #define VS(i0,i1,i2,i3) vsp[i0+vsDim0*(i1+vsDim1*(i2+vsDim2*(i3)))]
 
-	// *** new way
+        // *** new way
 #undef c
 #define c(i,m1,m2,m3)  coeffap[i+nil*((m1)+width[0]*((m2)+width[1]*(m3)))]
 
-      	if( maxInterpolationWidth==3 )
-      	{
-        	  if( explicitInterpolationStorageOption==precomputeAllCoefficients )
-        	  {
-            // loops3d(sum[p][k]=		    (c(j,0,0,0)*VS(il0,il1  ,il2  ,c1)+c(j,1,0,0)*VS(il0+1,il1  ,il2  ,c1)+c(j,2,0,0)*VS(il0+2,il1  ,il2  ,c1)+		     c(j,0,1,0)*VS(il0,il1+1,il2  ,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2  ,c1)+c(j,2,1,0)*VS(il0+2,il1+1,il2  ,c1)+		     c(j,0,2,0)*VS(il0,il1+2,il2  ,c1)+c(j,1,2,0)*VS(il0+1,il1+2,il2  ,c1)+c(j,2,2,0)*VS(il0+2,il1+2,il2  ,c1)+		     c(j,0,0,1)*VS(il0,il1  ,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1  ,il2+1,c1)+c(j,2,0,1)*VS(il0+2,il1  ,il2+1,c1)+		     c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1)+c(j,2,1,1)*VS(il0+2,il1+1,il2+1,c1)+		     c(j,0,2,1)*VS(il0,il1+2,il2+1,c1)+c(j,1,2,1)*VS(il0+1,il1+2,il2+1,c1)+c(j,2,2,1)*VS(il0+2,il1+2,il2+1,c1)+		     c(j,0,0,2)*VS(il0,il1  ,il2+2,c1)+c(j,1,0,2)*VS(il0+1,il1  ,il2+2,c1)+c(j,2,0,2)*VS(il0+2,il1  ,il2+2,c1)+		     c(j,0,1,2)*VS(il0,il1+1,il2+2,c1)+c(j,1,1,2)*VS(il0+1,il1+1,il2+2,c1)+c(j,2,1,2)*VS(il0+2,il1+1,il2+2,c1)+		     c(j,0,2,2)*VS(il0,il1+2,il2+2,c1)+c(j,1,2,2)*VS(il0+1,il1+2,il2+2,c1)+c(j,2,2,2)*VS(il0+2,il1+2,il2+2,c1));)
+                if( maxInterpolationWidth==3 )
+                {
+                    if( explicitInterpolationStorageOption==precomputeAllCoefficients )
+                    {
+            // loops3d(sum[p][k]=(c(j,0,0,0)*VS(il0,il1  ,il2  ,c1)+c(j,1,0,0)*VS(il0+1,il1  ,il2  ,c1)+c(j,2,0,0)*VS(il0+2,il1  ,il2  ,c1)+c(j,0,1,0)*VS(il0,il1+1,il2  ,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2  ,c1)+c(j,2,1,0)*VS(il0+2,il1+1,il2  ,c1)+c(j,0,2,0)*VS(il0,il1+2,il2  ,c1)+c(j,1,2,0)*VS(il0+1,il1+2,il2  ,c1)+c(j,2,2,0)*VS(il0+2,il1+2,il2  ,c1)+c(j,0,0,1)*VS(il0,il1  ,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1  ,il2+1,c1)+c(j,2,0,1)*VS(il0+2,il1  ,il2+1,c1)+c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1)+c(j,2,1,1)*VS(il0+2,il1+1,il2+1,c1)+c(j,0,2,1)*VS(il0,il1+2,il2+1,c1)+c(j,1,2,1)*VS(il0+1,il1+2,il2+1,c1)+c(j,2,2,1)*VS(il0+2,il1+2,il2+1,c1)+c(j,0,0,2)*VS(il0,il1  ,il2+2,c1)+c(j,1,0,2)*VS(il0+1,il1  ,il2+2,c1)+c(j,2,0,2)*VS(il0+2,il1  ,il2+2,c1)+c(j,0,1,2)*VS(il0,il1+1,il2+2,c1)+c(j,1,1,2)*VS(il0+1,il1+1,il2+2,c1)+c(j,2,1,2)*VS(il0+2,il1+1,il2+2,c1)+c(j,0,2,2)*VS(il0,il1+2,il2+2,c1)+c(j,1,2,2)*VS(il0+1,il1+2,il2+2,c1)+c(j,2,2,2)*VS(il0+2,il1+2,il2+2,c1));)
             //   if( false && c1Base==c1Bound )
             //   {
             //     for( int c1=c1Base; c1<=c1Bound; c1++ )
             //     for( j=0; j<nil; j++ )
             //     {
             //       int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-            //       sum[p][k]=		(c(j,0,0,0)*VS(il0,il1,il2,c1)+c(j,1,0,0)*VS(il0+1,il1,il2,c1)+c(j,2,0,0)*VS(il0+2,il1,il2,c1)+		c(j,0,1,0)*VS(il0,il1+1,il2,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2,c1)+c(j,2,1,0)*VS(il0+2,il1+1,il2,c1)+		c(j,0,2,0)*VS(il0,il1+2,il2,c1)+c(j,1,2,0)*VS(il0+1,il1+2,il2,c1)+c(j,2,2,0)*VS(il0+2,il1+2,il2,c1)+		c(j,0,0,1)*VS(il0,il1,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1,il2+1,c1)+c(j,2,0,1)*VS(il0+2,il1,il2+1,c1)+		c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1)+c(j,2,1,1)*VS(il0+2,il1+1,il2+1,c1)+		c(j,0,2,1)*VS(il0,il1+2,il2+1,c1)+c(j,1,2,1)*VS(il0+1,il1+2,il2+1,c1)+c(j,2,2,1)*VS(il0+2,il1+2,il2+1,c1)+		c(j,0,0,2)*VS(il0,il1,il2+2,c1)+c(j,1,0,2)*VS(il0+1,il1,il2+2,c1)+c(j,2,0,2)*VS(il0+2,il1,il2+2,c1)+		c(j,0,1,2)*VS(il0,il1+1,il2+2,c1)+c(j,1,1,2)*VS(il0+1,il1+1,il2+2,c1)+c(j,2,1,2)*VS(il0+2,il1+1,il2+2,c1)+		c(j,0,2,2)*VS(il0,il1+2,il2+2,c1)+c(j,1,2,2)*VS(il0+1,il1+2,il2+2,c1)+c(j,2,2,2)*VS(il0+2,il1+2,il2+2,c1));
+            //       sum[p][k]=(c(j,0,0,0)*VS(il0,il1,il2,c1)+c(j,1,0,0)*VS(il0+1,il1,il2,c1)+c(j,2,0,0)*VS(il0+2,il1,il2,c1)+c(j,0,1,0)*VS(il0,il1+1,il2,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2,c1)+c(j,2,1,0)*VS(il0+2,il1+1,il2,c1)+c(j,0,2,0)*VS(il0,il1+2,il2,c1)+c(j,1,2,0)*VS(il0+1,il1+2,il2,c1)+c(j,2,2,0)*VS(il0+2,il1+2,il2,c1)+c(j,0,0,1)*VS(il0,il1,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1,il2+1,c1)+c(j,2,0,1)*VS(il0+2,il1,il2+1,c1)+c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1)+c(j,2,1,1)*VS(il0+2,il1+1,il2+1,c1)+c(j,0,2,1)*VS(il0,il1+2,il2+1,c1)+c(j,1,2,1)*VS(il0+1,il1+2,il2+1,c1)+c(j,2,2,1)*VS(il0+2,il1+2,il2+1,c1)+c(j,0,0,2)*VS(il0,il1,il2+2,c1)+c(j,1,0,2)*VS(il0+1,il1,il2+2,c1)+c(j,2,0,2)*VS(il0+2,il1,il2+2,c1)+c(j,0,1,2)*VS(il0,il1+1,il2+2,c1)+c(j,1,1,2)*VS(il0+1,il1+1,il2+2,c1)+c(j,2,1,2)*VS(il0+2,il1+1,il2+2,c1)+c(j,0,2,2)*VS(il0,il1+2,il2+2,c1)+c(j,1,2,2)*VS(il0+1,il1+2,il2+2,c1)+c(j,2,2,2)*VS(il0+2,il1+2,il2+2,c1));
             //       k++;
             //     }
             //   }
@@ -1905,141 +1915,264 @@ parallelInternalInterpolate( RealArray & ui,                       // save resul
                           for( int c1=c1Base; c1<=c1Bound; c1++ )
                           {
                               int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-                              sum[p][k]=		(c(j,0,0,0)*VS(il0,il1,il2,c1)+c(j,1,0,0)*VS(il0+1,il1,il2,c1)+c(j,2,0,0)*VS(il0+2,il1,il2,c1)+		c(j,0,1,0)*VS(il0,il1+1,il2,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2,c1)+c(j,2,1,0)*VS(il0+2,il1+1,il2,c1)+		c(j,0,2,0)*VS(il0,il1+2,il2,c1)+c(j,1,2,0)*VS(il0+1,il1+2,il2,c1)+c(j,2,2,0)*VS(il0+2,il1+2,il2,c1)+		c(j,0,0,1)*VS(il0,il1,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1,il2+1,c1)+c(j,2,0,1)*VS(il0+2,il1,il2+1,c1)+		c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1)+c(j,2,1,1)*VS(il0+2,il1+1,il2+1,c1)+		c(j,0,2,1)*VS(il0,il1+2,il2+1,c1)+c(j,1,2,1)*VS(il0+1,il1+2,il2+1,c1)+c(j,2,2,1)*VS(il0+2,il1+2,il2+1,c1)+		c(j,0,0,2)*VS(il0,il1,il2+2,c1)+c(j,1,0,2)*VS(il0+1,il1,il2+2,c1)+c(j,2,0,2)*VS(il0+2,il1,il2+2,c1)+		c(j,0,1,2)*VS(il0,il1+1,il2+2,c1)+c(j,1,1,2)*VS(il0+1,il1+1,il2+2,c1)+c(j,2,1,2)*VS(il0+2,il1+1,il2+2,c1)+		c(j,0,2,2)*VS(il0,il1+2,il2+2,c1)+c(j,1,2,2)*VS(il0+1,il1+2,il2+2,c1)+c(j,2,2,2)*VS(il0+2,il1+2,il2+2,c1));
+                              sum[p][k]=(c(j,0,0,0)*VS(il0,il1,il2,c1)+c(j,1,0,0)*VS(il0+1,il1,il2,c1)+c(j,2,0,0)*VS(il0+2,il1,il2,c1)+c(j,0,1,0)*VS(il0,il1+1,il2,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2,c1)+c(j,2,1,0)*VS(il0+2,il1+1,il2,c1)+c(j,0,2,0)*VS(il0,il1+2,il2,c1)+c(j,1,2,0)*VS(il0+1,il1+2,il2,c1)+c(j,2,2,0)*VS(il0+2,il1+2,il2,c1)+c(j,0,0,1)*VS(il0,il1,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1,il2+1,c1)+c(j,2,0,1)*VS(il0+2,il1,il2+1,c1)+c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1)+c(j,2,1,1)*VS(il0+2,il1+1,il2+1,c1)+c(j,0,2,1)*VS(il0,il1+2,il2+1,c1)+c(j,1,2,1)*VS(il0+1,il1+2,il2+1,c1)+c(j,2,2,1)*VS(il0+2,il1+2,il2+1,c1)+c(j,0,0,2)*VS(il0,il1,il2+2,c1)+c(j,1,0,2)*VS(il0+1,il1,il2+2,c1)+c(j,2,0,2)*VS(il0+2,il1,il2+2,c1)+c(j,0,1,2)*VS(il0,il1+1,il2+2,c1)+c(j,1,1,2)*VS(il0+1,il1+1,il2+2,c1)+c(j,2,1,2)*VS(il0+2,il1+1,il2+2,c1)+c(j,0,2,2)*VS(il0,il1+2,il2+2,c1)+c(j,1,2,2)*VS(il0+1,il1+2,il2+2,c1)+c(j,2,2,2)*VS(il0+2,il1+2,il2+2,c1));
                               k++;
                           }
 
-            	      }
-        	  else
-        	  {
-          // 	    interpSparseStorage333(sum[p][k]);
-                    for( j=0; j<nil; j++ )
+                            }
+                    else
                     {
-                        iw=VIW(j); i1=IL1(j); i2=IL2(j); i3=IL3(j);
-                        if( iw==3 )
+            // interpSparseStorage333(sum[p][k]);
+                        for( j=0; j<nil; j++ )
                         {
-              // interp333(sum[p][k]);
-                                cr0 = q30(cfs(j,0));
-                                cs0 = q30(cfs(j,1));
-                                ct0 = q30(cfs(j,2));
-                                cr1 = q31(cfs(j,0));
-                                cs1 = q31(cfs(j,1));
-                                ct1 = q31(cfs(j,2));
-                                cr2 = q32(cfs(j,0));
-                                cs2 = q32(cfs(j,1));
-                                ct2 = q32(cfs(j,2));
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = ct0*(	    cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1)+cr2*VS(i1+2,i2,i3+0,c1))	   +cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)+cr2*VS(i1+2,i2+1,i3+0,c1))	   +cs2*(cr0*VS(i1,i2+2,i3+0,c1)+cr1*VS(i1+1,i2+2,i3+0,c1)+cr2*VS(i1+2,i2+2,i3+0,c1))	)+ct1*(	     cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1)+cr2*VS(i1+2,i2,i3+1,c1))	    +cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)+cr2*VS(i1+2,i2+1,i3+1,c1))	    +cs2*(cr0*VS(i1,i2+2,i3+1,c1)+cr1*VS(i1+1,i2+2,i3+1,c1)+cr2*VS(i1+2,i2+2,i3+1,c1))	)+ct2*(	     cs0*(cr0*VS(i1,i2,i3+2,c1)+cr1*VS(i1+1,i2,i3+2,c1)+cr2*VS(i1+2,i2,i3+2,c1))	    +cs1*(cr0*VS(i1,i2+1,i3+2,c1)+cr1*VS(i1+1,i2+1,i3+2,c1)+cr2*VS(i1+2,i2+1,i3+2,c1))	    +cs2*(cr0*VS(i1,i2+2,i3+2,c1)+cr1*VS(i1+1,i2+2,i3+2,c1)+cr2*VS(i1+2,i2+2,i3+2,c1))	);
-                                    k++;
-                                }
-                        }
-                        else if( iw==2 )
-                        {
-              // interp222(sum[p][k]);
-                                cr0 = q20(cfs(j,0)); 
-                                cs0 = q20(cfs(j,1)); 
-                                ct0 = q20(cfs(j,2)); 
-                                cr1 = q21(cfs(j,0)); 
-                                cs1 = q21(cfs(j,1)); 
-                                ct1 = q21(cfs(j,2)); 
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = ct0*(	    cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1))	   +cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1))	)+ct1*(	     cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1))	    +cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1))	);
-                                    k++;
-                                }
-                        }
-                        else if( iw==1 )
-                        {
-              // interp111(sum[p][k]);
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = VS(i1  ,i2  ,i3,c1);
-                                    k++; 
-                                }
-                        }
-                        else
-                        {
-                            Overture::abort("ERROR: unexpected interp width");
+                            iw=VIW(j); i1=IL1(j); i2=IL2(j); i3=IL3(j);
+                            if( iw==3 )
+                            {
+                // interp333(sum[p][k]);
+                                    cr0 = q30(cfs(j,0));
+                                    cs0 = q30(cfs(j,1));
+                                    ct0 = q30(cfs(j,2));
+                                    cr1 = q31(cfs(j,0));
+                                    cs1 = q31(cfs(j,1));
+                                    ct1 = q31(cfs(j,2));
+                                    cr2 = q32(cfs(j,0));
+                                    cs2 = q32(cfs(j,1));
+                                    ct2 = q32(cfs(j,2));
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = ct0*(cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1)+cr2*VS(i1+2,i2,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)+cr2*VS(i1+2,i2+1,i3+0,c1))+cs2*(cr0*VS(i1,i2+2,i3+0,c1)+cr1*VS(i1+1,i2+2,i3+0,c1)+cr2*VS(i1+2,i2+2,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1)+cr2*VS(i1+2,i2,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)+cr2*VS(i1+2,i2+1,i3+1,c1))+cs2*(cr0*VS(i1,i2+2,i3+1,c1)+cr1*VS(i1+1,i2+2,i3+1,c1)+cr2*VS(i1+2,i2+2,i3+1,c1)))+ct2*(cs0*(cr0*VS(i1,i2,i3+2,c1)+cr1*VS(i1+1,i2,i3+2,c1)+cr2*VS(i1+2,i2,i3+2,c1))+cs1*(cr0*VS(i1,i2+1,i3+2,c1)+cr1*VS(i1+1,i2+1,i3+2,c1)+cr2*VS(i1+2,i2+1,i3+2,c1))+cs2*(cr0*VS(i1,i2+2,i3+2,c1)+cr1*VS(i1+1,i2+2,i3+2,c1)+cr2*VS(i1+2,i2+2,i3+2,c1)));
+                                        k++;
+                                    }
+                            }
+                            else if( iw==2 )
+                            {
+                // interp222(sum[p][k]);
+                                    cr0 = q20(cfs(j,0)); 
+                                    cs0 = q20(cfs(j,1)); 
+                                    ct0 = q20(cfs(j,2)); 
+                                    cr1 = q21(cfs(j,0)); 
+                                    cs1 = q21(cfs(j,1)); 
+                                    ct1 = q21(cfs(j,2)); 
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = ct0*(cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)));
+                                        k++;
+                                    }
+                            }
+                            else if( iw==1 )
+                            {
+                // interp111(sum[p][k]);
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = VS(i1  ,i2  ,i3,c1);
+                                        k++; 
+                                    }
+                            }
+                            else
+                            {
+                                Overture::abort("ERROR: unexpected interp width");
+                            }
                         }
                     }
-        	  }
-      	}
-      	else if( maxInterpolationWidth==2 )
-      	{
-        	  if( explicitInterpolationStorageOption==precomputeAllCoefficients )
-        	  {
-          // 	    loops3d(sum[p][k]=		    (c(j,0,0,0)*VS(il0,il1  ,il2  ,c1)+c(j,1,0,0)*VS(il0+1,il1  ,il2  ,c1)+		     c(j,0,1,0)*VS(il0,il1+1,il2  ,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2  ,c1)+		     c(j,0,0,1)*VS(il0,il1  ,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1  ,il2+1,c1)+		     c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1)););
-          //   if( false && c1Base==c1Bound )
-          //   {
-          //     for( int c1=c1Base; c1<=c1Bound; c1++ )
-          //     for( j=0; j<nil; j++ )
-          //     {
-          //       int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-          //       sum[p][k]=		(c(j,0,0,0)*VS(il0,il1,il2,c1)+c(j,1,0,0)*VS(il0+1,il1,il2,c1)+		c(j,0,1,0)*VS(il0,il1+1,il2,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2,c1)+		c(j,0,0,1)*VS(il0,il1,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1,il2+1,c1)+		c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1));
-          //       k++;
-          //     }
-          //   }
-                      for( j=0; j<nil; j++ )
-                      for( int c1=c1Base; c1<=c1Bound; c1++ )
-                      {
-                          int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-                          sum[p][k]=		(c(j,0,0,0)*VS(il0,il1,il2,c1)+c(j,1,0,0)*VS(il0+1,il1,il2,c1)+		c(j,0,1,0)*VS(il0,il1+1,il2,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2,c1)+		c(j,0,0,1)*VS(il0,il1,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1,il2+1,c1)+		c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1));
-                          k++;
-                      }
-        	  }
-        	  else
-        	  {
-          // 	    interpSparseStorage222(sum[p][k]);
-                    for( j=0; j<nil; j++ )
+                }
+                else if( maxInterpolationWidth==2 )
+                {
+                    if( explicitInterpolationStorageOption==precomputeAllCoefficients )
                     {
-                        iw=VIW(j); i1=IL1(j); i2=IL2(j); i3=IL3(j);
-                        if( iw==2 )
+            // loops3d(sum[p][k]=(c(j,0,0,0)*VS(il0,il1  ,il2  ,c1)+c(j,1,0,0)*VS(il0+1,il1  ,il2  ,c1)+c(j,0,1,0)*VS(il0,il1+1,il2  ,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2  ,c1)+c(j,0,0,1)*VS(il0,il1  ,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1  ,il2+1,c1)+c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1)););
+            //   if( false && c1Base==c1Bound )
+            //   {
+            //     for( int c1=c1Base; c1<=c1Bound; c1++ )
+            //     for( j=0; j<nil; j++ )
+            //     {
+            //       int il0=IL1(j), il1=IL2(j), il2=IL3(j);
+            //       sum[p][k]=(c(j,0,0,0)*VS(il0,il1,il2,c1)+c(j,1,0,0)*VS(il0+1,il1,il2,c1)+c(j,0,1,0)*VS(il0,il1+1,il2,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2,c1)+c(j,0,0,1)*VS(il0,il1,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1,il2+1,c1)+c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1));
+            //       k++;
+            //     }
+            //   }
+                          for( j=0; j<nil; j++ )
+                          for( int c1=c1Base; c1<=c1Bound; c1++ )
+                          {
+                              int il0=IL1(j), il1=IL2(j), il2=IL3(j);
+                              sum[p][k]=(c(j,0,0,0)*VS(il0,il1,il2,c1)+c(j,1,0,0)*VS(il0+1,il1,il2,c1)+c(j,0,1,0)*VS(il0,il1+1,il2,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2,c1)+c(j,0,0,1)*VS(il0,il1,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1,il2+1,c1)+c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1));
+                              k++;
+                          }
+                    }
+                    else
+                    {
+            // interpSparseStorage222(sum[p][k]);
+                        for( j=0; j<nil; j++ )
                         {
-              // interp222(sum[p][k]);
-                                cr0 = q20(cfs(j,0)); 
-                                cs0 = q20(cfs(j,1)); 
-                                ct0 = q20(cfs(j,2)); 
-                                cr1 = q21(cfs(j,0)); 
-                                cs1 = q21(cfs(j,1)); 
-                                ct1 = q21(cfs(j,2)); 
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = ct0*(	    cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1))	   +cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1))	)+ct1*(	     cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1))	    +cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1))	);
-                                    k++;
-                                }
-                        }
-                        else if( iw==1 )
-                        {
-              // interp111(sum[p][k]);
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = VS(i1  ,i2  ,i3,c1);
-                                    k++; 
-                                }
-                        }
-                        else
-                        {
-                            Overture::abort("ERROR: unexpected interp width");
+                            iw=VIW(j); i1=IL1(j); i2=IL2(j); i3=IL3(j);
+                            if( iw==2 )
+                            {
+                // interp222(sum[p][k]);
+                                    cr0 = q20(cfs(j,0)); 
+                                    cs0 = q20(cfs(j,1)); 
+                                    ct0 = q20(cfs(j,2)); 
+                                    cr1 = q21(cfs(j,0)); 
+                                    cs1 = q21(cfs(j,1)); 
+                                    ct1 = q21(cfs(j,2)); 
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = ct0*(cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)));
+                                        k++;
+                                    }
+                            }
+                            else if( iw==1 )
+                            {
+                // interp111(sum[p][k]);
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = VS(i1  ,i2  ,i3,c1);
+                                        k++; 
+                                    }
+                            }
+                            else
+                            {
+                                Overture::abort("ERROR: unexpected interp width");
+                            }
                         }
                     }
-        	  }
-      	}
-      	else if( maxInterpolationWidth==5 ) // *wdh* 040207
-      	{
+                }
+                else if( maxInterpolationWidth==5 ) // *wdh* 040207
+                {
 #define IW5A(m1,m2) (c(j,0,m1,m2)*VS(il0  ,il1+m1,il2+m2,c1)+c(j,1,m1,m2)*VS(il0+1,il1+m1,il2+m2,c1)+c(j,2,m1,m2)*VS(il0+2,il1+m1,il2+m2,c1)+c(j,3,m1,m2)*VS(il0+3,il1+m1,il2+m2,c1)+c(j,4,m1,m2)*VS(il0+4,il1+m1,il2+m2,c1))
 #define IW5(m2) (IW5A(0,m2)+IW5A(1,m2)+IW5A(2,m2)+IW5A(3,m2)+IW5A(4,m2))
 
-        	  if( explicitInterpolationStorageOption==precomputeAllCoefficients )
-        	  {
-          // 	    loops3d(sum[p][k]=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4););
+                    if( explicitInterpolationStorageOption==precomputeAllCoefficients )
+                    {
+            // loops3d(sum[p][k]=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4););
+            //   if( false && c1Base==c1Bound )
+            //   {
+            //     for( int c1=c1Base; c1<=c1Bound; c1++ )
+            //     for( j=0; j<nil; j++ )
+            //     {
+            //       int il0=IL1(j), il1=IL2(j), il2=IL3(j);
+            //       sum[p][k]=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);
+            //       k++;
+            //     }
+            //   }
+                          for( j=0; j<nil; j++ )
+                          for( int c1=c1Base; c1<=c1Bound; c1++ )
+                          {
+                              int il0=IL1(j), il1=IL2(j), il2=IL3(j);
+                              sum[p][k]=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);
+                              k++;
+                          }
+                    }
+                    else
+                    {
+            // interpSparseStorage555(sum[p][k]);
+                        for( j=0; j<nil; j++ )
+                        {
+                            iw=VIW(j); i1=IL1(j); i2=IL2(j); i3=IL3(j);
+                            if( iw==5 )
+                            {
+                // interp555(sum[p][k]);
+                                    cr0 = q50(cfs(j,0));
+                                    cs0 = q50(cfs(j,1));
+                                    ct0 = q50(cfs(j,2));
+                                    cr1 = q51(cfs(j,0));
+                                    cs1 = q51(cfs(j,1));
+                                    ct1 = q51(cfs(j,2));
+                                    cr2 = q52(cfs(j,0));
+                                    cs2 = q52(cfs(j,1));
+                                    ct2 = q52(cfs(j,2));
+                                    cr3 = q53(cfs(j,0));
+                                    cs3 = q53(cfs(j,1));
+                                    ct3 = q53(cfs(j,2));
+                                    cr4 = q54(cfs(j,0));
+                                    cs4 = q54(cfs(j,1));
+                                    ct4 = q54(cfs(j,2));
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                sum[p][k] = ct0*(cs0*(cr0*VS(i1,i2  ,i3+0,c1)+cr1*VS(i1+1,i2  ,i3+0,c1)+cr2*VS(i1+2,i2  ,i3+0,c1)+cr3*VS(i1+3,i2  ,i3+0,c1)+cr4*VS(i1+4,i2  ,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)+cr2*VS(i1+2,i2+1,i3+0,c1)+cr3*VS(i1+3,i2+1,i3+0,c1)+cr4*VS(i1+4,i2+1,i3+0,c1))+cs2*(cr0*VS(i1,i2+2,i3+0,c1)+cr1*VS(i1+1,i2+2,i3+0,c1)+cr2*VS(i1+2,i2+2,i3+0,c1)+cr3*VS(i1+3,i2+2,i3+0,c1)+cr4*VS(i1+4,i2+2,i3+0,c1))+cs3*(cr0*VS(i1,i2+3,i3+0,c1)+cr1*VS(i1+1,i2+3,i3+0,c1)+cr2*VS(i1+2,i2+3,i3+0,c1)+cr3*VS(i1+3,i2+3,i3+0,c1)+cr4*VS(i1+4,i2+3,i3+0,c1))+cs4*(cr0*VS(i1,i2+4,i3+0,c1)+cr1*VS(i1+1,i2+4,i3+0,c1)+cr2*VS(i1+2,i2+4,i3+0,c1)+cr3*VS(i1+3,i2+4,i3+0,c1)+cr4*VS(i1+4,i2+4,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2  ,i3+1,c1)+cr1*VS(i1+1,i2  ,i3+1,c1)+cr2*VS(i1+2,i2  ,i3+1,c1)+cr3*VS(i1+3,i2  ,i3+1,c1)+cr4*VS(i1+4,i2  ,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)+cr2*VS(i1+2,i2+1,i3+1,c1)+cr3*VS(i1+3,i2+1,i3+1,c1)+cr4*VS(i1+4,i2+1,i3+1,c1))+cs2*(cr0*VS(i1,i2+2,i3+1,c1)+cr1*VS(i1+1,i2+2,i3+1,c1)+cr2*VS(i1+2,i2+2,i3+1,c1)+cr3*VS(i1+3,i2+2,i3+1,c1)+cr4*VS(i1+4,i2+2,i3+1,c1))+cs3*(cr0*VS(i1,i2+3,i3+1,c1)+cr1*VS(i1+1,i2+3,i3+1,c1)+cr2*VS(i1+2,i2+3,i3+1,c1)+cr3*VS(i1+3,i2+3,i3+1,c1)+cr4*VS(i1+4,i2+3,i3+1,c1))+cs4*(cr0*VS(i1,i2+4,i3+1,c1)+cr1*VS(i1+1,i2+4,i3+1,c1)+cr2*VS(i1+2,i2+4,i3+1,c1)+cr3*VS(i1+3,i2+4,i3+1,c1)+cr4*VS(i1+4,i2+4,i3+1,c1)))+ct2*(cs0*(cr0*VS(i1,i2  ,i3+2,c1)+cr1*VS(i1+1,i2  ,i3+2,c1)+cr2*VS(i1+2,i2  ,i3+2,c1)+cr3*VS(i1+3,i2  ,i3+2,c1)+cr4*VS(i1+4,i2  ,i3+2,c1))+cs1*(cr0*VS(i1,i2+1,i3+2,c1)+cr1*VS(i1+1,i2+1,i3+2,c1)+cr2*VS(i1+2,i2+1,i3+2,c1)+cr3*VS(i1+3,i2+1,i3+2,c1)+cr4*VS(i1+4,i2+1,i3+2,c1))+cs2*(cr0*VS(i1,i2+2,i3+2,c1)+cr1*VS(i1+1,i2+2,i3+2,c1)+cr2*VS(i1+2,i2+2,i3+2,c1)+cr3*VS(i1+3,i2+2,i3+2,c1)+cr4*VS(i1+4,i2+2,i3+2,c1))+cs3*(cr0*VS(i1,i2+3,i3+2,c1)+cr1*VS(i1+1,i2+3,i3+2,c1)+cr2*VS(i1+2,i2+3,i3+2,c1)+cr3*VS(i1+3,i2+3,i3+2,c1)+cr4*VS(i1+4,i2+3,i3+2,c1))+cs4*(cr0*VS(i1,i2+4,i3+2,c1)+cr1*VS(i1+1,i2+4,i3+2,c1)+cr2*VS(i1+2,i2+4,i3+2,c1)+cr3*VS(i1+3,i2+4,i3+2,c1)+cr4*VS(i1+4,i2+4,i3+2,c1)))+ct3*(cs0*(cr0*VS(i1,i2  ,i3+3,c1)+cr1*VS(i1+1,i2  ,i3+3,c1)+cr2*VS(i1+2,i2  ,i3+3,c1)+cr3*VS(i1+3,i2  ,i3+3,c1)+cr4*VS(i1+4,i2  ,i3+3,c1))+cs1*(cr0*VS(i1,i2+1,i3+3,c1)+cr1*VS(i1+1,i2+1,i3+3,c1)+cr2*VS(i1+2,i2+1,i3+3,c1)+cr3*VS(i1+3,i2+1,i3+3,c1)+cr4*VS(i1+4,i2+1,i3+3,c1))+cs2*(cr0*VS(i1,i2+2,i3+3,c1)+cr1*VS(i1+1,i2+2,i3+3,c1)+cr2*VS(i1+2,i2+2,i3+3,c1)+cr3*VS(i1+3,i2+2,i3+3,c1)+cr4*VS(i1+4,i2+2,i3+3,c1))+cs3*(cr0*VS(i1,i2+3,i3+3,c1)+cr1*VS(i1+1,i2+3,i3+3,c1)+cr2*VS(i1+2,i2+3,i3+3,c1)+cr3*VS(i1+3,i2+3,i3+3,c1)+cr4*VS(i1+4,i2+3,i3+3,c1))+cs4*(cr0*VS(i1,i2+4,i3+3,c1)+cr1*VS(i1+1,i2+4,i3+3,c1)+cr2*VS(i1+2,i2+4,i3+3,c1)+cr3*VS(i1+3,i2+4,i3+3,c1)+cr4*VS(i1+4,i2+4,i3+3,c1)))+ct4*(cs0*(cr0*VS(i1,i2  ,i3+4,c1)+cr1*VS(i1+1,i2  ,i3+4,c1)+cr2*VS(i1+2,i2  ,i3+4,c1)+cr3*VS(i1+3,i2  ,i3+4,c1)+cr4*VS(i1+4,i2  ,i3+4,c1))+cs1*(cr0*VS(i1,i2+1,i3+4,c1)+cr1*VS(i1+1,i2+1,i3+4,c1)+cr2*VS(i1+2,i2+1,i3+4,c1)+cr3*VS(i1+3,i2+1,i3+4,c1)+cr4*VS(i1+4,i2+1,i3+4,c1))+cs2*(cr0*VS(i1,i2+2,i3+4,c1)+cr1*VS(i1+1,i2+2,i3+4,c1)+cr2*VS(i1+2,i2+2,i3+4,c1)+cr3*VS(i1+3,i2+2,i3+4,c1)+cr4*VS(i1+4,i2+2,i3+4,c1))+cs3*(cr0*VS(i1,i2+3,i3+4,c1)+cr1*VS(i1+1,i2+3,i3+4,c1)+cr2*VS(i1+2,i2+3,i3+4,c1)+cr3*VS(i1+3,i2+3,i3+4,c1)+cr4*VS(i1+4,i2+3,i3+4,c1))+cs4*(cr0*VS(i1,i2+4,i3+4,c1)+cr1*VS(i1+1,i2+4,i3+4,c1)+cr2*VS(i1+2,i2+4,i3+4,c1)+cr3*VS(i1+3,i2+4,i3+4,c1)+cr4*VS(i1+4,i2+4,i3+4,c1)));
+                                      k++;
+                                    } // end for c1
+                            }
+                            else if( iw==4 )
+                            {
+                // interp444(sum[p][k]);
+                                    cr0 = q40(cfs(j,0));
+                                    cs0 = q40(cfs(j,1));
+                                    ct0 = q40(cfs(j,2));
+                                    cr1 = q41(cfs(j,0));
+                                    cs1 = q41(cfs(j,1));
+                                    ct1 = q41(cfs(j,2));
+                                    cr2 = q42(cfs(j,0));
+                                    cs2 = q42(cfs(j,1));
+                                    ct2 = q42(cfs(j,2));
+                                    cr3 = q43(cfs(j,0));
+                                    cs3 = q43(cfs(j,1));
+                                    ct3 = q43(cfs(j,2));
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                sum[p][k] = ct0*(cs0*(cr0*VS(i1,i2  ,i3+0,c1)+cr1*VS(i1+1,i2  ,i3+0,c1)+cr2*VS(i1+2,i2  ,i3+0,c1)+cr3*VS(i1+3,i2  ,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)+cr2*VS(i1+2,i2+1,i3+0,c1)+cr3*VS(i1+3,i2+1,i3+0,c1))+cs2*(cr0*VS(i1,i2+2,i3+0,c1)+cr1*VS(i1+1,i2+2,i3+0,c1)+cr2*VS(i1+2,i2+2,i3+0,c1)+cr3*VS(i1+3,i2+2,i3+0,c1))+cs3*(cr0*VS(i1,i2+3,i3+0,c1)+cr1*VS(i1+1,i2+3,i3+0,c1)+cr2*VS(i1+2,i2+3,i3+0,c1)+cr3*VS(i1+3,i2+3,i3+0,c1))+cs4*(cr0*VS(i1,i2+4,i3+0,c1)+cr1*VS(i1+1,i2+4,i3+0,c1)+cr2*VS(i1+2,i2+4,i3+0,c1)+cr3*VS(i1+3,i2+4,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2  ,i3+1,c1)+cr1*VS(i1+1,i2  ,i3+1,c1)+cr2*VS(i1+2,i2  ,i3+1,c1)+cr3*VS(i1+3,i2  ,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)+cr2*VS(i1+2,i2+1,i3+1,c1)+cr3*VS(i1+3,i2+1,i3+1,c1))+cs2*(cr0*VS(i1,i2+2,i3+1,c1)+cr1*VS(i1+1,i2+2,i3+1,c1)+cr2*VS(i1+2,i2+2,i3+1,c1)+cr3*VS(i1+3,i2+2,i3+1,c1))+cs3*(cr0*VS(i1,i2+3,i3+1,c1)+cr1*VS(i1+1,i2+3,i3+1,c1)+cr2*VS(i1+2,i2+3,i3+1,c1)+cr3*VS(i1+3,i2+3,i3+1,c1))+cs4*(cr0*VS(i1,i2+4,i3+1,c1)+cr1*VS(i1+1,i2+4,i3+1,c1)+cr2*VS(i1+2,i2+4,i3+1,c1)+cr3*VS(i1+3,i2+4,i3+1,c1)))+ct2*(cs0*(cr0*VS(i1,i2  ,i3+2,c1)+cr1*VS(i1+1,i2  ,i3+2,c1)+cr2*VS(i1+2,i2  ,i3+2,c1)+cr3*VS(i1+3,i2  ,i3+2,c1))+cs1*(cr0*VS(i1,i2+1,i3+2,c1)+cr1*VS(i1+1,i2+1,i3+2,c1)+cr2*VS(i1+2,i2+1,i3+2,c1)+cr3*VS(i1+3,i2+1,i3+2,c1))+cs2*(cr0*VS(i1,i2+2,i3+2,c1)+cr1*VS(i1+1,i2+2,i3+2,c1)+cr2*VS(i1+2,i2+2,i3+2,c1)+cr3*VS(i1+3,i2+2,i3+2,c1))+cs3*(cr0*VS(i1,i2+3,i3+2,c1)+cr1*VS(i1+1,i2+3,i3+2,c1)+cr2*VS(i1+2,i2+3,i3+2,c1)+cr3*VS(i1+3,i2+3,i3+2,c1))+cs4*(cr0*VS(i1,i2+4,i3+2,c1)+cr1*VS(i1+1,i2+4,i3+2,c1)+cr2*VS(i1+2,i2+4,i3+2,c1)+cr3*VS(i1+3,i2+4,i3+2,c1)))+ct3*(cs0*(cr0*VS(i1,i2  ,i3+3,c1)+cr1*VS(i1+1,i2  ,i3+3,c1)+cr2*VS(i1+2,i2  ,i3+3,c1)+cr3*VS(i1+3,i2  ,i3+3,c1))+cs1*(cr0*VS(i1,i2+1,i3+3,c1)+cr1*VS(i1+1,i2+1,i3+3,c1)+cr2*VS(i1+2,i2+1,i3+3,c1)+cr3*VS(i1+3,i2+1,i3+3,c1))+cs2*(cr0*VS(i1,i2+2,i3+3,c1)+cr1*VS(i1+1,i2+2,i3+3,c1)+cr2*VS(i1+2,i2+2,i3+3,c1)+cr3*VS(i1+3,i2+2,i3+3,c1))+cs3*(cr0*VS(i1,i2+3,i3+3,c1)+cr1*VS(i1+1,i2+3,i3+3,c1)+cr2*VS(i1+2,i2+3,i3+3,c1)+cr3*VS(i1+3,i2+3,i3+3,c1))+cs4*(cr0*VS(i1,i2+4,i3+3,c1)+cr1*VS(i1+1,i2+4,i3+3,c1)+cr2*VS(i1+2,i2+4,i3+3,c1)+cr3*VS(i1+3,i2+4,i3+3,c1)));
+                                      k++;
+                                    } // end for c1
+                            }
+                            else if( iw==3 )
+                            {
+                // interp333(sum[p][k]);
+                                    cr0 = q30(cfs(j,0));
+                                    cs0 = q30(cfs(j,1));
+                                    ct0 = q30(cfs(j,2));
+                                    cr1 = q31(cfs(j,0));
+                                    cs1 = q31(cfs(j,1));
+                                    ct1 = q31(cfs(j,2));
+                                    cr2 = q32(cfs(j,0));
+                                    cs2 = q32(cfs(j,1));
+                                    ct2 = q32(cfs(j,2));
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = ct0*(cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1)+cr2*VS(i1+2,i2,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)+cr2*VS(i1+2,i2+1,i3+0,c1))+cs2*(cr0*VS(i1,i2+2,i3+0,c1)+cr1*VS(i1+1,i2+2,i3+0,c1)+cr2*VS(i1+2,i2+2,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1)+cr2*VS(i1+2,i2,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)+cr2*VS(i1+2,i2+1,i3+1,c1))+cs2*(cr0*VS(i1,i2+2,i3+1,c1)+cr1*VS(i1+1,i2+2,i3+1,c1)+cr2*VS(i1+2,i2+2,i3+1,c1)))+ct2*(cs0*(cr0*VS(i1,i2,i3+2,c1)+cr1*VS(i1+1,i2,i3+2,c1)+cr2*VS(i1+2,i2,i3+2,c1))+cs1*(cr0*VS(i1,i2+1,i3+2,c1)+cr1*VS(i1+1,i2+1,i3+2,c1)+cr2*VS(i1+2,i2+1,i3+2,c1))+cs2*(cr0*VS(i1,i2+2,i3+2,c1)+cr1*VS(i1+1,i2+2,i3+2,c1)+cr2*VS(i1+2,i2+2,i3+2,c1)));
+                                        k++;
+                                    }
+                            }
+                            else if( iw==2 )
+                            {
+                // interp222(sum[p][k]);
+                                    cr0 = q20(cfs(j,0)); 
+                                    cs0 = q20(cfs(j,1)); 
+                                    ct0 = q20(cfs(j,2)); 
+                                    cr1 = q21(cfs(j,0)); 
+                                    cs1 = q21(cfs(j,1)); 
+                                    ct1 = q21(cfs(j,2)); 
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = ct0*(cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)));
+                                        k++;
+                                    }
+                            }
+                            else if( iw==1 )
+                            {
+                // interp111(sum[p][k]);
+                                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                    {
+                                        sum[p][k] = VS(i1  ,i2  ,i3,c1);
+                                        k++; 
+                                    }
+                            }
+                            else
+                            {
+                                Overture::abort("ERROR: unexpected interp width");
+                            }
+                        }
+                    }
+#undef IW5
+#undef IW55
+                }
+                else if( maxInterpolationWidth==1 )
+                {
+          // loops3d(sum[p][k]=VS(il0,il1,il2,c1););
           //   if( false && c1Base==c1Bound )
           //   {
           //     for( int c1=c1Base; c1<=c1Bound; c1++ )
           //     for( j=0; j<nil; j++ )
           //     {
           //       int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-          //       sum[p][k]=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);
+          //       sum[p][k]=VS(il0,il1,il2,c1);
           //       k++;
           //     }
           //   }
@@ -2047,157 +2180,34 @@ parallelInternalInterpolate( RealArray & ui,                       // save resul
                       for( int c1=c1Base; c1<=c1Bound; c1++ )
                       {
                           int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-                          sum[p][k]=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);
+                          sum[p][k]=VS(il0,il1,il2,c1);
                           k++;
                       }
-        	  }
-        	  else
-        	  {
-          // 	    interpSparseStorage555(sum[p][k]);
-                    for( j=0; j<nil; j++ )
-                    {
-                        iw=VIW(j); i1=IL1(j); i2=IL2(j); i3=IL3(j);
-                        if( iw==5 )
-                        {
-              // interp555(sum[p][k]);
-                                cr0 = q50(cfs(j,0));
-                                cs0 = q50(cfs(j,1));
-                                ct0 = q50(cfs(j,2));
-                                cr1 = q51(cfs(j,0));
-                                cs1 = q51(cfs(j,1));
-                                ct1 = q51(cfs(j,2));
-                                cr2 = q52(cfs(j,0));
-                                cs2 = q52(cfs(j,1));
-                                ct2 = q52(cfs(j,2));
-                                cr3 = q53(cfs(j,0));
-                                cs3 = q53(cfs(j,1));
-                                ct3 = q53(cfs(j,2));
-                                cr4 = q54(cfs(j,0));
-                                cs4 = q54(cfs(j,1));
-                                ct4 = q54(cfs(j,2));
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                            sum[p][k] = ct0*(cs0*(cr0*VS(i1,i2  ,i3+0,c1)+cr1*VS(i1+1,i2  ,i3+0,c1)+cr2*VS(i1+2,i2  ,i3+0,c1)+cr3*VS(i1+3,i2  ,i3+0,c1)+cr4*VS(i1+4,i2  ,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)+cr2*VS(i1+2,i2+1,i3+0,c1)+cr3*VS(i1+3,i2+1,i3+0,c1)+cr4*VS(i1+4,i2+1,i3+0,c1))+cs2*(cr0*VS(i1,i2+2,i3+0,c1)+cr1*VS(i1+1,i2+2,i3+0,c1)+cr2*VS(i1+2,i2+2,i3+0,c1)+cr3*VS(i1+3,i2+2,i3+0,c1)+cr4*VS(i1+4,i2+2,i3+0,c1))+cs3*(cr0*VS(i1,i2+3,i3+0,c1)+cr1*VS(i1+1,i2+3,i3+0,c1)+cr2*VS(i1+2,i2+3,i3+0,c1)+cr3*VS(i1+3,i2+3,i3+0,c1)+cr4*VS(i1+4,i2+3,i3+0,c1))+cs4*(cr0*VS(i1,i2+4,i3+0,c1)+cr1*VS(i1+1,i2+4,i3+0,c1)+cr2*VS(i1+2,i2+4,i3+0,c1)+cr3*VS(i1+3,i2+4,i3+0,c1)+cr4*VS(i1+4,i2+4,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2  ,i3+1,c1)+cr1*VS(i1+1,i2  ,i3+1,c1)+cr2*VS(i1+2,i2  ,i3+1,c1)+cr3*VS(i1+3,i2  ,i3+1,c1)+cr4*VS(i1+4,i2  ,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)+cr2*VS(i1+2,i2+1,i3+1,c1)+cr3*VS(i1+3,i2+1,i3+1,c1)+cr4*VS(i1+4,i2+1,i3+1,c1))+cs2*(cr0*VS(i1,i2+2,i3+1,c1)+cr1*VS(i1+1,i2+2,i3+1,c1)+cr2*VS(i1+2,i2+2,i3+1,c1)+cr3*VS(i1+3,i2+2,i3+1,c1)+cr4*VS(i1+4,i2+2,i3+1,c1))+cs3*(cr0*VS(i1,i2+3,i3+1,c1)+cr1*VS(i1+1,i2+3,i3+1,c1)+cr2*VS(i1+2,i2+3,i3+1,c1)+cr3*VS(i1+3,i2+3,i3+1,c1)+cr4*VS(i1+4,i2+3,i3+1,c1))+cs4*(cr0*VS(i1,i2+4,i3+1,c1)+cr1*VS(i1+1,i2+4,i3+1,c1)+cr2*VS(i1+2,i2+4,i3+1,c1)+cr3*VS(i1+3,i2+4,i3+1,c1)+cr4*VS(i1+4,i2+4,i3+1,c1)))+ct2*(cs0*(cr0*VS(i1,i2  ,i3+2,c1)+cr1*VS(i1+1,i2  ,i3+2,c1)+cr2*VS(i1+2,i2  ,i3+2,c1)+cr3*VS(i1+3,i2  ,i3+2,c1)+cr4*VS(i1+4,i2  ,i3+2,c1))+cs1*(cr0*VS(i1,i2+1,i3+2,c1)+cr1*VS(i1+1,i2+1,i3+2,c1)+cr2*VS(i1+2,i2+1,i3+2,c1)+cr3*VS(i1+3,i2+1,i3+2,c1)+cr4*VS(i1+4,i2+1,i3+2,c1))+cs2*(cr0*VS(i1,i2+2,i3+2,c1)+cr1*VS(i1+1,i2+2,i3+2,c1)+cr2*VS(i1+2,i2+2,i3+2,c1)+cr3*VS(i1+3,i2+2,i3+2,c1)+cr4*VS(i1+4,i2+2,i3+2,c1))+cs3*(cr0*VS(i1,i2+3,i3+2,c1)+cr1*VS(i1+1,i2+3,i3+2,c1)+cr2*VS(i1+2,i2+3,i3+2,c1)+cr3*VS(i1+3,i2+3,i3+2,c1)+cr4*VS(i1+4,i2+3,i3+2,c1))+cs4*(cr0*VS(i1,i2+4,i3+2,c1)+cr1*VS(i1+1,i2+4,i3+2,c1)+cr2*VS(i1+2,i2+4,i3+2,c1)+cr3*VS(i1+3,i2+4,i3+2,c1)+cr4*VS(i1+4,i2+4,i3+2,c1)))+ct3*(cs0*(cr0*VS(i1,i2  ,i3+3,c1)+cr1*VS(i1+1,i2  ,i3+3,c1)+cr2*VS(i1+2,i2  ,i3+3,c1)+cr3*VS(i1+3,i2  ,i3+3,c1)+cr4*VS(i1+4,i2  ,i3+3,c1))+cs1*(cr0*VS(i1,i2+1,i3+3,c1)+cr1*VS(i1+1,i2+1,i3+3,c1)+cr2*VS(i1+2,i2+1,i3+3,c1)+cr3*VS(i1+3,i2+1,i3+3,c1)+cr4*VS(i1+4,i2+1,i3+3,c1))+cs2*(cr0*VS(i1,i2+2,i3+3,c1)+cr1*VS(i1+1,i2+2,i3+3,c1)+cr2*VS(i1+2,i2+2,i3+3,c1)+cr3*VS(i1+3,i2+2,i3+3,c1)+cr4*VS(i1+4,i2+2,i3+3,c1))+cs3*(cr0*VS(i1,i2+3,i3+3,c1)+cr1*VS(i1+1,i2+3,i3+3,c1)+cr2*VS(i1+2,i2+3,i3+3,c1)+cr3*VS(i1+3,i2+3,i3+3,c1)+cr4*VS(i1+4,i2+3,i3+3,c1))+cs4*(cr0*VS(i1,i2+4,i3+3,c1)+cr1*VS(i1+1,i2+4,i3+3,c1)+cr2*VS(i1+2,i2+4,i3+3,c1)+cr3*VS(i1+3,i2+4,i3+3,c1)+cr4*VS(i1+4,i2+4,i3+3,c1)))+ct4*(cs0*(cr0*VS(i1,i2  ,i3+4,c1)+cr1*VS(i1+1,i2  ,i3+4,c1)+cr2*VS(i1+2,i2  ,i3+4,c1)+cr3*VS(i1+3,i2  ,i3+4,c1)+cr4*VS(i1+4,i2  ,i3+4,c1))+cs1*(cr0*VS(i1,i2+1,i3+4,c1)+cr1*VS(i1+1,i2+1,i3+4,c1)+cr2*VS(i1+2,i2+1,i3+4,c1)+cr3*VS(i1+3,i2+1,i3+4,c1)+cr4*VS(i1+4,i2+1,i3+4,c1))+cs2*(cr0*VS(i1,i2+2,i3+4,c1)+cr1*VS(i1+1,i2+2,i3+4,c1)+cr2*VS(i1+2,i2+2,i3+4,c1)+cr3*VS(i1+3,i2+2,i3+4,c1)+cr4*VS(i1+4,i2+2,i3+4,c1))+cs3*(cr0*VS(i1,i2+3,i3+4,c1)+cr1*VS(i1+1,i2+3,i3+4,c1)+cr2*VS(i1+2,i2+3,i3+4,c1)+cr3*VS(i1+3,i2+3,i3+4,c1)+cr4*VS(i1+4,i2+3,i3+4,c1))+cs4*(cr0*VS(i1,i2+4,i3+4,c1)+cr1*VS(i1+1,i2+4,i3+4,c1)+cr2*VS(i1+2,i2+4,i3+4,c1)+cr3*VS(i1+3,i2+4,i3+4,c1)+cr4*VS(i1+4,i2+4,i3+4,c1)));
-                                  k++;
-                                } // end for c1
-                        }
-                        else if( iw==4 )
-                        {
-              // interp444(sum[p][k]);
-                                cr0 = q40(cfs(j,0));
-                                cs0 = q40(cfs(j,1));
-                                ct0 = q40(cfs(j,2));
-                                cr1 = q41(cfs(j,0));
-                                cs1 = q41(cfs(j,1));
-                                ct1 = q41(cfs(j,2));
-                                cr2 = q42(cfs(j,0));
-                                cs2 = q42(cfs(j,1));
-                                ct2 = q42(cfs(j,2));
-                                cr3 = q43(cfs(j,0));
-                                cs3 = q43(cfs(j,1));
-                                ct3 = q43(cfs(j,2));
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                            sum[p][k] = ct0*(cs0*(cr0*VS(i1,i2  ,i3+0,c1)+cr1*VS(i1+1,i2  ,i3+0,c1)+cr2*VS(i1+2,i2  ,i3+0,c1)+cr3*VS(i1+3,i2  ,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)+cr2*VS(i1+2,i2+1,i3+0,c1)+cr3*VS(i1+3,i2+1,i3+0,c1))+cs2*(cr0*VS(i1,i2+2,i3+0,c1)+cr1*VS(i1+1,i2+2,i3+0,c1)+cr2*VS(i1+2,i2+2,i3+0,c1)+cr3*VS(i1+3,i2+2,i3+0,c1))+cs3*(cr0*VS(i1,i2+3,i3+0,c1)+cr1*VS(i1+1,i2+3,i3+0,c1)+cr2*VS(i1+2,i2+3,i3+0,c1)+cr3*VS(i1+3,i2+3,i3+0,c1))+cs4*(cr0*VS(i1,i2+4,i3+0,c1)+cr1*VS(i1+1,i2+4,i3+0,c1)+cr2*VS(i1+2,i2+4,i3+0,c1)+cr3*VS(i1+3,i2+4,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2  ,i3+1,c1)+cr1*VS(i1+1,i2  ,i3+1,c1)+cr2*VS(i1+2,i2  ,i3+1,c1)+cr3*VS(i1+3,i2  ,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)+cr2*VS(i1+2,i2+1,i3+1,c1)+cr3*VS(i1+3,i2+1,i3+1,c1))+cs2*(cr0*VS(i1,i2+2,i3+1,c1)+cr1*VS(i1+1,i2+2,i3+1,c1)+cr2*VS(i1+2,i2+2,i3+1,c1)+cr3*VS(i1+3,i2+2,i3+1,c1))+cs3*(cr0*VS(i1,i2+3,i3+1,c1)+cr1*VS(i1+1,i2+3,i3+1,c1)+cr2*VS(i1+2,i2+3,i3+1,c1)+cr3*VS(i1+3,i2+3,i3+1,c1))+cs4*(cr0*VS(i1,i2+4,i3+1,c1)+cr1*VS(i1+1,i2+4,i3+1,c1)+cr2*VS(i1+2,i2+4,i3+1,c1)+cr3*VS(i1+3,i2+4,i3+1,c1)))+ct2*(cs0*(cr0*VS(i1,i2  ,i3+2,c1)+cr1*VS(i1+1,i2  ,i3+2,c1)+cr2*VS(i1+2,i2  ,i3+2,c1)+cr3*VS(i1+3,i2  ,i3+2,c1))+cs1*(cr0*VS(i1,i2+1,i3+2,c1)+cr1*VS(i1+1,i2+1,i3+2,c1)+cr2*VS(i1+2,i2+1,i3+2,c1)+cr3*VS(i1+3,i2+1,i3+2,c1))+cs2*(cr0*VS(i1,i2+2,i3+2,c1)+cr1*VS(i1+1,i2+2,i3+2,c1)+cr2*VS(i1+2,i2+2,i3+2,c1)+cr3*VS(i1+3,i2+2,i3+2,c1))+cs3*(cr0*VS(i1,i2+3,i3+2,c1)+cr1*VS(i1+1,i2+3,i3+2,c1)+cr2*VS(i1+2,i2+3,i3+2,c1)+cr3*VS(i1+3,i2+3,i3+2,c1))+cs4*(cr0*VS(i1,i2+4,i3+2,c1)+cr1*VS(i1+1,i2+4,i3+2,c1)+cr2*VS(i1+2,i2+4,i3+2,c1)+cr3*VS(i1+3,i2+4,i3+2,c1)))+ct3*(cs0*(cr0*VS(i1,i2  ,i3+3,c1)+cr1*VS(i1+1,i2  ,i3+3,c1)+cr2*VS(i1+2,i2  ,i3+3,c1)+cr3*VS(i1+3,i2  ,i3+3,c1))+cs1*(cr0*VS(i1,i2+1,i3+3,c1)+cr1*VS(i1+1,i2+1,i3+3,c1)+cr2*VS(i1+2,i2+1,i3+3,c1)+cr3*VS(i1+3,i2+1,i3+3,c1))+cs2*(cr0*VS(i1,i2+2,i3+3,c1)+cr1*VS(i1+1,i2+2,i3+3,c1)+cr2*VS(i1+2,i2+2,i3+3,c1)+cr3*VS(i1+3,i2+2,i3+3,c1))+cs3*(cr0*VS(i1,i2+3,i3+3,c1)+cr1*VS(i1+1,i2+3,i3+3,c1)+cr2*VS(i1+2,i2+3,i3+3,c1)+cr3*VS(i1+3,i2+3,i3+3,c1))+cs4*(cr0*VS(i1,i2+4,i3+3,c1)+cr1*VS(i1+1,i2+4,i3+3,c1)+cr2*VS(i1+2,i2+4,i3+3,c1)+cr3*VS(i1+3,i2+4,i3+3,c1)));
-                                  k++;
-                                } // end for c1
-                        }
-                        else if( iw==3 )
-                        {
-              // interp333(sum[p][k]);
-                                cr0 = q30(cfs(j,0));
-                                cs0 = q30(cfs(j,1));
-                                ct0 = q30(cfs(j,2));
-                                cr1 = q31(cfs(j,0));
-                                cs1 = q31(cfs(j,1));
-                                ct1 = q31(cfs(j,2));
-                                cr2 = q32(cfs(j,0));
-                                cs2 = q32(cfs(j,1));
-                                ct2 = q32(cfs(j,2));
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = ct0*(	    cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1)+cr2*VS(i1+2,i2,i3+0,c1))	   +cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)+cr2*VS(i1+2,i2+1,i3+0,c1))	   +cs2*(cr0*VS(i1,i2+2,i3+0,c1)+cr1*VS(i1+1,i2+2,i3+0,c1)+cr2*VS(i1+2,i2+2,i3+0,c1))	)+ct1*(	     cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1)+cr2*VS(i1+2,i2,i3+1,c1))	    +cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)+cr2*VS(i1+2,i2+1,i3+1,c1))	    +cs2*(cr0*VS(i1,i2+2,i3+1,c1)+cr1*VS(i1+1,i2+2,i3+1,c1)+cr2*VS(i1+2,i2+2,i3+1,c1))	)+ct2*(	     cs0*(cr0*VS(i1,i2,i3+2,c1)+cr1*VS(i1+1,i2,i3+2,c1)+cr2*VS(i1+2,i2,i3+2,c1))	    +cs1*(cr0*VS(i1,i2+1,i3+2,c1)+cr1*VS(i1+1,i2+1,i3+2,c1)+cr2*VS(i1+2,i2+1,i3+2,c1))	    +cs2*(cr0*VS(i1,i2+2,i3+2,c1)+cr1*VS(i1+1,i2+2,i3+2,c1)+cr2*VS(i1+2,i2+2,i3+2,c1))	);
-                                    k++;
-                                }
-                        }
-                        else if( iw==2 )
-                        {
-              // interp222(sum[p][k]);
-                                cr0 = q20(cfs(j,0)); 
-                                cs0 = q20(cfs(j,1)); 
-                                ct0 = q20(cfs(j,2)); 
-                                cr1 = q21(cfs(j,0)); 
-                                cs1 = q21(cfs(j,1)); 
-                                ct1 = q21(cfs(j,2)); 
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = ct0*(	    cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1))	   +cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1))	)+ct1*(	     cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1))	    +cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1))	);
-                                    k++;
-                                }
-                        }
-                        else if( iw==1 )
-                        {
-              // interp111(sum[p][k]);
-                                for( int c1=c1Base; c1<=c1Bound; c1++ )
-                                {
-                                    sum[p][k] = VS(i1  ,i2  ,i3,c1);
-                                    k++; 
-                                }
-                        }
-                        else
-                        {
-                            Overture::abort("ERROR: unexpected interp width");
-                        }
-                    }
-        	  }
-#undef IW5
-#undef IW55
-      	}
-      	else if( maxInterpolationWidth==1 )
-      	{
-        // 	  loops3d(sum[p][k]=VS(il0,il1,il2,c1););
-        //   if( false && c1Base==c1Bound )
-        //   {
-        //     for( int c1=c1Base; c1<=c1Bound; c1++ )
-        //     for( j=0; j<nil; j++ )
-        //     {
-        //       int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-        //       sum[p][k]=VS(il0,il1,il2,c1);
-        //       k++;
-        //     }
-        //   }
-                  for( j=0; j<nil; j++ )
-                  for( int c1=c1Base; c1<=c1Bound; c1++ )
-                  {
-                      int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-                      sum[p][k]=VS(il0,il1,il2,c1);
-                      k++;
-                  }
 
-      	}
-      	else
-      	{
-	  // general case
-        	  for( int c1=c1Base; c1<=c1Bound; c1++ )
-          	    for( j=0; j<nil; j++ )
-          	    {
-            	      int il0=IL1(j), il1=IL2(j), il2=IL3(j);
+                }
+                else
+                {
+          // general case
+                    for( int c1=c1Base; c1<=c1Bound; c1++ )
+                        for( j=0; j<nil; j++ )
+                        {
+                            int il0=IL1(j), il1=IL2(j), il2=IL3(j);
                             real value=0.;
-            	      for( m3=0; m3< width[axis3]; m3++ ) 
-            		for( m2=0; m2< width[axis2]; m2++ ) 
-              		  for( m1=0; m1< width[axis1]; m1++ ) 
-                		    value+=c(j,m1,m2,m3)*VS(il0+m1,il1+m2,il2+m3,c1);
+                            for( m3=0; m3< width[axis3]; m3++ ) 
+                                for( m2=0; m2< width[axis2]; m2++ ) 
+                                    for( m1=0; m1< width[axis1]; m1++ ) 
+                                        value+=c(j,m1,m2,m3)*VS(il0+m1,il1+m2,il2+m3,c1);
 
-            	      sum[p][k]=value;
-            	      k++;
-          	    }
-      	}
+                            sum[p][k]=value;
+                            k++;
+                        }
+                }
 
-        	  
+                    
             }
             else
             {
-      	printf("InterpolatePointsOnAGrid:interpolate:ERROR: numberOfDimensions=%i\n",numberOfDimensions);
+                printf("InterpolatePointsOnAGrid:interpolate:ERROR: numberOfDimensions=%i\n",numberOfDimensions);
                 OV_ABORT("ERROR");
             }
         } // end for p
@@ -2219,11 +2229,11 @@ parallelInternalInterpolate( RealArray & ui,                       // save resul
             fprintf(debugFile,"-> processor %i: send %i values to processor %i values=",myid,niv[p],pp );
             if( debug& 4 )
             {
-      	for( int j=0; j<niv[p]; j++ ) fprintf(debugFile,"%8.2e ",sum[p][j]); fprintf(debugFile,"\n");
+                for( int j=0; j<niv[p]; j++ ) fprintf(debugFile,"%8.2e ",sum[p][j]); fprintf(debugFile,"\n");
             }
             else
             {
-      	fprintf(debugFile," not printed.\n");
+                fprintf(debugFile," not printed.\n");
             }
             
         }
@@ -2287,33 +2297,33 @@ parallelInternalInterpolate( RealArray & ui,                       // save resul
 
             if( localSend || pp!=myid )
             {
-	// int nivd=receiveStatus[p].MPI_TAG;
+        // int nivd=receiveStatus[p].MPI_TAG;
                 int nivd=numToReceive[p];
                 int nivd2;
-      	MPI_Get_count(&receiveStatus[p],MPI_Real,&nivd2);
-	// assert( nivd==nivd2 );
-      	if( nivd!=nivd2 )
-      	{
-        	  printf("POGIP:interp:ERROR: myid=%i, expecting nivd=%i values from p=%i, actually rec. nivd2=%i\n",
-             		 myid,nivd,pp,nivd2);
+                MPI_Get_count(&receiveStatus[p],MPI_Real,&nivd2);
+        // assert( nivd==nivd2 );
+                if( nivd!=nivd2 )
+                {
+                    printf("POGIP:interp:ERROR: myid=%i, expecting nivd=%i values from p=%i, actually rec. nivd2=%i\n",
+                                  myid,nivd,pp,nivd2);
                     printf(" nivd = SUM : nipa(p=%i,grid) = ",pp);
                     for( int grid=0; grid<numberOfComponentGrids; grid++ )
-          	    printf(" %i ",nipa(p,grid));
-        	  printf("\n");
+                        printf(" %i ",nipa(p,grid));
+                    printf("\n");
                     OV_ABORT("error");
-      	}
-      	fprintf(debugFile,"<- processor %i: received msg from processor %i, tag=%i p=%i values=",myid,
-             	       receiveStatus[p].MPI_SOURCE,receiveStatus[p].MPI_TAG,pp);
-      	if( debug & 4 )
-      	{
-        	  for( j=0; j<nivd; j++ ) fprintf(debugFile,"%8.2e ",rbuff[p][j]);
-        	  fprintf(debugFile,"\n");
-      	}
-      	else
-      	{
-        	  fprintf(debugFile," not printed\n");
-      	}
-      	
+                }
+                fprintf(debugFile,"<- processor %i: received msg from processor %i, tag=%i p=%i values=",myid,
+                              receiveStatus[p].MPI_SOURCE,receiveStatus[p].MPI_TAG,pp);
+                if( debug & 4 )
+                {
+                    for( j=0; j<nivd; j++ ) fprintf(debugFile,"%8.2e ",rbuff[p][j]);
+                    fprintf(debugFile,"\n");
+                }
+                else
+                {
+                    fprintf(debugFile," not printed\n");
+                }
+                
             }
         }
     }
@@ -2344,7 +2354,7 @@ parallelInternalInterpolate( RealArray & ui,                       // save resul
             const int nip=nipa(p,grid);
             if( debug & 4  )
             {
-      	fprintf(debugFile," myid=%i: expecting nipa(p,grid)=%i interpolated values from p=%i for grid=%i\n",
+                fprintf(debugFile," myid=%i: expecting nipa(p,grid)=%i interpolated values from p=%i for grid=%i\n",
                               myid,nip,pp,grid);
             }
             
@@ -2354,15 +2364,15 @@ parallelInternalInterpolate( RealArray & ui,                       // save resul
             sp=receiveStatus[p].MPI_SOURCE; // source proc
             if( sp!=pp )
             {
-      	printf("pogi:interpolate:ERROR myid=%i, MPI_SOURCE=sp=%i, p=%i nipLocal(p=%i,grid=%i)=%i\n",
-             	       myid,sp,pp,pp,grid,nip);
+                printf("pogi:interpolate:ERROR myid=%i, MPI_SOURCE=sp=%i, p=%i nipLocal(p=%i,grid=%i)=%i\n",
+                              myid,sp,pp,pp,grid,nip);
                     
-      	for( int ppp=0; ppp<npr; ppp++ )
-        	  printf(" pMapr[%i]=%i, ",ppp,pMapr[ppp]);
-      	printf("\n");
-      	assert( sp==pp );
+                for( int ppp=0; ppp<npr; ppp++ )
+                    printf(" pMapr[%i]=%i, ",ppp,pMapr[ppp]);
+                printf("\n");
+                assert( sp==pp );
             }
-      	
+                
             int * ipap = ipa(p,grid);
 #undef ipLocal
 #define ipLocal(i0) ipap[i0]
@@ -2371,29 +2381,29 @@ parallelInternalInterpolate( RealArray & ui,                       // save resul
 
             if( debug & 4 )
             {
-      	for( j=0; j<nip; j++ )
-      	{
-        	  int ip0=ipLocal(j);
-        	  assert( ip0>= ui.getBase(0) && ip0<=ui.getBound(0) );
-        	  fprintf(debugFile," *** grid=%i, myid=%i: k+j=%i j=%i (source sp=%i) assign interp pt (%i) = %11.5e\n",
-              		  grid,myid,k+j,j,sp,ip0,rbuff[p][k+j]);
-      	}
+                for( j=0; j<nip; j++ )
+                {
+                    int ip0=ipLocal(j);
+                    assert( ip0>= ui.getBase(0) && ip0<=ui.getBound(0) );
+                    fprintf(debugFile," *** grid=%i, myid=%i: k+j=%i j=%i (source sp=%i) assign interp pt (%i) = %11.5e\n",
+                                    grid,myid,k+j,j,sp,ip0,rbuff[p][k+j]);
+                }
             }
 
       // consistency check: 
             if( ipLocal(nip-1)>ui.getBound(0) )
             {
-      	printf("InterpolatePointsOnAGrid::parallelInternalInterpolate:ERROR: myid=%i: Array ui is not large enough\n"
+                printf("InterpolatePointsOnAGrid::parallelInternalInterpolate:ERROR: myid=%i: Array ui is not large enough\n"
                               " ui.getBound(0)=%i but ip(nip-1)=%i\n",myid,ui.getBound(0),ipLocal(nip-1));
-      	for( int g=0; g<numberOfComponentGrids; g++ )
-      	{
-        	  printf(" myid=%i, grid=%i, nipa(p,grid)=",myid,g);
-        	  for( int pr=0; pr<npr; pr++ )
-          	    printf("%i, ",nipa(pr,g));
-        	  printf("\n");
-      	}
-      	
-      	OV_ABORT("error");
+                for( int g=0; g<numberOfComponentGrids; g++ )
+                {
+                    printf(" myid=%i, grid=%i, nipa(p,grid)=",myid,g);
+                    for( int pr=0; pr<npr; pr++ )
+                        printf("%i, ",nipa(pr,g));
+                    printf("\n");
+                }
+                
+                OV_ABORT("error");
             }
             
 
@@ -2470,7 +2480,7 @@ parallelInternalInterpolate( RealArray & ui,                       // save resul
         nid=ParallelUtility::getSum(nid);
         time=ParallelUtility::getMaxValue(time);
         printF(" ++ InterpolatePointsOnAGrid: Time to interpolate =%8.2e(s)  (%i interpolation pts, %i processors) ++\n",
-         	   time,nid,np);
+                      time,nid,np);
     }
 
 //  if( debug & 2 ) ucg.display("u after interpolate");
@@ -2502,10 +2512,10 @@ parallelInternalInterpolate( RealArray & ui,                       // save resul
 // ===============================================================================================
 int InterpolatePointsOnAGrid::
 internalInterpolate( RealArray & ui,                       // save results here
-                 		     const realCompositeGridFunction & u,        // interpolate from this grid function. 
-                 		     const Range & C0, 
-                 		     const Range & C1,
-                 		     const Range & C2 )
+                                          const realCompositeGridFunction & u,        // interpolate from this grid function. 
+                                          const Range & C0, 
+                                          const Range & C1,
+                                          const Range & C2 )
 {
     if( u.getCompositeGrid()->numberOfBaseGrids()<=0 )
       return 0;
@@ -2576,7 +2586,7 @@ internalInterpolate( RealArray & ui,                       // save results here
         
         nid+=nil;
         if( nil==0 ) continue; // no points to interpolate *wdh* 040327
-      	
+                
         real cr0,cr1,cr2,cr3,cr4,cr5,cr6,cr7,cr8;
         real cs0,cs1,cs2,cs3,cs4,cs5,cs6,cs7,cs8;
         real ct0,ct1,ct2,ct3,ct4,ct5,ct6,ct7,ct8;
@@ -2648,8 +2658,8 @@ internalInterpolate( RealArray & ui,                       // save results here
                     {
                         if( MASK(i1,i2,i3)==0 )
                         {
-                  	ok=false;
-                  	break;
+                            ok=false;
+                            break;
                         }
                     }
                     if( !ok )
@@ -2672,91 +2682,149 @@ internalInterpolate( RealArray & ui,                       // save results here
 
             if( maxInterpolationWidth==3 )
             {
-      	if( explicitInterpolationStorageOption==precomputeAllCoefficients )
-      	{
-        // 	  loops2d(UI(IA(j),c1)=(cf(j,0,0)*VS(il0,il1  ,c1)+cf(j,1,0)*VS(il0+1,il1  ,c1)+cf(j,2,0)*VS(il0+2,il1  ,c1)+			        cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1)+cf(j,2,1)*VS(il0+2,il1+1,c1)+			        cf(j,0,2)*VS(il0,il1+2,c1)+cf(j,1,2)*VS(il0+1,il1+2,c1)+cf(j,2,2)*VS(il0+2,il1+2,c1)););
-        //   if( false && c1Base==c1Bound )
-        //   {
-        //     for( int c1=c1Base; c1<=c1Bound; c1++ )
-        //     for( j=0; j<nil; j++ )
-        //     {
-        //       int il0=IL1(j), il1=IL2(j);
-        //       UI(IA(j),c1)=(cf(j,0,0)*VS(il0,il1,c1)+cf(j,1,0)*VS(il0+1,il1,c1)+cf(j,2,0)*VS(il0+2,il1,c1)+			cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1)+cf(j,2,1)*VS(il0+2,il1+1,c1)+			cf(j,0,2)*VS(il0,il1+2,c1)+cf(j,1,2)*VS(il0+1,il1+2,c1)+cf(j,2,2)*VS(il0+2,il1+2,c1));
-        //       k++;
-        //     }
-        //   }
-                  for( j=0; j<nil; j++ )
-                  for( int c1=c1Base; c1<=c1Bound; c1++ )
-                  {
-                      int il0=IL1(j), il1=IL2(j);
-                      UI(IA(j),c1)=(cf(j,0,0)*VS(il0,il1,c1)+cf(j,1,0)*VS(il0+1,il1,c1)+cf(j,2,0)*VS(il0+2,il1,c1)+			cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1)+cf(j,2,1)*VS(il0+2,il1+1,c1)+			cf(j,0,2)*VS(il0,il1+2,c1)+cf(j,1,2)*VS(il0+1,il1+2,c1)+cf(j,2,2)*VS(il0+2,il1+2,c1));
-                      k++;
-                  }
-      	}
-      	else
-      	{
-        // 	  interpSparseStorage33(UI(IA(j),c1));
-                for( j=0; j<nil; j++ )
+                if( explicitInterpolationStorageOption==precomputeAllCoefficients )
                 {
-                    iw=VIW(j);
-                    i1=IL1(j);
-                    i2=IL2(j);
-                    if( iw==3 )
+          // loops2d(UI(IA(j),c1)=(cf(j,0,0)*VS(il0,il1  ,c1)+cf(j,1,0)*VS(il0+1,il1  ,c1)+cf(j,2,0)*VS(il0+2,il1  ,c1)+cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1)+cf(j,2,1)*VS(il0+2,il1+1,c1)+cf(j,0,2)*VS(il0,il1+2,c1)+cf(j,1,2)*VS(il0+1,il1+2,c1)+cf(j,2,2)*VS(il0+2,il1+2,c1)););
+          //   if( false && c1Base==c1Bound )
+          //   {
+          //     for( int c1=c1Base; c1<=c1Bound; c1++ )
+          //     for( j=0; j<nil; j++ )
+          //     {
+          //       int il0=IL1(j), il1=IL2(j);
+          //       UI(IA(j),c1)=(cf(j,0,0)*VS(il0,il1,c1)+cf(j,1,0)*VS(il0+1,il1,c1)+cf(j,2,0)*VS(il0+2,il1,c1)+cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1)+cf(j,2,1)*VS(il0+2,il1+1,c1)+cf(j,0,2)*VS(il0,il1+2,c1)+cf(j,1,2)*VS(il0+1,il1+2,c1)+cf(j,2,2)*VS(il0+2,il1+2,c1));
+          //       k++;
+          //     }
+          //   }
+                      for( j=0; j<nil; j++ )
+                      for( int c1=c1Base; c1<=c1Bound; c1++ )
+                      {
+                          int il0=IL1(j), il1=IL2(j);
+                          UI(IA(j),c1)=(cf(j,0,0)*VS(il0,il1,c1)+cf(j,1,0)*VS(il0+1,il1,c1)+cf(j,2,0)*VS(il0+2,il1,c1)+cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1)+cf(j,2,1)*VS(il0+2,il1+1,c1)+cf(j,0,2)*VS(il0,il1+2,c1)+cf(j,1,2)*VS(il0+1,il1+2,c1)+cf(j,2,2)*VS(il0+2,il1+2,c1));
+                          k++;
+                      }
+                }
+                else
+                {
+          // interpSparseStorage33(UI(IA(j),c1));
+                    for( j=0; j<nil; j++ )
                     {
-            // interp33(UI(IA(j),c1));
-                            cr0 = q30(cfs(j,0));
-                            cs0 = q30(cfs(j,1));
-                            cr1 = q31(cfs(j,0));
-                            cs1 = q31(cfs(j,1));
-                            cr2 = q32(cfs(j,0));
-                            cs2 = q32(cfs(j,1));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1)+cr2*VS(i1+2,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1)+cr2*VS(i1+2,i2+1,c1))+cs2*(cr0*VS(i1  ,i2+2,c1)+cr1*VS(i1+1,i2+2,c1)+cr2*VS(i1+2,i2+2,c1));
-                                k++;
-                            }
-                    }
-                    else if( iw==2 )
-                    {
-            // interp22(UI(IA(j),c1));
-                            cr0 = q20(cfs(j,0));
-                            cs0 = q20(cfs(j,1));
-                            cr1 = q21(cfs(j,0));
-                            cs1 = q21(cfs(j,1));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1));
-                                k++; 
-                            }
-                    }
-                    else if( iw==1 )
-                    {
-            // interp11(UI(IA(j),c1));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = VS(i1  ,i2  ,c1);
-                                k++; 
-                            }
-                    }
-                    else
-                    {
-                        Overture::abort("ERROR: unexpected interp width");
+                        iw=VIW(j);
+                        i1=IL1(j);
+                        i2=IL2(j);
+                        if( iw==3 )
+                        {
+              // interp33(UI(IA(j),c1));
+                                cr0 = q30(cfs(j,0));
+                                cs0 = q30(cfs(j,1));
+                                cr1 = q31(cfs(j,0));
+                                cs1 = q31(cfs(j,1));
+                                cr2 = q32(cfs(j,0));
+                                cs2 = q32(cfs(j,1));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1)+cr2*VS(i1+2,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1)+cr2*VS(i1+2,i2+1,c1))+cs2*(cr0*VS(i1  ,i2+2,c1)+cr1*VS(i1+1,i2+2,c1)+cr2*VS(i1+2,i2+2,c1));
+                                    k++;
+                                }
+                        }
+                        else if( iw==2 )
+                        {
+              // interp22(UI(IA(j),c1));
+                                cr0 = q20(cfs(j,0));
+                                cs0 = q20(cfs(j,1));
+                                cr1 = q21(cfs(j,0));
+                                cs1 = q21(cfs(j,1));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1));
+                                    k++; 
+                                }
+                        }
+                        else if( iw==1 )
+                        {
+              // interp11(UI(IA(j),c1));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = VS(i1  ,i2  ,c1);
+                                    k++; 
+                                }
+                        }
+                        else
+                        {
+                            Overture::abort("ERROR: unexpected interp width");
+                        }
                     }
                 }
-      	}
             }
             else if( maxInterpolationWidth==2 )
             {
-      	if( explicitInterpolationStorageOption==precomputeAllCoefficients )
-      	{
-        // 	  loops2d(UI(IA(j),c1)=(cf(j,0,0)*VS(il0,il1  ,c1)+cf(j,1,0)*VS(il0+1,il1  ,c1)+			        cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1)););
+                if( explicitInterpolationStorageOption==precomputeAllCoefficients )
+                {
+          // loops2d(UI(IA(j),c1)=(cf(j,0,0)*VS(il0,il1  ,c1)+cf(j,1,0)*VS(il0+1,il1  ,c1)+cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1)););
+          //   if( false && c1Base==c1Bound )
+          //   {
+          //     for( int c1=c1Base; c1<=c1Bound; c1++ )
+          //     for( j=0; j<nil; j++ )
+          //     {
+          //       int il0=IL1(j), il1=IL2(j);
+          //       UI(IA(j),c1)=(cf(j,0,0)*VS(il0,il1,c1)+cf(j,1,0)*VS(il0+1,il1,c1)+cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1));
+          //       k++;
+          //     }
+          //   }
+                      for( j=0; j<nil; j++ )
+                      for( int c1=c1Base; c1<=c1Bound; c1++ )
+                      {
+                          int il0=IL1(j), il1=IL2(j);
+                          UI(IA(j),c1)=(cf(j,0,0)*VS(il0,il1,c1)+cf(j,1,0)*VS(il0+1,il1,c1)+cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1));
+                          k++;
+                      }
+                }
+                else
+                {
+          // interpSparseStorage22(UI(IA(j),c1));
+                    for( j=0; j<nil; j++ )
+                    {
+                        iw=VIW(j);
+                        i1=IL1(j);
+                        i2=IL2(j);
+                        if( iw==2 )
+                        {
+              // interp22(UI(IA(j),c1));
+                                cr0 = q20(cfs(j,0));
+                                cs0 = q20(cfs(j,1));
+                                cr1 = q21(cfs(j,0));
+                                cs1 = q21(cfs(j,1));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1));
+                                    k++; 
+                                }
+                        }
+                        else if( iw==1 )
+                        {
+              // interp11(UI(IA(j),c1));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = VS(i1  ,i2  ,c1);
+                                    k++; 
+                                }
+                        }
+                        else
+                        {
+                            Overture::abort("ERROR: unexpected interp width");
+                        }
+                    }
+                }
+            }
+            else if( maxInterpolationWidth==1 )
+            {
+        // loops2d(UI(IA(j),c1)=VS(il0,il1,c1););
         //   if( false && c1Base==c1Bound )
         //   {
         //     for( int c1=c1Base; c1<=c1Bound; c1++ )
         //     for( j=0; j<nil; j++ )
         //     {
         //       int il0=IL1(j), il1=IL2(j);
-        //       UI(IA(j),c1)=(cf(j,0,0)*VS(il0,il1,c1)+cf(j,1,0)*VS(il0+1,il1,c1)+			cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1));
+        //       UI(IA(j),c1)=VS(il0,il1,c1);
         //       k++;
         //     }
         //   }
@@ -2764,67 +2832,9 @@ internalInterpolate( RealArray & ui,                       // save results here
                   for( int c1=c1Base; c1<=c1Bound; c1++ )
                   {
                       int il0=IL1(j), il1=IL2(j);
-                      UI(IA(j),c1)=(cf(j,0,0)*VS(il0,il1,c1)+cf(j,1,0)*VS(il0+1,il1,c1)+			cf(j,0,1)*VS(il0,il1+1,c1)+cf(j,1,1)*VS(il0+1,il1+1,c1));
+                      UI(IA(j),c1)=VS(il0,il1,c1);
                       k++;
                   }
-      	}
-      	else
-      	{
-        // 	  interpSparseStorage22(UI(IA(j),c1));
-                for( j=0; j<nil; j++ )
-                {
-                    iw=VIW(j);
-                    i1=IL1(j);
-                    i2=IL2(j);
-                    if( iw==2 )
-                    {
-            // interp22(UI(IA(j),c1));
-                            cr0 = q20(cfs(j,0));
-                            cs0 = q20(cfs(j,1));
-                            cr1 = q21(cfs(j,0));
-                            cs1 = q21(cfs(j,1));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1));
-                                k++; 
-                            }
-                    }
-                    else if( iw==1 )
-                    {
-            // interp11(UI(IA(j),c1));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = VS(i1  ,i2  ,c1);
-                                k++; 
-                            }
-                    }
-                    else
-                    {
-                        Overture::abort("ERROR: unexpected interp width");
-                    }
-                }
-      	}
-            }
-            else if( maxInterpolationWidth==1 )
-            {
-      // 	loops2d(UI(IA(j),c1)=VS(il0,il1,c1););
-      //   if( false && c1Base==c1Bound )
-      //   {
-      //     for( int c1=c1Base; c1<=c1Bound; c1++ )
-      //     for( j=0; j<nil; j++ )
-      //     {
-      //       int il0=IL1(j), il1=IL2(j);
-      //       UI(IA(j),c1)=VS(il0,il1,c1);
-      //       k++;
-      //     }
-      //   }
-              for( j=0; j<nil; j++ )
-              for( int c1=c1Base; c1<=c1Bound; c1++ )
-              {
-                  int il0=IL1(j), il1=IL2(j);
-                  UI(IA(j),c1)=VS(il0,il1,c1);
-                  k++;
-              }
             }
             else if( maxInterpolationWidth==5 || 
                               (explicitInterpolationStorageOption==precomputeNoCoefficients && maxInterpolationWidth<=5 ) ) 
@@ -2832,138 +2842,138 @@ internalInterpolate( RealArray & ui,                       // save results here
         // we can do maxInterpolationWidth==4 here for the sparse storage option
 #define IW5(m1) (cf(j,0,m1)*VS(il0  ,il1+m1,c1)+cf(j,1,m1)*VS(il0+1,il1+m1,c1)+cf(j,2,m1)*VS(il0+2,il1+m1,c1)+cf(j,3,m1)*VS(il0+3,il1+m1,c1)+cf(j,4,m1)*VS(il0+4,il1+m1,c1))
 
-      	if( explicitInterpolationStorageOption==precomputeAllCoefficients )
-      	{
-        // 	  loops2d(UI(IA(j),c1)=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4););
-        //   if( false && c1Base==c1Bound )
-        //   {
-        //     for( int c1=c1Base; c1<=c1Bound; c1++ )
-        //     for( j=0; j<nil; j++ )
-        //     {
-        //       int il0=IL1(j), il1=IL2(j);
-        //       UI(IA(j),c1)=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);
-        //       k++;
-        //     }
-        //   }
-                  for( j=0; j<nil; j++ )
-                  for( int c1=c1Base; c1<=c1Bound; c1++ )
-                  {
-                      int il0=IL1(j), il1=IL2(j);
-                      UI(IA(j),c1)=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);
-                      k++;
-                  }
-      	}
-      	else
-      	{
-        // 	  interpSparseStorage55(UI(IA(j),c1));
-                for( j=0; j<nil; j++ )
+                if( explicitInterpolationStorageOption==precomputeAllCoefficients )
                 {
-                    iw=VIW(j);
-                    i1=IL1(j);
-                    i2=IL2(j);
-                    if( iw==5 )
+          // loops2d(UI(IA(j),c1)=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4););
+          //   if( false && c1Base==c1Bound )
+          //   {
+          //     for( int c1=c1Base; c1<=c1Bound; c1++ )
+          //     for( j=0; j<nil; j++ )
+          //     {
+          //       int il0=IL1(j), il1=IL2(j);
+          //       UI(IA(j),c1)=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);
+          //       k++;
+          //     }
+          //   }
+                      for( j=0; j<nil; j++ )
+                      for( int c1=c1Base; c1<=c1Bound; c1++ )
+                      {
+                          int il0=IL1(j), il1=IL2(j);
+                          UI(IA(j),c1)=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);
+                          k++;
+                      }
+                }
+                else
+                {
+          // interpSparseStorage55(UI(IA(j),c1));
+                    for( j=0; j<nil; j++ )
                     {
-            // interp55(UI(IA(j),c1));
-                            cr0 = q50(cfs(j,0));
-                            cs0 = q50(cfs(j,1));
-                            cr1 = q51(cfs(j,0));
-                            cs1 = q51(cfs(j,1));
-                            cr2 = q52(cfs(j,0));
-                            cs2 = q52(cfs(j,1));
-                            cr3 = q53(cfs(j,0));
-                            cs3 = q53(cfs(j,1));
-                            cr4 = q54(cfs(j,0));
-                            cs4 = q54(cfs(j,1));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1)+cr2*VS(i1+2,i2  ,c1)+cr3*VS(i1+3,i2  ,c1)+cr4*VS(i1+4,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1)+cr2*VS(i1+2,i2+1,c1)+cr3*VS(i1+3,i2+1,c1)+cr4*VS(i1+4,i2+1,c1))+cs2*(cr0*VS(i1  ,i2+2,c1)+cr1*VS(i1+1,i2+2,c1)+cr2*VS(i1+2,i2+2,c1)+cr3*VS(i1+3,i2+2,c1)+cr4*VS(i1+4,i2+2,c1))+cs3*(cr0*VS(i1  ,i2+3,c1)+cr1*VS(i1+1,i2+3,c1)+cr2*VS(i1+2,i2+3,c1)+cr3*VS(i1+3,i2+3,c1)+cr4*VS(i1+4,i2+3,c1))+cs4*(cr0*VS(i1  ,i2+4,c1)+cr1*VS(i1+1,i2+4,c1)+cr2*VS(i1+2,i2+4,c1)+cr3*VS(i1+3,i2+4,c1)+cr4*VS(i1+4,i2+4,c1));
-                                k++;
-                            }
-                    }
-                    else if( iw==4 )
-                    {
-            // interp44(UI(IA(j),c1));
-                            cr0 = q40(cfs(j,0));
-                            cs0 = q40(cfs(j,1));
-                            cr1 = q41(cfs(j,0));
-                            cs1 = q41(cfs(j,1));
-                            cr2 = q42(cfs(j,0));
-                            cs2 = q42(cfs(j,1));
-                            cr3 = q43(cfs(j,0));
-                            cs3 = q43(cfs(j,1));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1)+cr2*VS(i1+2,i2  ,c1)+cr3*VS(i1+3,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1)+cr2*VS(i1+2,i2+1,c1)+cr3*VS(i1+3,i2+1,c1))+cs2*(cr0*VS(i1  ,i2+2,c1)+cr1*VS(i1+1,i2+2,c1)+cr2*VS(i1+2,i2+2,c1)+cr3*VS(i1+3,i2+2,c1))+cs3*(cr0*VS(i1  ,i2+3,c1)+cr1*VS(i1+1,i2+3,c1)+cr2*VS(i1+2,i2+3,c1)+cr3*VS(i1+3,i2+3,c1));
-                                k++;
-                            }
-                    }
-                    else if( iw==3 )
-                    {
-            // interp33(UI(IA(j),c1));
-                            cr0 = q30(cfs(j,0));
-                            cs0 = q30(cfs(j,1));
-                            cr1 = q31(cfs(j,0));
-                            cs1 = q31(cfs(j,1));
-                            cr2 = q32(cfs(j,0));
-                            cs2 = q32(cfs(j,1));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1)+cr2*VS(i1+2,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1)+cr2*VS(i1+2,i2+1,c1))+cs2*(cr0*VS(i1  ,i2+2,c1)+cr1*VS(i1+1,i2+2,c1)+cr2*VS(i1+2,i2+2,c1));
-                                k++;
-                            }
-                    }
-                    else if( iw==2 )
-                    {
-            // interp22(UI(IA(j),c1));
-                            cr0 = q20(cfs(j,0));
-                            cs0 = q20(cfs(j,1));
-                            cr1 = q21(cfs(j,0));
-                            cs1 = q21(cfs(j,1));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1));
-                                k++; 
-                            }
-                    }
-                    else if( iw==1 )
-                    {
-            // interp11(UI(IA(j),c1));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = VS(i1  ,i2  ,c1);
-                                k++; 
-                            }
-                    }
-                    else
-                    {
-                        Overture::abort("ERROR: unexpected interp width");
+                        iw=VIW(j);
+                        i1=IL1(j);
+                        i2=IL2(j);
+                        if( iw==5 )
+                        {
+              // interp55(UI(IA(j),c1));
+                                cr0 = q50(cfs(j,0));
+                                cs0 = q50(cfs(j,1));
+                                cr1 = q51(cfs(j,0));
+                                cs1 = q51(cfs(j,1));
+                                cr2 = q52(cfs(j,0));
+                                cs2 = q52(cfs(j,1));
+                                cr3 = q53(cfs(j,0));
+                                cs3 = q53(cfs(j,1));
+                                cr4 = q54(cfs(j,0));
+                                cs4 = q54(cfs(j,1));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1)+cr2*VS(i1+2,i2  ,c1)+cr3*VS(i1+3,i2  ,c1)+cr4*VS(i1+4,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1)+cr2*VS(i1+2,i2+1,c1)+cr3*VS(i1+3,i2+1,c1)+cr4*VS(i1+4,i2+1,c1))+cs2*(cr0*VS(i1  ,i2+2,c1)+cr1*VS(i1+1,i2+2,c1)+cr2*VS(i1+2,i2+2,c1)+cr3*VS(i1+3,i2+2,c1)+cr4*VS(i1+4,i2+2,c1))+cs3*(cr0*VS(i1  ,i2+3,c1)+cr1*VS(i1+1,i2+3,c1)+cr2*VS(i1+2,i2+3,c1)+cr3*VS(i1+3,i2+3,c1)+cr4*VS(i1+4,i2+3,c1))+cs4*(cr0*VS(i1  ,i2+4,c1)+cr1*VS(i1+1,i2+4,c1)+cr2*VS(i1+2,i2+4,c1)+cr3*VS(i1+3,i2+4,c1)+cr4*VS(i1+4,i2+4,c1));
+                                    k++;
+                                }
+                        }
+                        else if( iw==4 )
+                        {
+              // interp44(UI(IA(j),c1));
+                                cr0 = q40(cfs(j,0));
+                                cs0 = q40(cfs(j,1));
+                                cr1 = q41(cfs(j,0));
+                                cs1 = q41(cfs(j,1));
+                                cr2 = q42(cfs(j,0));
+                                cs2 = q42(cfs(j,1));
+                                cr3 = q43(cfs(j,0));
+                                cs3 = q43(cfs(j,1));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1)+cr2*VS(i1+2,i2  ,c1)+cr3*VS(i1+3,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1)+cr2*VS(i1+2,i2+1,c1)+cr3*VS(i1+3,i2+1,c1))+cs2*(cr0*VS(i1  ,i2+2,c1)+cr1*VS(i1+1,i2+2,c1)+cr2*VS(i1+2,i2+2,c1)+cr3*VS(i1+3,i2+2,c1))+cs3*(cr0*VS(i1  ,i2+3,c1)+cr1*VS(i1+1,i2+3,c1)+cr2*VS(i1+2,i2+3,c1)+cr3*VS(i1+3,i2+3,c1));
+                                    k++;
+                                }
+                        }
+                        else if( iw==3 )
+                        {
+              // interp33(UI(IA(j),c1));
+                                cr0 = q30(cfs(j,0));
+                                cs0 = q30(cfs(j,1));
+                                cr1 = q31(cfs(j,0));
+                                cs1 = q31(cfs(j,1));
+                                cr2 = q32(cfs(j,0));
+                                cs2 = q32(cfs(j,1));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1)+cr2*VS(i1+2,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1)+cr2*VS(i1+2,i2+1,c1))+cs2*(cr0*VS(i1  ,i2+2,c1)+cr1*VS(i1+1,i2+2,c1)+cr2*VS(i1+2,i2+2,c1));
+                                    k++;
+                                }
+                        }
+                        else if( iw==2 )
+                        {
+              // interp22(UI(IA(j),c1));
+                                cr0 = q20(cfs(j,0));
+                                cs0 = q20(cfs(j,1));
+                                cr1 = q21(cfs(j,0));
+                                cs1 = q21(cfs(j,1));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = cs0*(cr0*VS(i1  ,i2  ,c1)+cr1*VS(i1+1,i2  ,c1))+cs1*(cr0*VS(i1  ,i2+1,c1)+cr1*VS(i1+1,i2+1,c1));
+                                    k++; 
+                                }
+                        }
+                        else if( iw==1 )
+                        {
+              // interp11(UI(IA(j),c1));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = VS(i1  ,i2  ,c1);
+                                    k++; 
+                                }
+                        }
+                        else
+                        {
+                            Overture::abort("ERROR: unexpected interp width");
+                        }
                     }
                 }
-      	}
 #undef IW5
             }
             else
             {
-	// general case
-      	if( explicitInterpolationStorageOption!=precomputeAllCoefficients )
-      	{
-        	  OV_ABORT("ERROR: un-implemented interpolation width -- finish me!");
-      	}
-      	for( int c1=c1Base; c1<=c1Bound; c1++ )
-        	  for( j=0; j<nil; j++ )
-        	  {
-          	    int il0=IL1(j), il1=IL2(j);
-          	    real value=0.;
-          	    for( m2=0; m2< width[axis2]; m2++ ) 
-            	      for( m1=0; m1< width[axis1]; m1++ ) 
-            		value+=cf(j,m1,m2)*VS(il0+m1,il1+m2,c1);
+        // general case
+                if( explicitInterpolationStorageOption!=precomputeAllCoefficients )
+                {
+                    OV_ABORT("ERROR: un-implemented interpolation width -- finish me!");
+                }
+                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                    for( j=0; j<nil; j++ )
+                    {
+                        int il0=IL1(j), il1=IL2(j);
+                        real value=0.;
+                        for( m2=0; m2< width[axis2]; m2++ ) 
+                            for( m1=0; m1< width[axis1]; m1++ ) 
+                                value+=cf(j,m1,m2)*VS(il0+m1,il1+m2,c1);
 
-          	    UI(IA(j),c1)=value;
+                        UI(IA(j),c1)=value;
 
-          	    k++;
-        	  }
+                        k++;
+                    }
             }
-        	  
+                    
         }
         else if( numberOfDimensions==3 )
         {
@@ -2984,142 +2994,142 @@ internalInterpolate( RealArray & ui,                       // save results here
 
             if( maxInterpolationWidth==3 )
             {
-      	if( explicitInterpolationStorageOption==precomputeAllCoefficients )
-      	{
-        // 	  loops3d(UI(IA(j),c1)=		  (c(j,0,0,0)*VS(il0,il1  ,il2  ,c1)+c(j,1,0,0)*VS(il0+1,il1  ,il2  ,c1)+c(j,2,0,0)*VS(il0+2,il1  ,il2  ,c1)+		   c(j,0,1,0)*VS(il0,il1+1,il2  ,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2  ,c1)+c(j,2,1,0)*VS(il0+2,il1+1,il2  ,c1)+		   c(j,0,2,0)*VS(il0,il1+2,il2  ,c1)+c(j,1,2,0)*VS(il0+1,il1+2,il2  ,c1)+c(j,2,2,0)*VS(il0+2,il1+2,il2  ,c1)+		   c(j,0,0,1)*VS(il0,il1  ,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1  ,il2+1,c1)+c(j,2,0,1)*VS(il0+2,il1  ,il2+1,c1)+		   c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1)+c(j,2,1,1)*VS(il0+2,il1+1,il2+1,c1)+		   c(j,0,2,1)*VS(il0,il1+2,il2+1,c1)+c(j,1,2,1)*VS(il0+1,il1+2,il2+1,c1)+c(j,2,2,1)*VS(il0+2,il1+2,il2+1,c1)+		   c(j,0,0,2)*VS(il0,il1  ,il2+2,c1)+c(j,1,0,2)*VS(il0+1,il1  ,il2+2,c1)+c(j,2,0,2)*VS(il0+2,il1  ,il2+2,c1)+		   c(j,0,1,2)*VS(il0,il1+1,il2+2,c1)+c(j,1,1,2)*VS(il0+1,il1+1,il2+2,c1)+c(j,2,1,2)*VS(il0+2,il1+1,il2+2,c1)+		   c(j,0,2,2)*VS(il0,il1+2,il2+2,c1)+c(j,1,2,2)*VS(il0+1,il1+2,il2+2,c1)+c(j,2,2,2)*VS(il0+2,il1+2,il2+2,c1));)
-        //   if( false && c1Base==c1Bound )
-        //   {
-        //     for( int c1=c1Base; c1<=c1Bound; c1++ )
-        //     for( j=0; j<nil; j++ )
-        //     {
-        //       int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-        //       UI(IA(j),c1)=		(c(j,0,0,0)*VS(il0,il1,il2,c1)+c(j,1,0,0)*VS(il0+1,il1,il2,c1)+c(j,2,0,0)*VS(il0+2,il1,il2,c1)+		c(j,0,1,0)*VS(il0,il1+1,il2,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2,c1)+c(j,2,1,0)*VS(il0+2,il1+1,il2,c1)+		c(j,0,2,0)*VS(il0,il1+2,il2,c1)+c(j,1,2,0)*VS(il0+1,il1+2,il2,c1)+c(j,2,2,0)*VS(il0+2,il1+2,il2,c1)+		c(j,0,0,1)*VS(il0,il1,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1,il2+1,c1)+c(j,2,0,1)*VS(il0+2,il1,il2+1,c1)+		c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1)+c(j,2,1,1)*VS(il0+2,il1+1,il2+1,c1)+		c(j,0,2,1)*VS(il0,il1+2,il2+1,c1)+c(j,1,2,1)*VS(il0+1,il1+2,il2+1,c1)+c(j,2,2,1)*VS(il0+2,il1+2,il2+1,c1)+		c(j,0,0,2)*VS(il0,il1,il2+2,c1)+c(j,1,0,2)*VS(il0+1,il1,il2+2,c1)+c(j,2,0,2)*VS(il0+2,il1,il2+2,c1)+		c(j,0,1,2)*VS(il0,il1+1,il2+2,c1)+c(j,1,1,2)*VS(il0+1,il1+1,il2+2,c1)+c(j,2,1,2)*VS(il0+2,il1+1,il2+2,c1)+		c(j,0,2,2)*VS(il0,il1+2,il2+2,c1)+c(j,1,2,2)*VS(il0+1,il1+2,il2+2,c1)+c(j,2,2,2)*VS(il0+2,il1+2,il2+2,c1));
-        //       k++;
-        //     }
-        //   }
-                  for( j=0; j<nil; j++ )
-                  for( int c1=c1Base; c1<=c1Bound; c1++ )
-                  {
-                      int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-                      UI(IA(j),c1)=		(c(j,0,0,0)*VS(il0,il1,il2,c1)+c(j,1,0,0)*VS(il0+1,il1,il2,c1)+c(j,2,0,0)*VS(il0+2,il1,il2,c1)+		c(j,0,1,0)*VS(il0,il1+1,il2,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2,c1)+c(j,2,1,0)*VS(il0+2,il1+1,il2,c1)+		c(j,0,2,0)*VS(il0,il1+2,il2,c1)+c(j,1,2,0)*VS(il0+1,il1+2,il2,c1)+c(j,2,2,0)*VS(il0+2,il1+2,il2,c1)+		c(j,0,0,1)*VS(il0,il1,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1,il2+1,c1)+c(j,2,0,1)*VS(il0+2,il1,il2+1,c1)+		c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1)+c(j,2,1,1)*VS(il0+2,il1+1,il2+1,c1)+		c(j,0,2,1)*VS(il0,il1+2,il2+1,c1)+c(j,1,2,1)*VS(il0+1,il1+2,il2+1,c1)+c(j,2,2,1)*VS(il0+2,il1+2,il2+1,c1)+		c(j,0,0,2)*VS(il0,il1,il2+2,c1)+c(j,1,0,2)*VS(il0+1,il1,il2+2,c1)+c(j,2,0,2)*VS(il0+2,il1,il2+2,c1)+		c(j,0,1,2)*VS(il0,il1+1,il2+2,c1)+c(j,1,1,2)*VS(il0+1,il1+1,il2+2,c1)+c(j,2,1,2)*VS(il0+2,il1+1,il2+2,c1)+		c(j,0,2,2)*VS(il0,il1+2,il2+2,c1)+c(j,1,2,2)*VS(il0+1,il1+2,il2+2,c1)+c(j,2,2,2)*VS(il0+2,il1+2,il2+2,c1));
-                      k++;
-                  }
-
-          	    }
-      	else
-      	{
-        // 	  interpSparseStorage333(UI(IA(j),c1));
-                for( j=0; j<nil; j++ )
+                if( explicitInterpolationStorageOption==precomputeAllCoefficients )
                 {
-                    iw=VIW(j); i1=IL1(j); i2=IL2(j); i3=IL3(j);
-                    if( iw==3 )
+          // loops3d(UI(IA(j),c1)=(c(j,0,0,0)*VS(il0,il1  ,il2  ,c1)+c(j,1,0,0)*VS(il0+1,il1  ,il2  ,c1)+c(j,2,0,0)*VS(il0+2,il1  ,il2  ,c1)+c(j,0,1,0)*VS(il0,il1+1,il2  ,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2  ,c1)+c(j,2,1,0)*VS(il0+2,il1+1,il2  ,c1)+c(j,0,2,0)*VS(il0,il1+2,il2  ,c1)+c(j,1,2,0)*VS(il0+1,il1+2,il2  ,c1)+c(j,2,2,0)*VS(il0+2,il1+2,il2  ,c1)+c(j,0,0,1)*VS(il0,il1  ,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1  ,il2+1,c1)+c(j,2,0,1)*VS(il0+2,il1  ,il2+1,c1)+c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1)+c(j,2,1,1)*VS(il0+2,il1+1,il2+1,c1)+c(j,0,2,1)*VS(il0,il1+2,il2+1,c1)+c(j,1,2,1)*VS(il0+1,il1+2,il2+1,c1)+c(j,2,2,1)*VS(il0+2,il1+2,il2+1,c1)+c(j,0,0,2)*VS(il0,il1  ,il2+2,c1)+c(j,1,0,2)*VS(il0+1,il1  ,il2+2,c1)+c(j,2,0,2)*VS(il0+2,il1  ,il2+2,c1)+c(j,0,1,2)*VS(il0,il1+1,il2+2,c1)+c(j,1,1,2)*VS(il0+1,il1+1,il2+2,c1)+c(j,2,1,2)*VS(il0+2,il1+1,il2+2,c1)+c(j,0,2,2)*VS(il0,il1+2,il2+2,c1)+c(j,1,2,2)*VS(il0+1,il1+2,il2+2,c1)+c(j,2,2,2)*VS(il0+2,il1+2,il2+2,c1));)
+          //   if( false && c1Base==c1Bound )
+          //   {
+          //     for( int c1=c1Base; c1<=c1Bound; c1++ )
+          //     for( j=0; j<nil; j++ )
+          //     {
+          //       int il0=IL1(j), il1=IL2(j), il2=IL3(j);
+          //       UI(IA(j),c1)=(c(j,0,0,0)*VS(il0,il1,il2,c1)+c(j,1,0,0)*VS(il0+1,il1,il2,c1)+c(j,2,0,0)*VS(il0+2,il1,il2,c1)+c(j,0,1,0)*VS(il0,il1+1,il2,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2,c1)+c(j,2,1,0)*VS(il0+2,il1+1,il2,c1)+c(j,0,2,0)*VS(il0,il1+2,il2,c1)+c(j,1,2,0)*VS(il0+1,il1+2,il2,c1)+c(j,2,2,0)*VS(il0+2,il1+2,il2,c1)+c(j,0,0,1)*VS(il0,il1,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1,il2+1,c1)+c(j,2,0,1)*VS(il0+2,il1,il2+1,c1)+c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1)+c(j,2,1,1)*VS(il0+2,il1+1,il2+1,c1)+c(j,0,2,1)*VS(il0,il1+2,il2+1,c1)+c(j,1,2,1)*VS(il0+1,il1+2,il2+1,c1)+c(j,2,2,1)*VS(il0+2,il1+2,il2+1,c1)+c(j,0,0,2)*VS(il0,il1,il2+2,c1)+c(j,1,0,2)*VS(il0+1,il1,il2+2,c1)+c(j,2,0,2)*VS(il0+2,il1,il2+2,c1)+c(j,0,1,2)*VS(il0,il1+1,il2+2,c1)+c(j,1,1,2)*VS(il0+1,il1+1,il2+2,c1)+c(j,2,1,2)*VS(il0+2,il1+1,il2+2,c1)+c(j,0,2,2)*VS(il0,il1+2,il2+2,c1)+c(j,1,2,2)*VS(il0+1,il1+2,il2+2,c1)+c(j,2,2,2)*VS(il0+2,il1+2,il2+2,c1));
+          //       k++;
+          //     }
+          //   }
+                      for( j=0; j<nil; j++ )
+                      for( int c1=c1Base; c1<=c1Bound; c1++ )
+                      {
+                          int il0=IL1(j), il1=IL2(j), il2=IL3(j);
+                          UI(IA(j),c1)=(c(j,0,0,0)*VS(il0,il1,il2,c1)+c(j,1,0,0)*VS(il0+1,il1,il2,c1)+c(j,2,0,0)*VS(il0+2,il1,il2,c1)+c(j,0,1,0)*VS(il0,il1+1,il2,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2,c1)+c(j,2,1,0)*VS(il0+2,il1+1,il2,c1)+c(j,0,2,0)*VS(il0,il1+2,il2,c1)+c(j,1,2,0)*VS(il0+1,il1+2,il2,c1)+c(j,2,2,0)*VS(il0+2,il1+2,il2,c1)+c(j,0,0,1)*VS(il0,il1,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1,il2+1,c1)+c(j,2,0,1)*VS(il0+2,il1,il2+1,c1)+c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1)+c(j,2,1,1)*VS(il0+2,il1+1,il2+1,c1)+c(j,0,2,1)*VS(il0,il1+2,il2+1,c1)+c(j,1,2,1)*VS(il0+1,il1+2,il2+1,c1)+c(j,2,2,1)*VS(il0+2,il1+2,il2+1,c1)+c(j,0,0,2)*VS(il0,il1,il2+2,c1)+c(j,1,0,2)*VS(il0+1,il1,il2+2,c1)+c(j,2,0,2)*VS(il0+2,il1,il2+2,c1)+c(j,0,1,2)*VS(il0,il1+1,il2+2,c1)+c(j,1,1,2)*VS(il0+1,il1+1,il2+2,c1)+c(j,2,1,2)*VS(il0+2,il1+1,il2+2,c1)+c(j,0,2,2)*VS(il0,il1+2,il2+2,c1)+c(j,1,2,2)*VS(il0+1,il1+2,il2+2,c1)+c(j,2,2,2)*VS(il0+2,il1+2,il2+2,c1));
+                          k++;
+                      }
+
+                        }
+                else
+                {
+          // interpSparseStorage333(UI(IA(j),c1));
+                    for( j=0; j<nil; j++ )
                     {
-            // interp333(UI(IA(j),c1));
-                            cr0 = q30(cfs(j,0));
-                            cs0 = q30(cfs(j,1));
-                            ct0 = q30(cfs(j,2));
-                            cr1 = q31(cfs(j,0));
-                            cs1 = q31(cfs(j,1));
-                            ct1 = q31(cfs(j,2));
-                            cr2 = q32(cfs(j,0));
-                            cs2 = q32(cfs(j,1));
-                            ct2 = q32(cfs(j,2));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = ct0*(	    cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1)+cr2*VS(i1+2,i2,i3+0,c1))	   +cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)+cr2*VS(i1+2,i2+1,i3+0,c1))	   +cs2*(cr0*VS(i1,i2+2,i3+0,c1)+cr1*VS(i1+1,i2+2,i3+0,c1)+cr2*VS(i1+2,i2+2,i3+0,c1))	)+ct1*(	     cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1)+cr2*VS(i1+2,i2,i3+1,c1))	    +cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)+cr2*VS(i1+2,i2+1,i3+1,c1))	    +cs2*(cr0*VS(i1,i2+2,i3+1,c1)+cr1*VS(i1+1,i2+2,i3+1,c1)+cr2*VS(i1+2,i2+2,i3+1,c1))	)+ct2*(	     cs0*(cr0*VS(i1,i2,i3+2,c1)+cr1*VS(i1+1,i2,i3+2,c1)+cr2*VS(i1+2,i2,i3+2,c1))	    +cs1*(cr0*VS(i1,i2+1,i3+2,c1)+cr1*VS(i1+1,i2+1,i3+2,c1)+cr2*VS(i1+2,i2+1,i3+2,c1))	    +cs2*(cr0*VS(i1,i2+2,i3+2,c1)+cr1*VS(i1+1,i2+2,i3+2,c1)+cr2*VS(i1+2,i2+2,i3+2,c1))	);
-                                k++;
-                            }
-                    }
-                    else if( iw==2 )
-                    {
-            // interp222(UI(IA(j),c1));
-                            cr0 = q20(cfs(j,0)); 
-                            cs0 = q20(cfs(j,1)); 
-                            ct0 = q20(cfs(j,2)); 
-                            cr1 = q21(cfs(j,0)); 
-                            cs1 = q21(cfs(j,1)); 
-                            ct1 = q21(cfs(j,2)); 
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = ct0*(	    cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1))	   +cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1))	)+ct1*(	     cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1))	    +cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1))	);
-                                k++;
-                            }
-                    }
-                    else if( iw==1 )
-                    {
-            // interp111(UI(IA(j),c1));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = VS(i1  ,i2  ,i3,c1);
-                                k++; 
-                            }
-                    }
-                    else
-                    {
-                        Overture::abort("ERROR: unexpected interp width");
+                        iw=VIW(j); i1=IL1(j); i2=IL2(j); i3=IL3(j);
+                        if( iw==3 )
+                        {
+              // interp333(UI(IA(j),c1));
+                                cr0 = q30(cfs(j,0));
+                                cs0 = q30(cfs(j,1));
+                                ct0 = q30(cfs(j,2));
+                                cr1 = q31(cfs(j,0));
+                                cs1 = q31(cfs(j,1));
+                                ct1 = q31(cfs(j,2));
+                                cr2 = q32(cfs(j,0));
+                                cs2 = q32(cfs(j,1));
+                                ct2 = q32(cfs(j,2));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = ct0*(cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1)+cr2*VS(i1+2,i2,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)+cr2*VS(i1+2,i2+1,i3+0,c1))+cs2*(cr0*VS(i1,i2+2,i3+0,c1)+cr1*VS(i1+1,i2+2,i3+0,c1)+cr2*VS(i1+2,i2+2,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1)+cr2*VS(i1+2,i2,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)+cr2*VS(i1+2,i2+1,i3+1,c1))+cs2*(cr0*VS(i1,i2+2,i3+1,c1)+cr1*VS(i1+1,i2+2,i3+1,c1)+cr2*VS(i1+2,i2+2,i3+1,c1)))+ct2*(cs0*(cr0*VS(i1,i2,i3+2,c1)+cr1*VS(i1+1,i2,i3+2,c1)+cr2*VS(i1+2,i2,i3+2,c1))+cs1*(cr0*VS(i1,i2+1,i3+2,c1)+cr1*VS(i1+1,i2+1,i3+2,c1)+cr2*VS(i1+2,i2+1,i3+2,c1))+cs2*(cr0*VS(i1,i2+2,i3+2,c1)+cr1*VS(i1+1,i2+2,i3+2,c1)+cr2*VS(i1+2,i2+2,i3+2,c1)));
+                                    k++;
+                                }
+                        }
+                        else if( iw==2 )
+                        {
+              // interp222(UI(IA(j),c1));
+                                cr0 = q20(cfs(j,0)); 
+                                cs0 = q20(cfs(j,1)); 
+                                ct0 = q20(cfs(j,2)); 
+                                cr1 = q21(cfs(j,0)); 
+                                cs1 = q21(cfs(j,1)); 
+                                ct1 = q21(cfs(j,2)); 
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = ct0*(cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)));
+                                    k++;
+                                }
+                        }
+                        else if( iw==1 )
+                        {
+              // interp111(UI(IA(j),c1));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = VS(i1  ,i2  ,i3,c1);
+                                    k++; 
+                                }
+                        }
+                        else
+                        {
+                            Overture::abort("ERROR: unexpected interp width");
+                        }
                     }
                 }
-      	}
             }
             else if( maxInterpolationWidth==2 )
             {
-      	if( explicitInterpolationStorageOption==precomputeAllCoefficients )
-      	{
-        // 	  loops3d(UI(IA(j),c1)=		  (c(j,0,0,0)*VS(il0,il1  ,il2  ,c1)+c(j,1,0,0)*VS(il0+1,il1  ,il2  ,c1)+		   c(j,0,1,0)*VS(il0,il1+1,il2  ,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2  ,c1)+		   c(j,0,0,1)*VS(il0,il1  ,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1  ,il2+1,c1)+		   c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1)););
-        //   if( false && c1Base==c1Bound )
-        //   {
-        //     for( int c1=c1Base; c1<=c1Bound; c1++ )
-        //     for( j=0; j<nil; j++ )
-        //     {
-        //       int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-        //       UI(IA(j),c1)=		(c(j,0,0,0)*VS(il0,il1,il2,c1)+c(j,1,0,0)*VS(il0+1,il1,il2,c1)+		c(j,0,1,0)*VS(il0,il1+1,il2,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2,c1)+		c(j,0,0,1)*VS(il0,il1,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1,il2+1,c1)+		c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1));
-        //       k++;
-        //     }
-        //   }
-                  for( j=0; j<nil; j++ )
-                  for( int c1=c1Base; c1<=c1Bound; c1++ )
-                  {
-                      int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-                      UI(IA(j),c1)=		(c(j,0,0,0)*VS(il0,il1,il2,c1)+c(j,1,0,0)*VS(il0+1,il1,il2,c1)+		c(j,0,1,0)*VS(il0,il1+1,il2,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2,c1)+		c(j,0,0,1)*VS(il0,il1,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1,il2+1,c1)+		c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1));
-                      k++;
-                  }
-      	}
-      	else
-      	{
-        // 	  interpSparseStorage222(UI(IA(j),c1));
-                for( j=0; j<nil; j++ )
+                if( explicitInterpolationStorageOption==precomputeAllCoefficients )
                 {
-                    iw=VIW(j); i1=IL1(j); i2=IL2(j); i3=IL3(j);
-                    if( iw==2 )
+          // loops3d(UI(IA(j),c1)=(c(j,0,0,0)*VS(il0,il1  ,il2  ,c1)+c(j,1,0,0)*VS(il0+1,il1  ,il2  ,c1)+c(j,0,1,0)*VS(il0,il1+1,il2  ,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2  ,c1)+c(j,0,0,1)*VS(il0,il1  ,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1  ,il2+1,c1)+c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1)););
+          //   if( false && c1Base==c1Bound )
+          //   {
+          //     for( int c1=c1Base; c1<=c1Bound; c1++ )
+          //     for( j=0; j<nil; j++ )
+          //     {
+          //       int il0=IL1(j), il1=IL2(j), il2=IL3(j);
+          //       UI(IA(j),c1)=(c(j,0,0,0)*VS(il0,il1,il2,c1)+c(j,1,0,0)*VS(il0+1,il1,il2,c1)+c(j,0,1,0)*VS(il0,il1+1,il2,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2,c1)+c(j,0,0,1)*VS(il0,il1,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1,il2+1,c1)+c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1));
+          //       k++;
+          //     }
+          //   }
+                      for( j=0; j<nil; j++ )
+                      for( int c1=c1Base; c1<=c1Bound; c1++ )
+                      {
+                          int il0=IL1(j), il1=IL2(j), il2=IL3(j);
+                          UI(IA(j),c1)=(c(j,0,0,0)*VS(il0,il1,il2,c1)+c(j,1,0,0)*VS(il0+1,il1,il2,c1)+c(j,0,1,0)*VS(il0,il1+1,il2,c1)+c(j,1,1,0)*VS(il0+1,il1+1,il2,c1)+c(j,0,0,1)*VS(il0,il1,il2+1,c1)+c(j,1,0,1)*VS(il0+1,il1,il2+1,c1)+c(j,0,1,1)*VS(il0,il1+1,il2+1,c1)+c(j,1,1,1)*VS(il0+1,il1+1,il2+1,c1));
+                          k++;
+                      }
+                }
+                else
+                {
+          // interpSparseStorage222(UI(IA(j),c1));
+                    for( j=0; j<nil; j++ )
                     {
-            // interp222(UI(IA(j),c1));
-                            cr0 = q20(cfs(j,0)); 
-                            cs0 = q20(cfs(j,1)); 
-                            ct0 = q20(cfs(j,2)); 
-                            cr1 = q21(cfs(j,0)); 
-                            cs1 = q21(cfs(j,1)); 
-                            ct1 = q21(cfs(j,2)); 
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = ct0*(	    cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1))	   +cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1))	)+ct1*(	     cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1))	    +cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1))	);
-                                k++;
-                            }
-                    }
-                    else if( iw==1 )
-                    {
-            // interp111(UI(IA(j),c1));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = VS(i1  ,i2  ,i3,c1);
-                                k++; 
-                            }
-                    }
-                    else
-                    {
-                        Overture::abort("ERROR: unexpected interp width");
+                        iw=VIW(j); i1=IL1(j); i2=IL2(j); i3=IL3(j);
+                        if( iw==2 )
+                        {
+              // interp222(UI(IA(j),c1));
+                                cr0 = q20(cfs(j,0)); 
+                                cs0 = q20(cfs(j,1)); 
+                                ct0 = q20(cfs(j,2)); 
+                                cr1 = q21(cfs(j,0)); 
+                                cs1 = q21(cfs(j,1)); 
+                                ct1 = q21(cfs(j,2)); 
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = ct0*(cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)));
+                                    k++;
+                                }
+                        }
+                        else if( iw==1 )
+                        {
+              // interp111(UI(IA(j),c1));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = VS(i1  ,i2  ,i3,c1);
+                                    k++; 
+                                }
+                        }
+                        else
+                        {
+                            Overture::abort("ERROR: unexpected interp width");
+                        }
                     }
                 }
-      	}
             }
             else if( maxInterpolationWidth==5 || 
                               (explicitInterpolationStorageOption==precomputeNoCoefficients && maxInterpolationWidth<=5 ) ) 
@@ -3129,16 +3139,139 @@ internalInterpolate( RealArray & ui,                       // save results here
 #define IW5A(m1,m2) (c(j,0,m1,m2)*VS(il0  ,il1+m1,il2+m2,c1)+c(j,1,m1,m2)*VS(il0+1,il1+m1,il2+m2,c1)+c(j,2,m1,m2)*VS(il0+2,il1+m1,il2+m2,c1)+c(j,3,m1,m2)*VS(il0+3,il1+m1,il2+m2,c1)+c(j,4,m1,m2)*VS(il0+4,il1+m1,il2+m2,c1))
 #define IW5(m2) (IW5A(0,m2)+IW5A(1,m2)+IW5A(2,m2)+IW5A(3,m2)+IW5A(4,m2))
 
-      	if( explicitInterpolationStorageOption==precomputeAllCoefficients )
-      	{
-        // 	  loops3d(UI(IA(j),c1)=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4););
+                if( explicitInterpolationStorageOption==precomputeAllCoefficients )
+                {
+          // loops3d(UI(IA(j),c1)=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4););
+          //   if( false && c1Base==c1Bound )
+          //   {
+          //     for( int c1=c1Base; c1<=c1Bound; c1++ )
+          //     for( j=0; j<nil; j++ )
+          //     {
+          //       int il0=IL1(j), il1=IL2(j), il2=IL3(j);
+          //       UI(IA(j),c1)=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);
+          //       k++;
+          //     }
+          //   }
+                      for( j=0; j<nil; j++ )
+                      for( int c1=c1Base; c1<=c1Bound; c1++ )
+                      {
+                          int il0=IL1(j), il1=IL2(j), il2=IL3(j);
+                          UI(IA(j),c1)=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);
+                          k++;
+                      }
+                }
+                else
+                {
+          // interpSparseStorage555(UI(IA(j),c1));
+                    for( j=0; j<nil; j++ )
+                    {
+                        iw=VIW(j); i1=IL1(j); i2=IL2(j); i3=IL3(j);
+                        if( iw==5 )
+                        {
+              // interp555(UI(IA(j),c1));
+                                cr0 = q50(cfs(j,0));
+                                cs0 = q50(cfs(j,1));
+                                ct0 = q50(cfs(j,2));
+                                cr1 = q51(cfs(j,0));
+                                cs1 = q51(cfs(j,1));
+                                ct1 = q51(cfs(j,2));
+                                cr2 = q52(cfs(j,0));
+                                cs2 = q52(cfs(j,1));
+                                ct2 = q52(cfs(j,2));
+                                cr3 = q53(cfs(j,0));
+                                cs3 = q53(cfs(j,1));
+                                ct3 = q53(cfs(j,2));
+                                cr4 = q54(cfs(j,0));
+                                cs4 = q54(cfs(j,1));
+                                ct4 = q54(cfs(j,2));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                            UI(IA(j),c1) = ct0*(cs0*(cr0*VS(i1,i2  ,i3+0,c1)+cr1*VS(i1+1,i2  ,i3+0,c1)+cr2*VS(i1+2,i2  ,i3+0,c1)+cr3*VS(i1+3,i2  ,i3+0,c1)+cr4*VS(i1+4,i2  ,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)+cr2*VS(i1+2,i2+1,i3+0,c1)+cr3*VS(i1+3,i2+1,i3+0,c1)+cr4*VS(i1+4,i2+1,i3+0,c1))+cs2*(cr0*VS(i1,i2+2,i3+0,c1)+cr1*VS(i1+1,i2+2,i3+0,c1)+cr2*VS(i1+2,i2+2,i3+0,c1)+cr3*VS(i1+3,i2+2,i3+0,c1)+cr4*VS(i1+4,i2+2,i3+0,c1))+cs3*(cr0*VS(i1,i2+3,i3+0,c1)+cr1*VS(i1+1,i2+3,i3+0,c1)+cr2*VS(i1+2,i2+3,i3+0,c1)+cr3*VS(i1+3,i2+3,i3+0,c1)+cr4*VS(i1+4,i2+3,i3+0,c1))+cs4*(cr0*VS(i1,i2+4,i3+0,c1)+cr1*VS(i1+1,i2+4,i3+0,c1)+cr2*VS(i1+2,i2+4,i3+0,c1)+cr3*VS(i1+3,i2+4,i3+0,c1)+cr4*VS(i1+4,i2+4,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2  ,i3+1,c1)+cr1*VS(i1+1,i2  ,i3+1,c1)+cr2*VS(i1+2,i2  ,i3+1,c1)+cr3*VS(i1+3,i2  ,i3+1,c1)+cr4*VS(i1+4,i2  ,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)+cr2*VS(i1+2,i2+1,i3+1,c1)+cr3*VS(i1+3,i2+1,i3+1,c1)+cr4*VS(i1+4,i2+1,i3+1,c1))+cs2*(cr0*VS(i1,i2+2,i3+1,c1)+cr1*VS(i1+1,i2+2,i3+1,c1)+cr2*VS(i1+2,i2+2,i3+1,c1)+cr3*VS(i1+3,i2+2,i3+1,c1)+cr4*VS(i1+4,i2+2,i3+1,c1))+cs3*(cr0*VS(i1,i2+3,i3+1,c1)+cr1*VS(i1+1,i2+3,i3+1,c1)+cr2*VS(i1+2,i2+3,i3+1,c1)+cr3*VS(i1+3,i2+3,i3+1,c1)+cr4*VS(i1+4,i2+3,i3+1,c1))+cs4*(cr0*VS(i1,i2+4,i3+1,c1)+cr1*VS(i1+1,i2+4,i3+1,c1)+cr2*VS(i1+2,i2+4,i3+1,c1)+cr3*VS(i1+3,i2+4,i3+1,c1)+cr4*VS(i1+4,i2+4,i3+1,c1)))+ct2*(cs0*(cr0*VS(i1,i2  ,i3+2,c1)+cr1*VS(i1+1,i2  ,i3+2,c1)+cr2*VS(i1+2,i2  ,i3+2,c1)+cr3*VS(i1+3,i2  ,i3+2,c1)+cr4*VS(i1+4,i2  ,i3+2,c1))+cs1*(cr0*VS(i1,i2+1,i3+2,c1)+cr1*VS(i1+1,i2+1,i3+2,c1)+cr2*VS(i1+2,i2+1,i3+2,c1)+cr3*VS(i1+3,i2+1,i3+2,c1)+cr4*VS(i1+4,i2+1,i3+2,c1))+cs2*(cr0*VS(i1,i2+2,i3+2,c1)+cr1*VS(i1+1,i2+2,i3+2,c1)+cr2*VS(i1+2,i2+2,i3+2,c1)+cr3*VS(i1+3,i2+2,i3+2,c1)+cr4*VS(i1+4,i2+2,i3+2,c1))+cs3*(cr0*VS(i1,i2+3,i3+2,c1)+cr1*VS(i1+1,i2+3,i3+2,c1)+cr2*VS(i1+2,i2+3,i3+2,c1)+cr3*VS(i1+3,i2+3,i3+2,c1)+cr4*VS(i1+4,i2+3,i3+2,c1))+cs4*(cr0*VS(i1,i2+4,i3+2,c1)+cr1*VS(i1+1,i2+4,i3+2,c1)+cr2*VS(i1+2,i2+4,i3+2,c1)+cr3*VS(i1+3,i2+4,i3+2,c1)+cr4*VS(i1+4,i2+4,i3+2,c1)))+ct3*(cs0*(cr0*VS(i1,i2  ,i3+3,c1)+cr1*VS(i1+1,i2  ,i3+3,c1)+cr2*VS(i1+2,i2  ,i3+3,c1)+cr3*VS(i1+3,i2  ,i3+3,c1)+cr4*VS(i1+4,i2  ,i3+3,c1))+cs1*(cr0*VS(i1,i2+1,i3+3,c1)+cr1*VS(i1+1,i2+1,i3+3,c1)+cr2*VS(i1+2,i2+1,i3+3,c1)+cr3*VS(i1+3,i2+1,i3+3,c1)+cr4*VS(i1+4,i2+1,i3+3,c1))+cs2*(cr0*VS(i1,i2+2,i3+3,c1)+cr1*VS(i1+1,i2+2,i3+3,c1)+cr2*VS(i1+2,i2+2,i3+3,c1)+cr3*VS(i1+3,i2+2,i3+3,c1)+cr4*VS(i1+4,i2+2,i3+3,c1))+cs3*(cr0*VS(i1,i2+3,i3+3,c1)+cr1*VS(i1+1,i2+3,i3+3,c1)+cr2*VS(i1+2,i2+3,i3+3,c1)+cr3*VS(i1+3,i2+3,i3+3,c1)+cr4*VS(i1+4,i2+3,i3+3,c1))+cs4*(cr0*VS(i1,i2+4,i3+3,c1)+cr1*VS(i1+1,i2+4,i3+3,c1)+cr2*VS(i1+2,i2+4,i3+3,c1)+cr3*VS(i1+3,i2+4,i3+3,c1)+cr4*VS(i1+4,i2+4,i3+3,c1)))+ct4*(cs0*(cr0*VS(i1,i2  ,i3+4,c1)+cr1*VS(i1+1,i2  ,i3+4,c1)+cr2*VS(i1+2,i2  ,i3+4,c1)+cr3*VS(i1+3,i2  ,i3+4,c1)+cr4*VS(i1+4,i2  ,i3+4,c1))+cs1*(cr0*VS(i1,i2+1,i3+4,c1)+cr1*VS(i1+1,i2+1,i3+4,c1)+cr2*VS(i1+2,i2+1,i3+4,c1)+cr3*VS(i1+3,i2+1,i3+4,c1)+cr4*VS(i1+4,i2+1,i3+4,c1))+cs2*(cr0*VS(i1,i2+2,i3+4,c1)+cr1*VS(i1+1,i2+2,i3+4,c1)+cr2*VS(i1+2,i2+2,i3+4,c1)+cr3*VS(i1+3,i2+2,i3+4,c1)+cr4*VS(i1+4,i2+2,i3+4,c1))+cs3*(cr0*VS(i1,i2+3,i3+4,c1)+cr1*VS(i1+1,i2+3,i3+4,c1)+cr2*VS(i1+2,i2+3,i3+4,c1)+cr3*VS(i1+3,i2+3,i3+4,c1)+cr4*VS(i1+4,i2+3,i3+4,c1))+cs4*(cr0*VS(i1,i2+4,i3+4,c1)+cr1*VS(i1+1,i2+4,i3+4,c1)+cr2*VS(i1+2,i2+4,i3+4,c1)+cr3*VS(i1+3,i2+4,i3+4,c1)+cr4*VS(i1+4,i2+4,i3+4,c1)));
+                                  k++;
+                                } // end for c1
+                        }
+                        else if( iw==4 )
+                        {
+              // interp444(UI(IA(j),c1));
+                                cr0 = q40(cfs(j,0));
+                                cs0 = q40(cfs(j,1));
+                                ct0 = q40(cfs(j,2));
+                                cr1 = q41(cfs(j,0));
+                                cs1 = q41(cfs(j,1));
+                                ct1 = q41(cfs(j,2));
+                                cr2 = q42(cfs(j,0));
+                                cs2 = q42(cfs(j,1));
+                                ct2 = q42(cfs(j,2));
+                                cr3 = q43(cfs(j,0));
+                                cs3 = q43(cfs(j,1));
+                                ct3 = q43(cfs(j,2));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                            UI(IA(j),c1) = ct0*(cs0*(cr0*VS(i1,i2  ,i3+0,c1)+cr1*VS(i1+1,i2  ,i3+0,c1)+cr2*VS(i1+2,i2  ,i3+0,c1)+cr3*VS(i1+3,i2  ,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)+cr2*VS(i1+2,i2+1,i3+0,c1)+cr3*VS(i1+3,i2+1,i3+0,c1))+cs2*(cr0*VS(i1,i2+2,i3+0,c1)+cr1*VS(i1+1,i2+2,i3+0,c1)+cr2*VS(i1+2,i2+2,i3+0,c1)+cr3*VS(i1+3,i2+2,i3+0,c1))+cs3*(cr0*VS(i1,i2+3,i3+0,c1)+cr1*VS(i1+1,i2+3,i3+0,c1)+cr2*VS(i1+2,i2+3,i3+0,c1)+cr3*VS(i1+3,i2+3,i3+0,c1))+cs4*(cr0*VS(i1,i2+4,i3+0,c1)+cr1*VS(i1+1,i2+4,i3+0,c1)+cr2*VS(i1+2,i2+4,i3+0,c1)+cr3*VS(i1+3,i2+4,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2  ,i3+1,c1)+cr1*VS(i1+1,i2  ,i3+1,c1)+cr2*VS(i1+2,i2  ,i3+1,c1)+cr3*VS(i1+3,i2  ,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)+cr2*VS(i1+2,i2+1,i3+1,c1)+cr3*VS(i1+3,i2+1,i3+1,c1))+cs2*(cr0*VS(i1,i2+2,i3+1,c1)+cr1*VS(i1+1,i2+2,i3+1,c1)+cr2*VS(i1+2,i2+2,i3+1,c1)+cr3*VS(i1+3,i2+2,i3+1,c1))+cs3*(cr0*VS(i1,i2+3,i3+1,c1)+cr1*VS(i1+1,i2+3,i3+1,c1)+cr2*VS(i1+2,i2+3,i3+1,c1)+cr3*VS(i1+3,i2+3,i3+1,c1))+cs4*(cr0*VS(i1,i2+4,i3+1,c1)+cr1*VS(i1+1,i2+4,i3+1,c1)+cr2*VS(i1+2,i2+4,i3+1,c1)+cr3*VS(i1+3,i2+4,i3+1,c1)))+ct2*(cs0*(cr0*VS(i1,i2  ,i3+2,c1)+cr1*VS(i1+1,i2  ,i3+2,c1)+cr2*VS(i1+2,i2  ,i3+2,c1)+cr3*VS(i1+3,i2  ,i3+2,c1))+cs1*(cr0*VS(i1,i2+1,i3+2,c1)+cr1*VS(i1+1,i2+1,i3+2,c1)+cr2*VS(i1+2,i2+1,i3+2,c1)+cr3*VS(i1+3,i2+1,i3+2,c1))+cs2*(cr0*VS(i1,i2+2,i3+2,c1)+cr1*VS(i1+1,i2+2,i3+2,c1)+cr2*VS(i1+2,i2+2,i3+2,c1)+cr3*VS(i1+3,i2+2,i3+2,c1))+cs3*(cr0*VS(i1,i2+3,i3+2,c1)+cr1*VS(i1+1,i2+3,i3+2,c1)+cr2*VS(i1+2,i2+3,i3+2,c1)+cr3*VS(i1+3,i2+3,i3+2,c1))+cs4*(cr0*VS(i1,i2+4,i3+2,c1)+cr1*VS(i1+1,i2+4,i3+2,c1)+cr2*VS(i1+2,i2+4,i3+2,c1)+cr3*VS(i1+3,i2+4,i3+2,c1)))+ct3*(cs0*(cr0*VS(i1,i2  ,i3+3,c1)+cr1*VS(i1+1,i2  ,i3+3,c1)+cr2*VS(i1+2,i2  ,i3+3,c1)+cr3*VS(i1+3,i2  ,i3+3,c1))+cs1*(cr0*VS(i1,i2+1,i3+3,c1)+cr1*VS(i1+1,i2+1,i3+3,c1)+cr2*VS(i1+2,i2+1,i3+3,c1)+cr3*VS(i1+3,i2+1,i3+3,c1))+cs2*(cr0*VS(i1,i2+2,i3+3,c1)+cr1*VS(i1+1,i2+2,i3+3,c1)+cr2*VS(i1+2,i2+2,i3+3,c1)+cr3*VS(i1+3,i2+2,i3+3,c1))+cs3*(cr0*VS(i1,i2+3,i3+3,c1)+cr1*VS(i1+1,i2+3,i3+3,c1)+cr2*VS(i1+2,i2+3,i3+3,c1)+cr3*VS(i1+3,i2+3,i3+3,c1))+cs4*(cr0*VS(i1,i2+4,i3+3,c1)+cr1*VS(i1+1,i2+4,i3+3,c1)+cr2*VS(i1+2,i2+4,i3+3,c1)+cr3*VS(i1+3,i2+4,i3+3,c1)));
+                                  k++;
+                                } // end for c1
+                        }
+                        else if( iw==3 )
+                        {
+              // interp333(UI(IA(j),c1));
+                                cr0 = q30(cfs(j,0));
+                                cs0 = q30(cfs(j,1));
+                                ct0 = q30(cfs(j,2));
+                                cr1 = q31(cfs(j,0));
+                                cs1 = q31(cfs(j,1));
+                                ct1 = q31(cfs(j,2));
+                                cr2 = q32(cfs(j,0));
+                                cs2 = q32(cfs(j,1));
+                                ct2 = q32(cfs(j,2));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = ct0*(cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1)+cr2*VS(i1+2,i2,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)+cr2*VS(i1+2,i2+1,i3+0,c1))+cs2*(cr0*VS(i1,i2+2,i3+0,c1)+cr1*VS(i1+1,i2+2,i3+0,c1)+cr2*VS(i1+2,i2+2,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1)+cr2*VS(i1+2,i2,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)+cr2*VS(i1+2,i2+1,i3+1,c1))+cs2*(cr0*VS(i1,i2+2,i3+1,c1)+cr1*VS(i1+1,i2+2,i3+1,c1)+cr2*VS(i1+2,i2+2,i3+1,c1)))+ct2*(cs0*(cr0*VS(i1,i2,i3+2,c1)+cr1*VS(i1+1,i2,i3+2,c1)+cr2*VS(i1+2,i2,i3+2,c1))+cs1*(cr0*VS(i1,i2+1,i3+2,c1)+cr1*VS(i1+1,i2+1,i3+2,c1)+cr2*VS(i1+2,i2+1,i3+2,c1))+cs2*(cr0*VS(i1,i2+2,i3+2,c1)+cr1*VS(i1+1,i2+2,i3+2,c1)+cr2*VS(i1+2,i2+2,i3+2,c1)));
+                                    k++;
+                                }
+                        }
+                        else if( iw==2 )
+                        {
+              // interp222(UI(IA(j),c1));
+                                cr0 = q20(cfs(j,0)); 
+                                cs0 = q20(cfs(j,1)); 
+                                ct0 = q20(cfs(j,2)); 
+                                cr1 = q21(cfs(j,0)); 
+                                cs1 = q21(cfs(j,1)); 
+                                ct1 = q21(cfs(j,2)); 
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = ct0*(cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)));
+                                    k++;
+                                }
+                        }
+                        else if( iw==1 )
+                        {
+              // interp111(UI(IA(j),c1));
+                                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                                {
+                                    UI(IA(j),c1) = VS(i1  ,i2  ,i3,c1);
+                                    k++; 
+                                }
+                        }
+                        else
+                        {
+                            Overture::abort("ERROR: unexpected interp width");
+                        }
+                    }
+                }
+#undef IW5
+#undef IW55
+            }
+            else if( maxInterpolationWidth==1 )
+            {
+        // loops3d(UI(IA(j),c1)=VS(il0,il1,il2,c1););
         //   if( false && c1Base==c1Bound )
         //   {
         //     for( int c1=c1Base; c1<=c1Bound; c1++ )
         //     for( j=0; j<nil; j++ )
         //     {
         //       int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-        //       UI(IA(j),c1)=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);
+        //       UI(IA(j),c1)=VS(il0,il1,il2,c1);
         //       k++;
         //     }
         //   }
@@ -3146,156 +3279,33 @@ internalInterpolate( RealArray & ui,                       // save results here
                   for( int c1=c1Base; c1<=c1Bound; c1++ )
                   {
                       int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-                      UI(IA(j),c1)=IW5(0)+IW5(1)+IW5(2)+IW5(3)+IW5(4);
+                      UI(IA(j),c1)=VS(il0,il1,il2,c1);
                       k++;
                   }
-      	}
-      	else
-      	{
-        // 	  interpSparseStorage555(UI(IA(j),c1));
-                for( j=0; j<nil; j++ )
-                {
-                    iw=VIW(j); i1=IL1(j); i2=IL2(j); i3=IL3(j);
-                    if( iw==5 )
-                    {
-            // interp555(UI(IA(j),c1));
-                            cr0 = q50(cfs(j,0));
-                            cs0 = q50(cfs(j,1));
-                            ct0 = q50(cfs(j,2));
-                            cr1 = q51(cfs(j,0));
-                            cs1 = q51(cfs(j,1));
-                            ct1 = q51(cfs(j,2));
-                            cr2 = q52(cfs(j,0));
-                            cs2 = q52(cfs(j,1));
-                            ct2 = q52(cfs(j,2));
-                            cr3 = q53(cfs(j,0));
-                            cs3 = q53(cfs(j,1));
-                            ct3 = q53(cfs(j,2));
-                            cr4 = q54(cfs(j,0));
-                            cs4 = q54(cfs(j,1));
-                            ct4 = q54(cfs(j,2));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                        UI(IA(j),c1) = ct0*(cs0*(cr0*VS(i1,i2  ,i3+0,c1)+cr1*VS(i1+1,i2  ,i3+0,c1)+cr2*VS(i1+2,i2  ,i3+0,c1)+cr3*VS(i1+3,i2  ,i3+0,c1)+cr4*VS(i1+4,i2  ,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)+cr2*VS(i1+2,i2+1,i3+0,c1)+cr3*VS(i1+3,i2+1,i3+0,c1)+cr4*VS(i1+4,i2+1,i3+0,c1))+cs2*(cr0*VS(i1,i2+2,i3+0,c1)+cr1*VS(i1+1,i2+2,i3+0,c1)+cr2*VS(i1+2,i2+2,i3+0,c1)+cr3*VS(i1+3,i2+2,i3+0,c1)+cr4*VS(i1+4,i2+2,i3+0,c1))+cs3*(cr0*VS(i1,i2+3,i3+0,c1)+cr1*VS(i1+1,i2+3,i3+0,c1)+cr2*VS(i1+2,i2+3,i3+0,c1)+cr3*VS(i1+3,i2+3,i3+0,c1)+cr4*VS(i1+4,i2+3,i3+0,c1))+cs4*(cr0*VS(i1,i2+4,i3+0,c1)+cr1*VS(i1+1,i2+4,i3+0,c1)+cr2*VS(i1+2,i2+4,i3+0,c1)+cr3*VS(i1+3,i2+4,i3+0,c1)+cr4*VS(i1+4,i2+4,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2  ,i3+1,c1)+cr1*VS(i1+1,i2  ,i3+1,c1)+cr2*VS(i1+2,i2  ,i3+1,c1)+cr3*VS(i1+3,i2  ,i3+1,c1)+cr4*VS(i1+4,i2  ,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)+cr2*VS(i1+2,i2+1,i3+1,c1)+cr3*VS(i1+3,i2+1,i3+1,c1)+cr4*VS(i1+4,i2+1,i3+1,c1))+cs2*(cr0*VS(i1,i2+2,i3+1,c1)+cr1*VS(i1+1,i2+2,i3+1,c1)+cr2*VS(i1+2,i2+2,i3+1,c1)+cr3*VS(i1+3,i2+2,i3+1,c1)+cr4*VS(i1+4,i2+2,i3+1,c1))+cs3*(cr0*VS(i1,i2+3,i3+1,c1)+cr1*VS(i1+1,i2+3,i3+1,c1)+cr2*VS(i1+2,i2+3,i3+1,c1)+cr3*VS(i1+3,i2+3,i3+1,c1)+cr4*VS(i1+4,i2+3,i3+1,c1))+cs4*(cr0*VS(i1,i2+4,i3+1,c1)+cr1*VS(i1+1,i2+4,i3+1,c1)+cr2*VS(i1+2,i2+4,i3+1,c1)+cr3*VS(i1+3,i2+4,i3+1,c1)+cr4*VS(i1+4,i2+4,i3+1,c1)))+ct2*(cs0*(cr0*VS(i1,i2  ,i3+2,c1)+cr1*VS(i1+1,i2  ,i3+2,c1)+cr2*VS(i1+2,i2  ,i3+2,c1)+cr3*VS(i1+3,i2  ,i3+2,c1)+cr4*VS(i1+4,i2  ,i3+2,c1))+cs1*(cr0*VS(i1,i2+1,i3+2,c1)+cr1*VS(i1+1,i2+1,i3+2,c1)+cr2*VS(i1+2,i2+1,i3+2,c1)+cr3*VS(i1+3,i2+1,i3+2,c1)+cr4*VS(i1+4,i2+1,i3+2,c1))+cs2*(cr0*VS(i1,i2+2,i3+2,c1)+cr1*VS(i1+1,i2+2,i3+2,c1)+cr2*VS(i1+2,i2+2,i3+2,c1)+cr3*VS(i1+3,i2+2,i3+2,c1)+cr4*VS(i1+4,i2+2,i3+2,c1))+cs3*(cr0*VS(i1,i2+3,i3+2,c1)+cr1*VS(i1+1,i2+3,i3+2,c1)+cr2*VS(i1+2,i2+3,i3+2,c1)+cr3*VS(i1+3,i2+3,i3+2,c1)+cr4*VS(i1+4,i2+3,i3+2,c1))+cs4*(cr0*VS(i1,i2+4,i3+2,c1)+cr1*VS(i1+1,i2+4,i3+2,c1)+cr2*VS(i1+2,i2+4,i3+2,c1)+cr3*VS(i1+3,i2+4,i3+2,c1)+cr4*VS(i1+4,i2+4,i3+2,c1)))+ct3*(cs0*(cr0*VS(i1,i2  ,i3+3,c1)+cr1*VS(i1+1,i2  ,i3+3,c1)+cr2*VS(i1+2,i2  ,i3+3,c1)+cr3*VS(i1+3,i2  ,i3+3,c1)+cr4*VS(i1+4,i2  ,i3+3,c1))+cs1*(cr0*VS(i1,i2+1,i3+3,c1)+cr1*VS(i1+1,i2+1,i3+3,c1)+cr2*VS(i1+2,i2+1,i3+3,c1)+cr3*VS(i1+3,i2+1,i3+3,c1)+cr4*VS(i1+4,i2+1,i3+3,c1))+cs2*(cr0*VS(i1,i2+2,i3+3,c1)+cr1*VS(i1+1,i2+2,i3+3,c1)+cr2*VS(i1+2,i2+2,i3+3,c1)+cr3*VS(i1+3,i2+2,i3+3,c1)+cr4*VS(i1+4,i2+2,i3+3,c1))+cs3*(cr0*VS(i1,i2+3,i3+3,c1)+cr1*VS(i1+1,i2+3,i3+3,c1)+cr2*VS(i1+2,i2+3,i3+3,c1)+cr3*VS(i1+3,i2+3,i3+3,c1)+cr4*VS(i1+4,i2+3,i3+3,c1))+cs4*(cr0*VS(i1,i2+4,i3+3,c1)+cr1*VS(i1+1,i2+4,i3+3,c1)+cr2*VS(i1+2,i2+4,i3+3,c1)+cr3*VS(i1+3,i2+4,i3+3,c1)+cr4*VS(i1+4,i2+4,i3+3,c1)))+ct4*(cs0*(cr0*VS(i1,i2  ,i3+4,c1)+cr1*VS(i1+1,i2  ,i3+4,c1)+cr2*VS(i1+2,i2  ,i3+4,c1)+cr3*VS(i1+3,i2  ,i3+4,c1)+cr4*VS(i1+4,i2  ,i3+4,c1))+cs1*(cr0*VS(i1,i2+1,i3+4,c1)+cr1*VS(i1+1,i2+1,i3+4,c1)+cr2*VS(i1+2,i2+1,i3+4,c1)+cr3*VS(i1+3,i2+1,i3+4,c1)+cr4*VS(i1+4,i2+1,i3+4,c1))+cs2*(cr0*VS(i1,i2+2,i3+4,c1)+cr1*VS(i1+1,i2+2,i3+4,c1)+cr2*VS(i1+2,i2+2,i3+4,c1)+cr3*VS(i1+3,i2+2,i3+4,c1)+cr4*VS(i1+4,i2+2,i3+4,c1))+cs3*(cr0*VS(i1,i2+3,i3+4,c1)+cr1*VS(i1+1,i2+3,i3+4,c1)+cr2*VS(i1+2,i2+3,i3+4,c1)+cr3*VS(i1+3,i2+3,i3+4,c1)+cr4*VS(i1+4,i2+3,i3+4,c1))+cs4*(cr0*VS(i1,i2+4,i3+4,c1)+cr1*VS(i1+1,i2+4,i3+4,c1)+cr2*VS(i1+2,i2+4,i3+4,c1)+cr3*VS(i1+3,i2+4,i3+4,c1)+cr4*VS(i1+4,i2+4,i3+4,c1)));
-                              k++;
-                            } // end for c1
-                    }
-                    else if( iw==4 )
-                    {
-            // interp444(UI(IA(j),c1));
-                            cr0 = q40(cfs(j,0));
-                            cs0 = q40(cfs(j,1));
-                            ct0 = q40(cfs(j,2));
-                            cr1 = q41(cfs(j,0));
-                            cs1 = q41(cfs(j,1));
-                            ct1 = q41(cfs(j,2));
-                            cr2 = q42(cfs(j,0));
-                            cs2 = q42(cfs(j,1));
-                            ct2 = q42(cfs(j,2));
-                            cr3 = q43(cfs(j,0));
-                            cs3 = q43(cfs(j,1));
-                            ct3 = q43(cfs(j,2));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                        UI(IA(j),c1) = ct0*(cs0*(cr0*VS(i1,i2  ,i3+0,c1)+cr1*VS(i1+1,i2  ,i3+0,c1)+cr2*VS(i1+2,i2  ,i3+0,c1)+cr3*VS(i1+3,i2  ,i3+0,c1))+cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)+cr2*VS(i1+2,i2+1,i3+0,c1)+cr3*VS(i1+3,i2+1,i3+0,c1))+cs2*(cr0*VS(i1,i2+2,i3+0,c1)+cr1*VS(i1+1,i2+2,i3+0,c1)+cr2*VS(i1+2,i2+2,i3+0,c1)+cr3*VS(i1+3,i2+2,i3+0,c1))+cs3*(cr0*VS(i1,i2+3,i3+0,c1)+cr1*VS(i1+1,i2+3,i3+0,c1)+cr2*VS(i1+2,i2+3,i3+0,c1)+cr3*VS(i1+3,i2+3,i3+0,c1))+cs4*(cr0*VS(i1,i2+4,i3+0,c1)+cr1*VS(i1+1,i2+4,i3+0,c1)+cr2*VS(i1+2,i2+4,i3+0,c1)+cr3*VS(i1+3,i2+4,i3+0,c1)))+ct1*(cs0*(cr0*VS(i1,i2  ,i3+1,c1)+cr1*VS(i1+1,i2  ,i3+1,c1)+cr2*VS(i1+2,i2  ,i3+1,c1)+cr3*VS(i1+3,i2  ,i3+1,c1))+cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)+cr2*VS(i1+2,i2+1,i3+1,c1)+cr3*VS(i1+3,i2+1,i3+1,c1))+cs2*(cr0*VS(i1,i2+2,i3+1,c1)+cr1*VS(i1+1,i2+2,i3+1,c1)+cr2*VS(i1+2,i2+2,i3+1,c1)+cr3*VS(i1+3,i2+2,i3+1,c1))+cs3*(cr0*VS(i1,i2+3,i3+1,c1)+cr1*VS(i1+1,i2+3,i3+1,c1)+cr2*VS(i1+2,i2+3,i3+1,c1)+cr3*VS(i1+3,i2+3,i3+1,c1))+cs4*(cr0*VS(i1,i2+4,i3+1,c1)+cr1*VS(i1+1,i2+4,i3+1,c1)+cr2*VS(i1+2,i2+4,i3+1,c1)+cr3*VS(i1+3,i2+4,i3+1,c1)))+ct2*(cs0*(cr0*VS(i1,i2  ,i3+2,c1)+cr1*VS(i1+1,i2  ,i3+2,c1)+cr2*VS(i1+2,i2  ,i3+2,c1)+cr3*VS(i1+3,i2  ,i3+2,c1))+cs1*(cr0*VS(i1,i2+1,i3+2,c1)+cr1*VS(i1+1,i2+1,i3+2,c1)+cr2*VS(i1+2,i2+1,i3+2,c1)+cr3*VS(i1+3,i2+1,i3+2,c1))+cs2*(cr0*VS(i1,i2+2,i3+2,c1)+cr1*VS(i1+1,i2+2,i3+2,c1)+cr2*VS(i1+2,i2+2,i3+2,c1)+cr3*VS(i1+3,i2+2,i3+2,c1))+cs3*(cr0*VS(i1,i2+3,i3+2,c1)+cr1*VS(i1+1,i2+3,i3+2,c1)+cr2*VS(i1+2,i2+3,i3+2,c1)+cr3*VS(i1+3,i2+3,i3+2,c1))+cs4*(cr0*VS(i1,i2+4,i3+2,c1)+cr1*VS(i1+1,i2+4,i3+2,c1)+cr2*VS(i1+2,i2+4,i3+2,c1)+cr3*VS(i1+3,i2+4,i3+2,c1)))+ct3*(cs0*(cr0*VS(i1,i2  ,i3+3,c1)+cr1*VS(i1+1,i2  ,i3+3,c1)+cr2*VS(i1+2,i2  ,i3+3,c1)+cr3*VS(i1+3,i2  ,i3+3,c1))+cs1*(cr0*VS(i1,i2+1,i3+3,c1)+cr1*VS(i1+1,i2+1,i3+3,c1)+cr2*VS(i1+2,i2+1,i3+3,c1)+cr3*VS(i1+3,i2+1,i3+3,c1))+cs2*(cr0*VS(i1,i2+2,i3+3,c1)+cr1*VS(i1+1,i2+2,i3+3,c1)+cr2*VS(i1+2,i2+2,i3+3,c1)+cr3*VS(i1+3,i2+2,i3+3,c1))+cs3*(cr0*VS(i1,i2+3,i3+3,c1)+cr1*VS(i1+1,i2+3,i3+3,c1)+cr2*VS(i1+2,i2+3,i3+3,c1)+cr3*VS(i1+3,i2+3,i3+3,c1))+cs4*(cr0*VS(i1,i2+4,i3+3,c1)+cr1*VS(i1+1,i2+4,i3+3,c1)+cr2*VS(i1+2,i2+4,i3+3,c1)+cr3*VS(i1+3,i2+4,i3+3,c1)));
-                              k++;
-                            } // end for c1
-                    }
-                    else if( iw==3 )
-                    {
-            // interp333(UI(IA(j),c1));
-                            cr0 = q30(cfs(j,0));
-                            cs0 = q30(cfs(j,1));
-                            ct0 = q30(cfs(j,2));
-                            cr1 = q31(cfs(j,0));
-                            cs1 = q31(cfs(j,1));
-                            ct1 = q31(cfs(j,2));
-                            cr2 = q32(cfs(j,0));
-                            cs2 = q32(cfs(j,1));
-                            ct2 = q32(cfs(j,2));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = ct0*(	    cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1)+cr2*VS(i1+2,i2,i3+0,c1))	   +cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1)+cr2*VS(i1+2,i2+1,i3+0,c1))	   +cs2*(cr0*VS(i1,i2+2,i3+0,c1)+cr1*VS(i1+1,i2+2,i3+0,c1)+cr2*VS(i1+2,i2+2,i3+0,c1))	)+ct1*(	     cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1)+cr2*VS(i1+2,i2,i3+1,c1))	    +cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1)+cr2*VS(i1+2,i2+1,i3+1,c1))	    +cs2*(cr0*VS(i1,i2+2,i3+1,c1)+cr1*VS(i1+1,i2+2,i3+1,c1)+cr2*VS(i1+2,i2+2,i3+1,c1))	)+ct2*(	     cs0*(cr0*VS(i1,i2,i3+2,c1)+cr1*VS(i1+1,i2,i3+2,c1)+cr2*VS(i1+2,i2,i3+2,c1))	    +cs1*(cr0*VS(i1,i2+1,i3+2,c1)+cr1*VS(i1+1,i2+1,i3+2,c1)+cr2*VS(i1+2,i2+1,i3+2,c1))	    +cs2*(cr0*VS(i1,i2+2,i3+2,c1)+cr1*VS(i1+1,i2+2,i3+2,c1)+cr2*VS(i1+2,i2+2,i3+2,c1))	);
-                                k++;
-                            }
-                    }
-                    else if( iw==2 )
-                    {
-            // interp222(UI(IA(j),c1));
-                            cr0 = q20(cfs(j,0)); 
-                            cs0 = q20(cfs(j,1)); 
-                            ct0 = q20(cfs(j,2)); 
-                            cr1 = q21(cfs(j,0)); 
-                            cs1 = q21(cfs(j,1)); 
-                            ct1 = q21(cfs(j,2)); 
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = ct0*(	    cs0*(cr0*VS(i1,i2,i3+0,c1)+cr1*VS(i1+1,i2,i3+0,c1))	   +cs1*(cr0*VS(i1,i2+1,i3+0,c1)+cr1*VS(i1+1,i2+1,i3+0,c1))	)+ct1*(	     cs0*(cr0*VS(i1,i2,i3+1,c1)+cr1*VS(i1+1,i2,i3+1,c1))	    +cs1*(cr0*VS(i1,i2+1,i3+1,c1)+cr1*VS(i1+1,i2+1,i3+1,c1))	);
-                                k++;
-                            }
-                    }
-                    else if( iw==1 )
-                    {
-            // interp111(UI(IA(j),c1));
-                            for( int c1=c1Base; c1<=c1Bound; c1++ )
-                            {
-                                UI(IA(j),c1) = VS(i1  ,i2  ,i3,c1);
-                                k++; 
-                            }
-                    }
-                    else
-                    {
-                        Overture::abort("ERROR: unexpected interp width");
-                    }
-                }
-      	}
-#undef IW5
-#undef IW55
-            }
-            else if( maxInterpolationWidth==1 )
-            {
-      // 	loops3d(UI(IA(j),c1)=VS(il0,il1,il2,c1););
-      //   if( false && c1Base==c1Bound )
-      //   {
-      //     for( int c1=c1Base; c1<=c1Bound; c1++ )
-      //     for( j=0; j<nil; j++ )
-      //     {
-      //       int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-      //       UI(IA(j),c1)=VS(il0,il1,il2,c1);
-      //       k++;
-      //     }
-      //   }
-              for( j=0; j<nil; j++ )
-              for( int c1=c1Base; c1<=c1Bound; c1++ )
-              {
-                  int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-                  UI(IA(j),c1)=VS(il0,il1,il2,c1);
-                  k++;
-              }
             }
             else
             {
-	// general case
-      	if( explicitInterpolationStorageOption!=precomputeAllCoefficients )
-      	{
-        	  OV_ABORT("ERROR: un-implemented interpolation width -- finish me!");
-      	}
-      	for( int c1=c1Base; c1<=c1Bound; c1++ )
-        	  for( j=0; j<nil; j++ )
-        	  {
-          	    int il0=IL1(j), il1=IL2(j), il2=IL3(j);
-          	    real value=0.;
-          	    for( m3=0; m3< width[axis3]; m3++ ) 
-            	      for( m2=0; m2< width[axis2]; m2++ ) 
-            		for( m1=0; m1< width[axis1]; m1++ ) 
-              		  value+=c(j,m1,m2,m3)*VS(il0+m1,il1+m2,il2+m3,c1);
+        // general case
+                if( explicitInterpolationStorageOption!=precomputeAllCoefficients )
+                {
+                    OV_ABORT("ERROR: un-implemented interpolation width -- finish me!");
+                }
+                for( int c1=c1Base; c1<=c1Bound; c1++ )
+                    for( j=0; j<nil; j++ )
+                    {
+                        int il0=IL1(j), il1=IL2(j), il2=IL3(j);
+                        real value=0.;
+                        for( m3=0; m3< width[axis3]; m3++ ) 
+                            for( m2=0; m2< width[axis2]; m2++ ) 
+                                for( m1=0; m1< width[axis1]; m1++ ) 
+                                    value+=c(j,m1,m2,m3)*VS(il0+m1,il1+m2,il2+m3,c1);
 
-          	    UI(IA(j),c1)=value;
-          	    k++;
-        	  }
+                        UI(IA(j),c1)=value;
+                        k++;
+                    }
             }
 
-        	  
+                    
         }
         else
         {
@@ -3317,7 +3327,7 @@ internalInterpolate( RealArray & ui,                       // save results here
     if( debug>0 ) 
     {
         printF(" >>>>>>>>> Time for OGIP::interpolate =%8.2e  (%i interpolation pts)<<<<<<<\n",
-         	   time,nid);
+                      time,nid);
     }
 
 #endif

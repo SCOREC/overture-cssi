@@ -356,6 +356,7 @@ Parameters(const int & numberOfDimensions0) : pdeName("unknown"), numberOfBCName
   if (!dbase.has_key("errorNorm")) dbase.put<int>("errorNorm");
   if (!dbase.has_key("projectInitialConditionsForMovingGrids")) dbase.put<bool>("projectInitialConditionsForMovingGrids")=true;
   if (!dbase.has_key("projectInitialConditions")) dbase.put<bool>("projectInitialConditions");
+
   if (!dbase.has_key("outputFile")) dbase.put<ArraySimpleFixed<FileOutput*,Parameters::maximumNumberOfOutputFiles,1,1,1> >("outputFile");
   if (!dbase.has_key("implicitOption")) dbase.put<Parameters::ImplicitOption>("implicitOption");
   if (!dbase.has_key("cfl")) dbase.put<real>("cfl");
@@ -583,6 +584,7 @@ Parameters(const int & numberOfDimensions0) : pdeName("unknown"), numberOfBCName
 
   // Apply a projection to the interface values
   if (!dbase.has_key("projectInterface")) dbase.put<bool>("projectInterface",false);
+  if (!dbase.has_key("projectInterfaceTemperature")) dbase.put<bool>("projectInterfaceTemperature")=false;
 
   // order of accuracy (=number of pts in the interpolant) for the ArrayEvolution variables 
   if( !dbase.has_key("interfaceArrayEvolutionTimeAccuracy") ) dbase.put<int>("interfaceArrayEvolutionTimeAccuracy")=3;

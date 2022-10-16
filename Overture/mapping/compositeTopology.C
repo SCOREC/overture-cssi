@@ -51,12 +51,12 @@ getEdgeFromEndPoints(real *x0, real *x1)
       real dist0 = fabs(xg(0,0,0,0)-x0[0])+fabs(xg(0,0,0,1)-x0[1])+fabs(xg(0,0,0,2)-x0[2]);
       if( dist0<distMin )
       {
-	real dist1 = fabs(xg(n,0,0,0)-x1[0])+fabs(xg(n,0,0,1)-x1[1])+fabs(xg(n,0,0,2)-x1[2]);
-	if( dist1<distMin )
-	{
-	  eMatch=e;
-	  break;
-	}
+        real dist1 = fabs(xg(n,0,0,0)-x1[0])+fabs(xg(n,0,0,1)-x1[1])+fabs(xg(n,0,0,2)-x1[2]);
+        if( dist1<distMin )
+        {
+          eMatch=e;
+          break;
+        }
       }
     }
     
@@ -94,7 +94,7 @@ duplicateNodeFound(int & elementNodeNumber, int & node, int e,
       if( elementNodeNumber>=0 )
       {
         node=na;   // found as a duplicate node.
-	break;
+        break;
       }
     }
     else if( node==duplicateNodes(1,dn) )  // also check if elements array is not correct for duplicates 010512
@@ -103,8 +103,8 @@ duplicateNodeFound(int & elementNodeNumber, int & node, int e,
       elementNodeNumber = elements(e,0)==na ? 0 : elements(e,1)==na ? 1 : elements(e,2)==na ? 2 : -1;
       if( elementNodeNumber>=0 )
       {
-	elements(e,elementNodeNumber)=node;
-	break;
+        elements(e,elementNodeNumber)=node;
+        break;
       }
     }
   }
@@ -172,16 +172,16 @@ elementNormal(int na, int nb, int nc, realArray & nodes, real *N)
 // to the same surface patch. Obviously, a boundary face can not be swapped.
 bool
 swapFace(int f, FILE* infoFile,
-	 CompositeSurface & cs,
-	 int & numberOfNodes, realArray & nodes,
-	 int & numberOfElements, intArray & elements,
-	 int & numberOfFaces, intArray & faces,
-	 intArray & faceElements,
-	 intArray & elementFaces,
-	 intArray & elementSurface,
-	 intArray & elementCoordinates, 
-	 int & numberOfCoordinateNodes,
-	 realArray & rNodes )
+         CompositeSurface & cs,
+         int & numberOfNodes, realArray & nodes,
+         int & numberOfElements, intArray & elements,
+         int & numberOfFaces, intArray & faces,
+         intArray & faceElements,
+         intArray & elementFaces,
+         intArray & elementSurface,
+         intArray & elementCoordinates, 
+         int & numberOfCoordinateNodes,
+         realArray & rNodes )
 {
 // return code: true: successful swap
 //              false: swap illegal or not performed
@@ -242,7 +242,7 @@ swapFace(int f, FILE* infoFile,
   nd = elements(e2,(side2+2)%3);
 
 //  printf("na=%i, nb=%i, nc=%i, nd=%i, faces(f,0)=%i, faces(f,1)=%i\n", na, nb, nc, nd, 
-//	 faces(f,0), faces(f,1));
+//       faces(f,0), faces(f,1));
   
   
 // node numbers in rNodes can be different due to duplication at inter-patch boundaries
@@ -421,17 +421,17 @@ maxAngle(real *Ra, real *Rb, real *Rc)
 // refine by splitting a face. The adjacent elements will be splitted
 int 
 splitFace2(int f, FILE* infoFile,
-	   realArray & r, realArray & x,
-	   CompositeSurface & cs,
-	   int & numberOfNodes, realArray & nodes,
-	   int & numberOfElements, intArray & elements,
-	   int & numberOfFaces, intArray & faces,
-	   intArray & faceElements,
-	   intArray & elementFaces,
-	   intArray & elementSurface,
-	   intArray & elementCoordinates, 
-	   int & numberOfCoordinateNodes,
-	   realArray & rNodes )
+           realArray & r, realArray & x,
+           CompositeSurface & cs,
+           int & numberOfNodes, realArray & nodes,
+           int & numberOfElements, intArray & elements,
+           int & numberOfFaces, intArray & faces,
+           intArray & faceElements,
+           intArray & elementFaces,
+           intArray & elementSurface,
+           intArray & elementCoordinates, 
+           int & numberOfCoordinateNodes,
+           realArray & rNodes )
 {
   int splitSide, e = faceElements(f,0), e2 = faceElements(f,1);
 
@@ -439,7 +439,7 @@ splitFace2(int f, FILE* infoFile,
   if (infoFile)
   {
     fprintf(infoFile, "Entering splitFace2 to split face %i connecting nodes (%i, %i) and elements %i and %i\n", 
-	    f, faces(f,0), faces(f,1), e, e2);
+            f, faces(f,0), faces(f,1), e, e2);
   }
   
   Range R2=2, R3=3;
@@ -457,7 +457,7 @@ splitFace2(int f, FILE* infoFile,
   else
   {
     printf("Unable to find face %i in elementFaces(%i): (%i, %i, %i)\n", f, e,
-	   elementFaces(e,0), elementFaces(e,1), elementFaces(e,1));
+           elementFaces(e,0), elementFaces(e,1), elementFaces(e,1));
     exit(-1);
   }
   // split face splitSide
@@ -510,32 +510,32 @@ splitFace2(int f, FILE* infoFile,
 //      for (dir=0; dir<2; dir++)
 //      {
 //        if (rNodes(mv[mb],dir) < -.5)
-//  	r(0,dir) = rNodes(mv[mc],dir);
+//      r(0,dir) = rNodes(mv[mc],dir);
 //        else if (rNodes(mv[mc],dir) < -.5)
-//  	r(0,dir) = rNodes(mv[mb],dir);
+//      r(0,dir) = rNodes(mv[mb],dir);
 //        else
-//  	r(0,dir) = 0.5*(rNodes(mv[mb],dir) + rNodes(mv[mc],dir));
+//      r(0,dir) = 0.5*(rNodes(mv[mb],dir) + rNodes(mv[mc],dir));
 //      }
     if (infoFile)
     {
       fprintf(infoFile, "splitSide=%i, ma=%i, mb=%i, mc=%i\n", splitSide, ma, mb, mc);
       fprintf(infoFile, "faces(f,0)=%i, faces(f,1)=%i, elements(ma)=%i, elements(mb)=%i, elements(mc)=%i\n", 
-	      faces(f,0), faces(f,1), elements(e,ma), elements(e,mb), elements(e,mc));
+              faces(f,0), faces(f,1), elements(e,ma), elements(e,mb), elements(e,mc));
       fprintf(infoFile, "nodes(ma)=(%e,%e,%e)\n", nodes(elements(e,ma),0), nodes(elements(e,ma),1), 
-	      nodes(elements(e,ma),2));
+              nodes(elements(e,ma),2));
       fprintf(infoFile, "nodes(mb)=(%e,%e,%e)\n", nodes(elements(e,mb),0), nodes(elements(e,mb),1), 
-	      nodes(elements(e,mb),2));
+              nodes(elements(e,mb),2));
       fprintf(infoFile, "nodes(mc)=(%e,%e,%e)\n", nodes(elements(e,mc),0), nodes(elements(e,mc),1), 
-	      nodes(elements(e,mc),2));
+              nodes(elements(e,mc),2));
 
       fprintf(infoFile, "elementCoordinates(ma)=%i, elementCoordinates(mb)=%i, elementCoordinates(mc)=%i\n"
-	      "mv[ma]=%i, mv[mb]=%i, mv[mc]=%i\n",
-	      elementCoordinates(e,ma), elementCoordinates(e,mb), elementCoordinates(e,mc), mv[ma], mv[mb], mv[mc]);
+              "mv[ma]=%i, mv[mb]=%i, mv[mc]=%i\n",
+              elementCoordinates(e,ma), elementCoordinates(e,mb), elementCoordinates(e,mc), mv[ma], mv[mb], mv[mc]);
       
       fprintf(infoFile, "rNodes(mv[ma])=(%e,%e), rNodes(mv[mb])=(%e,%e) and rNodes(mv[mc])=(%e,%e)\n",
-	      rNodes(mv[ma],0), rNodes(mv[ma],1), 
-	      rNodes(mv[mb],0), rNodes(mv[mb],1), 
-	      rNodes(mv[mc],0), rNodes(mv[mc],1));
+              rNodes(mv[ma],0), rNodes(mv[ma],1), 
+              rNodes(mv[mb],0), rNodes(mv[mb],1), 
+              rNodes(mv[mc],0), rNodes(mv[mc],1));
       
       realArray rTest(3,2), xTest(3,3);
       int surf=elementSurface(e);
@@ -573,7 +573,7 @@ splitFace2(int f, FILE* infoFile,
     if (cosOrig[0] < -0.999)
     {
       printf("Very wide angle detected in triangle ma=%i, mb=%i, mc=%i\n", elementCoordinates(e,ma), 
-	     elementCoordinates(e,mb), elementCoordinates(e,mc));
+             elementCoordinates(e,mb), elementCoordinates(e,mc));
       printf("Ra=(%e,%e), Rb=(%e,%e), Rc=(%e,%e)\n", Ra[0], Ra[1], Rb[0], Rb[1], Rc[0], Rc[1]);
     }
     
@@ -581,7 +581,7 @@ splitFace2(int f, FILE* infoFile,
     if (cosOrig[1] < -0.999)
     {
       printf("Very wide angle detected in triangle mb=%i, md=%i, mc=%i, \n", elementCoordinates(e,mb), 
-	     elementCoordinates(e2,ma2), elementCoordinates(e,mc));
+             elementCoordinates(e2,ma2), elementCoordinates(e,mc));
       printf("Rb=(%e,%e), Rd=(%e,%e), Rc=(%e,%e)\n", Rb[0], Rb[1], Rd[0], Rd[1], Rc[0], Rc[1]);
     }
     real cosOrigMin = min(cosOrig[0], cosOrig[1]); // obtuse angles have cos < 0
@@ -668,11 +668,11 @@ splitFace2(int f, FILE* infoFile,
     for (dir=0; dir<2; dir++)
     {
       if (rNodes(mm0,dir) < -.5)
- 	rNodes(n2,dir) = rNodes(mm1,dir);
+        rNodes(n2,dir) = rNodes(mm1,dir);
       else if (rNodes(mm1,dir) < -.5)
- 	rNodes(n2,dir) = rNodes(mm0,dir);
+        rNodes(n2,dir) = rNodes(mm0,dir);
       else
- 	rNodes(n2,dir) = 0.5*(rNodes(mm0,dir) + rNodes(mm1,dir));
+        rNodes(n2,dir) = 0.5*(rNodes(mm0,dir) + rNodes(mm1,dir));
     }
     int s2=elementSurface(e2);
     const bool isTrimmedMapping = cs[s2].getClassName()=="TrimmedMapping";
@@ -687,7 +687,7 @@ splitFace2(int f, FILE* infoFile,
     if (infoFile)
     {
       fprintf(infoFile, "Adding rNodes=(%e,%e) between 2 patches by interpolating (%e,%e) and (%e,%e)\n",
-	     rNodes(n2,0), rNodes(n2,1), rNodes(mm0,0), rNodes(mm0,1), rNodes(mm1,0), rNodes(mm1,1));
+             rNodes(n2,0), rNodes(n2,1), rNodes(mm0,0), rNodes(mm0,1), rNodes(mm1,0), rNodes(mm1,1));
     }
     
     
@@ -752,17 +752,17 @@ splitFace2(int f, FILE* infoFile,
   if (infoFile)
   {
     fprintf(infoFile,"Exiting splitFace2, New node %i, new elements %i and %i, splitSide=%i, splitSide2=%i.\n", 
-	    newNode, e3, e4, splitSide, splitSide2);
+            newNode, e3, e4, splitSide, splitSide2);
     fprintf(infoFile,"face %i now connects nodes (%i, %i) and elements %i and %i\n", 
-	    f, faces(f,0), faces(f,1), faceElements(f,0), faceElements(f,1));
+            f, faces(f,0), faces(f,1), faceElements(f,0), faceElements(f,1));
     fprintf(infoFile,"New face %i now connects nodes (%i, %i) and elements %i and %i\n", 
-	    f2, faces(f2,0), faces(f2,1), faceElements(f2,0), faceElements(f2,1));
+            f2, faces(f2,0), faces(f2,1), faceElements(f2,0), faceElements(f2,1));
     fprintf(infoFile,"New face %i now connects nodes (%i, %i) and elements %i and %i\n", 
-	    f3, faces(f3,0), faces(f3,1), faceElements(f3,0), faceElements(f3,1));
+            f3, faces(f3,0), faces(f3,1), faceElements(f3,0), faceElements(f3,1));
     if (e2 >= 0)
     {
       fprintf(infoFile,"New face %i now connects nodes (%i, %i) and elements %i and %i\n", 
-	      f4, faces(f4,0), faces(f4,1), faceElements(f4,0), faceElements(f4,1));
+              f4, faces(f4,0), faces(f4,1), faceElements(f4,0), faceElements(f4,1));
       fprintf(infoFile,"This was an interior face\n");
     }
     else
@@ -786,16 +786,16 @@ splitFace2(int f, FILE* infoFile,
 // ==================================================================================================
 int 
 splitFace(int e, int side,
-	  CompositeSurface & cs,
-	  int & numberOfNodes, realArray & nodes,
-	  int & numberOfElements, intArray & elements,
-	  int & numberOfFaces, intArray & faces,
-	  intArray & faceElements,
-	  intArray & elementFaces,
-	  intArray & elementSurface,
-	  intArray & elementCoordinates, 
-	  int & numberOfCoordinateNodes,
-	  realArray & rNodes )
+          CompositeSurface & cs,
+          int & numberOfNodes, realArray & nodes,
+          int & numberOfElements, intArray & elements,
+          int & numberOfFaces, intArray & faces,
+          intArray & faceElements,
+          intArray & elementFaces,
+          intArray & elementSurface,
+          intArray & elementCoordinates, 
+          int & numberOfCoordinateNodes,
+          realArray & rNodes )
 {
 
   int longSide=side;
@@ -993,16 +993,16 @@ splitFace(int e, int side,
 // ==================================================================================================
 int 
 splitElement(int e, 
-	     CompositeSurface & cs,
-	     int & numberOfNodes, realArray & nodes,
-	     int & numberOfElements, intArray & elements,
-	     int & numberOfFaces, intArray & faces,
-	     intArray & faceElements,
-	     intArray & elementFaces,
-	     intArray & elementSurface,
-	     intArray & elementCoordinates, 
-	     int & numberOfCoordinateNodes,
-	     realArray & rNodes )
+             CompositeSurface & cs,
+             int & numberOfNodes, realArray & nodes,
+             int & numberOfElements, intArray & elements,
+             int & numberOfFaces, intArray & faces,
+             intArray & faceElements,
+             intArray & elementFaces,
+             intArray & elementSurface,
+             intArray & elementCoordinates, 
+             int & numberOfCoordinateNodes,
+             realArray & rNodes )
 {
 
   int n0=elements(e,0), n1=elements(e,1), n2=elements(e,2);
@@ -1114,15 +1114,15 @@ splitElement(int e,
 // ===================================================================================================
 int
 improveTriangulation( CompositeSurface & cs, real maxDist, real maxArea,
-		      int & numberOfNodes, realArray & nodes,
-		      int & numberOfElements, intArray & elements,
-		      int & numberOfFaces, intArray & faces,
-		      intArray & faceElements,
-		      intArray & elementFaces,
-		      intArray & elementSurface,
-		      intArray & elementCoordinates, 
+                      int & numberOfNodes, realArray & nodes,
+                      int & numberOfElements, intArray & elements,
+                      int & numberOfFaces, intArray & faces,
+                      intArray & faceElements,
+                      intArray & elementFaces,
+                      intArray & elementSurface,
+                      intArray & elementCoordinates, 
                       int & numberOfCoordinateNodes,
-		      realArray & rNodes)
+                      realArray & rNodes)
 {
   int debug=0;
   // real maxArea = maximumArea < REAL_MAX ? maximumArea : .05; // , dist; // hardwired for now
@@ -1173,27 +1173,27 @@ improveTriangulation( CompositeSurface & cs, real maxDist, real maxArea,
 
       int nFaces=0;
       for( f=0; f<endFace; f++ )
-	if (evaluate(f))
-	{
+        if (evaluate(f))
+        {
 // we need to go through one of the adjacent elements to look up elementCoordinates
 // always work with the first element (the second element is absent for boundary faces)
-	  e = faceElements(f,0);
+          e = faceElements(f,0);
 // only do surface #s
-	  if (elementSurface(e) == s)
-	  {
+          if (elementSurface(e) == s)
+          {
 // which face of element e does f correspond to?
-	    if (elementFaces(e,0) == f)
-	      longSide = 0;
-	    else if (elementFaces(e,1) == f)
-	      longSide = 1;
-	    else if (elementFaces(e,2) == f)
-	      longSide = 2;
-	    else
-	    {
-	      printf("Unable to find face %i in elementFaces(%i): (%i, %i, %i)\n", f, e,
-		     elementFaces(e,0), elementFaces(e,1), elementFaces(e,1));
-	      exit(-1);
-	    }
+            if (elementFaces(e,0) == f)
+              longSide = 0;
+            else if (elementFaces(e,1) == f)
+              longSide = 1;
+            else if (elementFaces(e,2) == f)
+              longSide = 2;
+            else
+            {
+              printf("Unable to find face %i in elementFaces(%i): (%i, %i, %i)\n", f, e,
+                     elementFaces(e,0), elementFaces(e,1), elementFaces(e,1));
+              exit(-1);
+            }
     
     
 // split face longSide
@@ -1204,48 +1204,48 @@ improveTriangulation( CompositeSurface & cs, real maxDist, real maxArea,
 //          /      |
 //        /        |
 //       -----------m0
-//       m2	
+//       m2     
     int m0=(longSide+2)%3, m1=longSide, m2=(longSide+1)%3;
-	    int na=elements(e,m0), nb=elements(e,m1), nc=elements(e,m2);
-	    int ma=elementCoordinates(e,m0), mb=elementCoordinates(e,m1), mc=elementCoordinates(e,m2);
+            int na=elements(e,m0), nb=elements(e,m1), nc=elements(e,m2);
+            int ma=elementCoordinates(e,m0), mb=elementCoordinates(e,m1), mc=elementCoordinates(e,m2);
       
 // face longSide: connecting nodes #nb and #nc
-	    x(f,0) = 0.5*(nodes(nb,0) + nodes(nc,0));
-	    x(f,1) = 0.5*(nodes(nb,1) + nodes(nc,1));
-	    x(f,2) = 0.5*(nodes(nb,2) + nodes(nc,2));
+            x(f,0) = 0.5*(nodes(nb,0) + nodes(nc,0));
+            x(f,1) = 0.5*(nodes(nb,1) + nodes(nc,1));
+            x(f,2) = 0.5*(nodes(nb,2) + nodes(nc,2));
     
 // parameter coordinate for the new node. Disregard coordinate singularities
-	    int dir;
-	    for (dir=0; dir<2; dir++)
-	    {
-	      if (rNodes(mb,dir) < -.5)
-	      {
-		printf("detected singular node rNodes(%i,%i)=%e\n", mb, dir, rNodes(mb,dir));
-		rtmp(nFaces,dir) = rNodes(mc,dir);
-	      }
-	      else if (rNodes(mc,dir) < -.5)
-	      {
-		printf("detected singular node rNodes(%i,%i)=%e\n", mc, dir, rNodes(mc,dir));
-		rtmp(nFaces,dir) = rNodes(mb,dir);
-	      }
-	      else
-		rtmp(nFaces,dir) = 0.5*(rNodes(mb,dir) + rNodes(mc,dir));
-	    }
+            int dir;
+            for (dir=0; dir<2; dir++)
+            {
+              if (rNodes(mb,dir) < -.5)
+              {
+                printf("detected singular node rNodes(%i,%i)=%e\n", mb, dir, rNodes(mb,dir));
+                rtmp(nFaces,dir) = rNodes(mc,dir);
+              }
+              else if (rNodes(mc,dir) < -.5)
+              {
+                printf("detected singular node rNodes(%i,%i)=%e\n", mc, dir, rNodes(mc,dir));
+                rtmp(nFaces,dir) = rNodes(mb,dir);
+              }
+              else
+                rtmp(nFaces,dir) = 0.5*(rNodes(mb,dir) + rNodes(mc,dir));
+            }
 
-	    if (infoFile)
-	    {
-	      if (rtmp(nFaces,0) < -.5 || rtmp(nFaces,1) < -.5)
-	      {
-		printf("Created new negative rNode=(%e,%e) by interpolating (%e,%e) and (%e,%e)\n",
-		       rtmp(nFaces,0), rtmp(nFaces,1), rNodes(mb,0), rNodes(mb,1), rNodes(mc,0), rNodes(mc,1));
-	      }
-	    }
+            if (infoFile)
+            {
+              if (rtmp(nFaces,0) < -.5 || rtmp(nFaces,1) < -.5)
+              {
+                printf("Created new negative rNode=(%e,%e) by interpolating (%e,%e) and (%e,%e)\n",
+                       rtmp(nFaces,0), rtmp(nFaces,1), rNodes(mb,0), rNodes(mb,1), rNodes(mc,0), rNodes(mc,1));
+              }
+            }
 // testing inversemap
-	    xtmp(nFaces,R3)=x(f,R3);
-	    
-	    nFaces++;
-	  }
-	} // end if evaluate(f)...
+            xtmp(nFaces,R3)=x(f,R3);
+            
+            nFaces++;
+          }
+        } // end if evaluate(f)...
       
     
 // rtmp now contains all parameter coordinates for surface #s
@@ -1264,19 +1264,19 @@ improveTriangulation( CompositeSurface & cs, real maxDist, real maxArea,
 // copy xtmp to the right spot in xp
       nFaces=0;
       for( f=0; f<endFace; f++ )
-	if (evaluate(f))
-	{
+        if (evaluate(f))
+        {
 // we need to go through one of the adjacent elements to look up elementCoordinates
 // always work with the first element (the second element is absent for boundary faces)
-	  e = faceElements(f,0);
+          e = faceElements(f,0);
 // only do surface #s
-	  if (elementSurface(e) == s)
-	  {
-	    rp(f,R2) = rtmp(nFaces,R2);
-	    xp(f,R3) = xtmp(nFaces,R3);
-	    nFaces++;
-	  }
-	}
+          if (elementSurface(e) == s)
+          {
+            rp(f,R2) = rtmp(nFaces,R2);
+            xp(f,R3) = xtmp(nFaces,R3);
+            nFaces++;
+          }
+        }
     } // end for s=0...cs.numberOfSubSurfaces()
   
     printf("Done evaluating all faces...\n");
@@ -1287,107 +1287,107 @@ improveTriangulation( CompositeSurface & cs, real maxDist, real maxArea,
     for (f=0; f<endFace; f++)
       if (evaluate(f))
       {
-	dist = sqrt(SQR(xp(f,0) - x(f,0)) + SQR(xp(f,1) - x(f,1)) + SQR(xp(f,2) - x(f,2)));
+        dist = sqrt(SQR(xp(f,0) - x(f,0)) + SQR(xp(f,1) - x(f,1)) + SQR(xp(f,2) - x(f,2)));
 // decide if we need to refine face longSide
-	if (dist > maxDist)
-	{
+        if (dist > maxDist)
+        {
 // refine this element 
 //      printf("refine face %i (out of %i faces), distance %e\n", f, numberOfFaces, dist);
 
 // increase array sizes if necessary
-	  if( numberOfNodes+1 >=nodes.getLength(0) )
-	  {
-	    int newNumberOfNodes=numberOfNodes+100;  // how many should we add??
-	    nodes.resize(newNumberOfNodes,3);  
-	  }
-	  if( numberOfCoordinateNodes+2 >= rNodes.getLength(0) )
-	  {
-	    int newNumberOfCoordinateNodes=numberOfCoordinateNodes+100;  // how many should we add??
-	    rNodes.resize(newNumberOfCoordinateNodes,2);
-	  }
+          if( numberOfNodes+1 >=nodes.getLength(0) )
+          {
+            int newNumberOfNodes=numberOfNodes+100;  // how many should we add??
+            nodes.resize(newNumberOfNodes,3);  
+          }
+          if( numberOfCoordinateNodes+2 >= rNodes.getLength(0) )
+          {
+            int newNumberOfCoordinateNodes=numberOfCoordinateNodes+100;  // how many should we add??
+            rNodes.resize(newNumberOfCoordinateNodes,2);
+          }
       
-	  if( numberOfElements+2 >=elements.getLength(0) )
-	  {
-	    int newNumberOfElements=numberOfElements+100;
-	    elements.resize(newNumberOfElements,3);
-	    elementFaces.resize(newNumberOfElements,3);
-	    elementCoordinates.resize(newNumberOfElements,3);
-	    elementSurface.resize(newNumberOfElements);
-	  }
-	  if( numberOfFaces+3 >=faces.getLength(0) )
-	  {
-	    int newNumberOfFaces=numberOfFaces+100;
-	    faces.resize(newNumberOfFaces,2);
-	    faceElements.resize(newNumberOfFaces,2);
-	  }
+          if( numberOfElements+2 >=elements.getLength(0) )
+          {
+            int newNumberOfElements=numberOfElements+100;
+            elements.resize(newNumberOfElements,3);
+            elementFaces.resize(newNumberOfElements,3);
+            elementCoordinates.resize(newNumberOfElements,3);
+            elementSurface.resize(newNumberOfElements);
+          }
+          if( numberOfFaces+3 >=faces.getLength(0) )
+          {
+            int newNumberOfFaces=numberOfFaces+100;
+            faces.resize(newNumberOfFaces,2);
+            faceElements.resize(newNumberOfFaces,2);
+          }
 
 // before splitting, figure out candidates for face swapping
-	  int swapF[4], nSwap=0, el[2];
-	  el[0] = faceElements(f,0); 
-	  el[1] = faceElements(f,1); // might be a boundary element with only one face
+          int swapF[4], nSwap=0, el[2];
+          el[0] = faceElements(f,0); 
+          el[1] = faceElements(f,1); // might be a boundary element with only one face
 // should try to swap all faces != f
-	  int qq;
-	  for (qq=0; qq<2; qq++)
-	    if (el[qq] >= 0 )
-	    {
-	      if (elementFaces(el[qq],0) == f)
-	      {
-		swapF[nSwap++] = elementFaces(el[qq],1);
-		swapF[nSwap++] = elementFaces(el[qq],2);
-	      }
-	      else if (elementFaces(el[qq],1) == f)
-	      {
-		swapF[nSwap++] = elementFaces(el[qq],0);
-		swapF[nSwap++] = elementFaces(el[qq],2);
-	      }
-	      else if (elementFaces(el[qq],2) == f)
-	      {
-		swapF[nSwap++] = elementFaces(el[qq],0);
-		swapF[nSwap++] = elementFaces(el[qq],1);
-	      }
-	      else
-	      {
-		printf("Warning: could not find face %i in elementFaces for element %i\n", f, el[qq]);
-	      }
-	    }
+          int qq;
+          for (qq=0; qq<2; qq++)
+            if (el[qq] >= 0 )
+            {
+              if (elementFaces(el[qq],0) == f)
+              {
+                swapF[nSwap++] = elementFaces(el[qq],1);
+                swapF[nSwap++] = elementFaces(el[qq],2);
+              }
+              else if (elementFaces(el[qq],1) == f)
+              {
+                swapF[nSwap++] = elementFaces(el[qq],0);
+                swapF[nSwap++] = elementFaces(el[qq],2);
+              }
+              else if (elementFaces(el[qq],2) == f)
+              {
+                swapF[nSwap++] = elementFaces(el[qq],0);
+                swapF[nSwap++] = elementFaces(el[qq],1);
+              }
+              else
+              {
+                printf("Warning: could not find face %i in elementFaces for element %i\n", f, el[qq]);
+              }
+            }
 
-	  splitFace2(f, infoFile,
-		     rp, xp,
-		     cs,
-		     numberOfNodes, nodes,
-		     numberOfElements,elements,
-		     numberOfFaces,faces,
-		     faceElements,
-		     elementFaces,
-		     elementSurface,
-		     elementCoordinates, 
-		     numberOfCoordinateNodes,
-		     rNodes );
+          splitFace2(f, infoFile,
+                     rp, xp,
+                     cs,
+                     numberOfNodes, nodes,
+                     numberOfElements,elements,
+                     numberOfFaces,faces,
+                     faceElements,
+                     elementFaces,
+                     elementSurface,
+                     elementCoordinates, 
+                     numberOfCoordinateNodes,
+                     rNodes );
 
 // attempt to swap neighboring faces to minimize jump in normal
-	  for (qq=0; qq< nSwap; qq++)
-	  {
-	    swapFace(swapF[qq], infoFile, cs,
-		     numberOfNodes, nodes,
-		     numberOfElements, elements,
-		     numberOfFaces, faces,
-		     faceElements,
-		     elementFaces,
-		     elementSurface,
-		     elementCoordinates, 
-		     numberOfCoordinateNodes,
-		     rNodes );
-//	    evaluate(swapF[qq]) = 1; // check this face again
-	  }
+          for (qq=0; qq< nSwap; qq++)
+          {
+            swapFace(swapF[qq], infoFile, cs,
+                     numberOfNodes, nodes,
+                     numberOfElements, elements,
+                     numberOfFaces, faces,
+                     faceElements,
+                     elementFaces,
+                     elementSurface,
+                     elementCoordinates, 
+                     numberOfCoordinateNodes,
+                     rNodes );
+//          evaluate(swapF[qq]) = 1; // check this face again
+          }
 
-	  numberOfElementsAdded=numberOfElements-initialNumberOfElements;
-	  numberOfFacesSplitted++;
-	  evaluate(f) = 1; // check this face again
-	}
-	else
-	{
-	  evaluate(f) = 0; // this face doesn't need to be checked again
-	}
+          numberOfElementsAdded=numberOfElements-initialNumberOfElements;
+          numberOfFacesSplitted++;
+          evaluate(f) = 1; // check this face again
+        }
+        else
+        {
+          evaluate(f) = 0; // this face doesn't need to be checked again
+        }
       } // end splitting (if (evaluate(f)), for f=0...endFace)
 
 // loop through all faces to swap any remaining irregularities
@@ -1395,15 +1395,15 @@ improveTriangulation( CompositeSurface & cs, real maxDist, real maxArea,
 //      printf("Looping through all faces again to swap any remaining irregular normals\n");;
 //      for (f=0; f<endFace; f++)
 //        swapFace(f, infoFile, cs,
-//  	       numberOfNodes, nodes,
-//  	       numberOfElements, elements,
-//  	       numberOfFaces, faces,
-//  	       faceElements,
-//  	       elementFaces,
-//  	       elementSurface,
-//  	       elementCoordinates, 
-//  	       numberOfCoordinateNodes,
-//  	       rNodes );
+//             numberOfNodes, nodes,
+//             numberOfElements, elements,
+//             numberOfFaces, faces,
+//             faceElements,
+//             elementFaces,
+//             elementSurface,
+//             elementCoordinates, 
+//             numberOfCoordinateNodes,
+//             rNodes );
     
 //
 // now we need to resize evaluate to include all new faces and initialize all new elements to 1    
@@ -1427,7 +1427,7 @@ improveTriangulation( CompositeSurface & cs, real maxDist, real maxArea,
     fclose(infoFile);
   
   printf("improveTriangulation: splitted %i faces, totalNumberOfFaces=%i, total CPU time = %e, mapTime = %e\n", 
-	 numberOfFacesSplitted, numberOfFaces, getCPU()-time1, mapTime);
+         numberOfFacesSplitted, numberOfFaces, getCPU()-time1, mapTime);
 //  printf("improveTriangulation: %i elements added\n", numberOfElementsAdded);
 
   return 0;
@@ -1519,10 +1519,10 @@ addInteriorNodes(int & numberOfNodes, Mapping & surface, real & aspectRatio,
       // remove the closest point on the background grid
       if( i0>=0 && i0<nx && i1>=0 && i1<ny && mask(i0,i1) )
       {
- 	// printf(" Curve face (%8.2e,%8.2e)- (%8.2e,%8.2e) pt (%8.2e,%8.2e) is close to background grid point (%i,%i)\n",
- 	//  r0,r1,s0,s1,ra,rb,i0,i1);
-	numberRemoved++;
-	mask(i0,i1)=0;
+        // printf(" Curve face (%8.2e,%8.2e)- (%8.2e,%8.2e) pt (%8.2e,%8.2e) is close to background grid point (%i,%i)\n",
+        //  r0,r1,s0,s1,ra,rb,i0,i1);
+        numberRemoved++;
+        mask(i0,i1)=0;
       }
     }
     
@@ -1532,7 +1532,7 @@ addInteriorNodes(int & numberOfNodes, Mapping & surface, real & aspectRatio,
 
   Range I1=nx, I2=ny, R2=2;
   Range I=nx*ny;
-	
+        
   if( false )
   {
     numberRemoved=nx*ny;
@@ -1544,7 +1544,7 @@ addInteriorNodes(int & numberOfNodes, Mapping & surface, real & aspectRatio,
       r2(I1,i2,1)=i2/real(ny-1);
     for( int i1=0; i1<nx; i1++ )
       r2(i1,I2,0)=i1/real(nx-1);
-	
+        
     r2.reshape(nx*ny,2);
     rc.resize(numberOfNodes+nx*ny-numberRemoved,2);
     if( numberRemoved==0 )
@@ -1560,11 +1560,11 @@ addInteriorNodes(int & numberOfNodes, Mapping & surface, real & aspectRatio,
       int j=numberOfNodes;
       for( int i=0; i<nx*ny; i++ )
       {
-	if( mask(i) )
-	{
-	  rc(j,0)=r2(i,0); rc(j,1)=r2(i,1);
-	  j++;
-	}
+        if( mask(i) )
+        {
+          rc(j,0)=r2(i,0); rc(j,1)=r2(i,1);
+          j++;
+        }
       }
       assert( j == (numberOfNodes+nx*ny-numberRemoved) );
       numberOfNodes=j;
@@ -1582,20 +1582,20 @@ addInteriorNodes(int & numberOfNodes, Mapping & surface, real & aspectRatio,
 // ==================================================================================================
 int CompositeTopology::
 buildSubSurfaceTriangulation(int s, 
-			     IntegerArray & numberOfBoundaryNodes, 
-			     realArray *rCoordinates,
-			     IntegerArray *edgeNodeInfop,
-			     IntegerArray *boundaryNodeInfop,
-			     int & totalNumberOfNodes,
-			     int & totalNumberOfFaces,
-			     int & totalNumberOfElements,
-			     real & totalTimeToBuildSeparateTriangulations,
-			     real & totalTriangleTime,
-			     real & totalNurbTime,
-			     real & totalResolutionTime,
+                             IntegerArray & numberOfBoundaryNodes, 
+                             realArray *rCoordinates,
+                             IntegerArray *edgeNodeInfop,
+                             IntegerArray *boundaryNodeInfop,
+                             int & totalNumberOfNodes,
+                             int & totalNumberOfFaces,
+                             int & totalNumberOfElements,
+                             real & totalTimeToBuildSeparateTriangulations,
+                             real & totalTriangleTime,
+                             real & totalNurbTime,
+                             real & totalResolutionTime,
                              int & debug,
-			     GenericGraphicsInterface & gi,
-			     GraphicsParameters& params)
+                             GenericGraphicsInterface & gi,
+                             GraphicsParameters& params)
 {
   real times=getCPU();
   int debugs=0;
@@ -1609,13 +1609,13 @@ buildSubSurfaceTriangulation(int s,
     Loop & currentLoop = currentFace.loop[l];
     int sc;
     for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-	 sc++, e=e->next )
+         sc++, e=e->next )
     {
       if (e->status == EdgeInfo::edgeCurveIsNotUsed)
       {
-	printf("Deleting unused edge %i\n", e->edgeNumber);
-	currentLoop.removeEdge(e);
-	delete e;
+        printf("Deleting unused edge %i\n", e->edgeNumber);
+        currentLoop.removeEdge(e);
+        delete e;
       }
     }
   }
@@ -1627,7 +1627,7 @@ buildSubSurfaceTriangulation(int s,
   Mapping & surface = cs[s];
   
   const bool isTrimmedMapping = surface.getClassName()=="TrimmedMapping";
-	
+        
 // if surface is a TrimmedMapping, we build the triangulation on the underlying reference surface
   Mapping & referenceSurface = !isTrimmedMapping ? surface : *((TrimmedMapping&)surface).untrimmedSurface();
 
@@ -1638,7 +1638,7 @@ buildSubSurfaceTriangulation(int s,
     Loop & currentLoop = currentFace.loop[l];
     int sc, ne=currentLoop.numberOfEdges();
     for (sc = 0, e = currentLoop.firstEdge; sc<ne; 
-	 sc++, e=e->next )
+         sc++, e=e->next )
     {
       int numEdge = e->curve->getNURBS()->getGridDimensions(axis1);
       numberOfEdgePoints += numEdge - 1;
@@ -1646,11 +1646,11 @@ buildSubSurfaceTriangulation(int s,
       IntegerArray & edgeNodeInfo = edgeNodeInfop[e->edgeNumber];
       if( edgeNodeInfo.getLength(0)==0 )
       {
-//  	printf("buildSubSurfaceTri: dimensioning edgeNodeInfop[%i], numEdge=%i\n", e->edgeNumber, 
-//  	       numEdge);
-	// the first time we see an edge curve, allocate space in the edgeNodeInfo array
-	edgeNodeInfo.redim(numEdge);
-	edgeNodeInfo=-1;
+//      printf("buildSubSurfaceTri: dimensioning edgeNodeInfop[%i], numEdge=%i\n", e->edgeNumber, 
+//             numEdge);
+        // the first time we see an edge curve, allocate space in the edgeNodeInfo array
+        edgeNodeInfo.redim(numEdge);
+        edgeNodeInfo=-1;
       }
     }
   }
@@ -1731,16 +1731,16 @@ buildSubSurfaceTriangulation(int s,
       //            cout<<"curve "<<sc<<" has "<<g.getLength(0)<<" points "<<endl;
       // kkc refine g so that it satisfies the distance tolerances
       if ( improveTri )
-	{
-	  //	  debug |= 8;
-	  //	  debug |= 3;
-	  Mapping *m1=NULL,*m2=NULL;
+        {
+          //      debug |= 8;
+          //      debug |= 3;
+          Mapping *m1=NULL,*m2=NULL;
 
-	  m1 = e->master ? &cs[e->master->faceNumber] : &surface;
-	  m2 = e->slave ? &cs[e->slave->faceNumber] : NULL;
-	  refineCurve( edgeMap, m1, m2, maxDist, maxDist, g);
-	  cout<<"refined curve has "<<g.getLength(0)<<" points"<<endl;
-	}
+          m1 = e->master ? &cs[e->master->faceNumber] : &surface;
+          m2 = e->slave ? &cs[e->slave->faceNumber] : NULL;
+          refineCurve( edgeMap, m1, m2, maxDist, maxDist, g);
+          cout<<"refined curve has "<<g.getLength(0)<<" points"<<endl;
+        }
 
       I = g.getLength(0); 
       assert( I.getBase()==0 );
@@ -1767,12 +1767,12 @@ buildSubSurfaceTriangulation(int s,
       real rerr = 0;
       if ( false &&  // *wdh* 050513 -- do not do this test since it builds the quad tree
            isTrimmedMapping )
-	{ // check the inversion on the trimmed mapping, if the underlying surface
-	  // is bad or periodic a correction may be needed
-	  surface.inverseMap(xLocal, rLocal_test);
-	  rerr = max(fabs(rLocal-rLocal_test));
-	  err = max(err,rerr);
-	}
+        { // check the inversion on the trimmed mapping, if the underlying surface
+          // is bad or periodic a correction may be needed
+          surface.inverseMap(xLocal, rLocal_test);
+          rerr = max(fabs(rLocal-rLocal_test));
+          err = max(err,rerr);
+        }
 
       //      printf("Max mapping error before periodic correction: %e\n", err);
     //    Overture::getGraphicsInterface()->plotPoints(rLocal);
@@ -1780,85 +1780,85 @@ buildSubSurfaceTriangulation(int s,
       //      rLocal.display("rLocal");
       if( err > xScale*1.e-2 ) // AP increased to 1.e-2 from 1.e-3 (feeling brave today)
       {
-	printf("**WARNING** errors inverting loop %i, sub-curve %i onto surface s=%i, "
-	       " err=%8.2e, rel.err=%8.2e .. will try to fix...\n",
-	       currentLoop.firstEdge->loopNumber, sc, s, err, err/xScale);
-	int k;
-	if( debug & 2 )
-	{
-	  for( k=0; k<=I.getBound(); k++ )
-	  {
-	    printf("BEFORE: k=%i g=(%8.3e,%8.3e,%8.3e) r=(%8.3e,%8.3e) \n",k,g(k,0),g(k,1),g(k,2),
-		   rLocal(k,0),rLocal(k,1));
-	  }
-	}
+        printf("**WARNING** errors inverting loop %i, sub-curve %i onto surface s=%i, "
+               " err=%8.2e, rel.err=%8.2e .. will try to fix...\n",
+               currentLoop.firstEdge->loopNumber, sc, s, err, err/xScale);
+        int k;
+        if( debug & 2 )
+        {
+          for( k=0; k<=I.getBound(); k++ )
+          {
+            printf("BEFORE: k=%i g=(%8.3e,%8.3e,%8.3e) r=(%8.3e,%8.3e) \n",k,g(k,0),g(k,1),g(k,2),
+                   rLocal(k,0),rLocal(k,1));
+          }
+        }
 // fix the problem by projecting onto trimming curves in the parameter plane
-	if ((e->curve->surfaceNumber == s && e->curve->subCurve != NULL) || 
-	    (e->initialCurve->surfaceNumber == s && e->initialCurve->subCurve != NULL))
-	{
-	  printf("Trying to fix inversion problem by projecting onto trim curves, \n"
-		 "s=%i, curve->surfaceNumber=%i, initialCurve->surfaceNumber=%i\n", s, 
-		 e->curve->surfaceNumber, e->initialCurve->surfaceNumber);
+        if ((e->curve->surfaceNumber == s && e->curve->subCurve != NULL) || 
+            (e->initialCurve->surfaceNumber == s && e->initialCurve->subCurve != NULL))
+        {
+          printf("Trying to fix inversion problem by projecting onto trim curves, \n"
+                 "s=%i, curve->surfaceNumber=%i, initialCurve->surfaceNumber=%i\n", s, 
+                 e->curve->surfaceNumber, e->initialCurve->surfaceNumber);
 // either use e->curve or e->initialCurve
-	  CurveSegment *curve;
-	  if (e->curve->surfaceNumber == s && e->curve->subCurve != NULL)
-	  {
-	    curve = e->curve;
-	  }
-	  else
-	  {
-	    curve = e->initialCurve;
-	  }
+          CurveSegment *curve;
+          if (e->curve->surfaceNumber == s && e->curve->subCurve != NULL)
+          {
+            curve = e->curve;
+          }
+          else
+          {
+            curve = e->initialCurve;
+          }
 // both the trimmed and un-trimmed cases should have subCurves in parameter space!
-	  if (curve->subCurve != NULL)
-	  {
-//  	    assert(isTrimmedMapping);
-//  	    TrimmedMapping & trim = (TrimmedMapping&)surface;
+          if (curve->subCurve != NULL)
+          {
+//          assert(isTrimmedMapping);
+//          TrimmedMapping & trim = (TrimmedMapping&)surface;
 // this is the (2D) curve in the parameter plane
-//	    NurbsMapping & trimCurve = * curve->surfaceLoop;
-//	    NurbsMapping & subCurve = * curve->subCurve;
-	    
+//          NurbsMapping & trimCurve = * curve->surfaceLoop;
+//          NurbsMapping & subCurve = * curve->subCurve;
+            
 // project g onto curve -> r1, use the trimCurve to map r1 -> rLocal
-	    realArray r1(I,1);
-	    curve->getNURBS()->inverseMap(g, r1);
-	    curve->subCurve->map(r1, rLocal);
+            realArray r1(I,1);
+            curve->getNURBS()->inverseMap(g, r1);
+            curve->subCurve->map(r1, rLocal);
 
-	    referenceSurface.map(rLocal, xLocal);
-	    real err = max(fabs(g-xLocal));
-	    printf("**INFO** after fixing: max err inverting loop %i onto surface s=%i, "
-		   " err=%8.2e, rel.err=%8.2e\n",
-		   currentLoop.firstEdge->loopNumber, s, err, err/xScale);
-	  }
+            referenceSurface.map(rLocal, xLocal);
+            real err = max(fabs(g-xLocal));
+            printf("**INFO** after fixing: max err inverting loop %i onto surface s=%i, "
+                   " err=%8.2e, rel.err=%8.2e\n",
+                   currentLoop.firstEdge->loopNumber, s, err, err/xScale);
+          }
 // untrimmed case: this is a boundary curve
-	  else
-	  {
-	    printf("***ERROR*** Can't fix the inversion since the curve doesn't have a counterpart in parameter space,\n"
-		   "ANDERS, GET YOUR ACT TOGETHER!\n");
-//  	    int sc = curve->boundaryCurve;
-	    
-//  	    const int axis = (sc+1) % 2;
-//  	    const int side = ((sc+1)/2) %2;
-//  	    printf("The untrimmed case: sc = %i, axis = %i, side = %i\n", sc, axis, side);
-//  	    realArray r1(I,1);
-//  	    curve->getNURBS()->inverseMap(g, r1);
-//  	    int axisp1 = (axis+1) %2;
-//  	    rLocal(I,axis)=(real)side;
-//  	    if( sc<2 )
-//  	    {
-//  	      rLocal(I,axisp1) = r1(I,0);
-//  	    }
-//  	    else
-//  	    {
-//  	      rLocal(I,axisp1) = 1. - r1(I,0);
-//  	    }
-	  }
-	  
-	}
-	else
-	{
-	  printf("***ERROR*** Can't fix the inversion since the curve doesn't have a counterpart in parameter space,\n"
-		 "i.e., it is the result of a split or join operation!\n ANDERS, GET YOUR ACT TOGETHER!\n");
-	}
+          else
+          {
+            printf("***ERROR*** Can't fix the inversion since the curve doesn't have a counterpart in parameter space,\n"
+                   "ANDERS, GET YOUR ACT TOGETHER!\n");
+//          int sc = curve->boundaryCurve;
+            
+//          const int axis = (sc+1) % 2;
+//          const int side = ((sc+1)/2) %2;
+//          printf("The untrimmed case: sc = %i, axis = %i, side = %i\n", sc, axis, side);
+//          realArray r1(I,1);
+//          curve->getNURBS()->inverseMap(g, r1);
+//          int axisp1 = (axis+1) %2;
+//          rLocal(I,axis)=(real)side;
+//          if( sc<2 )
+//          {
+//            rLocal(I,axisp1) = r1(I,0);
+//          }
+//          else
+//          {
+//            rLocal(I,axisp1) = 1. - r1(I,0);
+//          }
+          }
+          
+        }
+        else
+        {
+          printf("***ERROR*** Can't fix the inversion since the curve doesn't have a counterpart in parameter space,\n"
+                 "i.e., it is the result of a split or join operation!\n ANDERS, GET YOUR ACT TOGETHER!\n");
+        }
       } // end if err > 1.e-2*xScale
 
       ok=true; //  let go by default false;
@@ -1866,65 +1866,65 @@ buildSubSurfaceTriangulation(int s,
 
       if ( improveTri )
       {
-	// kkc the size of xLoop may need to be increased
-	if ( xLoop.getLength(0) < (I.length()+nEPL) )
-	{
-	  xLoop.resize(nEPL + 2*I.length(),3); // multiply by 2 to buffer for the next 
-	  r.resize(nEPL + 2*I.length(),2);
-	  int oldSize = boundaryNodeInfo.getLength(0);
-	  boundaryNodeInfo.resize(nEPL + 2*I.length(),2);
-	  boundaryNodeInfo(Range(oldSize,boundaryNodeInfo.getLength(0)-1),Range(2)) = -1;
-	      
-	  rc.resize(nEPL + 2*I.length(),2);
-	  faces.resize(nEPL + 2*I.length(),2);
-	}
+        // kkc the size of xLoop may need to be increased
+        if ( xLoop.getLength(0) < (I.length()+nEPL) )
+        {
+          xLoop.resize(nEPL + 2*I.length(),3); // multiply by 2 to buffer for the next 
+          r.resize(nEPL + 2*I.length(),2);
+          int oldSize = boundaryNodeInfo.getLength(0);
+          boundaryNodeInfo.resize(nEPL + 2*I.length(),2);
+          boundaryNodeInfo(Range(oldSize,boundaryNodeInfo.getLength(0)-1),Range(2)) = -1;
+              
+          rc.resize(nEPL + 2*I.length(),2);
+          faces.resize(nEPL + 2*I.length(),2);
+        }
 
-	if ( edgeNodeInfop[e->edgeNumber].getLength(0)<I.length() )
-	{
-	  // *wdh* 031124 edgeNodeInfop[e->edgeNumber].resize(I,2);
-	  edgeNodeInfop[e->edgeNumber].resize(I);
-	  edgeNodeInfop[e->edgeNumber] = -1;
-	}
+        if ( edgeNodeInfop[e->edgeNumber].getLength(0)<I.length() )
+        {
+          // *wdh* 031124 edgeNodeInfop[e->edgeNumber].resize(I,2);
+          edgeNodeInfop[e->edgeNumber].resize(I);
+          edgeNodeInfop[e->edgeNumber] = -1;
+        }
 
       }
 
       if (e->orientation == 1)
       {
 // copy all but the last point
-	xLoop(Im+nEPL,R3) = g(Im,R3);
-	r(Im+nEPL,R2) = rLocal(Im,R2);
-	boundaryNodeInfo(Im+numberOfEdgePoints+nEPL,0).seqAdd(I.getBase(),1); // index into e->curve->getNURBS()
-	boundaryNodeInfo(Im+numberOfEdgePoints+nEPL,1) = e->masterEdgeNumber();
+        xLoop(Im+nEPL,R3) = g(Im,R3);
+        r(Im+nEPL,R2) = rLocal(Im,R2);
+        boundaryNodeInfo(Im+numberOfEdgePoints+nEPL,0).seqAdd(I.getBase(),1); // index into e->curve->getNURBS()
+        boundaryNodeInfo(Im+numberOfEdgePoints+nEPL,1) = e->masterEdgeNumber();
 // the edge number of the first point is determined by the startingPoint
-	boundaryNodeInfo(numberOfEdgePoints+nEPL,0) = 0;
-	boundaryNodeInfo(numberOfEdgePoints+nEPL,1) = masterEdge.array[e->curve->startingPoint]->edgeNumber;
+        boundaryNodeInfo(numberOfEdgePoints+nEPL,0) = 0;
+        boundaryNodeInfo(numberOfEdgePoints+nEPL,1) = masterEdge.array[e->curve->startingPoint]->edgeNumber;
 // debug
-//  	printf("Assigning boundarynodeInfo edge %i between %i and %i\n", e->edgeNumber,
-//  	       Im.getBase()+numberOfEdgePoints+nEPL, Im.getBound()+numberOfEdgePoints+nEPL);
+//      printf("Assigning boundarynodeInfo edge %i between %i and %i\n", e->edgeNumber,
+//             Im.getBase()+numberOfEdgePoints+nEPL, Im.getBound()+numberOfEdgePoints+nEPL);
       }
       else
       {
 //leave off the first point
-	const int base=I.getBase()+1;   
-	const int offset=nEPL+I.getBound();
-	for( int m=I.getBound(); m>=base; m-- )
-	{ // we have to reverse the orientation.
-	  xLoop(offset-m,R3)=g(m,R3);   
-	  r(offset-m,R2)=rLocal(m,R2);   
-	}
-	boundaryNodeInfo(Im+numberOfEdgePoints+nEPL,0).seqAdd(I.getBound(),-1); // index into e->curve->getNURBS()
-	boundaryNodeInfo(Im+numberOfEdgePoints+nEPL,1) = e->masterEdgeNumber();  // these nodes sit on edge curve e
+        const int base=I.getBase()+1;   
+        const int offset=nEPL+I.getBound();
+        for( int m=I.getBound(); m>=base; m-- )
+        { // we have to reverse the orientation.
+          xLoop(offset-m,R3)=g(m,R3);   
+          r(offset-m,R2)=rLocal(m,R2);   
+        }
+        boundaryNodeInfo(Im+numberOfEdgePoints+nEPL,0).seqAdd(I.getBound(),-1); // index into e->curve->getNURBS()
+        boundaryNodeInfo(Im+numberOfEdgePoints+nEPL,1) = e->masterEdgeNumber();  // these nodes sit on edge curve e
 // the edge number of the first point is determined by the startingPoint
-	boundaryNodeInfo(numberOfEdgePoints+nEPL,0) = 0;
-	boundaryNodeInfo(numberOfEdgePoints+nEPL,1) = masterEdge.array[e->curve->endingPoint]->edgeNumber;
+        boundaryNodeInfo(numberOfEdgePoints+nEPL,0) = 0;
+        boundaryNodeInfo(numberOfEdgePoints+nEPL,1) = masterEdge.array[e->curve->endingPoint]->edgeNumber;
 // debug
-//  	printf("Assigning boundarynodeInfo edge %i between %i and %i\n", e->edgeNumber,
-//  	       Im.getBase()+numberOfEdgePoints+nEPL, Im.getBound()+numberOfEdgePoints+nEPL);
+//      printf("Assigning boundarynodeInfo edge %i between %i and %i\n", e->edgeNumber,
+//             Im.getBase()+numberOfEdgePoints+nEPL, Im.getBound()+numberOfEdgePoints+nEPL);
       }
 // debug
 //        printf("Assigning boundaryNodeInfo for edge %i to be connected to master edge %i, \n", 
-//  	     e->edgeNumber, e->masterEdgeNumber());
-	
+//           e->edgeNumber, e->masterEdgeNumber());
+        
 // AP: start/end points should be taken from the endPoints array to get consistent coordinates at corners
       
       nEPL +=I.getLength()-1;
@@ -1938,7 +1938,7 @@ buildSubSurfaceTriangulation(int s,
 // copy r to rc, reverse if inside a hole  AP: reversing only causes problems
     Range Im=Range(I.getBase(),I.getBound());
     rc(Im+numberOfEdgePoints,R2)=r(Im,R2);
-	    
+            
 // add in the edge points from this loop
     numberOfEdgePoints += nEPL;
 
@@ -1955,7 +1955,7 @@ buildSubSurfaceTriangulation(int s,
     // lie to the right of the right edge.  // *kkc 051801 added != to fix compiler error on dec
     if( debug & 4 &&
         (referenceSurface.getIsPeriodic(0)!=Mapping::notPeriodic || 
-	 referenceSurface.getIsPeriodic(1)!=Mapping::notPeriodic) )
+         referenceSurface.getIsPeriodic(1)!=Mapping::notPeriodic) )
     {
       ::display(rc(R,Range(0,1)),"BEFORE: r");
     }
@@ -1975,92 +1975,92 @@ buildSubSurfaceTriangulation(int s,
       if( referenceSurface.getIsPeriodic(dir)==Mapping::functionPeriodic )
       {
 
-	int base=R.getBase();
-	int bound=R.getBound();
-	real rbase = referenceSurface.getDomainBound(0,dir);
-	real rbound = referenceSurface.getDomainBound(1,dir);
+        int base=R.getBase();
+        int bound=R.getBound();
+        real rbase = referenceSurface.getDomainBound(0,dir);
+        real rbound = referenceSurface.getDomainBound(1,dir);
 
         if( debug & 2 ) 
-	{
-	  printf("Adjust points for periodicity on surface %i (periodic=%i,%i) "
+        {
+          printf("Adjust points for periodicity on surface %i (periodic=%i,%i) "
                  "(rBase,rBound)=(%5.2f,%5.2f)\n",s,
-		 referenceSurface.getIsPeriodic(0),referenceSurface.getIsPeriodic(1),rbase,rbound );
-	  
+                 referenceSurface.getIsPeriodic(0),referenceSurface.getIsPeriodic(1),rbase,rbound );
+          
           printf(" First pt: r=%6.3f last-pt: r=%6.3f\n",rc(base,dir),rc(bound,dir));
-	  // if( fabs(rc(base,dir))<1.e-6 )
-          // 	    rc(base,dir)+=1.;
-	  
-	}
-	
+          // if( fabs(rc(base,dir))<1.e-6 )
+          //        rc(base,dir)+=1.;
+          
+        }
+        
         // *wdh* 050513
         const real ptol=1.e-3;  // tolerance for how close a point is to a branch cut (in parameter space)
         if( fabs(rc(base,dir))<ptol || fabs(rc(base,dir)-1.)<ptol )
-	{
-	  // if the first point is near the branch cut we need to decide which side it should really be on
+        {
+          // if the first point is near the branch cut we need to decide which side it should really be on
           real rCut =  fabs(rc(base,dir))<ptol ? 0. : 1.;
           bool found=false;
-	  // look at the next points and find one that moves off the branch cut -- this will
+          // look at the next points and find one that moves off the branch cut -- this will
           // tell us which side we are on
-	  for( int i=base+1; i<=bound; i++ )
-	  {
-	    if( fabs(rc(i,dir)-rCut)>ptol )
-	    {
-	      // this point is not too near the branch cut -- use this side for the first point
+          for( int i=base+1; i<=bound; i++ )
+          {
+            if( fabs(rc(i,dir)-rCut)>ptol )
+            {
+              // this point is not too near the branch cut -- use this side for the first point
 
               if( fabs(rc(i,dir))<.5 )  // inside point is nearer to zero
-	      {
-		if( rCut>.5 )
-		{
-		  rc(base,dir)-=1.;
-		}
-	      }
-	      else  // inside point is nearer to 1
-	      {
-		if( rCut<.5 )
-		{
-		  rc(base,dir)+=1.;
-		}
-	      }
+              {
+                if( rCut>.5 )
+                {
+                  rc(base,dir)-=1.;
+                }
+              }
+              else  // inside point is nearer to 1
+              {
+                if( rCut<.5 )
+                {
+                  rc(base,dir)+=1.;
+                }
+              }
               found=true;
               break;
-	    }
-	  }
-	  if( !found )
-	  {
-	    printf("buildSubSurfaceTriangulation:ERROR:unable to determine which side of a branch cut"
+            }
+          }
+          if( !found )
+          {
+            printf("buildSubSurfaceTriangulation:ERROR:unable to determine which side of a branch cut"
                    " the first point on a\n"
                    "trimming curve should lie!\n");
-	  }
-	  
-	}
-	
+          }
+          
+        }
+        
 
-	for( int i=base+1; i<=bound; i++ )
-	{
-	  real rdist=rc(i,dir)-rc(i-1,dir);
-	  if( debug & 2 ) cout<<"i, rc "<<i<<"  "<<rc(i,dir)<<endl;
-	  if( fabs(rdist)>.5                // consecutive pts are far apart
-	      /*kkc 040217 added this check to make trimmed revolutions work
-	                   eg surf 219 of AirCollectorAssby.igs */
+        for( int i=base+1; i<=bound; i++ )
+        {
+          real rdist=rc(i,dir)-rc(i-1,dir);
+          if( debug & 2 ) cout<<"i, rc "<<i<<"  "<<rc(i,dir)<<endl;
+          if( fabs(rdist)>.5                // consecutive pts are far apart
+              /*kkc 040217 added this check to make trimmed revolutions work
+                           eg surf 219 of AirCollectorAssby.igs */
               // *wdh* 050513 -- turned this off -- I don't understand why it is needed
-	      // *wdh* 050513 && ((rc(i,dir)<rbase)||(rc(i,dir)>rbound)) ) 
-	       ) 
-	  {
-	    // cout<<"rbase, rbound "<<rbase<<"  "<<rbound<<endl;
-	    // cout<<" adjust: rc(i,dir) "<<rc(i,dir)<<endl;
-	    if( rdist<0. )
-	      rc(i,dir)+=1.;   // shift to make them closer.
-	    else
-	      rc(i,dir)-=1.; 
-	  }
-	}
+              // *wdh* 050513 && ((rc(i,dir)<rbase)||(rc(i,dir)>rbound)) ) 
+               ) 
+          {
+            // cout<<"rbase, rbound "<<rbase<<"  "<<rbound<<endl;
+            // cout<<" adjust: rc(i,dir) "<<rc(i,dir)<<endl;
+            if( rdist<0. )
+              rc(i,dir)+=1.;   // shift to make them closer.
+            else
+              rc(i,dir)-=1.; 
+          }
+        }
       }
     }
       
     // *kkc 051801 added != to fix compile error on dec
     if( debug & 4 && 
         (referenceSurface.getIsPeriodic(0)!=Mapping::notPeriodic ||
-	 referenceSurface.getIsPeriodic(1)!=Mapping::notPeriodic) ) 
+         referenceSurface.getIsPeriodic(1)!=Mapping::notPeriodic) ) 
     {
       ::display(rc(R,Range(0,1)),"AFTER: rc");
     }
@@ -2072,7 +2072,7 @@ buildSubSurfaceTriangulation(int s,
       int n=numberOfEdgePoints-edgePointStart;
       for( int axis=0; axis<domainDimension; axis++ )
       {
-	holes(innerCurve,axis)= sum(rc(R,axis))/n;     // --- this could be wrong --- fix this !
+        holes(innerCurve,axis)= sum(rc(R,axis))/n;     // --- this could be wrong --- fix this !
       }
 //      printf("holes(%i): (%e, %e)\n", innerCurve, holes(innerCurve,0), holes(innerCurve,1));
       innerCurve++;
@@ -2098,7 +2098,7 @@ buildSubSurfaceTriangulation(int s,
 // estimate the number of grid points that are needed in order to represent the mapping based
 // on the curvature. Also locate collapsed edges (singularities) in the mapping.
   referenceSurface.determineResolution(numberOfGridPoints, collapsedEdge, averageArclength, 
-				       elementDensityTolerance );
+                                       elementDensityTolerance );
   real resolutionTime=getCPU()-time1;
   real aspectRatio=averageArclength[0]/max(REAL_MIN,averageArclength[1]);
 
@@ -2125,7 +2125,7 @@ buildSubSurfaceTriangulation(int s,
       printf(" s=%i node %i : (%10.4e,%10.4e)\n",s, i, rc(i,0),rc(i,1));
     }
   }
-	
+        
 // build the triangulation
   TriangleWrapper triangle;
   UnstructuredMapping & triangulation= *new UnstructuredMapping; 
@@ -2133,7 +2133,7 @@ buildSubSurfaceTriangulation(int s,
 
   triangulationSurface[s]=&triangulation;
 //  printf("INFO: triangulationSurface[%i]->referenceCount=%i\n", s, triangulationSurface[s]->getReferenceCount());
-	
+        
   TriangleWrapperParameters & triangleParameters = triangle.getParameters();
 
   real maxArea=maximumArea < REAL_MAX ? maximumArea : 0.;
@@ -2145,46 +2145,46 @@ buildSubSurfaceTriangulation(int s,
 
     if ( false )
       {
-	// kkc this gives high aspect ratio surfaces too small an estimate
-	for( int dir=0; dir<rangeDimension; dir++ )
-	  xScale=max(xScale,referenceSurface.getRangeBound(End  ,dir)-referenceSurface.getRangeBound(Start,dir));
-	
-	maxArea/=xScale*xScale;
+        // kkc this gives high aspect ratio surfaces too small an estimate
+        for( int dir=0; dir<rangeDimension; dir++ )
+          xScale=max(xScale,referenceSurface.getRangeBound(End  ,dir)-referenceSurface.getRangeBound(Start,dir));
+        
+        maxArea/=xScale*xScale;
       }
     else
       {
-	// use a very coarse grid to estimate the surface area
-	int n=11;
-	realArray rg(5,2),xg(5,3),dxdrg(5,3,2),dxdr(1,3,2);
+        // use a very coarse grid to estimate the surface area
+        int n=11;
+        realArray rg(5,2),xg(5,3),dxdrg(5,3,2),dxdr(1,3,2);
 
-	rg(0,0) = rg(0,1) = 0.;
-	rg(1,0) = rg(1,1) = 1.;
-	rg(2,0) = 0.; rg(2,1) = 1.;
-	rg(3,0) = 1.; rg(3,1) = 0.;
-	rg(4,0) = rg(4,1) = .5;
-	//	rg(0,0) = .5;
-	//	rg(0,1) = .5;
-	referenceSurface.map(rg,xg,dxdrg);
+        rg(0,0) = rg(0,1) = 0.;
+        rg(1,0) = rg(1,1) = 1.;
+        rg(2,0) = 0.; rg(2,1) = 1.;
+        rg(3,0) = 1.; rg(3,1) = 0.;
+        rg(4,0) = rg(4,1) = .5;
+        //      rg(0,0) = .5;
+        //      rg(0,1) = .5;
+        referenceSurface.map(rg,xg,dxdrg);
 
-	Range XR(3), RR(2);
-	real scale=0;
-	for ( int i=0; i<rg.getLength(0); i++ )
-	  {
+        Range XR(3), RR(2);
+        real scale=0;
+        for ( int i=0; i<rg.getLength(0); i++ )
+          {
 
- 	    scale += sqrt( SQR(dxdrg(i,1,0)*dxdrg(i,2,1)-dxdrg(i,1,1)*dxdrg(i,2,0)) + 
- 			   SQR(dxdrg(i,0,0)*dxdrg(i,2,1)-dxdrg(i,0,1)*dxdrg(i,2,0)) +
- 			   SQR(dxdrg(i,0,0)*dxdrg(i,1,1)-dxdrg(i,0,1)*dxdrg(i,1,0)) );
+            scale += sqrt( SQR(dxdrg(i,1,0)*dxdrg(i,2,1)-dxdrg(i,1,1)*dxdrg(i,2,0)) + 
+                           SQR(dxdrg(i,0,0)*dxdrg(i,2,1)-dxdrg(i,0,1)*dxdrg(i,2,0)) +
+                           SQR(dxdrg(i,0,0)*dxdrg(i,1,1)-dxdrg(i,0,1)*dxdrg(i,1,0)) );
 
-	  }
+          }
 
-	scale = .5*scale/real(rg.getLength(0));
+        scale = .5*scale/real(rg.getLength(0));
 
-	xScale = sqrt(2.*scale);
-	maxArea /= scale;
+        xScale = sqrt(2.*scale);
+        maxArea /= scale;
 
-// 	maxArea /= (.5*sqrt( SQR(dxdr(0,1,0)*dxdr(0,2,1)-dxdr(0,1,1)*dxdr(0,2,0)) + 
-// 			 SQR(dxdr(0,0,0)*dxdr(0,2,1)-dxdr(0,0,1)*dxdr(0,2,0)) +
-// 			 SQR(dxdr(0,0,0)*dxdr(0,1,1)-dxdr(0,0,1)*dxdr(0,1,0)) ));
+//      maxArea /= (.5*sqrt( SQR(dxdr(0,1,0)*dxdr(0,2,1)-dxdr(0,1,1)*dxdr(0,2,0)) + 
+//                       SQR(dxdr(0,0,0)*dxdr(0,2,1)-dxdr(0,0,1)*dxdr(0,2,0)) +
+//                       SQR(dxdr(0,0,0)*dxdr(0,1,1)-dxdr(0,0,1)*dxdr(0,1,0)) ));
       }
 
 
@@ -2204,23 +2204,23 @@ buildSubSurfaceTriangulation(int s,
 <<<<<<< compositeTopology.C
     if ( false )
       {
-	// kkc this gives high aspect ratio surfaces too small an estimate
-	for( int dir=0; dir<rangeDimension; dir++ )
-	  xScale=max(xScale,referenceSurface.getRangeBound(End  ,dir)-referenceSurface.getRangeBound(Start,dir));
-	
-	maxArea/=xScale*xScale;
+        // kkc this gives high aspect ratio surfaces too small an estimate
+        for( int dir=0; dir<rangeDimension; dir++ )
+          xScale=max(xScale,referenceSurface.getRangeBound(End  ,dir)-referenceSurface.getRangeBound(Start,dir));
+        
+        maxArea/=xScale*xScale;
       }
     else
       {
-	int n=11;
-	RealArray rg(1,2),xg(1,3),dxdr(1,3,2);
-	rg(0,0) = .5;
-	rg(0,1) = .5;
-	referenceSurface.map(rg,xg,dxdr);
+        int n=11;
+        RealArray rg(1,2),xg(1,3),dxdr(1,3,2);
+        rg(0,0) = .5;
+        rg(0,1) = .5;
+        referenceSurface.map(rg,xg,dxdr);
 
-	maxArea /= (.5*sqrt( SQR(dxdr(0,1,0)*dxdr(0,2,1)-dxdr(0,1,1)-dxdr(0,2,0)) + 
-			 SQR(dxdr(0,0,0)*dxdr(0,2,1)-dxdr(0,0,1)-dxdr(0,2,0)) +
-			 SQR(dxdr(0,0,0)*dxdr(0,1,1)-dxdr(0,0,1)-dxdr(0,1,0)) ));
+        maxArea /= (.5*sqrt( SQR(dxdr(0,1,0)*dxdr(0,2,1)-dxdr(0,1,1)-dxdr(0,2,0)) + 
+                         SQR(dxdr(0,0,0)*dxdr(0,2,1)-dxdr(0,0,1)-dxdr(0,2,0)) +
+                         SQR(dxdr(0,0,0)*dxdr(0,1,1)-dxdr(0,0,1)-dxdr(0,1,0)) ));
       }
 
 
@@ -2261,7 +2261,7 @@ buildSubSurfaceTriangulation(int s,
   triangleParameters.saveVoronoi(false);
   if ( !triangleParameters.getFreezeSegments() )
     triangleParameters.toggleFreezeSegments(); // do not split boundary segements
-	
+        
   triangleParameters.setQuietMode(true);
   // triangleParameters.setMinimumAngle(0.);
   
@@ -2290,13 +2290,13 @@ buildSubSurfaceTriangulation(int s,
       if( collapsedEdge[0][1] || collapsedEdge[1][1] )
       {
         // rShift=average value or r or s .5*( min + max ) ? 
-	Range E=numberOfEdgePoints;  // don't count extra interior nodes.
+        Range E=numberOfEdgePoints;  // don't count extra interior nodes.
         rShift=.5*( min(rc(E,0))+max(rc(E,0)) );
         printf(" ** guess singular location to be r0=%e\n",rShift);
       }
       else
       {
-	Range E=numberOfEdgePoints;  // don't count extra interior nodes.
+        Range E=numberOfEdgePoints;  // don't count extra interior nodes.
         rShift=.5*( min(rc(E,1))+max(rc(E,1)) );
         printf(" ** guess singular location to be r1=%e\n",rShift);
       }
@@ -2312,7 +2312,7 @@ buildSubSurfaceTriangulation(int s,
 
       rc(R,0) = (rc(R,0)-rShift)*SCALE_TWO_SIDES(rc(R,1),ra_s);
       if( numberOfInnerCurves>0 )
-	holes(all,0) = (holes(all,0)-rShift)*SCALE_TWO_SIDES(holes(all,1),ra_s); 
+        holes(all,0) = (holes(all,0)-rShift)*SCALE_TWO_SIDES(holes(all,1),ra_s); 
     }
     else if( collapsedEdge[0][0] && collapsedEdge[1][0] )
     {
@@ -2320,7 +2320,7 @@ buildSubSurfaceTriangulation(int s,
 
       rc(R,1) = (rc(R,1)-rShift)*SCALE_TWO_SIDES(rc(R,0),ra_r); // *(ra_r + rba_r*rc(R,0));
       if( numberOfInnerCurves>0 )
-	holes(all,1) = (holes(all,1)-rShift)*SCALE_TWO_SIDES(holes(all,0),ra_r); //  *(ra_r + rba_r*holes(all,0));
+        holes(all,1) = (holes(all,1)-rShift)*SCALE_TWO_SIDES(holes(all,0),ra_r); //  *(ra_r + rba_r*holes(all,0));
 
     }
     else if( collapsedEdge[0][1] )
@@ -2332,8 +2332,8 @@ buildSubSurfaceTriangulation(int s,
       rc(R,0) = (rc(R,0)-rShift)*(ra_s + rba_s*rc(R,1));
       // kkc rc(R,0) *= ra + rba*rc(R,1);
       if( numberOfInnerCurves>0 )
-	holes(all,0) = (holes(all,0)-rShift)*(ra_s + rba_s*holes(all,1));
-      //kkc	holes(all,0) = (holes(all,0)-rShift)*(ra + rba*holes(all,1));
+        holes(all,0) = (holes(all,0)-rShift)*(ra_s + rba_s*holes(all,1));
+      //kkc     holes(all,0) = (holes(all,0)-rShift)*(ra + rba*holes(all,1));
       // holes(all,0)*=ra + rba*holes(all,1);
     }
     else if( collapsedEdge[1][1] )
@@ -2344,8 +2344,8 @@ buildSubSurfaceTriangulation(int s,
       //kkc       rc(R,0) = (rc(R,0)-rShift)*(1.-rba*rc(R,1));
       // rc(R,0) *= 1.-rba*rc(R,1);
       if( numberOfInnerCurves>0 )
-	holes(all,0) = (holes(all,0)-rShift)*(1.-rba_s*holes(all,1));
-      //kkc	holes(all,0) = (holes(all,0)-rShift)*(1.-rba*holes(all,1));
+        holes(all,0) = (holes(all,0)-rShift)*(1.-rba_s*holes(all,1));
+      //kkc     holes(all,0) = (holes(all,0)-rShift)*(1.-rba*holes(all,1));
       // holes(all,0)*=1.-rba*holes(all,1);
     }
     else if( collapsedEdge[0][0] )
@@ -2355,8 +2355,8 @@ buildSubSurfaceTriangulation(int s,
       // kkc      rc(R,1) = (rc(R,1)-rShift)*(ra + rba*rc(R,0));
       // rc(R,1) *= ra + rba*rc(R,0);
       if( numberOfInnerCurves>0 )
-	holes(all,1) = (holes(all,1)-rShift)*(ra_r + rba_r*holes(all,0));
-      // kkc	holes(all,1) = (holes(all,1)-rShift)*(ra + rba*holes(all,0));
+        holes(all,1) = (holes(all,1)-rShift)*(ra_r + rba_r*holes(all,0));
+      // kkc    holes(all,1) = (holes(all,1)-rShift)*(ra + rba*holes(all,0));
       // holes(all,1)*=ra + rba*holes(all,0);
     }
     else if( collapsedEdge[1][0] )
@@ -2366,8 +2366,8 @@ buildSubSurfaceTriangulation(int s,
       // kkc      rc(R,1) = (rc(R,1)-rShift)*(1.-rba*rc(R,0));
       // rc(R,1) *= 1.-rba*rc(R,0);
       if( numberOfInnerCurves>0 )
-	holes(all,1) = (holes(all,1)-rShift)*(1.-rba_r*holes(all,0));
-      //kkc	holes(all,1) = (holes(all,1)-rShift)*(1.-rba*holes(all,0));
+        holes(all,1) = (holes(all,1)-rShift)*(1.-rba_r*holes(all,0));
+      //kkc     holes(all,1) = (holes(all,1)-rShift)*(1.-rba*holes(all,0));
       // holes(all,1)*=1.-rba*holes(all,0);
     }
   }
@@ -2376,7 +2376,7 @@ buildSubSurfaceTriangulation(int s,
   if( scaleNodes )
   {
     if( debug & 2 ) printf("Scale nodes: aspectRatio=%8.2e\n",aspectRatio);
-	  
+          
     rc(R,0)*=aspectRatio;  // scale so that triangles will have a better shape on final grid.
     maxArea *=aspectRatio;
     triangleParameters.setMaximumArea(maxArea);
@@ -2397,7 +2397,7 @@ buildSubSurfaceTriangulation(int s,
     if (printPoints)
     {
       for( int i=0; i<numberOfEdgePoints; i++ )
-	printf("point(%i)=(%e,%e)\n", i, rc(i,0), rc(i,1));
+        printf("point(%i)=(%e,%e)\n", i, rc(i,0), rc(i,1));
     }
     // plot faces for debugging
     gi.erase();
@@ -2410,10 +2410,10 @@ buildSubSurfaceTriangulation(int s,
       realArray line(numberOfEdgePoints-1,2,2);
       for( int i=0; i<numberOfEdgePoints-1; i++ )
       {
-	line(i,0,0)=rc(i,0);
-	line(i,1,0)=rc(i,1);
-	line(i,0,1)=rc(i+1,0);
-	line(i,1,1)=rc(i+1,1);
+        line(i,0,0)=rc(i,0);
+        line(i,1,0)=rc(i,1);
+        line(i,0,1)=rc(i+1,0);
+        line(i,1,1)=rc(i+1,1);
       }
       gi.plotLines(line, par);
     }
@@ -2444,7 +2444,7 @@ buildSubSurfaceTriangulation(int s,
   triangle.generate();
 
   real triangleTime=getCPU()-time1;
-	
+        
   if( triangleErrorDetected )
   {
     printf("\n ****************************************************************************\n");
@@ -2538,11 +2538,11 @@ buildSubSurfaceTriangulation(int s,
       real sMin = rt(0,1);
       dir = 0; // change the r-coordinate
       for (i=1; i<rt.getLength(0); i++)
-	if (rt(i,1) < sMin)
-	{
-	  sMin = rt(i,1);
-	  iCollapsed = i;
-	}
+        if (rt(i,1) < sMin)
+        {
+          sMin = rt(i,1);
+          iCollapsed = i;
+        }
       printf("sub-surface %i, s=0 collapsed, sMin = %e, index=%i\n", s, sMin, iCollapsed);
     }
     else if( collapsedEdge[1][1] )
@@ -2551,11 +2551,11 @@ buildSubSurfaceTriangulation(int s,
       real sMax = rt(0,1);
       dir = 0; // change the r-coordinate
       for (i=1; i<rt.getLength(0); i++)
-	if (rt(i,1) > sMax)
-	{
-	  sMax = rt(i,1);
-	  iCollapsed = i;
-	}
+        if (rt(i,1) > sMax)
+        {
+          sMax = rt(i,1);
+          iCollapsed = i;
+        }
       printf("sub-surface %i, s=1 collapsed, sMax = %e, index=%i\n", s, sMax, iCollapsed);
     }
     else if( collapsedEdge[0][0] )
@@ -2564,11 +2564,11 @@ buildSubSurfaceTriangulation(int s,
       real rMin = rt(0,0);
       dir = 1; // change the s-coordinate
       for (i=1; i<rt.getLength(0); i++)
-	if (rt(i,0) < rMin)
-	{
-	  rMin = rt(i,0);
-	  iCollapsed = i;
-	}
+        if (rt(i,0) < rMin)
+        {
+          rMin = rt(i,0);
+          iCollapsed = i;
+        }
       printf("sub-surface %i, r=0 collapsed, rMin = %e, index=%i\n", s, rMin, iCollapsed);
     }
     else if( collapsedEdge[1][0] )
@@ -2577,11 +2577,11 @@ buildSubSurfaceTriangulation(int s,
       real rMax = rt(0,0);
       dir = 1; // change the s-coordinate
       for (i=1; i<rt.getLength(0); i++)
-	if (rt(i,0) > rMax)
-	{
-	  rMax = rt(i,0);
-	  iCollapsed = i;
-	}
+        if (rt(i,0) > rMax)
+        {
+          rMax = rt(i,0);
+          iCollapsed = i;
+        }
       printf("sub-surface %i, r=1 collapsed, rMax = %e, index=%i\n", s, rMax, iCollapsed);
     }
 // change rt(iCollapsed,0)
@@ -2592,12 +2592,12 @@ buildSubSurfaceTriangulation(int s,
   int numberOfFaces=triangle.getNumberOfEdges();
   int numberOfBoundaryFaces=triangle.getNumberOfBoundaryEdges();
   triangulation.setNodesElementsAndNeighbours(nodes,elements,neighbours,
-					      numberOfFaces,numberOfBoundaryFaces);
+                                              numberOfFaces,numberOfBoundaryFaces);
 
   triangulation.setName(Mapping::mappingName,cs.getName(Mapping::mappingName)+"-unstructured");
 
-  //  	 	  gi.erase();
-  //  	 	  PlotIt::plot(gi,triangulation);
+  //              gi.erase();
+  //              PlotIt::plot(gi,triangulation);
   // *** kkc triangle refinement!
   if ( improveTri ) {
     
@@ -2607,9 +2607,9 @@ buildSubSurfaceTriangulation(int s,
     real absoluteTol = maxDist;
     while ( (dev=refineTriangulation(triangulation,cs[s],absoluteTol))>absoluteTol && (dev_old-dev)>absoluteTol/100 && step<10 )
       {
-	cout<<"deviation after step "<<step<<" is "<<dev<<endl;
-	step++;
-	dev_old = dev;
+        cout<<"deviation after step "<<step<<" is "<<dev<<endl;
+        step++;
+        dev_old = dev;
       }
     cout<<"deviation after "<<step<<" steps is "<<dev<<endl;
 
@@ -2622,8 +2622,8 @@ buildSubSurfaceTriangulation(int s,
 
   if( debug & 2 )
     printf("built unstructured grid for %s, cpu=%8.2e (triangle=%8.2e, nurb=%8.2e, resolution=%8.2e)\n",
-  	   (const char*)referenceSurface.getName(Mapping::mappingName),timeForTriangulation,triangleTime,nurbTime,
-	   resolutionTime);
+           (const char*)referenceSurface.getName(Mapping::mappingName),timeForTriangulation,triangleTime,nurbTime,
+           resolutionTime);
 
   totalTimeToBuildSeparateTriangulations+=timeForTriangulation;
   totalTriangleTime+=triangleTime;
@@ -2645,7 +2645,7 @@ buildSubSurfaceTriangulation(int s,
     {
       UnstructuredMapping uns;
       uns.setNodesElementsAndNeighbours(rt,elements,neighbours,
-					numberOfFaces,numberOfBoundaryFaces);
+                                        numberOfFaces,numberOfBoundaryFaces);
       gi.erase();
       params.set(GI_TOP_LABEL,sPrintF("triangulation for surface %i",s));
       
@@ -2665,12 +2665,12 @@ buildSubSurfaceTriangulation(int s,
  */
 static int
 checkElement( int e, 
-	      int numberOfNodes, 
-	      int numberOfFaces, 
+              int numberOfNodes, 
+              int numberOfFaces, 
               const intArray & elements, 
-	      const intArray & faces,
-	      const intArray & elementFaces,
-	      const intArray & faceElements, 
+              const intArray & faces,
+              const intArray & elementFaces,
+              const intArray & faceElements, 
               int numberOfDuplicateNodes,
               const intArray & duplicateNodes,
               int debug )
@@ -2679,7 +2679,7 @@ checkElement( int e,
   if( n0<0 || n0>=numberOfNodes || n1<0 || n1>=numberOfNodes || n2<0 || n2>=numberOfNodes )
   {
     printf("check:ERROR for element e=%i, nodes=(%i,%i,%i). "
-	   "Node numbers out of range, numberOfNodes=%i\n",e,n0,n1,n2,numberOfNodes);
+           "Node numbers out of range, numberOfNodes=%i\n",e,n0,n1,n2,numberOfNodes);
   }
   for( int m=0; m<3; m++ )
   {
@@ -2687,53 +2687,53 @@ checkElement( int e,
     if( f0<0 || f0>=numberOfFaces )
     {
       printf("check:ERROR for element e=%i, face=%i. "
-	     "Face numbers out of range, numberOfFaces=%i\n",e,f0,numberOfNodes);
+             "Face numbers out of range, numberOfFaces=%i\n",e,f0,numberOfNodes);
     }
     else
     {
       for( int side=0; side<=1; side++ )
       {
-	int faceNode=faces(f0,side);
-	if( faceNode!=n0 && faceNode!=n1 && faceNode!=n2 )
-	{
-	  // check for a duplicate node
-	  for( int n=0; n<numberOfDuplicateNodes; n++ )
-	  {
-	    if( duplicateNodes(0,n)==faceNode )
-	    {
-	      faces(f0,side)=duplicateNodes(1,n);
-	      if( debug & 2 )
-		printf("INFO: replace node %i with node %i in face %i (e=%i).\n",faceNode,faces(f0,side),f0,e);
+        int faceNode=faces(f0,side);
+        if( faceNode!=n0 && faceNode!=n1 && faceNode!=n2 )
+        {
+          // check for a duplicate node
+          for( int n=0; n<numberOfDuplicateNodes; n++ )
+          {
+            if( duplicateNodes(0,n)==faceNode )
+            {
+              faces(f0,side)=duplicateNodes(1,n);
+              if( debug & 2 )
+                printf("INFO: replace node %i with node %i in face %i (e=%i).\n",faceNode,faces(f0,side),f0,e);
                     
-	      // If we change a face we need to go back and check elements connected to this face
-	      for( int nn=0; nn<=1; nn++ )
-	      {
-		int ee = faceElements(f0,nn); // check the elements next to this face
+              // If we change a face we need to go back and check elements connected to this face
+              for( int nn=0; nn<=1; nn++ )
+              {
+                int ee = faceElements(f0,nn); // check the elements next to this face
                 bool elementChanged=false;
-		for( int mm=0; mm<=2; mm++ )
-		{
-		  if( elements(ee,mm)==faceNode )
-		  {
-		    elements(ee,mm)=duplicateNodes(1,n);
+                for( int mm=0; mm<=2; mm++ )
+                {
+                  if( elements(ee,mm)==faceNode )
+                  {
+                    elements(ee,mm)=duplicateNodes(1,n);
                     elementChanged=true;
-		    if( debug & 2 )
-		      printf("INFO: replace node %i with node %i in element %i.\n",faceNode,faces(f0,side),ee);
-		  }
-		}
+                    if( debug & 2 )
+                      printf("INFO: replace node %i with node %i in element %i.\n",faceNode,faces(f0,side),ee);
+                  }
+                }
                 if( ee<e && elementChanged )
-		{
+                {
                   // if we change a previous element we need to go back and check it's faces.
-		  checkElement( ee, numberOfNodes,numberOfFaces,elements,faces,elementFaces,faceElements,
-				numberOfDuplicateNodes,duplicateNodes,debug );
+                  checkElement( ee, numberOfNodes,numberOfFaces,elements,faces,elementFaces,faceElements,
+                                numberOfDuplicateNodes,duplicateNodes,debug );
 
-		}
-		
-	      }
+                }
+                
+              }
               break;
-	    } //end if duplicateNode
-	    
-	  }
-	}
+            } //end if duplicateNode
+            
+          }
+        }
       }
     }
   }
@@ -2798,28 +2798,28 @@ triangulateCompositeSurface(int & debug, GenericGraphicsInterface & gi, Graphics
     Mapping & surface = cs[s];
 
     buildSubSurfaceTriangulation(s, 
-				 numberOfBoundaryNodes, 
-				 rCoordinates,
-				 edgeNodeInfop,
-				 boundaryNodeInfop,
-				 totalNumberOfNodes,
-				 totalNumberOfFaces,
-				 totalNumberOfElements,
-				 totalTimeToBuildSeparateTriangulations,
-				 totalTriangleTime,
-				 totalNurbTime,
-				 totalResolutionTime,
-				 debug,
-				 gi,
-				 params);
+                                 numberOfBoundaryNodes, 
+                                 rCoordinates,
+                                 edgeNodeInfop,
+                                 boundaryNodeInfop,
+                                 totalNumberOfNodes,
+                                 totalNumberOfFaces,
+                                 totalNumberOfElements,
+                                 totalTimeToBuildSeparateTriangulations,
+                                 totalTriangleTime,
+                                 totalNurbTime,
+                                 totalResolutionTime,
+                                 debug,
+                                 gi,
+                                 params);
     if (triangulationSurface[s] == NULL)
       nFail++;
   }  // for s
       
   aString buf;
   printf("\n ***built %i unstructured grids, cpu=%8.2e (triangle=%8.2e, nurb=%8.2e, resolution=%8.2e)\n",
-	 cs.numberOfSubSurfaces()-nFail,totalTimeToBuildSeparateTriangulations,
-	 totalTriangleTime,totalNurbTime,totalResolutionTime);
+         cs.numberOfSubSurfaces()-nFail,totalTimeToBuildSeparateTriangulations,
+         totalTriangleTime,totalNurbTime,totalResolutionTime);
   if (nFail > 0)
     gi.outputString(sPrintF(buf,"FAILED to triangulate %i surfaces", nFail));
   else
@@ -2900,7 +2900,7 @@ triangulateCompositeSurface(int & debug, GenericGraphicsInterface & gi, Graphics
     if (num > sNumberOfNodes)
     {
       gi.outputString(sPrintF(buf,"ERROR: surface %i: number of boundary nodes: %i, total number of nodes: %i", 
-			      s, num, sNumberOfNodes));
+                              s, num, sNumberOfNodes));
       return 1;
     }
     
@@ -2919,23 +2919,23 @@ triangulateCompositeSurface(int & debug, GenericGraphicsInterface & gi, Graphics
       if( edgeNodeInfop[e](j)==-1 )
       { 
         // first time we see an edge node we give it a global number
-	edgeNodeInfop[e](j)=globalNumber;
+        edgeNodeInfop[e](j)=globalNumber;
 /* ----
         // if this edge point is on the start or end of the edge we should also
         // mark the point on the adjoining edge
         int j2=boundaryNodeInfo(i,2);
         if( j2>=0 )
-	{
-	  int e2=boundaryNodeInfo(i,3);
+        {
+          int e2=boundaryNodeInfo(i,3);
           edgeNodeInfop[e2](j2)=globalNumber;
-	}
----- */	
+        }
+---- */ 
         nodes(globalNumber,R3)=sNodes(i,R3);
-	globalNumber++;
+        globalNumber++;
       }
       else
       {
-	nodeIsNew(i)=false; // this node is already there.
+        nodeIsNew(i)=false; // this node is already there.
       }
       
       nodeTranslation(i)=edgeNodeInfop[e](j);  // use the global number for this edge node.
@@ -2991,153 +2991,153 @@ triangulateCompositeSurface(int & debug, GenericGraphicsInterface & gi, Graphics
       // add this face if it is not a boundary face or at least one node is new
       if( !boundaryFace || nodeIsNew(n0) || nodeIsNew(n1) ) 
       {
-	// add this new face
+        // add this new face
         int n0Global=nodeTranslation(n0);
-	int n1Global=nodeTranslation(n1);
+        int n1Global=nodeTranslation(n1);
         faces(globalNumberOfFaces,0)=n0Global;
         faces(globalNumberOfFaces,1)=n1Global;
         faceTranslation(f)=globalNumberOfFaces;
 
 //         printf(" s=%i add face %i n0=%i n0Global=%i n1=%i n1Global=%i boundaryFace=%i\n",
-// 	       s,globalNumberOfFaces,n0,n0Global,n1,n1Global,boundaryFace);
-	
+//             s,globalNumberOfFaces,n0,n0Global,n1,n1Global,boundaryFace);
+        
         // assign element numbers for this new face
-	assert( sFaceElements(f,0)>=0 );
+        assert( sFaceElements(f,0)>=0 );
         faceElements(globalNumberOfFaces,0)=sFaceElements(f,0)+numberOfElements;
-	if( sFaceElements(f,1)>=0 )
-	  faceElements(globalNumberOfFaces,1)=sFaceElements(f,1)+numberOfElements;
+        if( sFaceElements(f,1)>=0 )
+          faceElements(globalNumberOfFaces,1)=sFaceElements(f,1)+numberOfElements;
 
         if( sFaceElements(f,1)<0 )
-	{
+        {
           // must be a boundary face -- assign the nodeInfo array: boundary nodes point back to
           // the two boundary faces that belong to the node.
-	  if( nodeIsNew(n0) )
-	  {
-	    if( nodeInfo(n0Global,0)==-1 )
-	      nodeInfo(n0Global,0)=globalNumberOfFaces;
-	    else if( nodeInfo(n0Global,1)==-1 )
-	      nodeInfo(n0Global,1)=globalNumberOfFaces;
-	    else
-	    {
+          if( nodeIsNew(n0) )
+          {
+            if( nodeInfo(n0Global,0)==-1 )
+              nodeInfo(n0Global,0)=globalNumberOfFaces;
+            else if( nodeInfo(n0Global,1)==-1 )
+              nodeInfo(n0Global,1)=globalNumberOfFaces;
+            else
+            {
               printf("****WARNING***: s=%i, n0=%i, n0Global=%i, boundary face but nodeInfo is already set\n"
                      "                nodeInfo=(%i,%i), new face %i has nodes (%i,%i)\n",
                         s,n0,n0Global,nodeInfo(n0Global,0),nodeInfo(n0Global,1),globalNumberOfFaces,n0Global,n1Global);
-	      // throw "error";
-	    }
-	  }
-	  if( nodeIsNew(n1) )
-	  {
-	    if( nodeInfo(n1Global,0)==-1 )
-	      nodeInfo(n1Global,0)=globalNumberOfFaces;
-	    else if( nodeInfo(n1Global,1)==-1 )
-	      nodeInfo(n1Global,1)=globalNumberOfFaces;
-	    else
-	    {
+              // throw "error";
+            }
+          }
+          if( nodeIsNew(n1) )
+          {
+            if( nodeInfo(n1Global,0)==-1 )
+              nodeInfo(n1Global,0)=globalNumberOfFaces;
+            else if( nodeInfo(n1Global,1)==-1 )
+              nodeInfo(n1Global,1)=globalNumberOfFaces;
+            else
+            {
               printf("****WARNING***: s=%i, n0=%i, n1Global=%i, boundary face but nodeInfo is already set\n"
                      "                nodeInfo=(%i,%i), new face %i has nodes (%i,%i)\n",
                         s,n0,n1Global,nodeInfo(n1Global,0),nodeInfo(n1Global,1),globalNumberOfFaces,n0Global,n1Global);
-	      
-	      // throw "error";
-	    }
-	  }
-	}
-	
-	globalNumberOfFaces++;
+              
+              // throw "error";
+            }
+          }
+        }
+        
+        globalNumberOfFaces++;
       }
       else
       {
         // *** both nodes are already in the global triangulation, the face must already be there ***
 
         int n0Global=nodeTranslation(n0);
-	int n1Global=nodeTranslation(n1);
+        int n1Global=nodeTranslation(n1);
         int fGlobal=-1;
-	if( nodeInfo(n0Global,0)==nodeInfo(n1Global,0) || nodeInfo(n0Global,0)==nodeInfo(n1Global,1) )
-	{
-	  fGlobal=nodeInfo(n0Global,0);  // this face is attached to both nodes
-	  if( fGlobal<0 )
-	  {
-	    printf("ERROR: Both nodes are already in the triangulation but nodeInfo incorrect\n"
-		   " s=%i, n0=%i, n0Global=%i, n1=%i, n1Global=%i nodeInfo(n0Global,0:1)=%i,%i "
-		   "nodeInfo(n0Global,0:1)=%i,%i \n",s,n0,n0Global,n1,n1Global,
-		   nodeInfo(n0Global,0),nodeInfo(n0Global,1), nodeInfo(n1Global,0),nodeInfo(n1Global,1));
-	    continue;
-	  }
-	}
-	else
-	{
+        if( nodeInfo(n0Global,0)==nodeInfo(n1Global,0) || nodeInfo(n0Global,0)==nodeInfo(n1Global,1) )
+        {
+          fGlobal=nodeInfo(n0Global,0);  // this face is attached to both nodes
+          if( fGlobal<0 )
+          {
+            printf("ERROR: Both nodes are already in the triangulation but nodeInfo incorrect\n"
+                   " s=%i, n0=%i, n0Global=%i, n1=%i, n1Global=%i nodeInfo(n0Global,0:1)=%i,%i "
+                   "nodeInfo(n0Global,0:1)=%i,%i \n",s,n0,n0Global,n1,n1Global,
+                   nodeInfo(n0Global,0),nodeInfo(n0Global,1), nodeInfo(n1Global,0),nodeInfo(n1Global,1));
+            continue;
+          }
+        }
+        else
+        {
           if( nodeInfo(n0Global,1)==nodeInfo(n1Global,0) || nodeInfo(n0Global,1)==nodeInfo(n1Global,1) )
-	  {
-  	    fGlobal=nodeInfo(n0Global,1);  //  this face is attached to both nodes
+          {
+            fGlobal=nodeInfo(n0Global,1);  //  this face is attached to both nodes
             if( fGlobal<0 )
-	    {
-	      printf("ERROR: Both nodes are already in the triangulation but nodeInfo incorrect\n"
+            {
+              printf("ERROR: Both nodes are already in the triangulation but nodeInfo incorrect\n"
                      " s=%i, n0=%i, n0Global=%i, n1=%i, n1Global=%i nodeInfo(n0Global,0:1)=%i,%i "
                      "nodeInfo(n0Global,0:1)=%i,%i \n",s,n0,n0Global,n1,n1Global,
-		     nodeInfo(n0Global,0),nodeInfo(n0Global,1), nodeInfo(n1Global,0),nodeInfo(n1Global,1));
-	      continue;
-	    }
-	  }
-	  else
-	  {
+                     nodeInfo(n0Global,0),nodeInfo(n0Global,1), nodeInfo(n1Global,0),nodeInfo(n1Global,1));
+              continue;
+            }
+          }
+          else
+          {
             // must be a corner -- we have to search a little harder
             int ff[4]={nodeInfo(n0Global,0),nodeInfo(n0Global,1),nodeInfo(n1Global,0),nodeInfo(n1Global,1)};  //
 
             for( int m=0; m<4; m++ )
-	    {
-	      if( (n0Global==faces(ff[m],0) && n1Global==faces(ff[m],1)) ||
+            {
+              if( (n0Global==faces(ff[m],0) && n1Global==faces(ff[m],1)) ||
                   (n0Global==faces(ff[m],1) && n1Global==faces(ff[m],0)) )
-	      {
-		fGlobal=ff[m];
-		break;
-	      }
-	    }
-	    if( fGlobal==-1 )
-	    {
+              {
+                fGlobal=ff[m];
+                break;
+              }
+            }
+            if( fGlobal==-1 )
+            {
               // no match found -- it could be there is a "duplicate point" that was not
               // detected since previous surfaces only touched at a point, not on a face.
 
-	      // fGlobal=nodeInfo(n0Global,1);
+              // fGlobal=nodeInfo(n0Global,1);
 
               real distMin=REAL_MAX, distMax=0.;
               int na=-1, nb=-1, fg=-1;
               int m;
-	      for( m=0; m<4; m++ ) // there are four possible faces that we could match to.
-	      {
+              for( m=0; m<4; m++ ) // there are four possible faces that we could match to.
+              {
                 int f0=ff[m];
                 if( f0==-1 ) continue;
-		
+                
                 int n0=faces(f0,0), n1=faces(f0,1);
 
                 for( int m0=0; m0<=1; m0++ )
-		{
-		  int ma=m0==0 ? n0Global : n1Global;
-		  for( int m1=0; m1<=1; m1++ )
-		  {
-		    int mb=m1==0 ? n0 : n1;
+                {
+                  int ma=m0==0 ? n0Global : n1Global;
+                  for( int m1=0; m1<=1; m1++ )
+                  {
+                    int mb=m1==0 ? n0 : n1;
                     if( ma!=mb )
-		    {
-		      real dist=(fabs(nodes(ma,0)-nodes(mb,0))+
-				 fabs(nodes(ma,1)-nodes(mb,1))+
-				 fabs(nodes(ma,2)-nodes(mb,2)));
-		
-		      if( dist<distMin ){ distMin=dist; na=ma; nb=mb; fg=f0; } //
+                    {
+                      real dist=(fabs(nodes(ma,0)-nodes(mb,0))+
+                                 fabs(nodes(ma,1)-nodes(mb,1))+
+                                 fabs(nodes(ma,2)-nodes(mb,2)));
+                
+                      if( dist<distMin ){ distMin=dist; na=ma; nb=mb; fg=f0; } //
 
-		      distMax=max(distMax,dist);
-		    }
-		  }
-		}
+                      distMax=max(distMax,dist);
+                    }
+                  }
+                }
 
                 if( debug & 2 )
-         	  printf("match face:check for duplicate: f0=%i=(%i,%i) ([%9.3e,%9.3e,%9.3e],[%9.3e,%9.3e,%9.3e])\n"
+                  printf("match face:check for duplicate: f0=%i=(%i,%i) ([%9.3e,%9.3e,%9.3e],[%9.3e,%9.3e,%9.3e])\n"
                          "  distMin=%8.2e, distMax=%8.2e \n",
-		       f0,n0,n1,nodes(n0,0),nodes(n0,1),nodes(n0,2),nodes(n1,0),nodes(n1,1),nodes(n1,2),distMin,
+                       f0,n0,n1,nodes(n0,0),nodes(n0,1),nodes(n0,2),nodes(n1,0),nodes(n1,1),nodes(n1,2),distMin,
                          distMax);
                 
 
-	      }
+              }
               // *wdh* 010917 if( distMin<.001*distMax ) // we expect the duplicate nodes to be close relative the the face length
               if( distMin<mergeTolerance ) // 010917 : use merge tolerance
-	      {
+              {
                 printf(" ***INFO*** nodes %i and %i appear to be the same node, dist=%e, distMax=%e\n",
                      na,nb,distMin,distMax);
                 assert( fg!=-1 );
@@ -3147,78 +3147,78 @@ triangulateCompositeSurface(int & debug, GenericGraphicsInterface & gi, Graphics
                 // fGlobal -> element -> (nodes,faces) 
                 int node0 = na<nb ? na : nb;
                 int node1 = na<nb ? nb : na;
-		// replace node1 with node0
+                // replace node1 with node0
                 // int ee = faceElement(fGlobal,0);
                 if( numberOfDuplicateNodes>= duplicateNodes.getLength(1) )
-		{
-		  duplicateNodes.resize(2,numberOfDuplicateNodes+100);
-		}
-		
-		duplicateNodes(0,numberOfDuplicateNodes)=node1;
-		duplicateNodes(1,numberOfDuplicateNodes)=node0;
-		numberOfDuplicateNodes++;
+                {
+                  duplicateNodes.resize(2,numberOfDuplicateNodes+100);
+                }
+                
+                duplicateNodes(0,numberOfDuplicateNodes)=node1;
+                duplicateNodes(1,numberOfDuplicateNodes)=node0;
+                numberOfDuplicateNodes++;
 
-		// duplicateNodes(0,numberOfDuplicateNodes)=node0;  // add this too if we don't replace duplicates
-		// duplicateNodes(1,numberOfDuplicateNodes)=node1;
-		// numberOfDuplicateNodes++;
-		
+                // duplicateNodes(0,numberOfDuplicateNodes)=node0;  // add this too if we don't replace duplicates
+                // duplicateNodes(1,numberOfDuplicateNodes)=node1;
+                // numberOfDuplicateNodes++;
+                
                 int e0 = sFaceElements(f,0)+numberOfElements; // element on new surface
                 int e1=faceElements(fGlobal,0);               // element on global surface
                 
                 if( true ) 
-		{
-		  printf(" replace node1=%i with node0=%i in elements e0=%i and e1=%i\n",node1,node0,e0,e1);
-		  // Here is a start -- more to do
-		  for( int m=0; m<3; m++ )
-		  {
-		    if( elements(e0,m)==node1 )
-		      elements(e0,m)=node0;
-		    if( elements(e1,m)==node1 )
-		      elements(e1,m)=node0;
-		  }
-		  if( n0Global==node1 )
-		    n0Global=node0;
-		  if( n1Global==node1 )
-		    n1Global=node0;
-		
-		}
-		
-	      }
-	      else
-	      {
+                {
+                  printf(" replace node1=%i with node0=%i in elements e0=%i and e1=%i\n",node1,node0,e0,e1);
+                  // Here is a start -- more to do
+                  for( int m=0; m<3; m++ )
+                  {
+                    if( elements(e0,m)==node1 )
+                      elements(e0,m)=node0;
+                    if( elements(e1,m)==node1 )
+                      elements(e1,m)=node0;
+                  }
+                  if( n0Global==node1 )
+                    n0Global=node0;
+                  if( n1Global==node1 )
+                    n1Global=node0;
+                
+                }
+                
+              }
+              else
+              {
                 printf(" ***ERROR*** unable to match a face! n0Global=%i, n1Global=%i, distMin=%e, distMax=%e\n",
                         n0Global,n1Global,distMin,distMax);
-	      }
-	      
+              }
+              
               if( fGlobal==-1 )
-	      {
-		printf("****ERROR*** no common face n0Global=%i ->faces (%i,%i) n1Global=%i ->faces (%i,%i)\n",
-		       n0Global,nodeInfo(n0Global,0),nodeInfo(n0Global,1),n1Global,
-		       nodeInfo(n1Global,0),nodeInfo(n1Global,1));
+              {
+                printf("****ERROR*** no common face n0Global=%i ->faces (%i,%i) n1Global=%i ->faces (%i,%i)\n",
+                       n0Global,nodeInfo(n0Global,0),nodeInfo(n0Global,1),n1Global,
+                       nodeInfo(n1Global,0),nodeInfo(n1Global,1));
                 
                 fGlobal=nodeInfo(n0Global,1);  // do this for now
-	      }
+              }
 
-	    }
-	  }
-	  
-	}
+            }
+          }
+          
+        }
         if( fGlobal<0 )
-	{
-	  printf("****MAJOR ERROR: unable to determine fGlobal for subsurface s=%i, face f=%i\n",s,f);
-	  continue;
-	}
-	
-	
+        {
+          printf("****MAJOR ERROR: unable to determine fGlobal for subsurface s=%i, face f=%i\n",s,f);
+          continue;
+        }
+        
+        
         faceTranslation(f)=fGlobal;
-	
+        
         // assign the element that is next to the face on the global grid which is now matched to face f
         assert( sFaceElements(f,0)>=0 );
         int e0 = sFaceElements(f,0)+numberOfElements;
         // assert( faceElements(fGlobal,1)==-1 );
         if( faceElements(fGlobal,1)!=-1 )
-	{
-	  printf("***ERROR*** faceElements(fGlobal=%i,1)!=-1, s=%i, \n"
+        {
+          printf("***ERROR*** faceElements(fGlobal=%i,1)!=-1, s=%i, \n"
                  " The face we are inserting has nodes n0Global=%i, n1Global=%i which are already in the\n"
                  " global triangulation. We are looking for the boundary face in the global triangulation\n"
                  " which has these nodes; We found fGlobal=%i but this face already has two elements as\n"
@@ -3227,149 +3227,149 @@ triangulateCompositeSurface(int & debug, GenericGraphicsInterface & gi, Graphics
                  " split when it should not be split, leaving a small triangle\n",
                  fGlobal,s,n0Global,n1Global,fGlobal,faceElements(fGlobal,0),faceElements(fGlobal,1),
                     elementSurface(faceElements(fGlobal,0)),elementSurface(faceElements(fGlobal,1)));
-	  
-	  int ff[4]={nodeInfo(n0Global,0),nodeInfo(n0Global,1),nodeInfo(n1Global,0),nodeInfo(n1Global,1)};  //
-	  int f0=ff[0], f1=ff[1], f2=ff[2], f3=ff[3];
+          
+          int ff[4]={nodeInfo(n0Global,0),nodeInfo(n0Global,1),nodeInfo(n1Global,0),nodeInfo(n1Global,1)};  //
+          int f0=ff[0], f1=ff[1], f2=ff[2], f3=ff[3];
           printf("Nodes n0Global=%i, n1Global=%i are connected to these faces:\n"
-		 " f0=%i=(%i,%i) f1=%i=(%i,%i) f2=%i=(%i,%i) f3=%i=(%i,%i) \n",n0Global,n1Global,
-		 f0,faces(f0,0),faces(f0,1),
-		 f1,faces(f1,0),faces(f1,1),
-		 f2,faces(f2,0),faces(f2,1),
-		 f3,faces(f3,0),faces(f3,1));
+                 " f0=%i=(%i,%i) f1=%i=(%i,%i) f2=%i=(%i,%i) f3=%i=(%i,%i) \n",n0Global,n1Global,
+                 f0,faces(f0,0),faces(f0,1),
+                 f1,faces(f1,0),faces(f1,1),
+                 f2,faces(f2,0),faces(f2,1),
+                 f3,faces(f3,0),faces(f3,1));
 
-	}
+        }
         faceElements(fGlobal,1)=e0;
 
-	int e1=faceElements(fGlobal,0);
-	
+        int e1=faceElements(fGlobal,0);
+        
         // check orientation of elements e0 and e1
         int ea=e0, eb=e1;
-	int na=n0Global, nb=n1Global;
-	int a0 = elements(ea,0)==na ? 0 : elements(ea,1)==na ? 1 : 2;
-	int a1 = elements(ea,0)==nb ? 0 : elements(ea,1)==nb ? 1 : 2;
+        int na=n0Global, nb=n1Global;
+        int a0 = elements(ea,0)==na ? 0 : elements(ea,1)==na ? 1 : 2;
+        int a1 = elements(ea,0)==nb ? 0 : elements(ea,1)==nb ? 1 : 2;
 
         if( elements(ea,a0)!=na )
-	{
-	  if( !duplicateNodeFound(a0,na,ea,elements,duplicateNodes,numberOfDuplicateNodes) )
-	  {
-  	    printf("+++ ERROR: unable to find node na=%i in element ea=%i\n",na,ea);
+        {
+          if( !duplicateNodeFound(a0,na,ea,elements,duplicateNodes,numberOfDuplicateNodes) )
+          {
+            printf("+++ ERROR: unable to find node na=%i in element ea=%i\n",na,ea);
             printf(" element ea=%i: nodes=(%i,%i,%i) \n",ea,elements(ea,0),elements(ea,1),elements(ea,2));
-	  }
-	}
+          }
+        }
         if( elements(ea,a1)!=nb )
-	{
-	  if( !duplicateNodeFound(a1,nb,ea,elements,duplicateNodes,numberOfDuplicateNodes) )
-	  {
-    	    printf("+++ ERROR: unable to find node nb=%i in element ea=%i\n",nb,ea);
+        {
+          if( !duplicateNodeFound(a1,nb,ea,elements,duplicateNodes,numberOfDuplicateNodes) )
+          {
+            printf("+++ ERROR: unable to find node nb=%i in element ea=%i\n",nb,ea);
             printf(" element ea=%i: nodes=(%i,%i,%i) \n",ea,elements(ea,0),elements(ea,1),elements(ea,2));
-	  }
-	}
-	
+          }
+        }
+        
 
 
-	int b0 = elements(eb,0)==na ? 0 : elements(eb,1)==na ? 1 : 2;
-	int b1 = elements(eb,0)==nb ? 0 : elements(eb,1)==nb ? 1 : 2;
+        int b0 = elements(eb,0)==na ? 0 : elements(eb,1)==na ? 1 : 2;
+        int b1 = elements(eb,0)==nb ? 0 : elements(eb,1)==nb ? 1 : 2;
         if( elements(eb,b0)!=na )
-	{
-	  if( !duplicateNodeFound(b0,na,eb,elements,duplicateNodes,numberOfDuplicateNodes) )
-	  {
-    	    printf("+++ ERROR: unable to find node na=%i in element eb=%i\n",na,eb);
+        {
+          if( !duplicateNodeFound(b0,na,eb,elements,duplicateNodes,numberOfDuplicateNodes) )
+          {
+            printf("+++ ERROR: unable to find node na=%i in element eb=%i\n",na,eb);
             printf(" element eb=%i: nodes=(%i,%i,%i) \n",eb,elements(eb,0),elements(eb,1),elements(eb,2));
 
-	    if( numberOfDuplicateNodes>0 )
-	      display(duplicateNodes(Range(0,1),Range(numberOfDuplicateNodes)),"duplicateNodes");
+            if( numberOfDuplicateNodes>0 )
+              display(duplicateNodes(Range(0,1),Range(numberOfDuplicateNodes)),"duplicateNodes");
             else
               printf(" **There are no duplicate nodes currently found\n");
-	    
+            
 
 //           printf("n0=%i, n0Global=%i, n1=%i,n1Global=%i, fGlobal=%i -> (%i,%i)\n",n0,n0Global,n1,n1Global,
 //                     fGlobal,faces(fGlobal,0),faces(fGlobal,1));
-	  }
-	}
+          }
+        }
         if( elements(eb,b1)!=nb )
-	{
-	  if( !duplicateNodeFound(b1,nb,eb,elements,duplicateNodes,numberOfDuplicateNodes) )
-	  {
-	    printf("+++ ERROR: unable to find node nb=%i in element eb=%i\n",nb,eb);
+        {
+          if( !duplicateNodeFound(b1,nb,eb,elements,duplicateNodes,numberOfDuplicateNodes) )
+          {
+            printf("+++ ERROR: unable to find node nb=%i in element eb=%i\n",nb,eb);
             printf(" element eb=%i: nodes=(%i,%i,%i) \n",eb,elements(eb,0),elements(eb,1),elements(eb,2));
             if( numberOfDuplicateNodes>0 )
-	      display(duplicateNodes(Range(0,1),Range(numberOfDuplicateNodes)),"duplicateNodes");
+              display(duplicateNodes(Range(0,1),Range(numberOfDuplicateNodes)),"duplicateNodes");
             else
               printf(" **There are no duplicate nodes currently found\n");
-	    
-	  }
-	  
-	}
+            
+          }
+          
+        }
 
-	int c1 = (a1==( (a0+1)%3 )) ? 1 : -1;  // 1=counter-clockwise order a0-->a1, -1=clockwise
-	int c2 = (b1==( (b0+1)%3 )) ? 1 : -1;
+        int c1 = (a1==( (a0+1)%3 )) ? 1 : -1;  // 1=counter-clockwise order a0-->a1, -1=clockwise
+        int c2 = (b1==( (b0+1)%3 )) ? 1 : -1;
 
-	int surfa=elementSurface(ea), surfb=elementSurface(eb);
-//	      int orienta=orientation(surfa), orientb=orientation(surfb);
+        int surfa=elementSurface(ea), surfb=elementSurface(eb);
+//            int orienta=orientation(surfa), orientb=orientation(surfb);
 
               // surfaces surfa and surfb are connected
 
-	int signa=signForNormal(surfa);
-	int signb=signForNormal(surfb);
+        int signa=signForNormal(surfa);
+        int signb=signForNormal(surfb);
 
-	if( abs(signa) != abs(signb) )
-	{
-	  if( debugs ) printf("Surface %i is connected to surface %i",surfa,surfb);
-	  if( c1*c2 < 0  )
-	  {
-	    // same sign
-	    signForNormal(surfb)=signa;
-	    if( debugs ) printf(", with the same orientation\n");
-	  }
-	  else
-	  {
-	    signForNormal(surfb)=-signa;
-	    if( debugs ) printf(", with the opposite orientation\n");
-	  }
-	  for( int ss=0; ss<numberOfSurfaces; ss++ )
-	  {
-	    if( abs(signForNormal(ss))==abs(signb) )
-	      signForNormal(ss)= signForNormal(ss)==signb ? signForNormal(surfb) : -signForNormal(surfb);
-	  }
-		
-	}
-	else
-	{
-	  if( (c1*signa)*(c2*signb) > 0 )
-	  {
-	    printf("**ERROR** Consistency error for normals on surface %i and surface %i \n",surfa,surfb);
+        if( abs(signa) != abs(signb) )
+        {
+          if( debugs ) printf("Surface %i is connected to surface %i",surfa,surfb);
+          if( c1*c2 < 0  )
+          {
+            // same sign
+            signForNormal(surfb)=signa;
+            if( debugs ) printf(", with the same orientation\n");
+          }
+          else
+          {
+            signForNormal(surfb)=-signa;
+            if( debugs ) printf(", with the opposite orientation\n");
+          }
+          for( int ss=0; ss<numberOfSurfaces; ss++ )
+          {
+            if( abs(signForNormal(ss))==abs(signb) )
+              signForNormal(ss)= signForNormal(ss)==signb ? signForNormal(surfb) : -signForNormal(surfb);
+          }
+                
+        }
+        else
+        {
+          if( (c1*signa)*(c2*signb) > 0 )
+          {
+            printf("**ERROR** Consistency error for normals on surface %i and surface %i \n",surfa,surfb);
             printf(" signForNormal(s=%i)=%i, signForNormal(s=%i)=%i\n",surfa,signa,surfb,signb);
-	    printf(" orientation of element ea=%i is c1=%i, orientation of element eb=%i is c2=%i\n",ea,c1,eb,c2);
-	    
-	    printf(" element a=%i, nodes=(%i,%i,%i), element b=%i nodes=(%i,%i,%i)\n"
-		   "     node %i : (%11.5e,%11.5e,%11.5e)  \n"
-		   "     node %i : (%11.5e,%11.5e,%11.5e)  \n"
-		   "     node %i : (%11.5e,%11.5e,%11.5e)  \n"
-		   "     node %i : (%11.5e,%11.5e,%11.5e)  \n"
-		   "     node %i : (%11.5e,%11.5e,%11.5e)  \n"
-		   "     nodes %i : (%11.5e,%11.5e,%11.5e)  \n",
-		   ea,elements(ea,0),elements(ea,1),elements(ea,2),
-		   eb,elements(eb,0),elements(eb,1),elements(eb,2),
-		   elements(ea,0),nodes(elements(ea,0),0),nodes(elements(ea,0),1),nodes(elements(ea,0),2),
-		   elements(ea,1),nodes(elements(ea,1),0),nodes(elements(ea,1),1),nodes(elements(ea,1),2),
-		   elements(ea,2),nodes(elements(ea,2),0),nodes(elements(ea,2),1),nodes(elements(ea,2),2),
-		   elements(eb,0),nodes(elements(eb,0),0),nodes(elements(eb,0),1),nodes(elements(eb,0),2),
-		   elements(eb,1),nodes(elements(eb,1),0),nodes(elements(eb,1),1),nodes(elements(eb,1),2),
-		   elements(eb,2),nodes(elements(eb,2),0),nodes(elements(eb,2),1),nodes(elements(eb,2),2)
-	      );
+            printf(" orientation of element ea=%i is c1=%i, orientation of element eb=%i is c2=%i\n",ea,c1,eb,c2);
+            
+            printf(" element a=%i, nodes=(%i,%i,%i), element b=%i nodes=(%i,%i,%i)\n"
+                   "     node %i : (%11.5e,%11.5e,%11.5e)  \n"
+                   "     node %i : (%11.5e,%11.5e,%11.5e)  \n"
+                   "     node %i : (%11.5e,%11.5e,%11.5e)  \n"
+                   "     node %i : (%11.5e,%11.5e,%11.5e)  \n"
+                   "     node %i : (%11.5e,%11.5e,%11.5e)  \n"
+                   "     nodes %i : (%11.5e,%11.5e,%11.5e)  \n",
+                   ea,elements(ea,0),elements(ea,1),elements(ea,2),
+                   eb,elements(eb,0),elements(eb,1),elements(eb,2),
+                   elements(ea,0),nodes(elements(ea,0),0),nodes(elements(ea,0),1),nodes(elements(ea,0),2),
+                   elements(ea,1),nodes(elements(ea,1),0),nodes(elements(ea,1),1),nodes(elements(ea,1),2),
+                   elements(ea,2),nodes(elements(ea,2),0),nodes(elements(ea,2),1),nodes(elements(ea,2),2),
+                   elements(eb,0),nodes(elements(eb,0),0),nodes(elements(eb,0),1),nodes(elements(eb,0),2),
+                   elements(eb,1),nodes(elements(eb,1),0),nodes(elements(eb,1),1),nodes(elements(eb,1),2),
+                   elements(eb,2),nodes(elements(eb,2),0),nodes(elements(eb,2),1),nodes(elements(eb,2),2)
+              );
  
-	    inconsistent(surfa,surfb)++;
-	    inconsistent(surfb,surfa)++;
-	  }
-	  else
-	  {
-	    if( debugs & 2 ) printf("**INFO** Consistency check for normals on surface %i and surface %i \n",
-				    surfa,surfb);
-	    consistent(surfa,surfb)++;
-	    consistent(surfb,surfa)++;
-	  }
-	}
-	
+            inconsistent(surfa,surfb)++;
+            inconsistent(surfb,surfa)++;
+          }
+          else
+          {
+            if( debugs & 2 ) printf("**INFO** Consistency check for normals on surface %i and surface %i \n",
+                                    surfa,surfb);
+            consistent(surfa,surfb)++;
+            consistent(surfb,surfa)++;
+          }
+        }
+        
       }
       
     }
@@ -3421,11 +3421,11 @@ triangulateCompositeSurface(int & debug, GenericGraphicsInterface & gi, Graphics
     {
       for( int s2=s+1; s2<numberOfSurfaces; s2++ )
       {
-	if( inconsistent(s,s2)>0 )
-	{
-	  gi.outputString(sPrintF(buf, "WARNING: surface s=%i, s2=%i : number of consistencies=%i,"
-				  " number of inconsistencies=%i", s,s2,consistent(s,s2),inconsistent(s,s2)));
-	}
+        if( inconsistent(s,s2)>0 )
+        {
+          gi.outputString(sPrintF(buf, "WARNING: surface s=%i, s2=%i : number of consistencies=%i,"
+                                  " number of inconsistencies=%i", s,s2,consistent(s,s2),inconsistent(s,s2)));
+        }
       }
     }
     printf("*** It could be that reducing the stitching tolerance will fix the inconsistencies\n");
@@ -3442,16 +3442,16 @@ triangulateCompositeSurface(int & debug, GenericGraphicsInterface & gi, Graphics
     {
       if( signForNormal(elementSurface(e))<0 )
       {
-	int temp=elements(e,1);
-	elements(e,1)=elements(e,2);
-	elements(e,2)=temp;
-	temp=elementFaces(e,0);
-	elementFaces(e,0)=elementFaces(e,2);
-	elementFaces(e,2)=temp;
+        int temp=elements(e,1);
+        elements(e,1)=elements(e,2);
+        elements(e,2)=temp;
+        temp=elementFaces(e,0);
+        elementFaces(e,0)=elementFaces(e,2);
+        elementFaces(e,2)=temp;
 // AP: Also need to flip elementCoordinates!!!
-	temp=elementCoordinates(e,1);
-	elementCoordinates(e,1)=elementCoordinates(e,2);
-	elementCoordinates(e,2)=temp;
+        temp=elementCoordinates(e,1);
+        elementCoordinates(e,1)=elementCoordinates(e,2);
+        elementCoordinates(e,2)=temp;
       }
     }
   }
@@ -3473,13 +3473,13 @@ triangulateCompositeSurface(int & debug, GenericGraphicsInterface & gi, Graphics
       int ae2 = faceElements(f2,0)==e ? faceElements(f2,1) : faceElements(f2,0);
 
       printf("element %i: nodes=(%i,%i,%i), faces=(%i,%i,%i), adjacent elements=(%i,%i,%i)\n",
-	      e,elements(e,0),elements(e,1),elements(e,2),ef(e,0),ef(e,1),ef(e,2),ae0,ae1,ae2);
+              e,elements(e,0),elements(e,1),elements(e,2),ef(e,0),ef(e,1),ef(e,2),ae0,ae1,ae2);
     }
   
     for( int f=0; f<numberOfFaces; f++ )
     {
       printf("face %i: nodes (%i,%i) next to elements %i and %i\n",f,faces(f,0),faces(f,1),
-	      faceElements(f,0),faceElements(f,1));
+              faceElements(f,0),faceElements(f,1));
     }
     
   }
@@ -3496,15 +3496,15 @@ triangulateCompositeSurface(int & debug, GenericGraphicsInterface & gi, Graphics
     // real maxDist=.01*deltaS;
     gi.outputString("Improving triangulation...");
     improveTriangulation( cs, maxDist, maxArea,
-			  numberOfNodes, nodes,
-			  numberOfElements,elements,
-			  numberOfFaces,faces,
-			  faceElements,
-			  elementFaces,
-			  elementSurface,
-			  elementCoordinates, 
+                          numberOfNodes, nodes,
+                          numberOfElements,elements,
+                          numberOfFaces,faces,
+                          faceElements,
+                          elementFaces,
+                          elementSurface,
+                          elementCoordinates, 
                           numberOfCoordinateNodes,
-			  rNodes);
+                          rNodes);
 
     elements.resize(numberOfElements,3);
     elementSurface.resize(numberOfElements);
@@ -3543,57 +3543,57 @@ triangulateCompositeSurface(int & debug, GenericGraphicsInterface & gi, Graphics
                       numberOfDuplicateNodes,duplicateNodes,debug );
 
 //  /* -----
-//  	const int n0=elements(e,0), n1=elements(e,1), n2=elements(e,2);
-//  	if( n0<0 || n0>=numberOfNodes || n1<0 || n1>=numberOfNodes || n2<0 || n2>=numberOfNodes )
-//  	{
-//  	  printf("check:ERROR for element e=%i, nodes=(%i,%i,%i). "
-//  		 "Node numbers out of range, numberOfNodes=%i\n",e,n0,n1,n2,numberOfNodes);
-//  	}
+//      const int n0=elements(e,0), n1=elements(e,1), n2=elements(e,2);
+//      if( n0<0 || n0>=numberOfNodes || n1<0 || n1>=numberOfNodes || n2<0 || n2>=numberOfNodes )
+//      {
+//        printf("check:ERROR for element e=%i, nodes=(%i,%i,%i). "
+//               "Node numbers out of range, numberOfNodes=%i\n",e,n0,n1,n2,numberOfNodes);
+//      }
 //          for( int m=0; m<3; m++ )
-//  	{
-//  	  const int f0=elementFaces(e,m);
-//  	  if( f0<0 || f0>=numberOfFaces )
-//  	  {
-//  	    printf("check:ERROR for element e=%i, face=%i. "
-//  		   "Face numbers out of range, numberOfFaces=%i\n",e,f0,numberOfNodes);
-//  	  }
-//  	  else
-//  	  {
+//      {
+//        const int f0=elementFaces(e,m);
+//        if( f0<0 || f0>=numberOfFaces )
+//        {
+//          printf("check:ERROR for element e=%i, face=%i. "
+//                 "Face numbers out of range, numberOfFaces=%i\n",e,f0,numberOfNodes);
+//        }
+//        else
+//        {
 //              for( int side=0; side<=1; side++ )
-//  	    {
-//  	      int faceNode=faces(f0,side);
-//  	      if( faceNode!=n0 && faceNode!=n1 && faceNode!=n2 )
-//  	      {
-//  		// check for a duplicate node
-//  		for( int n=0; n<numberOfDuplicateNodes; n++ )
-//  		{
-//  		  if( duplicateNodes(0,n)==faceNode )
-//  		  {
+//          {
+//            int faceNode=faces(f0,side);
+//            if( faceNode!=n0 && faceNode!=n1 && faceNode!=n2 )
+//            {
+//              // check for a duplicate node
+//              for( int n=0; n<numberOfDuplicateNodes; n++ )
+//              {
+//                if( duplicateNodes(0,n)==faceNode )
+//                {
 //                      faces(f0,side)=duplicateNodes(1,n);
 //                      if( debug & 2 )
-//     		      printf("INFO: replace node %i with node %i in face %i (e=%i).\n",faceNode,faces(f0,side),f0,e);
+//                    printf("INFO: replace node %i with node %i in face %i (e=%i).\n",faceNode,faces(f0,side),f0,e);
                     
 //                      // If we change a face we need to go back and check elements connected to this face
-//  		    for( int nn=0; nn<=1; nn++ )
-//  		    {
-//  		      int ee = faceElements(f0,nn); // check the elements next to this face
+//                  for( int nn=0; nn<=1; nn++ )
+//                  {
+//                    int ee = faceElements(f0,nn); // check the elements next to this face
 //                        for( int mm=0; mm<=2; mm++ )
-//  		      {
-//  			if( elements(ee,mm)==faceNode )
-//  			{
-//  			  elements(ee,mm)=duplicateNodes(1,n);
+//                    {
+//                      if( elements(ee,mm)==faceNode )
+//                      {
+//                        elements(ee,mm)=duplicateNodes(1,n);
 //                            if( debug & 2 )
 //                               printf("INFO: replace node %i with node %i in element %i.\n",faceNode,faces(f0,side),ee);
-//  			}
-//  		      }
-//  		    }
-//  		  }
-//  		}
-//  	      }
-//  	    }
-//  	  }
-//  	}
-//  	--------- */
+//                      }
+//                    }
+//                  }
+//                }
+//              }
+//            }
+//          }
+//        }
+//      }
+//      --------- */
       }
     }
     
@@ -3658,9 +3658,9 @@ computeNumberOfGridPoints( real arcLength, realArray & x, real & maxCurvature )
   Range I(x.getBase(0)+1,x.getBound(0)-1);
 
   maxCurvature=max( (fabs(x(I+1,0)-2.*x(I,0)+x(I-1,0))+
-		     fabs(x(I+1,1)-2.*x(I,1)+x(I-1,1))+
-		     fabs(x(I+1,2)-2.*x(I,2)+x(I-1,2))) );
-	      
+                     fabs(x(I+1,1)-2.*x(I,1)+x(I-1,1))+
+                     fabs(x(I+1,2)-2.*x(I,2)+x(I-1,2))) );
+              
 
   int numForArcLength=int( arcLength/deltaS );
   // curvatureResolution/sqrt(curvatureTolerance) is approx number of points on a circle due to curvature only (?)
@@ -3794,8 +3794,8 @@ buildEdgeSegment(Mapping & trimCurve,
 
   if( false )
     printf("buildEdgeSegment: edge %i, arcLength=%8.2e, max(x'')=%8.2e, deltaS=%8.2e, "
-	   "recompute:num=%i (grid points=%i)\n",
-	   numberOfEdgeCurves,arcLength,maxCurvature,deltaS,num,numberOfGridPoints);
+           "recompute:num=%i (grid points=%i)\n",
+           numberOfEdgeCurves,arcLength,maxCurvature,deltaS,num,numberOfGridPoints);
 
   // **** re-evaluate the curve with the new number of  grid points  ****
   I=num;
@@ -3827,9 +3827,9 @@ buildEdgeSegment(Mapping & trimCurve,
       real diff=fabs(r(i,0)-r2(i,0))+fabs(r(i,1)-r2(i,1));
       int ip = i<num-1 ? i+1 : i-1;
       real arc=fabs(x(ip,0)-x(i,0))+fabs(x(ip,1)-x(i,1))+fabs(x(ip,2)-x(i,2));
-	
+        
 //          printf("i=%i, r=(%9.3e,%9.3e) -> x=(%9.3e,%9.3e,%9.3e) -> r2=(%9.3e,%9.3e) diff(r)=%8.2e arc=%8.2e\n",
-//  	       i,r(i,0),r(i,1),x(i,0),x(i,1),x(i,2),r2(i,0),r2(i,1),diff,arc);
+//             i,r(i,0),r(i,1),x(i,0),x(i,1),x(i,2),r2(i,0),r2(i,1),diff,arc);
     }
   }
 
@@ -3863,7 +3863,7 @@ buildEdgeSegment(Mapping & trimCurve,
 //    int nxg = xg.getBound(0);
 
 //    printf("From getGrid(): first point (%e, %e, %e), last point (%e, %e, %e)\n", 
-//  	   xg(0,0), xg(0,1), xg(0,2), xg(nxg,0), xg(nxg,1), xg(nxg,2));
+//         xg(0,0), xg(0,1), xg(0,2), xg(nxg,0), xg(nxg,1), xg(nxg,2));
   
 
   if( debug & 16 )
@@ -3892,9 +3892,9 @@ buildEdgeSegment(Mapping & trimCurve,
       for( int i=0; i<num; i++ )
       {
         real diff=fabs(xx(i,0)-x2(i,0))+fabs(xx(i,1)-x2(i,1))+fabs(xx(i,2)-x2(i,2));
-	
+        
         printf("i=%i, xx=(%9.3e,%9.3e,%9.3e)->rr=(%9.3e,%9.3e)->x2=(%9.3e,%9.3e,%9.3e) diff(x)=%8.2e\n",
-	       i,xx(i,0),xx(i,1),xx(i,2),rr(i,0),rr(i,1),x2(i,0),x2(i,1),x2(i,2),diff);
+               i,xx(i,0),xx(i,1),xx(i,2),rr(i,0),rr(i,1),x2(i,0),x2(i,1),x2(i,2),diff);
       }
 
       gi.erase();
@@ -4023,96 +4023,96 @@ buildEdgeCurves( GenericGraphicsInterface & gi )
 
       for( int b=0; b<4; b++ )
       {
-	NurbsMapping & trimCurve = nurb.subCurve(b);
-//	printf("buildEdgeCurve: untrimmed, reference counts tc: %i, sc[%i]: %i\n", nurb.getReferenceCount(), b, trimCurve.getReferenceCount());
-	// treat faces in a counter-clockwise order
-	//  (side,axis) = (0,1), (1,0), (1,1) (0,0)
-	int axis = (b+1) % 2;
-	int side=  ((b+1)/2) %2;
-	
+        NurbsMapping & trimCurve = nurb.subCurve(b);
+//      printf("buildEdgeCurve: untrimmed, reference counts tc: %i, sc[%i]: %i\n", nurb.getReferenceCount(), b, trimCurve.getReferenceCount());
+        // treat faces in a counter-clockwise order
+        //  (side,axis) = (0,1), (1,0), (1,1) (0,0)
+        int axis = (b+1) % 2;
+        int side=  ((b+1)/2) %2;
+        
 // If the Mapping is a NurbsMapping then we can directly build the exact curves on the
 // boundaries.
 // AP: But the end points of the resulting curves can not always be moved with 
 // NurbsMapping::moveEndpoint(), so we don't use this method
 
-//	printf("Building edge curves on an untrimmed surface\n");
-	NurbsMapping *edge=NULL;
-	buildEdgeSegment(trimCurve,map,edge,numberOfGridPoints,arcLength,debug,gi);
+//      printf("Building edge curves on an untrimmed surface\n");
+        NurbsMapping *edge=NULL;
+        buildEdgeSegment(trimCurve,map,edge,numberOfGridPoints,arcLength,debug,gi);
 
-	if( edge!=NULL )
-	{
-	  newNurbs = edge;
-//	    printf("The order of curve on the non-NURBS surface is %i\n", newNurbs->getOrder());
-//  	  printf("buildEdgeCurve: untrimmed, after buildEdgeSegment: reference count map: %i\n", 
-//  		 edge->getReferenceCount());
-	}
-	else
-	{
-	  printf(" s=%i, skipping short edge curve %i on an untrimmed %s, arcLength=%8.2e\n",s,
-		 numberOfEdgeCurves, SC map.getClassName(), arcLength);
-	  if (b==0) 
-	    skippedFirst = true;
-	  else
-	    skippedPrevious = true;
-	  continue;
-	}
-	
+        if( edge!=NULL )
+        {
+          newNurbs = edge;
+//          printf("The order of curve on the non-NURBS surface is %i\n", newNurbs->getOrder());
+//        printf("buildEdgeCurve: untrimmed, after buildEdgeSegment: reference count map: %i\n", 
+//               edge->getReferenceCount());
+        }
+        else
+        {
+          printf(" s=%i, skipping short edge curve %i on an untrimmed %s, arcLength=%8.2e\n",s,
+                 numberOfEdgeCurves, SC map.getClassName(), arcLength);
+          if (b==0) 
+            skippedFirst = true;
+          else
+            skippedPrevious = true;
+          continue;
+        }
+        
 // save starting point info
-	const realArray & x = newNurbs->getGrid();
-	
-	if (endPoint.getLength(0) <= numberOfEndPoints)
-	{
-	  masterEdge.resize(numberOfEndPoints+1000);
-	  endPoint.resize(numberOfEndPoints+1000,3);
-	}
-	  
-	for (q=0; q<3; q++)
-	  endPoint(numberOfEndPoints, q) = x(0, 0, 0, q); // starting point
+        const realArray & x = newNurbs->getGrid();
+        
+        if (endPoint.getLength(0) <= numberOfEndPoints)
+        {
+          masterEdge.resize(numberOfEndPoints+1000);
+          endPoint.resize(numberOfEndPoints+1000,3);
+        }
+          
+        for (q=0; q<3; q++)
+          endPoint(numberOfEndPoints, q) = x(0, 0, 0, q); // starting point
 
 // check if the last curve segment was too short: Then we need to adjust the ending point of the previous 
 // curve to match with the starting point of next curve. Special case if the first segment is skipped:
 // then we need to adjust the ending point of the last segment (see below)
-	if (skippedPrevious)
-	{
-//	  printf("Adjusting the ending point of the previous segment since we skipped a segment\n");
-	  CurveSegment *lastCurve=currentLoop.lastEdge->curve;
-	  const realArray & x=lastCurve->getNURBS()->getGrid();
-	  int n = x.getLength(0)-1;
-	  RealArray newLocation(3);
-	  for (q=0; q<3; q++)
-	    newLocation(q) = endPoint(numberOfEndPoints,q);
-//	  printf("Present endpoint: (%e,%e,%e)\nnewLocation: (%e,%e,%e)\n", x(n,0,0,0), x(n,0,0,1), x(n,0,0,2),
-//		 newLocation(0),  newLocation(1),  newLocation(2));
-	
-	  lastCurve->getNURBS()->moveEndpoint(1, newLocation);
+        if (skippedPrevious)
+        {
+//        printf("Adjusting the ending point of the previous segment since we skipped a segment\n");
+          CurveSegment *lastCurve=currentLoop.lastEdge->curve;
+          const realArray & x=lastCurve->getNURBS()->getGrid();
+          int n = x.getLength(0)-1;
+          RealArray newLocation(3);
+          for (q=0; q<3; q++)
+            newLocation(q) = endPoint(numberOfEndPoints,q);
+//        printf("Present endpoint: (%e,%e,%e)\nnewLocation: (%e,%e,%e)\n", x(n,0,0,0), x(n,0,0,1), x(n,0,0,2),
+//               newLocation(0),  newLocation(1),  newLocation(2));
+        
+          lastCurve->getNURBS()->moveEndpoint(1, newLocation);
 // check the result
-	  const realArray & y=lastCurve->getNURBS()->getGrid();
-	  n=y.getLength(0)-1;
-//	  printf("Resulting curve endpoint: (%e,%e,%e)\n", y(n,0,0,0), y(n,0,0,1), y(n,0,0,2));
-	
-	}
+          const realArray & y=lastCurve->getNURBS()->getGrid();
+          n=y.getLength(0)-1;
+//        printf("Resulting curve endpoint: (%e,%e,%e)\n", y(n,0,0,0), y(n,0,0,1), y(n,0,0,2));
+        
+        }
 
 // make a new curve segment
 // the starting point number is "numberOfEndPoints"
 // surface s, no trim curve, just a boundary
-	CurveSegment *newCurve = new CurveSegment(*newNurbs, numberOfEndPoints, s, &nurb, &trimCurve); 
+        CurveSegment *newCurve = new CurveSegment(*newNurbs, numberOfEndPoints, s, &nurb, &trimCurve); 
 // we are done with newNurbs!
-	if (newNurbs->decrementReferenceCount() == 0)
-	  delete newNurbs;
-	newNurbs = NULL;
+        if (newNurbs->decrementReferenceCount() == 0)
+          delete newNurbs;
+        newNurbs = NULL;
 
-	newCurve->numberOfGridPoints=numberOfGridPoints;
-	newCurve->arcLength=arcLength;
+        newCurve->numberOfGridPoints=numberOfGridPoints;
+        newCurve->arcLength=arcLength;
 
 // make an EdgeInfo object
-	EdgeInfo *newEdge = new EdgeInfo(newCurve, 0, s, 1, numberOfEdgeCurves); // loop is 0, direction is 1
+        EdgeInfo *newEdge = new EdgeInfo(newCurve, 0, s, 1, numberOfEdgeCurves); // loop is 0, direction is 1
 // add it to the loop
-	currentLoop.insertEdge( newEdge );
+        currentLoop.insertEdge( newEdge );
       
-	masterEdge.array[numberOfEndPoints] = newEdge; // the newEdge initially rules the starting point
+        masterEdge.array[numberOfEndPoints] = newEdge; // the newEdge initially rules the starting point
       
-	numberOfEndPoints++;
-	numberOfEdgeCurves++;
+        numberOfEndPoints++;
+        numberOfEdgeCurves++;
       } // end for b=0,...,3
 // assign end point numbers for the currentLoop
       currentLoop.assignEndPointNumbers();
@@ -4122,27 +4122,27 @@ buildEdgeCurves( GenericGraphicsInterface & gi )
       EdgeInfo *edge;
       for (i=0, edge = currentLoop.firstEdge; i<nE; i++, edge = edge->next)
       {
-	for (q=0; q<3; q++)
-	  newLocation(q) = endPoint(edge->next->curve->startingPoint,q);
-	edge->curve->getNURBS()->moveEndpoint(1, newLocation);
+        for (q=0; q<3; q++)
+          newLocation(q) = endPoint(edge->next->curve->startingPoint,q);
+        edge->curve->getNURBS()->moveEndpoint(1, newLocation);
       }
 
 // if we skipped the first segment, we must adjust the ending point of the last segment to coincide with the
 // starting point of the first segment  
       if (skippedFirst)
       {
-//	printf("Adjusting the ending point of the last segment since the first segment was skipped\n");
-	CurveSegment *lastCurve=currentLoop.lastEdge->curve;
-	CurveSegment *firstCurve=currentLoop.firstEdge->curve;
-	RealArray newLocation(3);
-	for (q=0; q<3; q++)
-	  newLocation(q) = endPoint(firstCurve->startingPoint,q);
-	
-	lastCurve->getNURBS()->moveEndpoint(1, newLocation);
+//      printf("Adjusting the ending point of the last segment since the first segment was skipped\n");
+        CurveSegment *lastCurve=currentLoop.lastEdge->curve;
+        CurveSegment *firstCurve=currentLoop.firstEdge->curve;
+        RealArray newLocation(3);
+        for (q=0; q<3; q++)
+          newLocation(q) = endPoint(firstCurve->startingPoint,q);
+        
+        lastCurve->getNURBS()->moveEndpoint(1, newLocation);
       }
 // don't need nurb anymore
       if (nurb.decrementReferenceCount()==0)
-	delete &nurb;
+        delete &nurb;
 
     } // end if !trimmedMapping
     else
@@ -4162,14 +4162,14 @@ buildEdgeCurves( GenericGraphicsInterface & gi )
 
       for ( int i=0; i<trim.getNumberOfTrimCurves(); i++ )
       {
-	Loop & currentLoop = faceInfoArray[s].loop[i];
-	currentLoop.trimOrientation = trim.trimOrientation(i); // copy the orientation from the trimmedMapping
+        Loop & currentLoop = faceInfoArray[s].loop[i];
+        currentLoop.trimOrientation = trim.trimOrientation(i); // copy the orientation from the trimmedMapping
 
-	Mapping *c = trim.getTrimCurve(i);
-	if( c!=0 )
-	{
+        Mapping *c = trim.getTrimCurve(i);
+        if( c!=0 )
+        {
           if( c->getClassName()=="NurbsMapping" )
-	  {
+          {
             NurbsMapping & nurb = (NurbsMapping&)(*c);
 
             // printf("surface s=%i, Trim curve %i has %i sub-curves, (order=%i)\n",s,i,nurb.numberOfSubCurves(),
@@ -4177,229 +4177,229 @@ buildEdgeCurves( GenericGraphicsInterface & gi )
 
             // if( nurb.numberOfSubCurves()==1 && nurb.getOrder()==1 )
             if( nurb.getOrder()==1 )
-	    {
+            {
               // this trim curve may have corners since it is piece-wise linear (?)
               // we may need to split it into pieces
               // angle: split an order 1 nurb where the tangent changes by more than this angle.
               const real angle=40.;  // default is 60 degrees
-	      nurb.buildSubCurves(angle);
-	      
+              nurb.buildSubCurves(angle);
+              
               if( debug & 2 ) 
-	      {
+              {
                 printf("   ***** order=1 : s=%i, trim curve=%i split into %i sub-curves\n",
                         s,i,nurb.numberOfSubCurves());
-	      }
-	      
-	    }
-	    
+              }
+              
+            }
+            
             int edgeStart=numberOfEdgeCurves;
-	    for( int sc=0; sc<nurb.numberOfSubCurves(); sc++ )
-	    {
+            for( int sc=0; sc<nurb.numberOfSubCurves(); sc++ )
+            {
               NurbsMapping & trimCurve = nurb.subCurve(sc);
 
-//  	      printf("buildEdgeCurve: trimmed, reference counts tc: %i, sc[%i]: %i\n", 
-//  		     nurb.getReferenceCount(), sc, trimCurve.getReferenceCount());
+//            printf("buildEdgeCurve: trimmed, reference counts tc: %i, sc[%i]: %i\n", 
+//                   nurb.getReferenceCount(), sc, trimCurve.getReferenceCount());
 
-	      NurbsMapping *edge=NULL;
+              NurbsMapping *edge=NULL;
               assert( trim.surface!=0 );
 
               // printf("buildEdgeSegment: sc=%i, nurb.numberOfSubCurves()=%i numberOfEdgeCurves=%i\n",
               //    sc,nurb.numberOfSubCurves(),numberOfEdgeCurves);
 
               real arcLength;
-	      buildEdgeSegment(trimCurve,*trim.surface,edge,numberOfGridPoints,arcLength,debug,gi);
+              buildEdgeSegment(trimCurve,*trim.surface,edge,numberOfGridPoints,arcLength,debug,gi);
 
-	      if( edge!=NULL )
-	      {
-		newNurbs = edge;
-	      }
-	      else
-	      {
-		printf("trim: s=%i, skipping short edge curve %i on a trimmed Mapping. arcLength=%8.2e\n",s,
+              if( edge!=NULL )
+              {
+                newNurbs = edge;
+              }
+              else
+              {
+                printf("trim: s=%i, skipping short edge curve %i on a trimmed Mapping. arcLength=%8.2e\n",s,
                         numberOfEdgeCurves,arcLength);
-		continue;
-	      }     
+                continue;
+              }     
 
 // save starting point info
-	      const realArray & x = newNurbs->getGrid();
+              const realArray & x = newNurbs->getGrid();
 
-	      if (endPoint.getLength(0) <= numberOfEndPoints)
-	      {
-		masterEdge.resize(numberOfEndPoints+1000);
-		endPoint.resize(numberOfEndPoints+1000,3);
-	      }
-	  
-	      for (q=0; q<3; q++)
-		endPoint(numberOfEndPoints, q) = x(0, 0, 0, q); // starting point
+              if (endPoint.getLength(0) <= numberOfEndPoints)
+              {
+                masterEdge.resize(numberOfEndPoints+1000);
+                endPoint.resize(numberOfEndPoints+1000,3);
+              }
+          
+              for (q=0; q<3; q++)
+                endPoint(numberOfEndPoints, q) = x(0, 0, 0, q); // starting point
 
 // make a new sub curve
 // surface s, trim curve nurb, sub curve sc
-	      CurveSegment *newCurve = new CurveSegment( *newNurbs, numberOfEndPoints, s, &nurb, &trimCurve);
+              CurveSegment *newCurve = new CurveSegment( *newNurbs, numberOfEndPoints, s, &nurb, &trimCurve);
 // we are done with newNurbs!
-	      if (newNurbs->decrementReferenceCount() == 0)
-		delete newNurbs;
-	      newNurbs = NULL;
-	      
-	      
-	      newCurve->numberOfGridPoints=numberOfGridPoints;
-	      newCurve->arcLength=arcLength;
+              if (newNurbs->decrementReferenceCount() == 0)
+                delete newNurbs;
+              newNurbs = NULL;
+              
+              
+              newCurve->numberOfGridPoints=numberOfGridPoints;
+              newCurve->arcLength=arcLength;
 
 // make an EdgeInfo object
-	      EdgeInfo *newEdge = new EdgeInfo(newCurve, i, s, 1, numberOfEdgeCurves); // loop is "i", direction is 1
+              EdgeInfo *newEdge = new EdgeInfo(newCurve, i, s, 1, numberOfEdgeCurves); // loop is "i", direction is 1
 
 // add the new curve to the loop
-	      currentLoop.insertEdge( newEdge );
+              currentLoop.insertEdge( newEdge );
 
 // the newEdge initially rules the starting point
-	      masterEdge.array[numberOfEndPoints] = newEdge; 
+              masterEdge.array[numberOfEndPoints] = newEdge; 
 
-	      numberOfEndPoints++;
-	      numberOfEdgeCurves++;
-	    }  // end for sc
+              numberOfEndPoints++;
+              numberOfEdgeCurves++;
+            }  // end for sc
 
 
-	    bool shortEdgeFound=false;
-	    
+            bool shortEdgeFound=false;
+            
 // look for any short edges and attempt to merge with neighbours if they join smoothly.
             if( currentLoop.numberOfEdges() > 1 )
-	    {
-	      EdgeInfo *currentEdge;
-	      int cnt;
-	      for( cnt=0, currentEdge=currentLoop.firstEdge; cnt<currentLoop.numberOfEdges(); 
-		   currentEdge=currentEdge->next, cnt++ )
-	      {
+            {
+              EdgeInfo *currentEdge;
+              int cnt;
+              for( cnt=0, currentEdge=currentLoop.firstEdge; cnt<currentLoop.numberOfEdges(); 
+                   currentEdge=currentEdge->next, cnt++ )
+              {
              
 // AP: Note that buildEdgeCurves only skips a subcurve if the arclength < 0.01*mergeTolerance
 // (when mergeShortEdges=true (global variable))
 // On the other hand, here we only skip the edge if it can not be joined with either the
 // previous or the next edge.
-		if( currentEdge->curve->arcLength < 0.1*mergeTolerance ) // AP: changed factor from 0.5
-		{
-		  // short edge found 
-		  shortEdgeFound=true;
-//    		  printf("Before short edge has been joined/deleted: numberOfEdges=%i, next edge=%i,"
-//  			 " 2nd next edge=%i\n", currentLoop.numberOfEdges(), currentEdge->next->edgeNumber, 
-//  			 currentEdge->next->next->edgeNumber);
+                if( currentEdge->curve->arcLength < 0.1*mergeTolerance ) // AP: changed factor from 0.5
+                {
+                  // short edge found 
+                  shortEdgeFound=true;
+//                printf("Before short edge has been joined/deleted: numberOfEdges=%i, next edge=%i,"
+//                       " 2nd next edge=%i\n", currentLoop.numberOfEdges(), currentEdge->next->edgeNumber, 
+//                       currentEdge->next->next->edgeNumber);
 
-		  EdgeInfo *prevEdge, *nextEdge;
-		  prevEdge = currentEdge->prev;
-		  nextEdge = currentEdge->next;
-		  
-		  const realArray & xp= prevEdge->curve->getNURBS()->getGrid();      // previous edge
-		  const realArray & xc= currentEdge->curve->getNURBS()->getGrid();   // current edge
-		  const realArray & xn= nextEdge->curve->getNURBS()->getGrid();      // next edge
-		
+                  EdgeInfo *prevEdge, *nextEdge;
+                  prevEdge = currentEdge->prev;
+                  nextEdge = currentEdge->next;
+                  
+                  const realArray & xp= prevEdge->curve->getNURBS()->getGrid();      // previous edge
+                  const realArray & xc= currentEdge->curve->getNURBS()->getGrid();   // current edge
+                  const realArray & xn= nextEdge->curve->getNURBS()->getGrid();      // next edge
+                
                   int nc=xc.getBound(0), np=xp.getBound(0);
-		  
+                  
                   real vp[3], vs[3], ve[3], vn[3];
 
-		  vp[0]=xp(np,0,0,0)-xp(np-1,0,0,0); 
+                  vp[0]=xp(np,0,0,0)-xp(np-1,0,0,0); 
                   vp[1]=xp(np,0,0,1)-xp(np-1,0,0,1); 
                   vp[2]=xp(np,0,0,2)-xp(np-1,0,0,2);  
                   real vpNorm=sqrt(vp[0]*vp[0]+vp[1]*vp[1]+vp[2]*vp[2]);
-		  
-		  vs[0]=xc(1,0,0,0)-xc(0,0,0,0); 
+                  
+                  vs[0]=xc(1,0,0,0)-xc(0,0,0,0); 
                   vs[1]=xc(1,0,0,1)-xc(0,0,0,1); 
                   vs[2]=xc(1,0,0,2)-xc(0,0,0,2);
                   real vsNorm=sqrt(vs[0]*vs[0]+vs[1]*vs[1]+vs[2]*vs[2]);
-		  ve[0]=xc(nc,0,0,0)-xc(nc-1,0,0,0); 
-		  ve[1]=xc(nc,0,0,1)-xc(nc-1,0,0,1); 
-		  ve[2]=xc(nc,0,0,2)-xc(nc-1,0,0,2);
+                  ve[0]=xc(nc,0,0,0)-xc(nc-1,0,0,0); 
+                  ve[1]=xc(nc,0,0,1)-xc(nc-1,0,0,1); 
+                  ve[2]=xc(nc,0,0,2)-xc(nc-1,0,0,2);
                   real veNorm=sqrt(ve[0]*ve[0]+ve[1]*ve[1]+ve[2]*ve[2]);
 
-		  vn[0]=xn(1,0,0,0)-xn(0,0,0,0); 
-		  vn[1]=xn(1,0,0,1)-xn(0,0,0,1); 
-		  vn[2]=xn(1,0,0,2)-xn(0,0,0,2);
+                  vn[0]=xn(1,0,0,0)-xn(0,0,0,0); 
+                  vn[1]=xn(1,0,0,1)-xn(0,0,0,1); 
+                  vn[2]=xn(1,0,0,2)-xn(0,0,0,2);
                   real vnNorm=sqrt(vn[0]*vn[0]+vn[1]*vn[1]+vn[2]*vn[2]);
-		  
+                  
                   real vDotp=(vp[0]*vs[0]+vp[1]*vs[1]+vp[2]*vs[2])/max(REAL_MIN*100.,vpNorm*vsNorm);
-		  real vDotn=(ve[0]*vn[0]+ve[1]*vn[1]+ve[2]*vn[2])/max(REAL_MIN*100.,veNorm*vnNorm);
+                  real vDotn=(ve[0]*vn[0]+ve[1]*vn[1]+ve[2]*vn[2])/max(REAL_MIN*100.,veNorm*vnNorm);
 
                   printf("Found short edge (e=%i, surface=%i, loop=%i), arcLength=%8.2e < mergeTolerance=%8.2e\n"
                          "  The cosine of angle with previous edge is %8.2e, next edge is=%8.2e\n",
-			 currentEdge->edgeNumber, currentEdge->faceNumber, currentEdge->loopNumber, 
-			 currentEdge->curve->arcLength, mergeTolerance, vDotp, vDotn);
-		  
+                         currentEdge->edgeNumber, currentEdge->faceNumber, currentEdge->loopNumber, 
+                         currentEdge->curve->arcLength, mergeTolerance, vDotp, vDotn);
+                  
                   bool ok=true;
-		  int dum=0;
+                  int dum=0;
                   if( vDotp > vDotn && vDotp > 0.8 )
-		  {
+                  {
 // The edge is reasonably in the same direction as the previous edge, join to the previous
-		    printf("Joining with the previos edge\n");
+                    printf("Joining with the previos edge\n");
 // joinEdgeCurves removes currentEdge from the loop!
-		    EdgeInfo *next=currentEdge->next;
-  		    ok= joinEdgeCurves(*currentEdge, false)==0; // AP: CHECK THIS!
-		    currentEdge = next->prev;
-		  }
-		  else if( vDotn > vDotp && vDotn > 0.8 )
-		  {
+                    EdgeInfo *next=currentEdge->next;
+                    ok= joinEdgeCurves(*currentEdge, false)==0; // AP: CHECK THIS!
+                    currentEdge = next->prev;
+                  }
+                  else if( vDotn > vDotp && vDotn > 0.8 )
+                  {
 // The edge is reasonably in the same direction as the next edge, join to the next
-		    printf("Joining with the next edge\n");
+                    printf("Joining with the next edge\n");
 // joinEdgeCurves removes currentEdge from the loop!
-		    EdgeInfo *prev=currentEdge->prev;
-  		    ok = joinEdgeCurves(*currentEdge, true)==0; // AP: CHECK THIS!
-		    currentEdge=prev->next;
-		  }
-		  else
-		  {
-		    printf("Keeping the short edge since it isn't sufficiently aligned with either\n"
-			   "the previous nor the next edge\n");
-		  }
-		  
-		  if( !ok )
-		  {
-		    printf("Deleting the short edge, since joinEdgeCurves failed.\n");
+                    EdgeInfo *prev=currentEdge->prev;
+                    ok = joinEdgeCurves(*currentEdge, true)==0; // AP: CHECK THIS!
+                    currentEdge=prev->next;
+                  }
+                  else
+                  {
+                    printf("Keeping the short edge since it isn't sufficiently aligned with either\n"
+                           "the previous nor the next edge\n");
+                  }
+                  
+                  if( !ok )
+                  {
+                    printf("Deleting the short edge, since joinEdgeCurves failed.\n");
 
 // the next statement will delete currentEdge, which would prevent us from evaluating next on it below
-		    currentEdge = currentEdge->prev; 
-		    currentLoop.deleteEdge(currentEdge->next); 
-		  }
-//    		  printf("After short edge has been joined/deleted: numberOfEdges=%i, next edge=%i\n", 
-//    			 currentLoop.numberOfEdges(), currentEdge->next->edgeNumber);
-		  
-		} // end if short edge
-		currentEdge=currentEdge->next;
-	      } // end for all new edgecurves
+                    currentEdge = currentEdge->prev; 
+                    currentLoop.deleteEdge(currentEdge->next); 
+                  }
+//                printf("After short edge has been joined/deleted: numberOfEdges=%i, next edge=%i\n", 
+//                       currentLoop.numberOfEdges(), currentEdge->next->edgeNumber);
+                  
+                } // end if short edge
+                currentEdge=currentEdge->next;
+              } // end for all new edgecurves
 
-	    } // end if more than 1 new edge
+            } // end if more than 1 new edge
 
 // tmp: check the loop if at least one short edge was found
-//  	    if (shortEdgeFound)
-//  	    {
-//  	      printf("INFO: loop with short edge, numberOfEdges=%i:\n", currentLoop.numberOfEdges());
-//  	      EdgeInfo *currentEdge;
-//  	      int cnt;
-//  	      for( cnt=0, currentEdge=currentLoop.firstEdge; cnt<currentLoop.numberOfEdges(); 
-//  		   currentEdge=currentEdge->next, cnt++ )
-//  	      {
-//  		printf("Edge %i with number %i, startpoint=%i, endpoint=%i\n",cnt, currentEdge->edgeNumber,
-//  		       currentEdge->getStartPoint(), currentEdge->getEndPoint());
-//  	      }
-//  	    }
-// end tmp	    
-	    
-	  } // end if NURBS trimming curve
-	  else
-	  {
+//          if (shortEdgeFound)
+//          {
+//            printf("INFO: loop with short edge, numberOfEdges=%i:\n", currentLoop.numberOfEdges());
+//            EdgeInfo *currentEdge;
+//            int cnt;
+//            for( cnt=0, currentEdge=currentLoop.firstEdge; cnt<currentLoop.numberOfEdges(); 
+//                 currentEdge=currentEdge->next, cnt++ )
+//            {
+//              printf("Edge %i with number %i, startpoint=%i, endpoint=%i\n",cnt, currentEdge->edgeNumber,
+//                     currentEdge->getStartPoint(), currentEdge->getEndPoint());
+//            }
+//          }
+// end tmp          
+            
+          } // end if NURBS trimming curve
+          else
+          {
 // ** trim curve is not a NURBS
             Overture::abort("error: trim curve is not a NURBS");
-	  }// end if not a nurbs trimming curve
-	  
-	} // end if c!=0
+          }// end if not a nurbs trimming curve
+          
+        } // end if c!=0
 
 // assign end point numbers for the currentLoop
-	currentLoop.assignEndPointNumbers();
+        currentLoop.assignEndPointNumbers();
 // modify the ending points so they exactly end at the starting point of the next segment!
-	RealArray newLocation(3);
-	int nE=currentLoop.numberOfEdges(), ii, q;
-	EdgeInfo *edge;
-	for (ii=0, edge = currentLoop.firstEdge; ii<nE; ii++, edge = edge->next)
-	{
-	  for (q=0; q<3; q++)
-	    newLocation(q) = endPoint(edge->next->curve->startingPoint,q);
-	  edge->curve->getNURBS()->moveEndpoint(1, newLocation);
-	}
-	
+        RealArray newLocation(3);
+        int nE=currentLoop.numberOfEdges(), ii, q;
+        EdgeInfo *edge;
+        for (ii=0, edge = currentLoop.firstEdge; ii<nE; ii++, edge = edge->next)
+        {
+          for (q=0; q<3; q++)
+            newLocation(q) = endPoint(edge->next->curve->startingPoint,q);
+          edge->curve->getNURBS()->moveEndpoint(1, newLocation);
+        }
+        
       } // end for all trimming curves
       
     } // end if trimmed surface
@@ -4424,14 +4424,14 @@ buildEdgeCurves( GenericGraphicsInterface & gi )
 //        EdgeInfo *eOrig;
 //        int cnt;
 //        for( cnt=0, eOrig=currentLoop.firstEdge; cnt<currentLoop.numberOfEdges(); 
-//  	   eOrig=eOrig->next, cnt++ )
+//         eOrig=eOrig->next, cnt++ )
 //        {
-//  	NurbsMapping * map = eOrig->curve->getNURBS();
-//  	NurbsMapping * sc = eOrig->curve->subCurve;
-//  	NurbsMapping * tc = eOrig->curve->surfaceLoop;
-//  	printf("Reference count for edge #%i: map: %i, tc: %i, sc: %i\n", 
-//  	       eOrig->edgeNumber, map->getReferenceCount(), tc->getReferenceCount(), 
-//  	       sc->getReferenceCount());
+//      NurbsMapping * map = eOrig->curve->getNURBS();
+//      NurbsMapping * sc = eOrig->curve->subCurve;
+//      NurbsMapping * tc = eOrig->curve->surfaceLoop;
+//      printf("Reference count for edge #%i: map: %i, tc: %i, sc: %i\n", 
+//             eOrig->edgeNumber, map->getReferenceCount(), tc->getReferenceCount(), 
+//             sc->getReferenceCount());
 //        }
 //      }
 //    }
@@ -4466,17 +4466,17 @@ buildEdgeCurveBoundaryNodes()
       Loop & currentLoop = currentFace.loop[l];
       ne = currentLoop.numberOfEdges();
       for (sc = 0, e = currentLoop.firstEdge; sc<ne; 
-	   sc++, e=e->next )
+           sc++, e=e->next )
       {
-	oldNumber = e->curve->getNURBS()->getGridDimensions(axis1);
-	realArray x = e->curve->getNURBS()->getGrid();
-	Range I=x.dimension(0);
-	x.reshape(I,3);
-	newNumber = computeNumberOfGridPoints(e->curve->arcLength, x, maxCurvature);
-	e->curve->getNURBS()->setGridDimensions(axis1,newNumber);
-	e->curve->numberOfGridPoints = newNumber;
-//	printf("buildEdgeCurveBN: s=%i, l=%i, sc=%i, oldNumber=%i, newNumber=%i\n", s, l, sc, 
-//	       oldNumber, newNumber);
+        oldNumber = e->curve->getNURBS()->getGridDimensions(axis1);
+        realArray x = e->curve->getNURBS()->getGrid();
+        Range I=x.dimension(0);
+        x.reshape(I,3);
+        newNumber = computeNumberOfGridPoints(e->curve->arcLength, x, maxCurvature);
+        e->curve->getNURBS()->setGridDimensions(axis1,newNumber);
+        e->curve->numberOfGridPoints = newNumber;
+//      printf("buildEdgeCurveBN: s=%i, l=%i, sc=%i, oldNumber=%i, newNumber=%i\n", s, l, sc, 
+//             oldNumber, newNumber);
       }
     }
   }
@@ -4514,7 +4514,7 @@ merge( EdgeInfo *e, int debug )
   }
 
   realArray x(1,3),r(1,1),x2(1,3);
-	
+        
   EdgeInfoADT::traversor traversor(*searchTree);
 
   // build a bounding box around one endpoint for the adt tree search, twice as big as the merge tolerance
@@ -4528,7 +4528,7 @@ merge( EdgeInfo *e, int debug )
 
   if( debug & 4 )
     printf("merge: check edge %i with bbox =[%e,%e]x[%e,%e]x[%e,%e]\n",
-	   e->edgeNumber, bb(0,0), bb(1,0), bb(0,1), bb(1,1), bb(0,2), bb(1,2));
+           e->edgeNumber, bb(0,0), bb(1,0), bb(0,1), bb(1,1), bb(0,2), bb(1,2));
 
   // evaluate the mid-point of the curve
   r(0,0)=.5;
@@ -4556,18 +4556,18 @@ merge( EdgeInfo *e, int debug )
       int endP2 = e2->getEndPoint();
       for (q=0; q<3; q++)
       {
-	xa2[q]=endPoint(startP2,q);
-	xb2[q]=endPoint(endP2,q);
+        xa2[q]=endPoint(startP2,q);
+        xb2[q]=endPoint(endP2,q);
       }
-	      
+              
       distaa=fabs(xa[0]-xa2[0])+fabs(xa[1]-xa2[1])+fabs(xa[2]-xa2[2]);
       distab=fabs(xa[0]-xb2[0])+fabs(xa[1]-xb2[1])+fabs(xa[2]-xb2[2]);
       distba=fabs(xb[0]-xa2[0])+fabs(xb[1]-xa2[1])+fabs(xb[2]-xa2[2]);
       distbb=fabs(xb[0]-xb2[0])+fabs(xb[1]-xb2[1])+fabs(xb[2]-xb2[2]);
-	      
+              
       if( debug & 4 )
-	printf("Merge: check edges %i and %i with dista=(%8.2e,%8.2e) distb=(%8.2e,%8.2e) isPeriodic=%i isPeriodic2=%i\n",
-	       e->edgeNumber, e2->edgeNumber, distaa, distab, distba, distbb,isPeriodic,
+        printf("Merge: check edges %i and %i with dista=(%8.2e,%8.2e) distb=(%8.2e,%8.2e) isPeriodic=%i isPeriodic2=%i\n",
+               e->edgeNumber, e2->edgeNumber, distaa, distab, distba, distbb,isPeriodic,
                (int)edge2.getIsPeriodic(axis1) );
 
       if( (distaa<minDistance && distbb<minDistance ) || (distab<minDistance && distba<minDistance ) )
@@ -4576,75 +4576,75 @@ merge( EdgeInfo *e, int debug )
         // ** for now only check the midpoint of the curve **
 
         r=-1.;
-	edge2.inverseMap(x,r);
-	edge2.map(r,x2);
+        edge2.inverseMap(x,r);
+        edge2.map(r,x2);
         real dist=fabs(x(0,0)-x2(0,0))+fabs(x(0,1)-x2(0,1))+fabs(x(0,2)-x2(0,2));
-	if( dist < minDistance )
-	{
+        if( dist < minDistance )
+        {
 // a match or better match was found
           if( eMin )
-	  {
-	    printf("merge:WARNING:There are multiple matching edge curves for edge %i on surface s=%i, loop=%i.\n"
+          {
+            printf("merge:WARNING:There are multiple matching edge curves for edge %i on surface s=%i, loop=%i.\n"
                    "Will use best match.\n", e->edgeNumber, e->faceNumber, e->loopNumber);
-	  }
-	    
+          }
+            
           eMin=e2;
 // for some short edges, both combinations can be smaller than minDistance <= mergeTolerance, 
 // so we must take the best match
           if( max(distaa, distbb) < max(distab, distba) ) 
-	  {
-	    orientation=1;
-  	    minDistance=max(distaa,distbb,dist);
-	  }
-	  else
-	  {
-	    orientation=-1;
-  	    minDistance=max(distab,distba,dist);
-	  }
+          {
+            orientation=1;
+            minDistance=max(distaa,distbb,dist);
+          }
+          else
+          {
+            orientation=-1;
+            minDistance=max(distab,distba,dist);
+          }
           if( isPeriodic || max(distaa, distbb, distab, distba)< REAL_MIN*100. ) // NOTE: periodic surfaces dont' work yet
-	  { // *wdh* 030825
-	    // if the curve is periodic we need to be more careful in checking the orientation since
+          { // *wdh* 030825
+            // if the curve is periodic we need to be more careful in checking the orientation since
             // the endpoints may all coincide 
             // check the dot product of the tangent vectors to the curves
             realArray xr(1,3),xr2(1,3);
-	    r(0,0)=0.;
-	    edge.map(r,x,xr);
-	    edge2.map(r,x,xr2);
+            r(0,0)=0.;
+            edge.map(r,x,xr);
+            edge2.map(r,x,xr2);
             real norm=sqrt(xr(0,0)*xr(0,0)+xr(0,1)*xr(0,1)+xr(0,2)*xr(0,2));
             real norm2=sqrt(xr2(0,0)*xr2(0,0)+xr2(0,1)*xr2(0,1)+xr2(0,2)*xr2(0,2));
             const real normEps=REAL_MIN*100.;
-	    if( norm<normEps || norm2<normEps )
-	    {
-	      printf("merge:ERROR:periodic curve has a 0 derivative, norm=%e, norm2=%e\n",norm,norm2);
-	      norm=max(norm,normEps);
-	      norm2=max(norm2,normEps);
-	    }
+            if( norm<normEps || norm2<normEps )
+            {
+              printf("merge:ERROR:periodic curve has a 0 derivative, norm=%e, norm2=%e\n",norm,norm2);
+              norm=max(norm,normEps);
+              norm2=max(norm2,normEps);
+            }
             real dot = (xr(0,0)*xr2(0,0)+xr(0,1)*xr2(0,1)+xr(0,2)*xr2(0,2))/(norm*norm2);
-	    if( dot>0. )
-	    {
+            if( dot>0. )
+            {
               orientation=1;
-	      minDistance=max(distaa,distbb,dist);
-	    }
+              minDistance=max(distaa,distbb,dist);
+            }
             else
-	    {
-	      orientation=-1;
-	      minDistance=max(distab,distba,dist);
-	    }
-  	    printf(" merge: periodic curve: dot=%8.2e, choosing orientation=%i\n",dot,orientation);
+            {
+              orientation=-1;
+              minDistance=max(distab,distba,dist);
+            }
+            printf(" merge: periodic curve: dot=%8.2e, choosing orientation=%i\n",dot,orientation);
           }
 
-	  midPointDist=dist;
-//  	  printf("Edge #%i, merge candidate edge #%i, minDist=%e\n", e->edgeNumber, 
-//  		 eMin->edgeNumber, minDistance);
-	  break; // To detect non-manifold geometry, any curve within the mergeTolerance must get merged
-	}
-	else
-	{
-	  if (debug & 4)
-	    printf("INFO: edge curves %i and %i have matching end points but not the midpoint, dist=%8.2e "
-		   "(best dist so far=%8.2e)\n", e->edgeNumber, e2->edgeNumber, dist, minDistance);
-	  minimumUnmergedDistance=min(minimumUnmergedDistance,dist);
-	}
+          midPointDist=dist;
+//        printf("Edge #%i, merge candidate edge #%i, minDist=%e\n", e->edgeNumber, 
+//               eMin->edgeNumber, minDistance);
+          break; // To detect non-manifold geometry, any curve within the mergeTolerance must get merged
+        }
+        else
+        {
+          if (debug & 4)
+            printf("INFO: edge curves %i and %i have matching end points but not the midpoint, dist=%8.2e "
+                   "(best dist so far=%8.2e)\n", e->edgeNumber, e2->edgeNumber, dist, minDistance);
+          minimumUnmergedDistance=min(minimumUnmergedDistance,dist);
+        }
       }
       
     }
@@ -4673,10 +4673,10 @@ mergeTwoEdges(EdgeInfo *e, EdgeInfo *eMin, int orientation, real tolerance, int 
   if( debug & 2 )
   {
     printf("**Edge curves #%i (s=%i, l=%i) and #%i (s=%i, l=%i) are being merged. orientation=%i\n",
-	   e->edgeNumber, e->faceNumber, e->loopNumber, eMin->edgeNumber, eMin->faceNumber, 
-	   eMin->loopNumber, orientation);
+           e->edgeNumber, e->faceNumber, e->loopNumber, eMin->edgeNumber, eMin->faceNumber, 
+           eMin->loopNumber, orientation);
   }
-	  
+          
   e->status = EdgeInfo::edgeCurveIsMaster;
   e->eraseEdge();
   
@@ -4715,8 +4715,8 @@ mergeTwoEdges(EdgeInfo *e, EdgeInfo *eMin, int orientation, real tolerance, int 
     if (debug & 2)
     {
       printf("Adjusting endpoints: e=%i (o=%i), s=%i (o=%i), p=%i (o=%i), n=%i (o=%i)\n", 
-	     e->edgeNumber, e->orientation, s->edgeNumber, s->orientation, 
-	     p->edgeNumber, p->orientation, n->edgeNumber, n->orientation);
+             e->edgeNumber, e->orientation, s->edgeNumber, s->orientation, 
+             p->edgeNumber, p->orientation, n->edgeNumber, n->orientation);
     }
     
 // we don't change the starting and ending point numbers on the slave, since that curve will 
@@ -4726,23 +4726,23 @@ mergeTwoEdges(EdgeInfo *e, EdgeInfo *eMin, int orientation, real tolerance, int 
     {
       if (!p->setEndPoint( e->getStartPoint(), endPoint, tolerance, s->edgeNumber, masterEdge, unusedEdges))
       {
-	printf("Setting end point of edge %i to point %i failed\n", p->edgeNumber, e->getStartPoint());
+        printf("Setting end point of edge %i to point %i failed\n", p->edgeNumber, e->getStartPoint());
       }
       
       if (!n->setStartPoint( e->getEndPoint(), endPoint, tolerance, s->edgeNumber, masterEdge, unusedEdges))
       {
-	printf("Setting start point of edge %i to point %i failed\n", n->edgeNumber, e->getEndPoint());
+        printf("Setting start point of edge %i to point %i failed\n", n->edgeNumber, e->getEndPoint());
       }
     }
     else // oriented in opposite ways
     {
       if (!p->setEndPoint( e->getEndPoint(), endPoint, tolerance, s->edgeNumber, masterEdge, unusedEdges))
       {
-	printf("Setting end point of edge %i to point %i failed\n", p->edgeNumber, e->getEndPoint());
+        printf("Setting end point of edge %i to point %i failed\n", p->edgeNumber, e->getEndPoint());
       }
       if (!n->setStartPoint( e->getStartPoint(), endPoint, tolerance, s->edgeNumber, masterEdge, unusedEdges))
       {
-	printf("Setting start point of edge %i to point %i failed\n", n->edgeNumber, e->getStartPoint());
+        printf("Setting start point of edge %i to point %i failed\n", n->edgeNumber, e->getStartPoint());
       }
     }
     
@@ -4750,12 +4750,12 @@ mergeTwoEdges(EdgeInfo *e, EdgeInfo *eMin, int orientation, real tolerance, int 
     if (debug & 2)
     {
       printf("After merging:\n"
-	     "edge prev=%i, orientation=%i, startingPoint=%i, newStartPoint=%i, endingPoint=%i, "
-	     "newEndPoint=%i\n",  p->edgeNumber, p->orientation, p->curve->startingPoint, 
-	     p->curve->newStartPoint, p->curve->endingPoint, p->curve->newEndPoint);
+             "edge prev=%i, orientation=%i, startingPoint=%i, newStartPoint=%i, endingPoint=%i, "
+             "newEndPoint=%i\n",  p->edgeNumber, p->orientation, p->curve->startingPoint, 
+             p->curve->newStartPoint, p->curve->endingPoint, p->curve->newEndPoint);
       printf("edge next=%i, orientation=%i, startingPoint=%i, newStartPoint=%i, endingPoint=%i, "
-	     "newEndPoint=%i\n",  n->edgeNumber, n->orientation, n->curve->startingPoint, 
-	     n->curve->newStartPoint, n->curve->endingPoint, n->curve->newEndPoint);
+             "newEndPoint=%i\n",  n->edgeNumber, n->orientation, n->curve->startingPoint, 
+             n->curve->newStartPoint, n->curve->endingPoint, n->curve->newEndPoint);
     }
     
   }
@@ -4781,7 +4781,7 @@ mergeEdgeCurves(EdgeInfo & e, EdgeInfo & e2, int debug /* =0 */)
   if( e.edgeNumber == e2.edgeNumber )
   {
     printf("Cannot merge edge curves e1=%i and e2=%i since they are the same\n", 
-	   e.edgeNumber, e2.edgeNumber);
+           e.edgeNumber, e2.edgeNumber);
     return 1;
   }
   else if( e.status != EdgeInfo::edgeCurveIsBoundary )
@@ -4797,7 +4797,7 @@ mergeEdgeCurves(EdgeInfo & e, EdgeInfo & e2, int debug /* =0 */)
   else if( e.faceNumber==e2.faceNumber )
   {
     printf("Cannot merge edge curves %i and %i since they belong to the same subsurface, s=%i\n",
-	   e.edgeNumber,e2.edgeNumber,e.faceNumber);
+           e.edgeNumber,e2.edgeNumber,e.faceNumber);
     return 1;
   }
 
@@ -4816,7 +4816,7 @@ mergeEdgeCurves(EdgeInfo & e, EdgeInfo & e2, int debug /* =0 */)
   }
 
   realArray x(1,3),r(1,1),x2(1,3);
-	
+        
   // evaluate the mid-point of the curve
   r(0,0)=.5;
   edge.map(r,x);
@@ -4833,15 +4833,15 @@ mergeEdgeCurves(EdgeInfo & e, EdgeInfo & e2, int debug /* =0 */)
     xa2[q]=endPoint(startP2,q);
     xb2[q]=endPoint(endP2,q);
   }
-	      
+              
   real distaa=fabs(xa[0]-xa2[0])+fabs(xa[1]-xa2[1])+fabs(xa[2]-xa2[2]);
   real distab=fabs(xa[0]-xb2[0])+fabs(xa[1]-xb2[1])+fabs(xa[2]-xb2[2]);
   real distba=fabs(xb[0]-xa2[0])+fabs(xb[1]-xa2[1])+fabs(xb[2]-xa2[2]);
   real distbb=fabs(xb[0]-xb2[0])+fabs(xb[1]-xb2[1])+fabs(xb[2]-xb2[2]);
-	      
+              
   if( debug & 4 )
     printf("Merge: check e=%i with e2=%i dista=(%8.2e,%8.2e) distb=(%8.2e,%8.2e) \n",
-	   e.edgeNumber, e2.edgeNumber, distaa, distab, distba, distbb );
+           e.edgeNumber, e2.edgeNumber, distaa, distab, distba, distbb );
   
   if( (distaa<weakMergeTolerance && distbb<weakMergeTolerance ) || 
       (distab<weakMergeTolerance && distba<weakMergeTolerance ) )
@@ -4860,12 +4860,12 @@ mergeEdgeCurves(EdgeInfo & e, EdgeInfo & e2, int debug /* =0 */)
 
       if( debug & 2 )
       {
-	printf("**Edge curves %i(s=%i) and %i(s=%i) are merged. dist at midpoint=%e, ",e.edgeNumber,
-	       e.faceNumber, e2.edgeNumber, e2.faceNumber, dist);
-	if( distaa<weakMergeTolerance && distbb<weakMergeTolerance )
-	  printf(" dist at ends=(%8.2e,%8.2e)\n", distaa, distbb);
-	else
-	  printf(" dist at ends=(%8.2e,%8.2e)\n", distab, distba);
+        printf("**Edge curves %i(s=%i) and %i(s=%i) are merged. dist at midpoint=%e, ",e.edgeNumber,
+               e.faceNumber, e2.edgeNumber, e2.faceNumber, dist);
+        if( distaa<weakMergeTolerance && distbb<weakMergeTolerance )
+          printf(" dist at ends=(%8.2e,%8.2e)\n", distaa, distbb);
+        else
+          printf(" dist at ends=(%8.2e,%8.2e)\n", distab, distba);
       }
 
       int orientation;
@@ -4873,11 +4873,11 @@ mergeEdgeCurves(EdgeInfo & e, EdgeInfo & e2, int debug /* =0 */)
 // so we must take the best match
       if( max(distaa, distbb) < max(distab, distba) )
       {
-	orientation=1;
+        orientation=1;
       }
       else
       {
-	orientation=-1;
+        orientation=-1;
       }
 
       curvesWereMerged = mergeTwoEdges(&e, &e2, orientation, weakMergeTolerance, debug);
@@ -4886,13 +4886,13 @@ mergeEdgeCurves(EdgeInfo & e, EdgeInfo & e2, int debug /* =0 */)
     else
     {
       printf("INFO: edge curves %i and %i, end points match but not the midpoint, dist=%e\n", 
-	     e.edgeNumber, e2.edgeNumber, dist);
+             e.edgeNumber, e2.edgeNumber, dist);
     }
   }
   else
   {
     printf("INFO: edge curves %i and %i, do not match at the end points. dist=%8.2e\n",
-	   e.edgeNumber, e2.edgeNumber, min(max(distaa,distbb),max(distab,distba)));
+           e.edgeNumber, e2.edgeNumber, min(max(distaa,distbb),max(distab,distba)));
   }
 
   return curvesWereMerged==false;
@@ -4914,7 +4914,7 @@ joinEdgeCurves(EdgeInfo &eOrig, bool toNext, int debug /* =0 */)
   Loop &currentLoop = *eOrig.loopy;
   
   printf("Entering joinEdgeCurves to join edge %i with its %s neighbor\n", eOrig.edgeNumber, 
-	 toNext? "next": "previous");
+         toNext? "next": "previous");
   EdgeInfo *e1, *e2;
   e1 = &eOrig;
   e2 = (toNext)? eOrig.next : eOrig.prev;
@@ -4923,22 +4923,22 @@ joinEdgeCurves(EdgeInfo &eOrig, bool toNext, int debug /* =0 */)
       e1->orientation != 1 || e2->orientation != 1)
   {
     printf("joinEdgeCurves: Only two positively oriented boundary edges (status = 0) may be joined!\n"
-	   "Edge e1: %i, e1->status = %i, e1->orientation = %i, edge e2: %i, e2->status = %i, "
-	   "e2->orientation = %i.\n", 
-	   e1->edgeNumber, e1->status, e1->orientation, e2->edgeNumber, e2->status, e2->orientation);
+           "Edge e1: %i, e1->status = %i, e1->orientation = %i, edge e2: %i, e2->status = %i, "
+           "e2->orientation = %i.\n", 
+           e1->edgeNumber, e1->status, e1->orientation, e2->edgeNumber, e2->status, e2->orientation);
     GenericGraphicsInterface & gi = *Overture::getGraphicsInterface(); 
     gi.outputString("Can't join those edges!\n"
-		    "You might be trying to join edges from different surfaces; "
-		    "toggle on the merged (green) edges to check this!");
+                    "You might be trying to join edges from different surfaces; "
+                    "toggle on the merged (green) edges to check this!");
     return 1;
   }
   
 //    printf("joinEdgeCurve: reference count for e1=%i before join: map: %i, tc: %i, sc: %i\n", 
-//  	 e1->edgeNumber, e1->curve->getNURBS()->getReferenceCount(), 
-//  	 e1->curve->surfaceLoop->getReferenceCount(), e1->curve->subCurve->getReferenceCount());
+//       e1->edgeNumber, e1->curve->getNURBS()->getReferenceCount(), 
+//       e1->curve->surfaceLoop->getReferenceCount(), e1->curve->subCurve->getReferenceCount());
 //    printf("joinEdgeCurve: reference count for e2=%i before join: map: %i, tc: %i, sc: %i\n", 
-//  	 e2->edgeNumber, e2->curve->getNURBS()->getReferenceCount(), 
-//  	 e2->curve->surfaceLoop->getReferenceCount(), e2->curve->subCurve->getReferenceCount());
+//       e2->edgeNumber, e2->curve->getNURBS()->getReferenceCount(), 
+//       e2->curve->surfaceLoop->getReferenceCount(), e2->curve->subCurve->getReferenceCount());
 
 // make the new piece to hold the merged NURBS
   NurbsMapping &nurbs1 = *new NurbsMapping(*e1->curve->getNURBS()); // make a copy of the NURBS curve
@@ -5066,14 +5066,14 @@ joinEdgeCurves(EdgeInfo &eOrig, bool toNext, int debug /* =0 */)
   bb(0,2)=(real)nurbs1.getRangeBound(Start,2), bb(1,2)=(real)nurbs1.getRangeBound(End,2);
 
   if (searchTree) // the search tree is not around when the edge curves first are being built
-    searchTree->addElement(bb,eNew);		  
+    searchTree->addElement(bb,eNew);              
 
   if (nurbs1.decrementReferenceCount()==0)
     delete &nurbs1;
   
 //    printf("joinEdge: reference count for eNew after join: map: %i, tc: %i, sc: %i\n", 
-//  	 eNew->curve->getNURBS()->getReferenceCount(), eNew->curve->surfaceLoop->getReferenceCount(), 
-//  	 eNew->curve->subCurve->getReferenceCount());
+//       eNew->curve->getNURBS()->getReferenceCount(), eNew->curve->surfaceLoop->getReferenceCount(), 
+//       eNew->curve->subCurve->getReferenceCount());
 
   return curvesWereJoined==false;
 }
@@ -5183,12 +5183,12 @@ cleanup()
     {
       if( triangulationSurface[s] && triangulationSurface[s]->decrementReferenceCount()==0 )
       {
-	delete triangulationSurface[s];
+        delete triangulationSurface[s];
       }
 //        else if( triangulationSurface[s])
 //        {
-//  	printf("cleanup: triangulationSurface[%i]->referenceCount=%i\n", s, 
-//  	       triangulationSurface[s]->getReferenceCount());
+//      printf("cleanup: triangulationSurface[%i]->referenceCount=%i\n", s, 
+//             triangulationSurface[s]->getReferenceCount());
 //        }
       triangulationSurface[s]=NULL;
     }
@@ -5259,14 +5259,14 @@ get( const GenericDataBase & dir, const aString & name)    // get from a databas
     {
       if (cs[f].getClassName()=="TrimmedMapping")
       {
-	TrimmedMapping &trim = (TrimmedMapping &)cs[f];
-	allSurfaceLoops[f] = (NurbsMapping *)trim.getTrimCurve(0); // this loop has already been read!
+        TrimmedMapping &trim = (TrimmedMapping &)cs[f];
+        allSurfaceLoops[f] = (NurbsMapping *)trim.getTrimCurve(0); // this loop has already been read!
       }
       else // untrimmed surface
       {
-	allSurfaceLoops[f] = new NurbsMapping;
-	allSurfaceLoops[f]->get(subDir,sPrintF(buf,"surfaceLoopMapping-%i",f));
-	q++;
+        allSurfaceLoops[f] = new NurbsMapping;
+        allSurfaceLoops[f]->get(subDir,sPrintF(buf,"surfaceLoopMapping-%i",f));
+        q++;
       }
       allSurfaceLoops[f]->incrementReferenceCount();
     }
@@ -5288,8 +5288,8 @@ get( const GenericDataBase & dir, const aString & name)    // get from a databas
       subDir.get(curveSegmentPresent, sPrintF(buf, "curveSegmentPresent-%i", q));
       if (curveSegmentPresent)
       {
-	allCurveSegments[q] = new CurveSegment;
-	allCurveSegments[q]->get(subDir, sPrintF(buf, "CurveSegmentData-%i", q), cs, allSurfaceLoops);
+        allCurveSegments[q] = new CurveSegment;
+        allCurveSegments[q]->get(subDir, sPrintF(buf, "CurveSegmentData-%i", q), cs, allSurfaceLoops);
       }
     
     }
@@ -5309,8 +5309,8 @@ get( const GenericDataBase & dir, const aString & name)    // get from a databas
       subDir.get(edgeInfoPresent, sPrintF(buf, "edgeInfoPresent-%i", q));
       if (edgeInfoPresent)
       {
-	allEdgeInfos[q] = new EdgeInfo;
-	allEdgeInfos[q]->get(subDir, sPrintF(buf, "EdgeInfo-%i", q), allCurveSegments);
+        allEdgeInfos[q] = new EdgeInfo;
+        allEdgeInfos[q]->get(subDir, sPrintF(buf, "EdgeInfo-%i", q), allCurveSegments);
       }
     }
 //    printf("Read %i EdgeInfo's\n", numberOfCurveSegments);
@@ -5320,7 +5320,7 @@ get( const GenericDataBase & dir, const aString & name)    // get from a databas
     {
       int edgeInfoPresent = allEdgeInfos[q] != NULL;
       if (edgeInfoPresent)
-	allEdgeInfos[q]->assignPointers(allEdgeInfos);
+        allEdgeInfos[q]->assignPointers(allEdgeInfos);
     }
 
 // read all FaceInfo's (which allocates and reads the Loops)
@@ -5345,8 +5345,8 @@ get( const GenericDataBase & dir, const aString & name)    // get from a databas
     {
       if (allSurfaceLoops[f]->decrementReferenceCount() == 0)
       {
-	printf("compositeTopology: get: WARNING: zero reference count for surface loop %i\n", f);
-	delete allSurfaceLoops[f];
+        printf("compositeTopology: get: WARNING: zero reference count for surface loop %i\n", f);
+        delete allSurfaceLoops[f];
       }
     }
     delete [] allSurfaceLoops;
@@ -5368,8 +5368,8 @@ get( const GenericDataBase & dir, const aString & name)    // get from a databas
   
 // tmp
 //    printf("get: boundingBox of the entire surface:\n"
-//  	 "[%e,%e]x[%e,%e]x[%e,%e]\n", boundingBox(0,0), boundingBox(1,0),
-//  	 boundingBox(0,1), boundingBox(1,1), boundingBox(0,2), boundingBox(1,2));
+//       "[%e,%e]x[%e,%e]x[%e,%e]\n", boundingBox(0,0), boundingBox(1,0),
+//       boundingBox(0,1), boundingBox(1,1), boundingBox(0,2), boundingBox(1,2));
 
 // more old stuff that we will keep
   int triangulationSaved;
@@ -5445,12 +5445,12 @@ put( GenericDataBase & dir, const aString & name) const    // put to a database 
       int isTrimmed = (cs[f].getClassName()=="TrimmedMapping");
       if (!isTrimmed)
       {
-	Loop & currentLoop = faceInfoArray[f].loop[0]; // only one loop in untrimmed surfaces
-	e = currentLoop.firstEdge;
+        Loop & currentLoop = faceInfoArray[f].loop[0]; // only one loop in untrimmed surfaces
+        e = currentLoop.firstEdge;
 // the surfaceLoop is the same for all e->initialCurves
-	CurveSegment *c = e->initialCurve;
-	c->surfaceLoop->put(subDir,sPrintF(buf,"surfaceLoopMapping-%i",f));
-	q++;
+        CurveSegment *c = e->initialCurve;
+        c->surfaceLoop->put(subDir,sPrintF(buf,"surfaceLoopMapping-%i",f));
+        q++;
       }
     }
 //    printf("CompositeTopology::put() saved %i untrimmed surface loops\n", q);
@@ -5469,17 +5469,17 @@ put( GenericDataBase & dir, const aString & name) const    // put to a database 
     {
       for (l=0; l<faceInfoArray[f].numberOfLoops; l++)
       {
-	Loop & currentLoop = faceInfoArray[f].loop[l];
-	int sc, ne = currentLoop.numberOfEdges();
-	for (sc=0, e = currentLoop.firstEdge; sc<ne; sc++, e = e->next)
-	{
-	  CurveSegment *ic = e->initialCurve;
-	  CurveSegment *c = e->curve;
-	  allCurveSegments[ic->getCurveNumber()] = ic;
+        Loop & currentLoop = faceInfoArray[f].loop[l];
+        int sc, ne = currentLoop.numberOfEdges();
+        for (sc=0, e = currentLoop.firstEdge; sc<ne; sc++, e = e->next)
+        {
+          CurveSegment *ic = e->initialCurve;
+          CurveSegment *c = e->curve;
+          allCurveSegments[ic->getCurveNumber()] = ic;
 // not all edges have assigned the curve pointer
-	  if (c)
-	    allCurveSegments[c->getCurveNumber()] = c;
-	}
+          if (c)
+            allCurveSegments[c->getCurveNumber()] = c;
+        }
       }
     } // end for f
 
@@ -5489,7 +5489,7 @@ put( GenericDataBase & dir, const aString & name) const    // put to a database 
       int curveSegmentPresent = allCurveSegments[q] != NULL;
       subDir.put(curveSegmentPresent, sPrintF(buf, "curveSegmentPresent-%i", q));
       if (curveSegmentPresent)
-	allCurveSegments[q]->put(subDir, sPrintF(buf, "CurveSegmentData-%i", q), cs);
+        allCurveSegments[q]->put(subDir, sPrintF(buf, "CurveSegmentData-%i", q), cs);
     }
 //    printf("Saved %i CurveSegments\n", numberOfCurveSegments);
 
@@ -5507,17 +5507,17 @@ put( GenericDataBase & dir, const aString & name) const    // put to a database 
     {
       for (l=0; l<faceInfoArray[f].numberOfLoops; l++)
       {
-	Loop & currentLoop = faceInfoArray[f].loop[l];
-	int sc, ne = currentLoop.numberOfEdges();
-	for (sc=0, e = currentLoop.firstEdge; sc<ne; sc++, e = e->next)
-	{
-	  allEdgeInfos[e->edgeNumber] = e;
+        Loop & currentLoop = faceInfoArray[f].loop[l];
+        int sc, ne = currentLoop.numberOfEdges();
+        for (sc=0, e = currentLoop.firstEdge; sc<ne; sc++, e = e->next)
+        {
+          allEdgeInfos[e->edgeNumber] = e;
 // not all edges have assigned the slave and master pointers assigned
-	  if (e->slave)
-	    allEdgeInfos[e->slave->edgeNumber] = e->slave;
-	  if (e->master)
-	    allEdgeInfos[e->master->edgeNumber] = e->master;
-	}
+          if (e->slave)
+            allEdgeInfos[e->slave->edgeNumber] = e->slave;
+          if (e->master)
+            allEdgeInfos[e->master->edgeNumber] = e->master;
+        }
       }
     } // end for f
 // save the EdgeInfo's pointed to by allEdgeInfos  
@@ -5526,7 +5526,7 @@ put( GenericDataBase & dir, const aString & name) const    // put to a database 
       int edgeInfoPresent = allEdgeInfos[q] != NULL;
       subDir.put(edgeInfoPresent, sPrintF(buf, "edgeInfoPresent-%i", q));
       if (edgeInfoPresent)
-	allEdgeInfos[q]->put(subDir, sPrintF(buf, "EdgeInfo-%i", q));
+        allEdgeInfos[q]->put(subDir, sPrintF(buf, "EdgeInfo-%i", q));
     }
 //    printf("Saved %i EdgeInfo's\n", numberOfCurveSegments);
   
@@ -5561,8 +5561,8 @@ put( GenericDataBase & dir, const aString & name) const    // put to a database 
   subDir.put(boundingBox(1,2),"boundingBox(1,2)");
   
 //    printf("put: boundingBox of the entire surface:\n"
-//  	 "[%e,%e]x[%e,%e]x[%e,%e]\n", boundingBox(0,0), boundingBox(1,0),
-//  	 boundingBox(0,1), boundingBox(1,1), boundingBox(0,2), boundingBox(1,2));
+//       "[%e,%e]x[%e,%e]x[%e,%e]\n", boundingBox(0,0), boundingBox(1,0),
+//       boundingBox(0,1), boundingBox(1,1), boundingBox(0,2), boundingBox(1,2));
 
 // more old stuff
   int triangulationSaved=globalTriangulation!=NULL;
@@ -5638,29 +5638,29 @@ buildTriangulationForVisibleSurfaces()
         // first add any new nodes we find to the list of new nodes.
         int m;
         for( m=0; m<3; m++ )
-	{
-	  int n0=gElement(i,m);
-	  if( nodeTranslation(n0)==-1 )
-	  {
-	    // this is a new node
+        {
+          int n0=gElement(i,m);
+          if( nodeTranslation(n0)==-1 )
+          {
+            // this is a new node
             // nodeTranslation(old node number) = new node number
-	    nodeTranslation(n0)=numberOfNodes;
+            nodeTranslation(n0)=numberOfNodes;
 
-	    node(numberOfNodes,0)=gNode(n0,0);
-	    node(numberOfNodes,1)=gNode(n0,1);
-	    node(numberOfNodes,2)=gNode(n0,2);
-	  
-	    numberOfNodes++;
-	  }
-	}
-	
+            node(numberOfNodes,0)=gNode(n0,0);
+            node(numberOfNodes,1)=gNode(n0,1);
+            node(numberOfNodes,2)=gNode(n0,2);
+          
+            numberOfNodes++;
+          }
+        }
+        
         // now add any new faces we find to the list of new faces.
- 	for( m=0; m<3; m++ )
- 	{
- 	  int f=gef(i,m);
- 	  if( faceTranslation(f)==-1 )
- 	  {
- 	    // this is a new face
+        for( m=0; m<3; m++ )
+        {
+          int f=gef(i,m);
+          if( faceTranslation(f)==-1 )
+          {
+            // this is a new face
             // faceTranslation(old face number) = new face number.
             faceTranslation(f)=numberOfFaces;
 
@@ -5668,26 +5668,26 @@ buildTriangulationForVisibleSurfaces()
             face(numberOfFaces,1)=nodeTranslation(gFace(f,1));
 
             faceElement(numberOfFaces,0)=e;
-	    
-	    numberOfFaces++;
- 	  }
+            
+            numberOfFaces++;
+          }
           else 
-	  {
+          {
             faceElement(faceTranslation(f),1)=e;
-	  }
-	  
+          }
+          
           ef(e,m)=faceTranslation(f);
- 	}
+        }
 
 
-	element(e,0)=nodeTranslation(gElement(i,0));
-	element(e,1)=nodeTranslation(gElement(i,1));
-	element(e,2)=nodeTranslation(gElement(i,2));
+        element(e,0)=nodeTranslation(gElement(i,0));
+        element(e,1)=nodeTranslation(gElement(i,1));
+        element(e,2)=nodeTranslation(gElement(i,2));
 
         elementSurface(e)=gElementSurface(i);
 
-	e++;
-	
+        e++;
+        
 
       }
     }
@@ -5783,7 +5783,7 @@ getEdgeCurve(int number)
   if (number < 0 || number >= numberOfUniqueEdgeCurves || allEdges[number] == NULL)
   {
     printf("CompositeTopology::getEdgeCurve:ERROR: number = %i out of bounds [0,%i) or allEdges[%i] "
-	   "undefined\n", number, numberOfUniqueEdgeCurves, number);
+           "undefined\n", number, numberOfUniqueEdgeCurves, number);
     throw "error";
   }
 // Since there are only boundary and master edges in allEdges, all these curves should be there
@@ -5804,7 +5804,7 @@ getNearestEdge(real x[3])
 //  printf("Entering getNearestEdge with x=(%8.2e, %8.2e, %8.2e)\n", x[0], x[1], x[2]);
   
   realArray x1(1,3), r(1,1), x2(1,3);
-	
+        
   EdgeInfoADT::traversor traversor(*searchTree);
 
   // build a bounding box around one endpoint for the adt tree search, twice as big as the merge tolerance
@@ -5830,34 +5830,34 @@ getNearestEdge(real x[3])
       EdgeInfo * e = (*traversor).data;
 
       if( e->status == EdgeInfo::edgeCurveIsBoundary ||
-	  e->status == EdgeInfo::edgeCurveIsMaster )
+          e->status == EdgeInfo::edgeCurveIsMaster )
       {
 
-	NurbsMapping & edge = *e->curve->getNURBS();
+        NurbsMapping & edge = *e->curve->getNURBS();
 // check mid point on the curve by projection 
 
-	r=-1.;
-	x1(0,0) = x[0];
-	x1(0,1) = x[1];
-	x1(0,2) = x[2];
-	edge.inverseMap(x1,r);
+        r=-1.;
+        x1(0,0) = x[0];
+        x1(0,1) = x[1];
+        x1(0,2) = x[2];
+        edge.inverseMap(x1,r);
 
         r(0,0)=max(0.,min(1.,r(0,0)));  // *wdh* 030303 : restrict r to [0,1] 
-	
-	edge.map(r,x2);
-	real dist=fabs(x[0]-x2(0,0))+fabs(x[1]-x2(0,1))+fabs(x[2]-x2(0,2));
-	if( dist < minDistance )
-	{
+        
+        edge.map(r,x2);
+        real dist=fabs(x[0]-x2(0,0))+fabs(x[1]-x2(0,1))+fabs(x[2]-x2(0,2));
+        if( dist < minDistance )
+        {
 // a match or better match was found
-	  if( eMin )
-	  {
-	    printf("getNearestEdge:WARNING:There are multiple edge curves near (%8.2e, %8.2e, %8.2e), dist and mindist are %8.2e, %8.2e.\n",
-		   x[0], x[1], x[2], dist, minDistance);
-	  }
-	    
-	  eMin=e;
-	  minDistance=dist;
-	}
+          if( eMin )
+          {
+            printf("getNearestEdge:WARNING:There are multiple edge curves near (%8.2e, %8.2e, %8.2e), dist and mindist are %8.2e, %8.2e.\n",
+                   x[0], x[1], x[2], dist, minDistance);
+          }
+            
+          eMin=e;
+          minDistance=dist;
+        }
       }
       traversor++;
     }  // while traversor
@@ -5872,8 +5872,8 @@ getNearestEdge(real x[3])
     for (i=0; i<numberOfUniqueEdgeCurves; i++)
     {
       if (allEdges[i] == eMin){
-	number = i;
-	break;
+        number = i;
+        break;
       }
       
     }
@@ -5907,13 +5907,13 @@ setupAllEdges()
     {
       Loop & currentLoop = faceInfoArray[f].loop[l];
       for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-	   sc++, e=e->next )
+           sc++, e=e->next )
       {
-	if (e->status == EdgeInfo::edgeCurveIsBoundary ||
-	    e->status == EdgeInfo::edgeCurveIsMaster)
-	{
-	  numberOfUniqueEdgeCurves++;
-	}
+        if (e->status == EdgeInfo::edgeCurveIsBoundary ||
+            e->status == EdgeInfo::edgeCurveIsMaster)
+        {
+          numberOfUniqueEdgeCurves++;
+        }
       }
     }
   } // end f...
@@ -5932,13 +5932,13 @@ setupAllEdges()
     {
       Loop & currentLoop = faceInfoArray[f].loop[l];
       for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-	   sc++, e=e->next )
+           sc++, e=e->next )
       {
-	if (e->status == EdgeInfo::edgeCurveIsBoundary ||
-	    e->status == EdgeInfo::edgeCurveIsMaster)
-	{
-	  allEdges[n++] = e;
-	}
+        if (e->status == EdgeInfo::edgeCurveIsBoundary ||
+            e->status == EdgeInfo::edgeCurveIsMaster)
+        {
+          allEdges[n++] = e;
+        }
       }
     }
   } // end f...
@@ -5970,12 +5970,12 @@ findBoundaryCurves(int & numberOfBoundaryCurves, Mapping **& boundaryCurves )
     {
       Loop & currentLoop = faceInfoArray[f].loop[l];
       for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-	   sc++, e=e->next )
+           sc++, e=e->next )
       {
-	if (e->status == EdgeInfo::edgeCurveIsBoundary)
-	{
-	  numberOfBoundaryCurves++;
-	}
+        if (e->status == EdgeInfo::edgeCurveIsBoundary)
+        {
+          numberOfBoundaryCurves++;
+        }
       }
     }
   } // end f...
@@ -5988,15 +5988,15 @@ findBoundaryCurves(int & numberOfBoundaryCurves, Mapping **& boundaryCurves )
     {
       for (l=0; l<faceInfoArray[f].numberOfLoops; l++)
       {
-	Loop & currentLoop = faceInfoArray[f].loop[l];
-	for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-	     sc++, e=e->next )
-	{
-	  if (e->status == EdgeInfo::edgeCurveIsBoundary)
-	  {
-	    boundaryCurves[b++]=e->curve->getNURBS();
-	  }
-	}
+        Loop & currentLoop = faceInfoArray[f].loop[l];
+        for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
+             sc++, e=e->next )
+        {
+          if (e->status == EdgeInfo::edgeCurveIsBoundary)
+          {
+            boundaryCurves[b++]=e->curve->getNURBS();
+          }
+        }
       }
     } // end for f...
 
@@ -6012,9 +6012,9 @@ findBoundaryCurves(int & numberOfBoundaryCurves, Mapping **& boundaryCurves )
     {
       if( !cs.getRangeBound(Start,axis).isFinite() || !cs.getRangeBound(End,axis).isFinite() )
       {
-	printf("*** WARNING: rangeBound not finite! axis=%i [%e,%e]\n",axis,
-	       (real)cs.getRangeBound(Start,axis),(real)cs.getRangeBound(End,axis) );
-	cs.getGrid();
+        printf("*** WARNING: rangeBound not finite! axis=%i [%e,%e]\n",axis,
+               (real)cs.getRangeBound(Start,axis),(real)cs.getRangeBound(End,axis) );
+        cs.getGrid();
       }
       real xa=cs.getRangeBound(Start,axis);
       real xb=cs.getRangeBound(End,axis);
@@ -6037,25 +6037,25 @@ findBoundaryCurves(int & numberOfBoundaryCurves, Mapping **& boundaryCurves )
       Mapping & map = *boundaryCurves[b];
       for( int dir=0; dir<rangeDimension; dir++ )
       {
-	bb(0,dir)=map.getRangeBound(Start,dir);
-	bb(1,dir)=map.getRangeBound(End  ,dir);
+        bb(0,dir)=map.getRangeBound(Start,dir);
+        bb(1,dir)=map.getRangeBound(End  ,dir);
 
       }
       if( debug & 4 )
-	printf(" ADT: insert edge curve: boundingBox=[%e,%e]x[%e,%e]x[%e,%e]\n",
-	       bb(0,0),bb(1,0),bb(0,1),bb(1,1),bb(0,2),bb(1,2));
+        printf(" ADT: insert edge curve: boundingBox=[%e,%e]x[%e,%e]x[%e,%e]\n",
+               bb(0,0),bb(1,0),bb(0,1),bb(1,1),bb(0,2),bb(1,2));
 
       if( bb(0,0)>=boundingBox(0,0) && bb(1,0)<=boundingBox(1,0) &&
-	  bb(0,1)>=boundingBox(0,1) && bb(1,1)<=boundingBox(1,1) &&
-	  bb(0,2)>=boundingBox(0,2) && bb(1,2)<=boundingBox(1,2)  )
+          bb(0,1)>=boundingBox(0,1) && bb(1,1)<=boundingBox(1,1) &&
+          bb(0,2)>=boundingBox(0,2) && bb(1,2)<=boundingBox(1,2)  )
       {
-	search.addElement(bb, b);
+        search.addElement(bb, b);
       }
       else
       {
-	printf("ADT:ERROR: boundingBox of edge is out of bounds for the box for the entire surface! \n"
-	       "edge boundingBox=[%e,%e]x[%e,%e]x[%e,%e]\n",
-	       bb(0,0),bb(1,0),bb(0,1),bb(1,1),bb(0,2),bb(1,2));
+        printf("ADT:ERROR: boundingBox of edge is out of bounds for the box for the entire surface! \n"
+               "edge boundingBox=[%e,%e]x[%e,%e]x[%e,%e]\n",
+               bb(0,0),bb(1,0),bb(0,1),bb(1,1),bb(0,2),bb(1,2));
       }
     }
 
@@ -6081,7 +6081,7 @@ findBoundaryCurves(int & numberOfBoundaryCurves, Mapping **& boundaryCurves )
        // Use a tolerance based on the scale of the curve:
        real scale=0.;
        for( int dir=0; dir<rangeDimension; dir++ )
-	 scale=max(scale,(real)edge.getRangeBound(End,dir)-(real)edge.getRangeBound(Start,dir));
+         scale=max(scale,(real)edge.getRangeBound(End,dir)-(real)edge.getRangeBound(Start,dir));
 
        real tol=.005*scale; // .001*scale;
 
@@ -6091,109 +6091,109 @@ findBoundaryCurves(int & numberOfBoundaryCurves, Mapping **& boundaryCurves )
        const realArray & g = edge.getGrid();
        for( int side=0; side<=1 && !merged; side++ )
        {
-	 int n= side==0 ? 0 : edge.getGridDimensions(0)-1;
+         int n= side==0 ? 0 : edge.getGridDimensions(0)-1;
 
-	 xa[0]=g(n,0,0,0); xa[1]=g(n,0,0,1); xa[2]=g(n,0,0,2);
+         xa[0]=g(n,0,0,0); xa[1]=g(n,0,0,1); xa[2]=g(n,0,0,2);
 
-	 // build a bounding box around one endpoint for the adt tree search
+         // build a bounding box around one endpoint for the adt tree search
 
-	 ArraySimple<real> bb(2,3);
-	 real delta=tol;
-	 bb(0,0)=xa[0]-delta, bb(1,0)=xa[0]+delta;
-	 bb(0,1)=xa[1]-delta, bb(1,1)=xa[1]+delta;
-	 bb(0,2)=xa[2]-delta, bb(1,2)=xa[2]+delta;
-	 traversor.setTarget(bb);
+         ArraySimple<real> bb(2,3);
+         real delta=tol;
+         bb(0,0)=xa[0]-delta, bb(1,0)=xa[0]+delta;
+         bb(0,1)=xa[1]-delta, bb(1,1)=xa[1]+delta;
+         bb(0,2)=xa[2]-delta, bb(1,2)=xa[2]+delta;
+         traversor.setTarget(bb);
 
-	 
-	 while( !traversor.isFinished() )
-	 {
-	   // printf(" (%8.2e,%8.2e,%8.2e) is inside box %i \n",x,y,z,leaf.data);
-	   int b2 = (*traversor).data;
-	   
+         
+         while( !traversor.isFinished() )
+         {
+           // printf(" (%8.2e,%8.2e,%8.2e) is inside box %i \n",x,y,z,leaf.data);
+           int b2 = (*traversor).data;
+           
            if( b2!=b && boundaryCurveStatus(b2)==1 )
-	   {
-	     // check to see if we can merge boundary curves b and b2
+           {
+             // check to see if we can merge boundary curves b and b2
              NurbsMapping & edge2 = (NurbsMapping&)(*boundaryCurves[b2]);
              const realArray & g2 = edge2.getGrid();
-	     bool tryMerging=false;
+             bool tryMerging=false;
 
-	     for( int side2=0; side2<=1; side2++ )
-	     {
-	       int n2= side2==0 ? 0 : edge2.getGridDimensions(0)-1;
-	       xb[0]=g2(n2,0,0,0); xb[1]=g2(n2,0,0,1); xb[2]=g2(n2,0,0,2);
+             for( int side2=0; side2<=1; side2++ )
+             {
+               int n2= side2==0 ? 0 : edge2.getGridDimensions(0)-1;
+               xb[0]=g2(n2,0,0,0); xb[1]=g2(n2,0,0,1); xb[2]=g2(n2,0,0,2);
 
                real dist = fabs(xa[0]-xb[0])+fabs(xa[1]-xb[1])+fabs(xa[2]-xb[2]);
-	       if( debug & 1 )
+               if( debug & 1 )
                   printf("findBoundaryCurve: check b=%i with b2=%i, dist=%8.2e, tol=%8.2e \n",b,b2,dist,tol);
                if( dist < tol )
-	       {
-		 // end points are close, check the derivatives to see if they are nearly parallel
+               {
+                 // end points are close, check the derivatives to see if they are nearly parallel
                  r = side==0 ? 0. : 1.;
                  edge.map(r,x,xr1);
-		 r= side2==0 ? 0. : 1.;
-		 edge2.map(r,x,xr2);
-		 
+                 r= side2==0 ? 0. : 1.;
+                 edge2.map(r,x,xr2);
+                 
                  real norm1=sqrt(xr1(0,0,0)*xr1(0,0,0)+xr1(0,1,0)*xr1(0,1,0)+xr1(0,2,0)*xr1(0,2,0));
                  real norm2=sqrt(xr2(0,0,0)*xr2(0,0,0)+xr2(0,1,0)*xr2(0,1,0)+xr2(0,2,0)*xr2(0,2,0));
-		 if( norm1>0. && norm2>0. )
-		 {
-		   real dot = (xr1(0,0,0)*xr2(0,0,0)+xr1(0,1,0)*xr2(0,1,0)+xr1(0,2,0)*xr2(0,2,0))/(norm1*norm2);
+                 if( norm1>0. && norm2>0. )
+                 {
+                   real dot = (xr1(0,0,0)*xr2(0,0,0)+xr1(0,1,0)*xr2(0,1,0)+xr1(0,2,0)*xr2(0,2,0))/(norm1*norm2);
                    if( debug & 1 ) printf(" dot=%8.2e \n",dot);
-		   
-		   if( fabs(dot) > .7 ) // do not merge if edges meet at a corner.
-		   {
-		     tryMerging=true;
-		     break;
-		   }
-		 }
-		 else
-		 {
-		   printf("findBoundaryCurves:WARNING: tangent of edge curve has norm==0!\n");
-		 }
-		     
-	       }
-	     } // end for side2
-	     if( tryMerging )
-	     {
+                   
+                   if( fabs(dot) > .7 ) // do not merge if edges meet at a corner.
+                   {
+                     tryMerging=true;
+                     break;
+                   }
+                 }
+                 else
+                 {
+                   printf("findBoundaryCurves:WARNING: tangent of edge curve has norm==0!\n");
+                 }
+                     
+               }
+             } // end for side2
+             if( tryMerging )
+             {
                // printf("Try to merge edge curves %i and %i\n",b,b2);
                if( boundaryCurveStatus(b)==1 )
-	       {
+               {
                  // Make a new Mapping to hold the merged curve. 
                  NurbsMapping & newEdge = *new NurbsMapping();  
-		 boundaryCurves[b] =&newEdge;
-		 newEdge=(NurbsMapping&)edge; // deep copy.
-		 boundaryCurveStatus(b)=2;
-	       }
+                 boundaryCurves[b] =&newEdge;
+                 newEdge=(NurbsMapping&)edge; // deep copy.
+                 boundaryCurveStatus(b)=2;
+               }
 
 
                // ***** merge curves ******
                merged = ((NurbsMapping *)boundaryCurves[b])->merge(edge2)==0;
 
-	       if( merged )
-	       {
+               if( merged )
+               {
                  if( debug &1 ) printf("++Edge curve b2=%i was merged with edge curve b=%i\n",b2,b);
-		 boundaryCurveStatus(b2)=0;
-		 boundaryCurveStatus(b)=2;
+                 boundaryCurveStatus(b2)=0;
+                 boundaryCurveStatus(b)=2;
                  newNumberOfBoundaryCurves--;
-	       }
-	       else
-	       {
+               }
+               else
+               {
                  if( debug &1 ) printf("Merge failed. Unable to merge edge curve b2=%i with edge curve b=%i.\n",b2,b);
 
-	       }
-	       
-	     }
-	   }// end if b2!=b 
-	   if( merged && newNumberOfBoundaryCurves>0 )
-	   {
+               }
+               
+             }
+           }// end if b2!=b 
+           if( merged && newNumberOfBoundaryCurves>0 )
+           {
              // if the curve was merged, go back and try again with the new end points
-	     b--;
-	     break;
-	   }
+             b--;
+             break;
+           }
 
-	   traversor++;
-	 }
-	 
+           traversor++;
+         }
+         
        }
     } // end for b
 
@@ -6204,21 +6204,21 @@ findBoundaryCurves(int & numberOfBoundaryCurves, Mapping **& boundaryCurves )
        int bb=0;
        for( b=0; b<numberOfBoundaryCurves; b++ )
        {
-	 if( boundaryCurveStatus(b)>0 )
-	 {
-	   temp[bb]=boundaryCurves[b];
+         if( boundaryCurveStatus(b)>0 )
+         {
+           temp[bb]=boundaryCurves[b];
 //            NurbsMapping & nrb = (NurbsMapping&)(*temp[bb]);
 
 //            printf("*** boundary curve %i (b=%i)\n",bb,b);
-// 	   nrb.display("");
-	   
-// 	   PlotStuff & gi = *Overture::getGraphicsInterface();
+//         nrb.display("");
+           
+//         PlotStuff & gi = *Overture::getGraphicsInterface();
 //            gi.erase();
-//    	    PlotIt::plot(gi,nrb);
+//          PlotIt::plot(gi,nrb);
 
 
-	   bb++;
-	 }
+           bb++;
+         }
        }
        delete [] boundaryCurves;
        boundaryCurves=temp;
@@ -6300,8 +6300,8 @@ initializeTopology()
   deltaS = averageScale*.02;
   minNumberOfPointsOnAnEdge=4;
   printf("Initializing topology with scale=%8.2e, averageScale=%8.2e, \n"
-	 "mergeTolerance=%8.2e, deltaS=%8.2e cadTolerance=%8.2e \n",scale,
-	 averageScale,mergeTolerance,deltaS,cs.getTolerance());
+         "mergeTolerance=%8.2e, deltaS=%8.2e cadTolerance=%8.2e \n",scale,
+         averageScale,mergeTolerance,deltaS,cs.getTolerance());
   
   numberOfEdgeCurves=0;
 
@@ -6332,7 +6332,7 @@ splitEdge( EdgeInfo **ePP, real rSplit, int & debug, bool mergeNewEdges /* = tru
 // e should be a boundaryEdge and have orientation == 1
   if (eOrig->status != EdgeInfo::edgeCurveIsBoundary || eOrig->orientation != 1)
     printf("WARNING: splitEdge: eOrig->status = %i and eOrig->orientation = %i. This will cause problems "
-	   "later!\n", eOrig->status, eOrig->orientation);
+           "later!\n", eOrig->status, eOrig->orientation);
 
   if (debug & 2)
     printf("splitEdge: splitting (and removing) edge %i\n", eOrig->edgeNumber);
@@ -6347,7 +6347,7 @@ splitEdge( EdgeInfo **ePP, real rSplit, int & debug, bool mergeNewEdges /* = tru
   NurbsMapping * sc = eOrig->curve->subCurve, *sc1=NULL, *sc2=NULL;
   NurbsMapping * tc = eOrig->curve->surfaceLoop;
 //    printf("splitEdge: reference count for eOrig before split: map: %i, tc: %i, sc: %i\n", 
-//  	 eOrig->curve->getNURBS()->getReferenceCount(), tc->getReferenceCount(), sc->getReferenceCount());
+//       eOrig->curve->getNURBS()->getReferenceCount(), tc->getReferenceCount(), sc->getReferenceCount());
   
 // find the sub curve number in tc
   int q;
@@ -6365,9 +6365,9 @@ splitEdge( EdgeInfo **ePP, real rSplit, int & debug, bool mergeNewEdges /* = tru
     {
 // something went wrong
       if (nurbs1.decrementReferenceCount() == 0)
-	delete &nurbs1;
+        delete &nurbs1;
       if (nurbs2.decrementReferenceCount() == 0)
-	delete &nurbs2;
+        delete &nurbs2;
       return 1;
     }
     
@@ -6466,11 +6466,11 @@ splitEdge( EdgeInfo **ePP, real rSplit, int & debug, bool mergeNewEdges /* = tru
   e2->curve->numberOfGridPoints=numLines;
   e2->curve->arcLength = eOrig->curve->arcLength*(1.-rSplit); // scale the arcLength
 //  printf("Estimated arclength edge %i: %e\n", e2->edgeNumber, e2->curve->arcLength);
-		
+                
   if( debug & 2 )
     printf("split edge eOrig = %i into e1=%i and e2=%i, split at r0=%8.2e\n", 
-	   eOrig->edgeNumber ,e1->edgeNumber ,e2->edgeNumber , rSplit);
-  		
+           eOrig->edgeNumber ,e1->edgeNumber ,e2->edgeNumber , rSplit);
+                
 // insert e2 after e1 in the linked list, assign starting and ending point info
   currentLoop.addEdge(e2, e1);
   
@@ -6510,20 +6510,20 @@ splitEdge( EdgeInfo **ePP, real rSplit, int & debug, bool mergeNewEdges /* = tru
   bb(0,1)=(real)nurbs1.getRangeBound(Start,1), bb(1,1)=(real)nurbs1.getRangeBound(End,1);
   bb(0,2)=(real)nurbs1.getRangeBound(Start,2), bb(1,2)=(real)nurbs1.getRangeBound(End,2);
 
-  searchTree->addElement(bb,e1);		  
+  searchTree->addElement(bb,e1);                  
   if( debug & 4 )
     printf("ADT: add edge e1=%i, bbox =[%e,%e]x[%e,%e]x[%e,%e]\n",
-	   e1->edgeNumber,bb(0,0),bb(1,0),bb(0,1),bb(1,1),bb(0,2),bb(1,2));
+           e1->edgeNumber,bb(0,0),bb(1,0),bb(0,1),bb(1,1),bb(0,2),bb(1,2));
 
 // second piece
   bb(0,0)=(real)nurbs2.getRangeBound(Start,0), bb(1,0)=(real)nurbs2.getRangeBound(End,0);
   bb(0,1)=(real)nurbs2.getRangeBound(Start,1), bb(1,1)=(real)nurbs2.getRangeBound(End,1);
   bb(0,2)=(real)nurbs2.getRangeBound(Start,2), bb(1,2)=(real)nurbs2.getRangeBound(End,2);
 
-  searchTree->addElement(bb,e2);		  
+  searchTree->addElement(bb,e2);                  
   if( debug & 4 )
     printf("ADT: add edge e2=%i, bbox =[%e,%e]x[%e,%e]x[%e,%e]\n",
-	   e2->edgeNumber,bb(0,0),bb(1,0),bb(0,1),bb(1,1),bb(0,2),bb(1,2));
+           e2->edgeNumber,bb(0,0),bb(1,0),bb(0,1),bb(1,1),bb(0,2),bb(1,2));
 
   numberOfEndPoints++;
   
@@ -6545,9 +6545,9 @@ splitEdge( EdgeInfo **ePP, real rSplit, int & debug, bool mergeNewEdges /* = tru
     delete &nurbs2;
   
 //    printf("splitEdge: reference count for e1 after split: map: %i, tc: %i, sc: %i\n", 
-//  	 e1->curve->getNURBS()->getReferenceCount(), tc->getReferenceCount(), sc1->getReferenceCount());
+//       e1->curve->getNURBS()->getReferenceCount(), tc->getReferenceCount(), sc1->getReferenceCount());
 //    printf("splitEdge: reference count for e2 after split: map: %i, tc: %i, sc: %i\n", 
-//  	 e2->curve->getNURBS()->getReferenceCount(), tc->getReferenceCount(), sc2->getReferenceCount());
+//       e2->curve->getNURBS()->getReferenceCount(), tc->getReferenceCount(), sc2->getReferenceCount());
 
   if (!checkConsistency(true))
     return 1;
@@ -6587,12 +6587,12 @@ splitAndMergeEdgeCurves( GenericGraphicsInterface & gi, int & debug )
     {
       Loop & currentLoop = faceInfoArray[f].loop[l];
       for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-	   sc++, e=e->next )
-	if( e->status == EdgeInfo::edgeCurveIsBoundary )  
-	{
-	  if (merge( e, debug ) == -1)
-	    mergeFailed=true;
-	}
+           sc++, e=e->next )
+        if( e->status == EdgeInfo::edgeCurveIsBoundary )  
+        {
+          if (merge( e, debug ) == -1)
+            mergeFailed=true;
+        }
     } // end for all loops
   } // end for all faces (subsurfaces)
 
@@ -6620,10 +6620,10 @@ splitAndMergeEdgeCurves( GenericGraphicsInterface & gi, int & debug )
 //        int sc;
 //        EdgeInfo *e;
 //        for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-//  	   sc++, e=e->next )
+//         sc++, e=e->next )
 //        {
-//  	printf("EdgeInfo object: curve->mapID:%i, initialCurve->mapID:%i\n",
-//  	       e->curve->getNURBS()->getGlobalID(), e->initialCurve->getNURBS()->getGlobalID());
+//      printf("EdgeInfo object: curve->mapID:%i, initialCurve->mapID:%i\n",
+//             e->curve->getNURBS()->getGlobalID(), e->initialCurve->getNURBS()->getGlobalID());
 //        }
 //      }
 //    }
@@ -6645,203 +6645,203 @@ splitAndMergeEdgeCurves( GenericGraphicsInterface & gi, int & debug )
     {
       Loop & currentLoop = faceInfoArray[f].loop[l];
       for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-	   sc++, e=e->next )
-	if( e->status == EdgeInfo::edgeCurveIsBoundary )  
-	{
+           sc++, e=e->next )
+        if( e->status == EdgeInfo::edgeCurveIsBoundary )  
+        {
       // attempt to split this edge curve
 // important to use the new starting and ending points, since e might have been modified before
-	  int startP = e->getStartPoint();
-	  int endP = e->getEndPoint();
-	  NurbsMapping & edge = *e->curve->getNURBS();
+          int startP = e->getStartPoint();
+          int endP = e->getEndPoint();
+          NurbsMapping & edge = *e->curve->getNURBS();
 
-	  real xa[3], xb[3];
-	  for (q=0; q<3; q++)
-	  {
-	    xa[q]=endPoint(startP,q);
-	    xb[q]=endPoint(endP,q);
-	  }
-	  
-	  ArraySimple<real> bb(2,3);
-	  real bb2[6];
-	  real delta=mergeTolerance*2.;
-	  bb(0,0)=(real)edge.getRangeBound(Start,0)-delta, bb(1,0)=(real)edge.getRangeBound(End,0)+delta;
+          real xa[3], xb[3];
+          for (q=0; q<3; q++)
+          {
+            xa[q]=endPoint(startP,q);
+            xb[q]=endPoint(endP,q);
+          }
+          
+          ArraySimple<real> bb(2,3);
+          real bb2[6];
+          real delta=mergeTolerance*2.;
+          bb(0,0)=(real)edge.getRangeBound(Start,0)-delta, bb(1,0)=(real)edge.getRangeBound(End,0)+delta;
           bb(0,1)=(real)edge.getRangeBound(Start,1)-delta, bb(1,1)=(real)edge.getRangeBound(End,1)+delta;
-	  bb(0,2)=(real)edge.getRangeBound(Start,2)-delta, bb(1,2)=(real)edge.getRangeBound(End,2)+delta;
+          bb(0,2)=(real)edge.getRangeBound(Start,2)-delta, bb(1,2)=(real)edge.getRangeBound(End,2)+delta;
 
 // we need to increase the bounding box since it may be slightly inaccurate
-	  const real scale=max(bb(1,0)-bb(0,0), bb(1,1)-bb(0,1), bb(1,2)-bb(0,2));
-	  const real epsx=scale*boundingBoxExtension*.9; // decrease by a bit less than the global to stay inside
-	  bb(0,0)-=epsx;  bb(1,0)+=epsx;
-	  bb(0,1)-=epsx;  bb(1,1)+=epsx;
-	  bb(0,2)-=epsx;  bb(1,2)+=epsx;
-	  
-	  traversor.setTarget(bb);
+          const real scale=max(bb(1,0)-bb(0,0), bb(1,1)-bb(0,1), bb(1,2)-bb(0,2));
+          const real epsx=scale*boundingBoxExtension*.9; // decrease by a bit less than the global to stay inside
+          bb(0,0)-=epsx;  bb(1,0)+=epsx;
+          bb(0,1)-=epsx;  bb(1,1)+=epsx;
+          bb(0,2)-=epsx;  bb(1,2)+=epsx;
+          
+          traversor.setTarget(bb);
 
-	  if( debug & 2 )
-	    printf("\n*** attempt to split edge e=%i (s=%i) box=[%10.4e,%10.4e]x[%10.4e,%10.4e]x[%10.4e,%10.4e]\n",
-	       e->edgeNumber, e->faceNumber, bb(0,0),bb(1,0),bb(0,1),bb(1,1),bb(0,2),bb(1,2));
-	  
+          if( debug & 2 )
+            printf("\n*** attempt to split edge e=%i (s=%i) box=[%10.4e,%10.4e]x[%10.4e,%10.4e]x[%10.4e,%10.4e]\n",
+               e->edgeNumber, e->faceNumber, bb(0,0),bb(1,0),bb(0,1),bb(1,1),bb(0,2),bb(1,2));
+          
 
 // iterate until e gets merged
-	  while( !traversor.isFinished() && e->status==EdgeInfo::edgeCurveIsBoundary ) 
-	  {
-	    EdgeInfo * e2 = (*traversor).data;
-	    
-	// only check edges that belong to a different surface
-	    if( e->faceNumber != e2->faceNumber )
-	    {
-	    
-	      if( debug & 4 )
-	      {
-		if( e2->status==EdgeInfo::edgeCurveIsSlave )
-		  printf("Split e=%i(s=%i) with e2=%i(s=%i) ? No since e2 is removed (merged with another)\n",
-			 e->edgeNumber,e->faceNumber,e2->edgeNumber,e2->faceNumber);
-	      }
-	    
-	      if ( e2->status != EdgeInfo::edgeCurveIsSlave && e2->status != EdgeInfo::edgeCurveIsNotUsed && 
-		   e2 != e )
-	      {
+          while( !traversor.isFinished() && e->status==EdgeInfo::edgeCurveIsBoundary ) 
+          {
+            EdgeInfo * e2 = (*traversor).data;
+            
+        // only check edges that belong to a different surface
+            if( e->faceNumber != e2->faceNumber )
+            {
+            
+              if( debug & 4 )
+              {
+                if( e2->status==EdgeInfo::edgeCurveIsSlave )
+                  printf("Split e=%i(s=%i) with e2=%i(s=%i) ? No since e2 is removed (merged with another)\n",
+                         e->edgeNumber,e->faceNumber,e2->edgeNumber,e2->faceNumber);
+              }
+            
+              if ( e2->status != EdgeInfo::edgeCurveIsSlave && e2->status != EdgeInfo::edgeCurveIsNotUsed && 
+                   e2 != e )
+              {
 // important to use the new starting and ending points, since e2 might been modified before
-		int startP2 = e2->getStartPoint();
-		int endP2 = e2->getEndPoint();
-		real xa2[3], xb2[3];
-		for (q=0; q<3; q++)
-		{
-		  xa2[q]=endPoint(startP2, q);
-		  xb2[q]=endPoint(endP2, q);
-		}
-		
-		for( int side=0; side<=1; side++ )
-		{
-		  if( side==0 )
-		  {
-		    x2(0,0)=xa2[0], x2(0,1)=xa2[1], x2(0,2)=xa2[2];
-		  }
-		  else
-		  {
-		    x2(0,0)=xb2[0], x2(0,1)=xb2[1], x2(0,2)=xb2[2];
-		  }
+                int startP2 = e2->getStartPoint();
+                int endP2 = e2->getEndPoint();
+                real xa2[3], xb2[3];
+                for (q=0; q<3; q++)
+                {
+                  xa2[q]=endPoint(startP2, q);
+                  xb2[q]=endPoint(endP2, q);
+                }
+                
+                for( int side=0; side<=1; side++ )
+                {
+                  if( side==0 )
+                  {
+                    x2(0,0)=xa2[0], x2(0,1)=xa2[1], x2(0,2)=xa2[2];
+                  }
+                  else
+                  {
+                    x2(0,0)=xb2[0], x2(0,1)=xb2[1], x2(0,2)=xb2[2];
+                  }
 // check to see if the end point is in the bounding box.
-		  if( x2(0,0)<bb(0,0) || x2(0,0)>bb(1,0) ||
-		      x2(0,1)<bb(0,1) || x2(0,1)>bb(1,1) ||
-		      x2(0,2)<bb(0,2) || x2(0,2)>bb(1,2) )
-		  {
-		    if( debug & 4 )
-		    {
-		      printf("Check: e=%i(s=%i) to be split by e2=%i(s=%i)? no, end point outside bbox\n",
-			     e->edgeNumber, e2->faceNumber, e2->edgeNumber, e2->faceNumber);
-		      printf(" side=%i x=(%8.2e,%8.2e,%8.2e) "
-			     " bb=[%8.2e,%8.2e][%8.2e,%8.2e][%8.2e,%8.2e]\n", side,
-			     x2(0,0),x2(0,1),x2(0,2),bb(0,0),bb(1,0),bb(0,1),bb(1,1),bb(0,2),bb(1,2));
-		    }
-		    continue;
-		  }
-		  
-		  real timen=getCPU();
-		  r=-1.;
-		  edge.inverseMap(x2,r);
-		  if( debug & 4 )
-		  {
-		    printf("Split:check e=%i to be split by e2=%i on side=%i, r_e=%8.2e "
-			   "x_e2=(%12.6e,%12.6e,%12.6e)\n",
-			   e->edgeNumber,e2->edgeNumber,side,r(0,0),x2(0,0),x2(0,1),x2(0,2));
-		  }
+                  if( x2(0,0)<bb(0,0) || x2(0,0)>bb(1,0) ||
+                      x2(0,1)<bb(0,1) || x2(0,1)>bb(1,1) ||
+                      x2(0,2)<bb(0,2) || x2(0,2)>bb(1,2) )
+                  {
+                    if( debug & 4 )
+                    {
+                      printf("Check: e=%i(s=%i) to be split by e2=%i(s=%i)? no, end point outside bbox\n",
+                             e->edgeNumber, e2->faceNumber, e2->edgeNumber, e2->faceNumber);
+                      printf(" side=%i x=(%8.2e,%8.2e,%8.2e) "
+                             " bb=[%8.2e,%8.2e][%8.2e,%8.2e][%8.2e,%8.2e]\n", side,
+                             x2(0,0),x2(0,1),x2(0,2),bb(0,0),bb(1,0),bb(0,1),bb(1,1),bb(0,2),bb(1,2));
+                    }
+                    continue;
+                  }
+                  
+                  real timen=getCPU();
+                  r=-1.;
+                  edge.inverseMap(x2,r);
+                  if( debug & 4 )
+                  {
+                    printf("Split:check e=%i to be split by e2=%i on side=%i, r_e=%8.2e "
+                           "x_e2=(%12.6e,%12.6e,%12.6e)\n",
+                           e->edgeNumber,e2->edgeNumber,side,r(0,0),x2(0,0),x2(0,1),x2(0,2));
+                  }
 
-		  if( r(0,0)<0. || r(0,0)>1. )
-		  {
-		    timeForInverseMap+=getCPU()-timen;
-		    continue;
-		  }
-		  edge.map(r,x);
-		  timeForInverseMap+=getCPU()-timen;
-	      
-		  if( debug & 4 )
-		  {
-		    printf("Split:check x_e=(%12.6e,%12.6e,%12.6e)\n", x(0,0), x(0,1), x(0,2));
-		  }
+                  if( r(0,0)<0. || r(0,0)>1. )
+                  {
+                    timeForInverseMap+=getCPU()-timen;
+                    continue;
+                  }
+                  edge.map(r,x);
+                  timeForInverseMap+=getCPU()-timen;
+              
+                  if( debug & 4 )
+                  {
+                    printf("Split:check x_e=(%12.6e,%12.6e,%12.6e)\n", x(0,0), x(0,1), x(0,2));
+                  }
 
-		  real dist=fabs(x(0,0)-x2(0,0))+fabs(x(0,1)-x2(0,1))+fabs(x(0,2)-x2(0,2));
+                  real dist=fabs(x(0,0)-x2(0,0))+fabs(x(0,1)-x2(0,1))+fabs(x(0,2)-x2(0,2));
 // dista,distb  : distance from the endpoints of the edge curve to the split point
 // do NOT split the edge curve if dista or distb is too small
 
-		  real splitTolerance= mergeTolerance*splitToleranceFactor;
-		
-		  real dista=fabs(x(0,0)-xa[0])+fabs(x(0,1)-xa[1])+fabs(x(0,2)-xa[2]);
-		  real distb=fabs(x(0,0)-xb[0])+fabs(x(0,1)-xb[1])+fabs(x(0,2)-xb[2]);
+                  real splitTolerance= mergeTolerance*splitToleranceFactor;
+                
+                  real dista=fabs(x(0,0)-xa[0])+fabs(x(0,1)-xa[1])+fabs(x(0,2)-xa[2]);
+                  real distb=fabs(x(0,0)-xb[0])+fabs(x(0,1)-xb[1])+fabs(x(0,2)-xb[2]);
 
-		  if( debug & 4 )
-		    printf("INFO: split edge e=%i with end point of e2=%i(s=%i) ? dist=%8.2e, "
-			   "dista=%8.2e, distb=%8.2e (tol=%8.2e,%8.2e)\n",
-			   e->edgeNumber, e2->edgeNumber, e2->faceNumber, dist, dista, distb, 
-			   mergeTolerance,splitTolerance);
+                  if( debug & 4 )
+                    printf("INFO: split edge e=%i with end point of e2=%i(s=%i) ? dist=%8.2e, "
+                           "dista=%8.2e, distb=%8.2e (tol=%8.2e,%8.2e)\n",
+                           e->edgeNumber, e2->edgeNumber, e2->faceNumber, dist, dista, distb, 
+                           mergeTolerance,splitTolerance);
 
-		  if( debug & 4 && (dist<mergeTolerance &&( dista<splitTolerance || distb<splitTolerance) ))
-		  {
-		    printf("INFO: don't split edge e=%i with end pnt of e2=%i (side=%i) since it is too close to one of e's endpoints.\n"
-			   "Midpoint distance: %8.2e, mergeTolerance: %8.2e\n"
-			   "Endpoint distances: (dista=%8.2e, distb=%8.2e), splitTolerance=%8.2e\n",
-			   e->edgeNumber, e2->edgeNumber, side, 
-			   dist, mergeTolerance,
-			   dista, distb, splitTolerance);
-		  }
+                  if( debug & 4 && (dist<mergeTolerance &&( dista<splitTolerance || distb<splitTolerance) ))
+                  {
+                    printf("INFO: don't split edge e=%i with end pnt of e2=%i (side=%i) since it is too close to one of e's endpoints.\n"
+                           "Midpoint distance: %8.2e, mergeTolerance: %8.2e\n"
+                           "Endpoint distances: (dista=%8.2e, distb=%8.2e), splitTolerance=%8.2e\n",
+                           e->edgeNumber, e2->edgeNumber, side, 
+                           dist, mergeTolerance,
+                           dista, distb, splitTolerance);
+                  }
 // output this info to indicate when it would help to reduce the split tolerance factor
-		  if( dist<mergeTolerance && min(dista, distb) < splitTolerance && min(dista, distb) >= mergeTolerance )
-		  {
-		    someSplitsFailed = true;
-		    newSplitToleranceFactor = min(newSplitToleranceFactor, min(dista, distb)/mergeTolerance);
-		  }
+                  if( dist<mergeTolerance && min(dista, distb) < splitTolerance && min(dista, distb) >= mergeTolerance )
+                  {
+                    someSplitsFailed = true;
+                    newSplitToleranceFactor = min(newSplitToleranceFactor, min(dista, distb)/mergeTolerance);
+                  }
 
-		  if( dist<mergeTolerance && dista>splitTolerance && distb>splitTolerance )
-		  {
+                  if( dist<mergeTolerance && dista>splitTolerance && distb>splitTolerance )
+                  {
                     
-		    if( debug & 2 )
-		    {
-		      printf(" **e=%i(s=%i), e2=%i(s=%i) dist=%e : split edge e at r=%e,\n"
-			     "Endpoint distances: %e, %e\n",
-			     e->edgeNumber, e->faceNumber, e2->edgeNumber, e2->faceNumber, dist, 
-			     r(0,0), dista, distb);
-		      printf("   e=%i has end points [%8.2e,%8.2e,%8.2e]->[%8.2e,%8.2e,%8.2e]\n",
-			     e->edgeNumber, xa[0],xa[1],xa[2],xb[0],xb[1],xb[2]);
-		      printf("  e2=%i has end points [%8.2e,%8.2e,%8.2e]->[%8.2e,%8.2e,%8.2e]\n",
-			     e2->edgeNumber, xa2[0],xa2[1],xa2[2],xb2[0],xb2[1],xb2[2]);
-		      printf(" e2 intersects e at x=[%8.2e,%8.2e,%8.2e]\n",x(0,0),x(0,1),x(0,2));
-		      
-		    }
-		    
-		    // split edge curve e and attempt to merge the resulting segments.
+                    if( debug & 2 )
+                    {
+                      printf(" **e=%i(s=%i), e2=%i(s=%i) dist=%e : split edge e at r=%e,\n"
+                             "Endpoint distances: %e, %e\n",
+                             e->edgeNumber, e->faceNumber, e2->edgeNumber, e2->faceNumber, dist, 
+                             r(0,0), dista, distb);
+                      printf("   e=%i has end points [%8.2e,%8.2e,%8.2e]->[%8.2e,%8.2e,%8.2e]\n",
+                             e->edgeNumber, xa[0],xa[1],xa[2],xb[0],xb[1],xb[2]);
+                      printf("  e2=%i has end points [%8.2e,%8.2e,%8.2e]->[%8.2e,%8.2e,%8.2e]\n",
+                             e2->edgeNumber, xa2[0],xa2[1],xa2[2],xb2[0],xb2[1],xb2[2]);
+                      printf(" e2 intersects e at x=[%8.2e,%8.2e,%8.2e]\n",x(0,0),x(0,1),x(0,2));
+                      
+                    }
+                    
+                    // split edge curve e and attempt to merge the resulting segments.
 // Now do the actual splitting and try to merge both pieces with other edges in the model
-		    EdgeInfo *eOld = e;
+                    EdgeInfo *eOld = e;
 // note that e will be modified by splitEdge
 // exit if it fails
-		    if (splitEdge( &e, r(0,0), debug ) != 0) return 1;
-		    
-		    if( eOld != e ) 
-		    {
+                    if (splitEdge( &e, r(0,0), debug ) != 0) return 1;
+                    
+                    if( eOld != e ) 
+                    {
 // re-evaluate the end points
-		      edge = *e->curve->getNURBS();
-		      startP = e->getStartPoint();
-		      endP = e->getEndPoint();
-		      for (q=0; q<3; q++)
-		      {
-			xa[q]=endPoint(startP,q);
-			xb[q]=endPoint(endP,q);
-		      }
-		    }
+                      edge = *e->curve->getNURBS();
+                      startP = e->getStartPoint();
+                      endP = e->getEndPoint();
+                      for (q=0; q<3; q++)
+                      {
+                        xa[q]=endPoint(startP,q);
+                        xb[q]=endPoint(endP,q);
+                      }
+                    }
 
-		    break;
-		  } // end if dist < mergeTolerance...
-		  
-		  
-		} // end for side...
-		
-		
-	      }  // if( e2->status
-	      
-	    } // if ( e->faceNumber != e2->faceNumber...
-	    
-	    traversor++;
-	  } // end while( !traversor...
-	} // end if e->status == EdgeInfo::edgeIsBoundary
+                    break;
+                  } // end if dist < mergeTolerance...
+                  
+                  
+                } // end for side...
+                
+                
+              }  // if( e2->status
+              
+            } // if ( e->faceNumber != e2->faceNumber...
+            
+            traversor++;
+          } // end while( !traversor...
+        } // end if e->status == EdgeInfo::edgeIsBoundary
     } // end for all loops
   } // end for all faces
 
@@ -6852,7 +6852,7 @@ splitAndMergeEdgeCurves( GenericGraphicsInterface & gi, int & debug )
     aString buf;
     gi.outputString("Some splits didn't happen because the split point was too close to an endpoint");
     gi.outputString(sPrintF(buf, "You would allow all of those splits to occur by reducing the split tolerance factor to %8.2e", 
-			    newSplitToleranceFactor));
+                            newSplitToleranceFactor));
   }
   
 
@@ -6874,43 +6874,43 @@ splitAndMergeEdgeCurves( GenericGraphicsInterface & gi, int & debug )
     {
       Loop & currentLoop = faceInfoArray[f].loop[l];
       for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-	   sc++, e=e->next )
-	if (e->status == EdgeInfo::edgeCurveIsBoundary ||
-	    e->status == EdgeInfo::edgeCurveIsMaster)
-	{
+           sc++, e=e->next )
+        if (e->status == EdgeInfo::edgeCurveIsBoundary ||
+            e->status == EdgeInfo::edgeCurveIsMaster)
+        {
 // adjust starting end
-	  for (q=0; q<3; q++)
-	    newLocation(q) = endPoint(e->curve->startingPoint,q);
-	  e->curve->getNURBS()->moveEndpoint(0, newLocation);
+          for (q=0; q<3; q++)
+            newLocation(q) = endPoint(e->curve->startingPoint,q);
+          e->curve->getNURBS()->moveEndpoint(0, newLocation);
 // adjust ending end
-	  for (q=0; q<3; q++)
-	    newLocation(q) = endPoint(e->curve->endingPoint,q);
-	  e->curve->getNURBS()->moveEndpoint(1, newLocation);
+          for (q=0; q<3; q++)
+            newLocation(q) = endPoint(e->curve->endingPoint,q);
+          e->curve->getNURBS()->moveEndpoint(1, newLocation);
 // check the distance
-//  	  const realArray &x= e->curve->getNURBS()->getGrid(); // consistent with mapped coordinates at start/end
-//  	  const realArray &c= e->curve->getNURBS()->getControlPoints(); // always at the true start/end
-	  
-//  	  int xN = x.getBound(0), cN = c.getBound(0);
-	  
-//  	  startDist = 0.;
-//  	  for (q=0; q<3; q++)
-//  	    startDist += SQR(endPoint(e->curve->startingPoint,q) - x(0,0,0,q));
-//  	  startDist = sqrt(startDist);
-//  	  endDist = 0.;
-//  	  for (q=0; q<3; q++)
-//  	    endDist += SQR(endPoint(e->curve->endingPoint,q) - x(xN,0,0,q));
-//  	  endDist = sqrt(endDist);
-//  	  printf("edge %i, startDist=%e, endDist=%e\n", e->edgeNumber, startDist, endDist);
-//  	  startDist = 0.;
-//  	  for (q=0; q<3; q++)
-//  	    startDist += SQR(endPoint(e->curve->startingPoint,q) - c(0,q));
-//  	  startDist = sqrt(startDist);
-//  	  endDist = 0.;
-//  	  for (q=0; q<3; q++)
-//  	    endDist += SQR(endPoint(e->curve->endingPoint,q) - c(cN,q));
-//  	  endDist = sqrt(endDist);
-//  	  printf("edge %i, control point startDist=%e, endDist=%e\n", e->edgeNumber, startDist, endDist);
-	} // end for e / if boundary or master edge
+//        const realArray &x= e->curve->getNURBS()->getGrid(); // consistent with mapped coordinates at start/end
+//        const realArray &c= e->curve->getNURBS()->getControlPoints(); // always at the true start/end
+          
+//        int xN = x.getBound(0), cN = c.getBound(0);
+          
+//        startDist = 0.;
+//        for (q=0; q<3; q++)
+//          startDist += SQR(endPoint(e->curve->startingPoint,q) - x(0,0,0,q));
+//        startDist = sqrt(startDist);
+//        endDist = 0.;
+//        for (q=0; q<3; q++)
+//          endDist += SQR(endPoint(e->curve->endingPoint,q) - x(xN,0,0,q));
+//        endDist = sqrt(endDist);
+//        printf("edge %i, startDist=%e, endDist=%e\n", e->edgeNumber, startDist, endDist);
+//        startDist = 0.;
+//        for (q=0; q<3; q++)
+//          startDist += SQR(endPoint(e->curve->startingPoint,q) - c(0,q));
+//        startDist = sqrt(startDist);
+//        endDist = 0.;
+//        for (q=0; q<3; q++)
+//          endDist += SQR(endPoint(e->curve->endingPoint,q) - c(cN,q));
+//        endDist = sqrt(endDist);
+//        printf("edge %i, control point startDist=%e, endDist=%e\n", e->edgeNumber, startDist, endDist);
+        } // end for e / if boundary or master edge
     } // end for l
   } // end for f
   
@@ -6942,14 +6942,14 @@ adjustEndPoints()
     {
       Loop & currentLoop = faceInfoArray[f].loop[l];
       for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-	   sc++, e=e->next )
+           sc++, e=e->next )
       {
-	if (!e->adjustOneSegmentEndPoints(endPoint, mergeTolerance))
-	{
-	  printf("Warning: adjustOneSegmentEndPoints failed for edge %i\n", e->edgeNumber);
-	}
-	
-	
+        if (!e->adjustOneSegmentEndPoints(endPoint, mergeTolerance))
+        {
+          printf("Warning: adjustOneSegmentEndPoints failed for edge %i\n", e->edgeNumber);
+        }
+        
+        
       } // end for sc...
       
     }
@@ -6960,14 +6960,14 @@ bool CompositeTopology::
 checkConsistency(bool quiet /* = false */)
 {
   if (!quiet)
-    printf("Checking the consistency of all loops\n");
+    printF("CompositeTopology::checkConsistency: Checking the consistency of all loops\n");
   real dist;
   
   int f, l, q, sc, ne, nErr=0;
   EdgeInfo *e;
   
-  GenericGraphicsInterface &gi = *Overture::getGraphicsInterface();
-  aString buf;
+  // GenericGraphicsInterface &gi = *Overture::getGraphicsInterface();
+  // aString buf;
   
   for( f=0; f<cs.numberOfSubSurfaces(); f++ )
   {
@@ -6976,42 +6976,42 @@ checkConsistency(bool quiet /* = false */)
       Loop & currentLoop = faceInfoArray[f].loop[l];
       ne = currentLoop.numberOfEdges();
       for (sc = 0, e = currentLoop.firstEdge; sc<ne; 
-	   sc++, e=e->next )
+           sc++, e=e->next )
       {
-	if (e->getStartPoint() != e->prev->getEndPoint())
-	{
-	  nErr++;
-	  gi.outputString(sPrintF(buf, "Inconsistent loop %i, face %i, edge %i starting point = %i, "
-				  "prev->ending point = %i", l, f, e->edgeNumber, e->getStartPoint(), 
-				  e->prev->getEndPoint()));
-	}
-	if (e->getEndPoint() != e->next->getStartPoint())
-	{
-	  nErr++;
-	  gi.outputString(sPrintF(buf, "Inconsistent loop %i, face %i, edge %i ending point = %i, "
-				  "next->starting point = %i", l, f, e->edgeNumber, e->getEndPoint(), 
-				  e->next->getStartPoint()));
-	}
-	if (e->getStartPoint() == e->getEndPoint())
-	{
+        if (e->getStartPoint() != e->prev->getEndPoint())
+        {
+          nErr++;
+          printF("Inconsistent loop %i, face %i, edge %i starting point = %i, "
+                 "prev->ending point = %i", l, f, e->edgeNumber, e->getStartPoint(), 
+                                  e->prev->getEndPoint());
+        }
+        if (e->getEndPoint() != e->next->getStartPoint())
+        {
+          nErr++;
+          printF("Inconsistent loop %i, face %i, edge %i ending point = %i, "
+                 "next->starting point = %i", l, f, e->edgeNumber, e->getEndPoint(), 
+                                  e->next->getStartPoint());
+        }
+        if (e->getStartPoint() == e->getEndPoint())
+        {
           if( ne==1 )
-	  {
-	    // could be a periodic loop *wdh* 030825
+          {
+            // could be a periodic loop *wdh* 030825
             NurbsMapping & edge = *e->curve->getNURBS();
             if( edge.getIsPeriodic(0)==Mapping::functionPeriodic )
-	    {
-              gi.outputString(sPrintF(buf,"checkConsistency:loop %i, face %i, edge %i,"
-                   " end pts match but the edge curve is periodic (getIsPeriodic=%i)",l, f, e->edgeNumber,
-                   (int)edge.getIsPeriodic(0) ));
-	      continue;
-	    }
-	  }
-	  nErr++;
-	  gi.outputString(sPrintF(buf, "Inconsistent loop %i, face %i, edge %i starting point = %i "
-				  "same as ending point = %i", l, f, e->edgeNumber, e->getStartPoint(), 
-				  e->getEndPoint()));
-	}
-	
+            {
+              printF("checkConsistency:loop %i, face %i, edge %i,"
+                     " end pts match but the edge curve is periodic (getIsPeriodic=%i)",l, f, e->edgeNumber,
+                     (int)edge.getIsPeriodic(0) );
+              continue;
+            }
+          }
+          nErr++;
+          printF("Inconsistent loop %i, face %i, edge %i starting point = %i "
+                  "same as ending point = %i", l, f, e->edgeNumber, e->getStartPoint(), 
+                                  e->getEndPoint());
+        }
+        
       } // end for sc...
       
     }
@@ -7020,7 +7020,7 @@ checkConsistency(bool quiet /* = false */)
   if (nErr == 0)
   {
     if (!quiet)
-      gi.outputString("Consistency check: All loops appear to be closed");
+      printF("compositeTopology:checkConsistency: All loops appear to be closed");
     return true;
   }
   else
@@ -7059,8 +7059,8 @@ buildEdgeCurveSearchTree( int & debug )
 
 // tmp
 //    printf("buildEdgeCurveSearchTree: boundingBox of the entire surface:\n"
-//  	 "[%e,%e]x[%e,%e]x[%e,%e]\n", boundingBox(0,0), boundingBox(1,0),
-//  	 boundingBox(0,1), boundingBox(1,1), boundingBox(0,2), boundingBox(1,2));
+//       "[%e,%e]x[%e,%e]x[%e,%e]\n", boundingBox(0,0), boundingBox(1,0),
+//       boundingBox(0,1), boundingBox(1,1), boundingBox(0,2), boundingBox(1,2));
 
   real time1=getCPU();
   for( f=0; f<cs.numberOfSubSurfaces(); f++ )
@@ -7069,40 +7069,40 @@ buildEdgeCurveSearchTree( int & debug )
     {
       Loop & currentLoop = faceInfoArray[f].loop[l];
       for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-	   sc++, e=e->next )
+           sc++, e=e->next )
       {
 // some edges might have been joined during the initial build of the search tree
-	if (e->status == EdgeInfo::edgeCurveIsNotUsed) continue;
-	
-	NurbsMapping &nurb = *(e->curve->getNURBS());
-	real scale=0.;
-	int dir;
-	for( dir=0; dir<rangeDimension; dir++ )
-	{
-	  bb(0,dir)=nurb.getRangeBound(Start,dir);
-	  bb(1,dir)=nurb.getRangeBound(End  ,dir);
-	  scale=max(scale,bb(1,dir)-bb(0,dir));
-	}
-	// increase bounding box since bounds are based on a set of grid points representing map.
-	const real epsx = scale*boundingBoxExtension*.9; // decrease by a bit less than the global to stay inside
-	for( dir=0; dir<rangeDimension; dir++ )
-	{
-	  bb(0,dir)-=epsx;
-	  bb(1,dir)+=epsx;
-	}
-	
-	if( bb(0,0)>=boundingBox(0,0) && bb(1,0)<=boundingBox(1,0) &&
-	    bb(0,1)>=boundingBox(0,1) && bb(1,1)<=boundingBox(1,1) &&
-	    bb(0,2)>=boundingBox(0,2) && bb(1,2)<=boundingBox(1,2)  )
-	{
-	  searchTree->addElement(bb, e);
-	}
-	else
-	{
-	  printf("ADT:ERROR: boundingBox of edge %i is out of bounds for the box for the entire surface! \n"
-		 "edge boundingBox=[%e,%e]x[%e,%e]x[%e,%e]\n",
-		 e->edgeNumber,bb(0,0),bb(1,0),bb(0,1),bb(1,1),bb(0,2),bb(1,2));
-	}
+        if (e->status == EdgeInfo::edgeCurveIsNotUsed) continue;
+        
+        NurbsMapping &nurb = *(e->curve->getNURBS());
+        real scale=0.;
+        int dir;
+        for( dir=0; dir<rangeDimension; dir++ )
+        {
+          bb(0,dir)=nurb.getRangeBound(Start,dir);
+          bb(1,dir)=nurb.getRangeBound(End  ,dir);
+          scale=max(scale,bb(1,dir)-bb(0,dir));
+        }
+        // increase bounding box since bounds are based on a set of grid points representing map.
+        const real epsx = scale*boundingBoxExtension*.9; // decrease by a bit less than the global to stay inside
+        for( dir=0; dir<rangeDimension; dir++ )
+        {
+          bb(0,dir)-=epsx;
+          bb(1,dir)+=epsx;
+        }
+        
+        if( bb(0,0)>=boundingBox(0,0) && bb(1,0)<=boundingBox(1,0) &&
+            bb(0,1)>=boundingBox(0,1) && bb(1,1)<=boundingBox(1,1) &&
+            bb(0,2)>=boundingBox(0,2) && bb(1,2)<=boundingBox(1,2)  )
+        {
+          searchTree->addElement(bb, e);
+        }
+        else
+        {
+          printf("ADT:ERROR: boundingBox of edge %i is out of bounds for the box for the entire surface! \n"
+                 "edge boundingBox=[%e,%e]x[%e,%e]x[%e,%e]\n",
+                 e->edgeNumber,bb(0,0),bb(1,0),bb(0,1),bb(1,1),bb(0,2),bb(1,2));
+        }
       } // end for all edgeInfo's
     } // end for all loops
   } // end for all faces (subsurfaces)
@@ -7128,16 +7128,16 @@ printEdgeCurveInfo(GenericGraphicsInterface & gi)
       Loop & currentLoop = faceInfoArray[s].loop[l];
       int sc;
       for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-	   sc++, e=e->next )
+           sc++, e=e->next )
       {
-	if (e->status != EdgeInfo::edgeCurveIsSlave)
-	{
-	  if( e->status == EdgeInfo::edgeCurveIsBoundary )
-	    numberNotMerged++;
-	  else if( e->status == EdgeInfo::edgeCurveIsMaster )
-	    numberMerged++;
-	}
-	  
+        if (e->status != EdgeInfo::edgeCurveIsSlave)
+        {
+          if( e->status == EdgeInfo::edgeCurveIsBoundary )
+            numberNotMerged++;
+          else if( e->status == EdgeInfo::edgeCurveIsMaster )
+            numberMerged++;
+        }
+          
       }
     } // end for all loops
   } // end for all subsurfaces
@@ -7145,7 +7145,7 @@ printEdgeCurveInfo(GenericGraphicsInterface & gi)
   gi.outputString(sPrintF(buff,
     "INFO: numberOfEdgeCurves=%i, number merged=%i (green), number not merged=%i(blue), number removed=%i,"
     " red=three or more edges meet (non-manifold geometry)",
-	 numberOfEdgeCurves,numberMerged,numberNotMerged,numberOfEdgeCurves-numberMerged-numberNotMerged));
+         numberOfEdgeCurves,numberMerged,numberNotMerged,numberOfEdgeCurves-numberMerged-numberNotMerged));
 
   return 0;
 }
@@ -7160,12 +7160,12 @@ printEdgeCurveInfo(GenericGraphicsInterface & gi)
 int CompositeTopology:: 
 getAnotherEdge(EdgeInfo* &edgeChosen, 
                GenericGraphicsInterface & gi,
-	       const aString & prompt, 
+               const aString & prompt, 
                const aString & cancel )
 {
   int returnValue=0;
   GUIState doneDialog;
-	  
+          
   doneDialog.setExitCommand(cancel,cancel);
 
   doneDialog.addInfoLabel(prompt);
@@ -7194,25 +7194,25 @@ getAnotherEdge(EdgeInfo* &edgeChosen,
     {
       for (int i=0; i<select.nSelect && numberChosen==0; i++)
       {
-	for( int s=0; s<cs.numberOfSubSurfaces() && numberChosen==0; s++ )
-	{
-	  for (int l=0; l<faceInfoArray[s].numberOfLoops && numberChosen==0; l++)
-	  {
-	    Loop & currentLoop = faceInfoArray[s].loop[l];
-	    int sc;
-	    for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-		 sc++, e=e->next )
-	    {
-	      if(e->status == EdgeInfo::edgeCurveIsBoundary &&
-		 e->curve->getNURBS()->getGlobalID() == select.selection(i,0) )
-	      {
-		edgeChosen=e;
-		numberChosen++;
-		break;
-	      }
-	    }
-	  }
-	}
+        for( int s=0; s<cs.numberOfSubSurfaces() && numberChosen==0; s++ )
+        {
+          for (int l=0; l<faceInfoArray[s].numberOfLoops && numberChosen==0; l++)
+          {
+            Loop & currentLoop = faceInfoArray[s].loop[l];
+            int sc;
+            for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
+                 sc++, e=e->next )
+            {
+              if(e->status == EdgeInfo::edgeCurveIsBoundary &&
+                 e->curve->getNURBS()->getGlobalID() == select.selection(i,0) )
+              {
+                edgeChosen=e;
+                numberChosen++;
+                break;
+              }
+            }
+          }
+        }
       }
     } // end if select.nSelect...
     
@@ -7301,20 +7301,20 @@ update()
   
   aString pbLabels[] = {"Compute topology",
                         "Build edge curves",
-			"Merge edge curves",
+                        "Merge edge curves",
                         "Triangulate",
-			"Flip normals",
+                        "Flip normals",
                         "Reference surface",
                         "Examine triangulation",
-			""};
+                        ""};
   aString pbCmds[] = {"compute topology",
                       "build edge curves",
-		      "merge edge curves",
-		      "triangulate",
-		      "flip normals",
-		      "examine reference surface",
-		      "examine triangulation",
-		      ""};
+                      "merge edge curves",
+                      "triangulate",
+                      "flip normals",
+                      "examine reference surface",
+                      "examine triangulation",
+                      ""};
   // addPrefix(pbLabels,prefix,cmd,maxCommands);
   int numRows=3;
   dialog.setPushButtons(pbCmds,  pbLabels, numRows ); 
@@ -7363,9 +7363,9 @@ update()
   
 // *wdh* These are no longer needed: 031116
 //    enum toggleButtonEnum{plotReferenceSurfaceTB=0, plotTriangulatedSurfaceTB, plotEdgeCurvesTB, 
-//  			plotMergedCurvesTB, plotUnMergedCurvesTB, plotBadElementsTB , plotNormalsTB, 
-//  			flatShadingTB, improveTriTB, 
-//  			numberOfToggleButtons  };
+//                      plotMergedCurvesTB, plotUnMergedCurvesTB, plotBadElementsTB , plotNormalsTB, 
+//                      flatShadingTB, improveTriTB, 
+//                      numberOfToggleButtons  };
   
 
   aString tbCommands[] = {"plot reference surface",
@@ -7374,10 +7374,10 @@ update()
                           "plot green merged curves",
                           "plot blue unmerged curves",
                           "plot bad elements",
-			  "plot normals",
-			  "flat shading",
-			  "improve triangulation",
-			  ""};
+                          "plot normals",
+                          "flat shading",
+                          "improve triangulation",
+                          ""};
   int tbState[9];
   tbState[0] = plotReferenceSurface;
   tbState[1] = plotTriangulatedSurface;
@@ -7487,36 +7487,36 @@ update()
     {
       if( triangulationIsValid )
       {
-	gi.outputString("The global triangulation is valid. No need to recompute the topology");
-	continue;
+        gi.outputString("The global triangulation is valid. No need to recompute the topology");
+        continue;
       }
       
       // build all the edge curves
       if( !edgeCurvesAreBuilt )
       {
         gi.outputString("Build edge curves...");
-	buildEdgeCurves(  gi  );
+        buildEdgeCurves(  gi  );
         edgeCurvesAreBuilt=true;
-	recomputeEdgeCurveBoundaryNodes=false;
-	
+        recomputeEdgeCurveBoundaryNodes=false;
+        
         // Fill in the search tree with the bounding box for each edgeCurve
         buildEdgeCurveSearchTree(debug);
       }
       
       if( true || !mergedCurvesAreValid ) // always merge
       {
-	// merge edge curves
+        // merge edge curves
         gi.outputString("Merge edge curves...");
-	int rt = splitAndMergeEdgeCurves( gi,debug );
+        int rt = splitAndMergeEdgeCurves( gi,debug );
 
         if( rt!=0 ) // *wdh* 030825
-	{
-	  printf("ERROR return from splitAndMergeEdgeCurves\n");
-	  gi.stopReadingCommandFile();
-	  //*wdh* 030825  continue;
-	}
+        {
+          printf("ERROR return from splitAndMergeEdgeCurves\n");
+          gi.stopReadingCommandFile();
+          //*wdh* 030825  continue;
+        }
         mergedCurvesAreValid=true;  
-	
+        
       }
 
 // AP: Shouldn't this be done after merging? (probably doesn't matter)
@@ -7524,7 +7524,7 @@ update()
       {
         gi.outputString("Determine new boundary nodes on edge curves...");
         buildEdgeCurveBoundaryNodes();
-	recomputeEdgeCurveBoundaryNodes=false;
+        recomputeEdgeCurveBoundaryNodes=false;
       }
 
       printEdgeCurveInfo(gi);
@@ -7535,25 +7535,25 @@ update()
 
       if (!globalTriangulation)
       {
-	gi.outputString("The global triangulation could not be formed due to previous errors");
-	triangulationIsValid=false;
+        gi.outputString("The global triangulation could not be formed due to previous errors");
+        triangulationIsValid=false;
       }
       else
       {
-	globalTriangulation->checkConnectivity(true,&badElements);
-	badElementsComputed=true;
+        globalTriangulation->checkConnectivity(true,&badElements);
+        badElementsComputed=true;
 
-	if( badElements.getLength(0)==0 )
-	{
-	  gi.outputString("There were no bad elements");
-	}
-	else
-	{
-	  aString buf;
-	  gi.outputString( sPrintF(buf,"There were %i bad elements in the triangulation\n",
-				   badElements.getLength(0)) );
-	}
-	triangulationIsValid=true;
+        if( badElements.getLength(0)==0 )
+        {
+          gi.outputString("There were no bad elements");
+        }
+        else
+        {
+          aString buf;
+          gi.outputString( sPrintF(buf,"There were %i bad elements in the triangulation\n",
+                                   badElements.getLength(0)) );
+        }
+        triangulationIsValid=true;
       }
 
       plotEdgeCurves=true;
@@ -7565,155 +7565,155 @@ update()
       if (triangulationIsValid)
       {
 // build a little GUI to set the file format and name
-	GUIState saveGUI;
-	saveGUI.setWindowTitle("Saving a triangulation");
-	saveGUI.setExitCommand("exit", "Close");
-	aString rbCommand[] = {"file format ingrid", "file format cart3d", ""};
-	aString rbLabel[] = {"InGrid", "Cart3D", "" };
-	enum fileFormatEnum{
-	  inGridFormat=0, cart3dFormat, numberOfFormats
-	};
+        GUIState saveGUI;
+        saveGUI.setWindowTitle("Saving a triangulation");
+        saveGUI.setExitCommand("exit", "Close");
+        aString rbCommand[] = {"file format ingrid", "file format cart3d", ""};
+        aString rbLabel[] = {"InGrid", "Cart3D", "" };
+        enum fileFormatEnum{
+          inGridFormat=0, cart3dFormat, numberOfFormats
+        };
 // initial choice: cart3d
-	fileFormatEnum format=cart3dFormat;
-	saveGUI.addRadioBox( "File format", rbCommand, rbLabel, format, 2); // 2 columns
-	RadioBox &rBox = saveGUI.getRadioBox(0);
-	aString pbLabels[] = {"Browse...", "Save", ""};
-	aString pbCmds[] = {"browse", "save", ""};
-	saveGUI.setPushButtons(pbCmds,  pbLabels, 1 ); // 1 row
+        fileFormatEnum format=cart3dFormat;
+        saveGUI.addRadioBox( "File format", rbCommand, rbLabel, format, 2); // 2 columns
+        RadioBox &rBox = saveGUI.getRadioBox(0);
+        aString pbLabels[] = {"Browse...", "Save", ""};
+        aString pbCmds[] = {"browse", "save", ""};
+        saveGUI.setPushButtons(pbCmds,  pbLabels, 1 ); // 1 row
 
-	aString fname="triangulation.tri";
-	aString textCommands[2], textLabels[2], textStrings[2];
-	int nt=0;
-	const int fnIndex=0;
-	textCommands[nt] = "file name"; 
-	textLabels[nt]   = "File name"; 
-	sPrintF(textStrings[nt], "%s", SC fname); nt++; 
-	// null strings terminal list
-	textCommands[nt]=""; textLabels[nt]="";  textStrings[nt]="";
-	saveGUI.setTextBoxes(textCommands, textLabels, textStrings);
+        aString fname="triangulation.tri";
+        aString textCommands[2], textLabels[2], textStrings[2];
+        int nt=0;
+        const int fnIndex=0;
+        textCommands[nt] = "file name"; 
+        textLabels[nt]   = "File name"; 
+        sPrintF(textStrings[nt], "%s", SC fname); nt++; 
+        // null strings terminal list
+        textCommands[nt]=""; textLabels[nt]="";  textStrings[nt]="";
+        saveGUI.setTextBoxes(textCommands, textLabels, textStrings);
 // define pulldown menus
-	aString pdCommand2[] = {"help format", ""};
-	aString pdLabel2[] = {"Format", ""};
-	saveGUI.addPulldownMenu("Help", pdCommand2, pdLabel2, GI_PUSHBUTTON);
-	saveGUI.setLastPullDownIsHelp(true);
+        aString pdCommand2[] = {"help format", ""};
+        aString pdLabel2[] = {"Format", ""};
+        saveGUI.addPulldownMenu("Help", pdCommand2, pdLabel2, GI_PUSHBUTTON);
+        saveGUI.setLastPullDownIsHelp(true);
 // done defining pulldown menus  
 
 // open the gui
-	gi.pushGUI(saveGUI);
-	
-	for (;;)
-	{
-	  gi.getAnswer(answer, "");
-	  
-	  if ( answer.matches("exit") )
-	  {
-	    break;
-	  }
-	  else if ( answer.matches("save") )
-	  {
-	    UnstructuredMapping *tri=getTriangulation();
-	    if (format==inGridFormat)
-	    {
-	      tri->put(fname);
-	    }
-	    else if (format==cart3dFormat)
-	    {
-	      int nNode = tri->getNumberOfNodes();
-	      int nElem = tri->getNumberOfElements();
-	      const realArray & nodes = tri->getNodes();
-	      const intArray & elements = tri->getElements();
-	      FILE *outfile=fopen(SC fname,"w");
-	      fprintf(outfile,"%i %i\n", nNode, nElem);
-	      int i;
-	      for (i=0; i<nNode; i++)
-		fprintf(outfile,"%.12e %.12e %.12e\n", nodes(i,0), nodes(i,1), nodes(i,2));
-	      printf("Using new element numbering...\n");
-	      for (i=0; i<nElem; i++)
-//		fprintf(outfile,"%i %i %i\n", elements(i,0), elements(i,1), elements(i,2));
-		fprintf(outfile,"%i %i %i\n", elements(i,0)+1, elements(i,1)+1, elements(i,2)+1);
+        gi.pushGUI(saveGUI);
+        
+        for (;;)
+        {
+          gi.getAnswer(answer, "");
+          
+          if ( answer.matches("exit") )
+          {
+            break;
+          }
+          else if ( answer.matches("save") )
+          {
+            UnstructuredMapping *tri=getTriangulation();
+            if (format==inGridFormat)
+            {
+              tri->put(fname);
+            }
+            else if (format==cart3dFormat)
+            {
+              int nNode = tri->getNumberOfNodes();
+              int nElem = tri->getNumberOfElements();
+              const realArray & nodes = tri->getNodes();
+              const intArray & elements = tri->getElements();
+              FILE *outfile=fopen(SC fname,"w");
+              fprintf(outfile,"%i %i\n", nNode, nElem);
+              int i;
+              for (i=0; i<nNode; i++)
+                fprintf(outfile,"%.12e %.12e %.12e\n", nodes(i,0), nodes(i,1), nodes(i,2));
+              printf("Using new element numbering...\n");
+              for (i=0; i<nElem; i++)
+//              fprintf(outfile,"%i %i %i\n", elements(i,0), elements(i,1), elements(i,2));
+                fprintf(outfile,"%i %i %i\n", elements(i,0)+1, elements(i,1)+1, elements(i,2)+1);
 // all elements belong to the same configuration here
-	      for (i=0; i<nElem; i++)
-		fprintf(outfile,"1\n");
-	      fclose(outfile);
-	    }
-	    break;
-	  }
-	  else if ( (len=answer.matches("file format")) )
-	  {
-	    aString fstr=answer(len+1,answer.length()-1);
-	    if (fstr.matches("ingrid"))
-	      format=inGridFormat;
-	    else if (fstr.matches("cart3d"))
-	      format=cart3dFormat;
-	    else
-	      gi.outputString(sPrintF(buf,"Unknown format `%s'",SC fstr));
-	    if (!rBox.setCurrentChoice(format))
-	    {
-	      gi.outputString(sPrintF(buf, "ERROR: format %s (#%d) is inactive", 
-				      SC rbLabel[format], format));
-	    }
-	  }
-	  else if ( answer.matches("browse") )
-	  {
-	    gi.inputFileName(fname,"Enter the name of the file to save","tri");
+              for (i=0; i<nElem; i++)
+                fprintf(outfile,"1\n");
+              fclose(outfile);
+            }
+            break;
+          }
+          else if ( (len=answer.matches("file format")) )
+          {
+            aString fstr=answer(len+1,answer.length()-1);
+            if (fstr.matches("ingrid"))
+              format=inGridFormat;
+            else if (fstr.matches("cart3d"))
+              format=cart3dFormat;
+            else
+              gi.outputString(sPrintF(buf,"Unknown format `%s'",SC fstr));
+            if (!rBox.setCurrentChoice(format))
+            {
+              gi.outputString(sPrintF(buf, "ERROR: format %s (#%d) is inactive", 
+                                      SC rbLabel[format], format));
+            }
+          }
+          else if ( answer.matches("browse") )
+          {
+            gi.inputFileName(fname,"Enter the name of the file to save","tri");
             // set the text in the widget
-	    saveGUI.setTextLabel(fnIndex, fname); // (re)set the textlabel
-	  }
-	  else if ( (len=answer.matches("file name")) )
-	  {
+            saveGUI.setTextLabel(fnIndex, fname); // (re)set the textlabel
+          }
+          else if ( (len=answer.matches("file name")) )
+          {
 // read the new file name off the end of the string...
-	    aString newName = "";
-	    if (answer.length() > len)
-	      newName = answer(len+1,answer.length()-1);
+            aString newName = "";
+            if (answer.length() > len)
+              newName = answer(len+1,answer.length()-1);
 
-	    if (newName != "" && newName != " ")
-	    {
-	      fname = newName;
-	    }
-	    else
-	      gi.outputString("Invalid name");
+            if (newName != "" && newName != " ")
+            {
+              fname = newName;
+            }
+            else
+              gi.outputString("Invalid name");
 
-	    saveGUI.setTextLabel(fnIndex, fname); // (re)set the textlabel
-	  }
-	  else if ( answer.matches("help format") )
-	  {
-	    if (format==inGridFormat)
-	    {
-	      gi.createMessageDialog("The InGrid format is\n"
+            saveGUI.setTextLabel(fnIndex, fname); // (re)set the textlabel
+          }
+          else if ( answer.matches("help format") )
+          {
+            if (format==inGridFormat)
+            {
+              gi.createMessageDialog("The InGrid format is\n"
                                      "DescriptiveString\n"
-				     "1 numberOfNodes numberOfElements maxNumberOfNodesPerElement "
-				     "domainDimension rangeDimension\n"
-				     "1 x1 y1 z1  (or just x1 y1 in 2D \n"
-				     "2 x2 y2 z2 \n"
-				     " ...     \n"
-				     "n xn yn zn \n"
-				     "1 m1 n1 l1  (node numbers for element 1)\n"
-				     "2 m2 n2 l2 \n"
-				     "  ...    ", informationDialog);
-	    }
-	    else if (format==cart3dFormat)
-	    {
-	      gi.createMessageDialog("The Cart3D format is\n"
-				     "numberOfNodes numberOfElements\n"
-				     "x1 y1 z1\n"
-				     "x2 y2 z2\n"
-				     "...\n"
-				     "xN yN zN (N=numberOfNodes)\n"
-				     "node11 node12 node13\n"
-				     "node21 node22 node23\n"
-				     "...\n"
-				     "nodeM1 nodeM2 nodeM3 (M=numberOfElements)\n", informationDialog);
-	    }
-	  }
-	  
-	  
-	} // end inifite loop
-	
-	gi.popGUI();
+                                     "1 numberOfNodes numberOfElements maxNumberOfNodesPerElement "
+                                     "domainDimension rangeDimension\n"
+                                     "1 x1 y1 z1  (or just x1 y1 in 2D \n"
+                                     "2 x2 y2 z2 \n"
+                                     " ...     \n"
+                                     "n xn yn zn \n"
+                                     "1 m1 n1 l1  (node numbers for element 1)\n"
+                                     "2 m2 n2 l2 \n"
+                                     "  ...    ", informationDialog);
+            }
+            else if (format==cart3dFormat)
+            {
+              gi.createMessageDialog("The Cart3D format is\n"
+                                     "numberOfNodes numberOfElements\n"
+                                     "x1 y1 z1\n"
+                                     "x2 y2 z2\n"
+                                     "...\n"
+                                     "xN yN zN (N=numberOfNodes)\n"
+                                     "node11 node12 node13\n"
+                                     "node21 node22 node23\n"
+                                     "...\n"
+                                     "nodeM1 nodeM2 nodeM3 (M=numberOfElements)\n", informationDialog);
+            }
+          }
+          
+          
+        } // end inifite loop
+        
+        gi.popGUI();
       } // end "save triangulation"
       else
       {
-	gi.createMessageDialog("You must compute a valid triangulation before you can save it!", errorDialog);
+        gi.createMessageDialog("You must compute a valid triangulation before you can save it!", errorDialog);
       }
       
       continue;
@@ -7741,42 +7741,42 @@ update()
     {
       if( true || !mergedCurvesAreValid )  // don't check if valid for now.
       {
-	if( searchTree==NULL )
-	{
-	  gi.outputString("You must build the edge curves first");
-	  continue;
-	}
+        if( searchTree==NULL )
+        {
+          gi.outputString("You must build the edge curves first");
+          continue;
+        }
 
-	int rt = splitAndMergeEdgeCurves( gi,debug );
+        int rt = splitAndMergeEdgeCurves( gi,debug );
         if( rt!=0 ) // *wdh* 030825
-	{
-	  printf("ERROR return from splitAndMergeEdgeCurves\n");
-	  gi.stopReadingCommandFile();
-	  //*wdh* 030825 continue;
-	}
+        {
+          printf("ERROR return from splitAndMergeEdgeCurves\n");
+          gi.stopReadingCommandFile();
+          //*wdh* 030825 continue;
+        }
 
-	mergedCurvesAreValid=true;
+        mergedCurvesAreValid=true;
         badElementsComputed=false;
 
         printEdgeCurveInfo(gi);
-	triangulationIsValid=false;
+        triangulationIsValid=false;
       }
       else
       {
-	gi.outputString("The edge curves have already been merged.");
+        gi.outputString("The edge curves have already been merged.");
       }
     }
     else if( answer=="triangulate" )
     {
 //       if( triangulationIsValid )
 //       {
-// 	gi.outputString("Triangulation is computed and valid!");
-// 	continue;
+//      gi.outputString("Triangulation is computed and valid!");
+//      continue;
 //       }
       if( searchTree==NULL )
       {
-	gi.outputString("You must build the edge curves first");
-	continue;
+        gi.outputString("You must build the edge curves first");
+        continue;
       }
 
 // previous split/join operations might affect the node distribution along edges
@@ -7786,43 +7786,43 @@ update()
       {
         printf("Determine new boundary nodes on edge curves...\n");
         buildEdgeCurveBoundaryNodes();
-	recomputeEdgeCurveBoundaryNodes=false;
+        recomputeEdgeCurveBoundaryNodes=false;
         printf("...done\n");
 
-	triangulationIsValid=false;
+        triangulationIsValid=false;
       }
 
       triangulateCompositeSurface(debug, gi, params );
 
       if (!globalTriangulation)
       {
-	gi.outputString("The global triangulation could not be formed due to previous errors");
-	triangulationIsValid=false;
+        gi.outputString("The global triangulation could not be formed due to previous errors");
+        triangulationIsValid=false;
       }
       else
       {
-	globalTriangulation->checkConnectivity(true,&badElements);
-	badElementsComputed=true;
-	if( badElements.getLength(0)==0 )
-	{
-	  gi.outputString("There were no bad elements");
-	}
-	else
-	{
-	  aString buf;
-	  gi.outputString( sPrintF(buf,"There were %i bad elements in the triangulation\n",
-				   badElements.getLength(0)) );
-	}
-	triangulationIsValid=true;
+        globalTriangulation->checkConnectivity(true,&badElements);
+        badElementsComputed=true;
+        if( badElements.getLength(0)==0 )
+        {
+          gi.outputString("There were no bad elements");
+        }
+        else
+        {
+          aString buf;
+          gi.outputString( sPrintF(buf,"There were %i bad elements in the triangulation\n",
+                                   badElements.getLength(0)) );
+        }
+        triangulationIsValid=true;
       }
     }
     else if( (len=answer.matches("merge two edge curves")) )
     {
       if( !faceInfoArray )
       {
-	printF("CompositeTopology::update:ERROR: Cannot merge edges. There are no edges defined yet. "
+        printF("CompositeTopology::update:ERROR: Cannot merge edges. There are no edges defined yet. "
                 "You should build the errors first.\n");
-	gi.stopReadingCommandFile();
+        gi.stopReadingCommandFile();
         continue;
       }
 
@@ -7832,13 +7832,13 @@ update()
       EdgeInfo *e2 = edgeFromNumber(eNumber2);
       if (e1 && e2)
       {
-	if (mergeEdgeCurves(*e1, *e2) == 0)
-	  gi.outputString(sPrintF(buf, "Edge curves %i and %i were merged", e1->edgeNumber, e2->edgeNumber));
-	else
-	  gi.outputString(sPrintF(buf, "Edge curves %i and %i could NOT be merged", e1->edgeNumber, e2->edgeNumber));
+        if (mergeEdgeCurves(*e1, *e2) == 0)
+          gi.outputString(sPrintF(buf, "Edge curves %i and %i were merged", e1->edgeNumber, e2->edgeNumber));
+        else
+          gi.outputString(sPrintF(buf, "Edge curves %i and %i could NOT be merged", e1->edgeNumber, e2->edgeNumber));
       }
       else
-	gi.outputString(sPrintF(buf, "Could not find edges %i AND %i", eNumber1, eNumber2));
+        gi.outputString(sPrintF(buf, "Could not find edges %i AND %i", eNumber1, eNumber2));
       mergedCurvesAreValid=true;
     }
     else if( (len=answer.matches("un-merge edge curves")) )
@@ -7848,12 +7848,12 @@ update()
       EdgeInfo *e = edgeFromNumber(eNumber);
       if( e )
       {
-	unMergeEdge(*e);
-	gi.outputString(sPrintF(buf,"Un-merging edge %i", e->edgeNumber));
+        unMergeEdge(*e);
+        gi.outputString(sPrintF(buf,"Un-merging edge %i", e->edgeNumber));
       }
       else
       {
-	gi.outputString(sPrintF(buf, "Invalid edge number: %i", eNumber));
+        gi.outputString(sPrintF(buf, "Invalid edge number: %i", eNumber));
       }
 
       triangulationIsValid=false;
@@ -7866,18 +7866,18 @@ update()
       EdgeInfo *e = edgeFromNumber(eNumber);
       if (e)
       {
-	if (e->status != EdgeInfo::edgeCurveIsBoundary)
-	{
-	  gi.outputString("Only boundary curves can be joined!");
-	}
-	else
-	{
-	  joinEdgeCurves(*e, toNext, debug);
-	}
+        if (e->status != EdgeInfo::edgeCurveIsBoundary)
+        {
+          gi.outputString("Only boundary curves can be joined!");
+        }
+        else
+        {
+          joinEdgeCurves(*e, toNext, debug);
+        }
       }
       else
       {
-	gi.outputString(sPrintF(buf, "Cannot find edge %i!", eNumber));
+        gi.outputString(sPrintF(buf, "Cannot find edge %i!", eNumber));
       }
     }
     else if( (len=answer.matches("split an edge")) )
@@ -7888,15 +7888,15 @@ update()
       EdgeInfo *e=edgeFromNumber(eNumber);
       if (e)
       {
-	if (e->status != EdgeInfo::edgeCurveIsBoundary || e->orientation != 1)
-	  gi.outputString(sPrintF(buf, "cannot split an edge with status = %i orientation = %i",
-				  e->status, e->orientation));
-	else
-	  splitEdge(&e, rSplit, debug, false); // don't merge automatically
+        if (e->status != EdgeInfo::edgeCurveIsBoundary || e->orientation != 1)
+          gi.outputString(sPrintF(buf, "cannot split an edge with status = %i orientation = %i",
+                                  e->status, e->orientation));
+        else
+          splitEdge(&e, rSplit, debug, false); // don't merge automatically
       }
       else
       {
-	gi.outputString(sPrintF(buf, "Cannot find edge %i!", eNumber));
+        gi.outputString(sPrintF(buf, "Cannot find edge %i!", eNumber));
       }
     }
     else if( (len=answer.matches("edit edge curve")) )
@@ -7913,74 +7913,74 @@ update()
 //      printf("**Selection \n");
       if( pickingOption==pickToQueryEdgeCurves )
       {
-	EdgeInfo *e;
-	for (int i=0; i<select.nSelect; i++)
-	{
-	  for( int s=0; s<cs.numberOfSubSurfaces(); s++ )
-	  {
-	    for (int l=0; l<faceInfoArray[s].numberOfLoops; l++)
-	    {
-	      Loop & currentLoop = faceInfoArray[s].loop[l];
-	      int sc;
-	      for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-		   sc++, e=e->next )
-	      {
-		if(e->status != EdgeInfo::edgeCurveIsNotUsed && 
-		   e->curve->getNURBS()->getGlobalID()==select.selection(i,0) )
-		{
-		  aString buf;
-		  if (e->status == EdgeInfo::edgeCurveIsSlave)
-		    buf = "SLAVE";
-		  else if (e->status == EdgeInfo::edgeCurveIsMaster)
-		    buf = "MASTER";
-		  else if (e->status == EdgeInfo::edgeCurveIsBoundary)
-		    buf = "BOUNDARY";
-		  else
-		    buf = "OTHER";
-		  
-		  aString obuf;
-		  gi.outputString(sPrintF(obuf,
-					  "Edge %i, %s, start point #%i, end point #%i, slave %i, master %i,\n"
-					  "prev->edge %i, prev->startpoint #%i, prev->endpoint #%i,\n"
-					  "next->edge %i, next->startPoint #%i, next->endPoint #%i,\n"
-					  "curve usage=%i, loop %i (with %i edges) on face %i", 
-					  e->edgeNumber, SC buf, e->getStartPoint(), e->getEndPoint(), 
-					  (e->slave)? e->slave->edgeNumber: -1, (e->master)? e->master->edgeNumber: -1,
-					  e->prev->edgeNumber, e->prev->getStartPoint(), e->prev->getEndPoint(),
-					  e->next->edgeNumber, e->next->getStartPoint(), e->next->getEndPoint(),
-					  e->curve->usage, e->loopNumber, currentLoop.numberOfEdges(), e->faceNumber));
-		}
-	      }
-	    } // end for all loops
-	  } // end for all subsurfaces
-	} // end for all selections
-	printf("\n");
-	rePlot = false;
+        EdgeInfo *e;
+        for (int i=0; i<select.nSelect; i++)
+        {
+          for( int s=0; s<cs.numberOfSubSurfaces(); s++ )
+          {
+            for (int l=0; l<faceInfoArray[s].numberOfLoops; l++)
+            {
+              Loop & currentLoop = faceInfoArray[s].loop[l];
+              int sc;
+              for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
+                   sc++, e=e->next )
+              {
+                if(e->status != EdgeInfo::edgeCurveIsNotUsed && 
+                   e->curve->getNURBS()->getGlobalID()==select.selection(i,0) )
+                {
+                  aString buf;
+                  if (e->status == EdgeInfo::edgeCurveIsSlave)
+                    buf = "SLAVE";
+                  else if (e->status == EdgeInfo::edgeCurveIsMaster)
+                    buf = "MASTER";
+                  else if (e->status == EdgeInfo::edgeCurveIsBoundary)
+                    buf = "BOUNDARY";
+                  else
+                    buf = "OTHER";
+                  
+                  aString obuf;
+                  gi.outputString(sPrintF(obuf,
+                                          "Edge %i, %s, start point #%i, end point #%i, slave %i, master %i,\n"
+                                          "prev->edge %i, prev->startpoint #%i, prev->endpoint #%i,\n"
+                                          "next->edge %i, next->startPoint #%i, next->endPoint #%i,\n"
+                                          "curve usage=%i, loop %i (with %i edges) on face %i", 
+                                          e->edgeNumber, SC buf, e->getStartPoint(), e->getEndPoint(), 
+                                          (e->slave)? e->slave->edgeNumber: -1, (e->master)? e->master->edgeNumber: -1,
+                                          e->prev->edgeNumber, e->prev->getStartPoint(), e->prev->getEndPoint(),
+                                          e->next->edgeNumber, e->next->getStartPoint(), e->next->getEndPoint(),
+                                          e->curve->usage, e->loopNumber, currentLoop.numberOfEdges(), e->faceNumber));
+                }
+              }
+            } // end for all loops
+          } // end for all subsurfaces
+        } // end for all selections
+        printf("\n");
+        rePlot = false;
       }
       else if( pickingOption==pickToEditEdgeCurves )
       {
-	EdgeInfo *e;
-	for (int i=0; i<select.nSelect; i++)
-	{
-	  for( int s=0; s<cs.numberOfSubSurfaces(); s++ )
-	  {
-	    for (int l=0; l<faceInfoArray[s].numberOfLoops; l++)
-	    {
-	      Loop & currentLoop = faceInfoArray[s].loop[l];
-	      int sc;
-	      for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-		   sc++, e=e->next )
-	      {
-		if(e->status != EdgeInfo::edgeCurveIsNotUsed && 
-		   e->curve->getNURBS()->getGlobalID()==select.selection(i,0) )
-		{
-		  gi.outputToCommandFile(sPrintF(line,"edit edge curve %i\n",e->edgeNumber));
-		  e->curve->getNURBS()->interactiveUpdate(gi);
-		}
-	      }
-	    } // end for all loops
-	  } // end for all subsurfaces
-	} // end for all selections
+        EdgeInfo *e;
+        for (int i=0; i<select.nSelect; i++)
+        {
+          for( int s=0; s<cs.numberOfSubSurfaces(); s++ )
+          {
+            for (int l=0; l<faceInfoArray[s].numberOfLoops; l++)
+            {
+              Loop & currentLoop = faceInfoArray[s].loop[l];
+              int sc;
+              for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
+                   sc++, e=e->next )
+              {
+                if(e->status != EdgeInfo::edgeCurveIsNotUsed && 
+                   e->curve->getNURBS()->getGlobalID()==select.selection(i,0) )
+                {
+                  gi.outputToCommandFile(sPrintF(line,"edit edge curve %i\n",e->edgeNumber));
+                  e->curve->getNURBS()->interactiveUpdate(gi);
+                }
+              }
+            } // end for all loops
+          } // end for all subsurfaces
+        } // end for all selections
       }
       else if( pickingOption==pickToMergeEdgeCurves )
       {
@@ -7988,245 +7988,245 @@ update()
         const int maxNumberChosen=10;
         EdgeInfo * edgeChosen[maxNumberChosen], *e;
         int numberOfEdgeCurvesChosen=0;
-	for (int i=0; i<select.nSelect && numberOfEdgeCurvesChosen<maxNumberChosen; i++)
-	{
-	  for( int s=0; s<cs.numberOfSubSurfaces(); s++ )
-	  {
-	    for (int l=0; l<faceInfoArray[s].numberOfLoops; l++)
-	    {
-	      Loop & currentLoop = faceInfoArray[s].loop[l];
-	      int sc;
-	      for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-		   sc++, e=e->next )
-	      {
-		if(e->status == EdgeInfo::edgeCurveIsBoundary &&
-		   e->curve->getNURBS()->getGlobalID() == select.selection(i,0) )
-		{
-		  edgeChosen[numberOfEdgeCurvesChosen]=e;
-		  numberOfEdgeCurvesChosen++;
-		}
-	      }
-	    }
-	  }
-	}
-	
+        for (int i=0; i<select.nSelect && numberOfEdgeCurvesChosen<maxNumberChosen; i++)
+        {
+          for( int s=0; s<cs.numberOfSubSurfaces(); s++ )
+          {
+            for (int l=0; l<faceInfoArray[s].numberOfLoops; l++)
+            {
+              Loop & currentLoop = faceInfoArray[s].loop[l];
+              int sc;
+              for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
+                   sc++, e=e->next )
+              {
+                if(e->status == EdgeInfo::edgeCurveIsBoundary &&
+                   e->curve->getNURBS()->getGlobalID() == select.selection(i,0) )
+                {
+                  edgeChosen[numberOfEdgeCurvesChosen]=e;
+                  numberOfEdgeCurvesChosen++;
+                }
+              }
+            }
+          }
+        }
+        
 
         if( numberOfEdgeCurvesChosen==1 )
-	{
-	  printf("When merging two edge curves the first edge curve is chosen as the master.\n");
+        {
+          printf("When merging two edge curves the first edge curve is chosen as the master.\n");
 
           EdgeInfo * eTwo=NULL;
           getAnotherEdge(eTwo, gi, "Choose another curve to merge to.", "cancel merge");
           if( eTwo )
-	  {
-	    edgeChosen[1]=eTwo;
-	    numberOfEdgeCurvesChosen++;
-	  }
-	}
+          {
+            edgeChosen[1]=eTwo;
+            numberOfEdgeCurvesChosen++;
+          }
+        }
 
         if( numberOfEdgeCurvesChosen==2 )
-	{
+        {
           EdgeInfo * e1=edgeChosen[0];
-	  EdgeInfo * e2=edgeChosen[1];
-	  
+          EdgeInfo * e2=edgeChosen[1];
+          
           printf("Attempt to merge edge curves %i and %i \n", e1->edgeNumber, e2->edgeNumber);
-	  
+          
           if( mergeEdgeCurves(*e1, *e2)==0 )
-	  {
-	    gi.outputString("Edge curves were merged");
-	    mergedCurvesAreValid=true;
-	    gi.outputToCommandFile(sPrintF(line,"merge two edge curves %i %i\n",e1->edgeNumber, e2->edgeNumber));
-	  }
-	  else
-	  {
-	    gi.outputString("Edge curves were not merged");
-	  }
-	  checkConsistency();
-	}
+          {
+            gi.outputString("Edge curves were merged");
+            mergedCurvesAreValid=true;
+            gi.outputToCommandFile(sPrintF(line,"merge two edge curves %i %i\n",e1->edgeNumber, e2->edgeNumber));
+          }
+          else
+          {
+            gi.outputString("Edge curves were not merged");
+          }
+          checkConsistency();
+        }
         else if( numberOfEdgeCurvesChosen>2 )
-	{
-	  printf("More than 2 edge curves were chosen. Try again.\n");
-	}
-	else
-	{
-	  printf("You should choose exactly two edge curves\n");
-	}
+        {
+          printf("More than 2 edge curves were chosen. Try again.\n");
+        }
+        else
+        {
+          printf("You should choose exactly two edge curves\n");
+        }
       }
       else if( pickingOption==pickToUnMergeEdgeCurves )
       {
 // Anders' version
-	EdgeInfo *e;
-	for (int i=0; i<select.nSelect; i++)
-	{
-	  for( int s=0; s<cs.numberOfSubSurfaces(); s++ )
-	  {
-	    for (int l=0; l<faceInfoArray[s].numberOfLoops; l++)
-	    {
-	      Loop & currentLoop = faceInfoArray[s].loop[l];
-	      int sc;
-	      for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-		   sc++, e=e->next )
-	      {
+        EdgeInfo *e;
+        for (int i=0; i<select.nSelect; i++)
+        {
+          for( int s=0; s<cs.numberOfSubSurfaces(); s++ )
+          {
+            for (int l=0; l<faceInfoArray[s].numberOfLoops; l++)
+            {
+              Loop & currentLoop = faceInfoArray[s].loop[l];
+              int sc;
+              for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
+                   sc++, e=e->next )
+              {
 // this should get all edges using this curve, whether they are master or slaves
-		if((e->status == EdgeInfo::edgeCurveIsSlave || e->status == EdgeInfo::edgeCurveIsMaster) &&
-		   e->curve->getNURBS()->getGlobalID() == select.selection(i,0) )
-		{
-		  unMergeEdge(*e);
-		  gi.outputToCommandFile(sPrintF(line,"un-merge edge curves %i\n",e->edgeNumber));
-		} // end if slave or master		
-	      }
-	    } // end for all loops
-	  } // end for all subsurfaces
-	} // end for all selections
-	checkConsistency();
+                if((e->status == EdgeInfo::edgeCurveIsSlave || e->status == EdgeInfo::edgeCurveIsMaster) &&
+                   e->curve->getNURBS()->getGlobalID() == select.selection(i,0) )
+                {
+                  unMergeEdge(*e);
+                  gi.outputToCommandFile(sPrintF(line,"un-merge edge curves %i\n",e->edgeNumber));
+                } // end if slave or master             
+              }
+            } // end for all loops
+          } // end for all subsurfaces
+        } // end for all selections
+        checkConsistency();
       }
       else if( pickingOption==pickToJoinEdgeCurves )
       {
-	EdgeInfo *e;
-	for (int i=0; i<select.nSelect; i++)
-	{
-	  for( int s=0; s<cs.numberOfSubSurfaces(); s++ )
-	  {
-	    for (int l=0; l<faceInfoArray[s].numberOfLoops; l++)
-	    {
-	      Loop & currentLoop = faceInfoArray[s].loop[l];
-	      int sc;
-	      for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-		   sc++, e=e->next )
-	      {
-		if(e->status != EdgeInfo::edgeCurveIsNotUsed &&
-		   e->curve->getNURBS()->getGlobalID() == select.selection(i,0) )
-		{
-		  if (e->status != EdgeInfo::edgeCurveIsBoundary)
-		  {
-		    gi.outputString("Only boundary curves can be joined!");
-		  }
-		  else
-		  {
-		    bool toEnd;
+        EdgeInfo *e;
+        for (int i=0; i<select.nSelect; i++)
+        {
+          for( int s=0; s<cs.numberOfSubSurfaces(); s++ )
+          {
+            for (int l=0; l<faceInfoArray[s].numberOfLoops; l++)
+            {
+              Loop & currentLoop = faceInfoArray[s].loop[l];
+              int sc;
+              for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
+                   sc++, e=e->next )
+              {
+                if(e->status != EdgeInfo::edgeCurveIsNotUsed &&
+                   e->curve->getNURBS()->getGlobalID() == select.selection(i,0) )
+                {
+                  if (e->status != EdgeInfo::edgeCurveIsBoundary)
+                  {
+                    gi.outputString("Only boundary curves can be joined!");
+                  }
+                  else
+                  {
+                    bool toEnd;
 // project the picking coordinate onto the NURB to see which end it is closest to
-		    realArray xp(1,3), rp(1,1);
-		    int q;
-		    for (q=0; q<3; q++)
-		      xp(0,q) = select.x[q];
-		    rp(0,0) = -1; // no guess
-		    e->curve->getNURBS()->inverseMap(xp,rp);
-		    printf("Parameter coordinate: %e\n", rp(0,0));
-		    if (rp(0,0) > 0.5)
-		      toEnd = true;
-		    else
-		      toEnd = false;
-		    joinEdgeCurves(*e, toEnd, debug);
-		    gi.outputToCommandFile(sPrintF(line,"join edge curve %i %i\n", e->edgeNumber, toEnd));
-		  }
-		}
-	      } // end for sc...
-	    }
-	  }
-	}
-	checkConsistency();
+                    realArray xp(1,3), rp(1,1);
+                    int q;
+                    for (q=0; q<3; q++)
+                      xp(0,q) = select.x[q];
+                    rp(0,0) = -1; // no guess
+                    e->curve->getNURBS()->inverseMap(xp,rp);
+                    printf("Parameter coordinate: %e\n", rp(0,0));
+                    if (rp(0,0) > 0.5)
+                      toEnd = true;
+                    else
+                      toEnd = false;
+                    joinEdgeCurves(*e, toEnd, debug);
+                    gi.outputToCommandFile(sPrintF(line,"join edge curve %i %i\n", e->edgeNumber, toEnd));
+                  }
+                }
+              } // end for sc...
+            }
+          }
+        }
+        checkConsistency();
       }
       else if( pickingOption==pickToSplitEdgeCurves )
       {
-	EdgeInfo *e;
-	for (int i=0; i<select.nSelect; i++)
-	{
-	  for( int s=0; s<cs.numberOfSubSurfaces(); s++ )
-	  {
-	    for (int l=0; l<faceInfoArray[s].numberOfLoops; l++)
-	    {
-	      Loop & currentLoop = faceInfoArray[s].loop[l];
-	      int sc;
-	      for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-		   sc++, e=e->next )
-	      {
-		if(e->status != EdgeInfo::edgeCurveIsNotUsed &&
-		   e->curve->getNURBS()->getGlobalID() == select.selection(i,0) )
-		{
-		  if (e->status != EdgeInfo::edgeCurveIsBoundary)
-		  {
-		    gi.outputString("Only boundary curves can be split!");
-		  }
-		  else
-		  {
+        EdgeInfo *e;
+        for (int i=0; i<select.nSelect; i++)
+        {
+          for( int s=0; s<cs.numberOfSubSurfaces(); s++ )
+          {
+            for (int l=0; l<faceInfoArray[s].numberOfLoops; l++)
+            {
+              Loop & currentLoop = faceInfoArray[s].loop[l];
+              int sc;
+              for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
+                   sc++, e=e->next )
+              {
+                if(e->status != EdgeInfo::edgeCurveIsNotUsed &&
+                   e->curve->getNURBS()->getGlobalID() == select.selection(i,0) )
+                {
+                  if (e->status != EdgeInfo::edgeCurveIsBoundary)
+                  {
+                    gi.outputString("Only boundary curves can be split!");
+                  }
+                  else
+                  {
 // project the picking coordinate onto the NURB to get the split point
-		    realArray xp(1,3), rp(1,1);
-		    int q;
-		    for (q=0; q<3; q++)
-		      xp(0,q) = select.x[q];
-		    rp(0,0) = -1; // no guess
-		    e->curve->getNURBS()->inverseMap(xp,rp);
-		    printf("Split parameter coordinate: %e\n", rp(0,0));
-		    int originalEdgeNumber = e->edgeNumber;
-		    splitEdge(&e, rp(0,0), debug, false); // don't merge automatically
-		    gi.outputToCommandFile(sPrintF( line, "split an edge %i %e\n", originalEdgeNumber, rp(0,0) ));
-		    break; // don't split anything else in this loop
-		  }
-		  
-		}
-	      } // end for sc...
-	    }
-	  }
-	}
-	checkConsistency();
+                    realArray xp(1,3), rp(1,1);
+                    int q;
+                    for (q=0; q<3; q++)
+                      xp(0,q) = select.x[q];
+                    rp(0,0) = -1; // no guess
+                    e->curve->getNURBS()->inverseMap(xp,rp);
+                    printf("Split parameter coordinate: %e\n", rp(0,0));
+                    int originalEdgeNumber = e->edgeNumber;
+                    splitEdge(&e, rp(0,0), debug, false); // don't merge automatically
+                    gi.outputToCommandFile(sPrintF( line, "split an edge %i %e\n", originalEdgeNumber, rp(0,0) ));
+                    break; // don't split anything else in this loop
+                  }
+                  
+                }
+              } // end for sc...
+            }
+          }
+        }
+        checkConsistency();
       }
       else if( pickingOption==pickToQueryElement )
       {
         // Print some info about the triangle that was picked
-	if( globalTriangulation==NULL )
-	{
-	  printf("Unable to pick an element if there is no global triangulation\n");
+        if( globalTriangulation==NULL )
+        {
+          printf("Unable to pick an element if there is no global triangulation\n");
           continue;
-	}
+        }
 
         printf("Picked point coordinates: %e, %e, %e\n", select.x[0], select.x[1], select.x[2]);
 
-	
-	UnstructuredMapping & global = *globalTriangulation;
+        
+        UnstructuredMapping & global = *globalTriangulation;
         const int numberOfElements= global.getNumberOfElements();
-	
-	const intArray & ef = global.getElementFaces();
-	const intArray & element = global.getElements();
-	const intArray & face = global.getFaces();
-	const intArray & faceElements = global.getFaceElements();
-	const intArray & tags = global.getTags();
+        
+        const intArray & ef = global.getElementFaces();
+        const intArray & element = global.getElements();
+        const intArray & face = global.getFaces();
+        const intArray & faceElements = global.getFaceElements();
+        const intArray & tags = global.getTags();
 
-	MappingProjectionParameters mpParams;
-	intArray & subSurfaceIndex = mpParams.getIntArray(MappingProjectionParameters::subSurfaceIndex);
-	intArray & elementIndex = mpParams.getIntArray(MappingProjectionParameters::elementIndex);
+        MappingProjectionParameters mpParams;
+        intArray & subSurfaceIndex = mpParams.getIntArray(MappingProjectionParameters::subSurfaceIndex);
+        intArray & elementIndex = mpParams.getIntArray(MappingProjectionParameters::elementIndex);
 
-	realArray x(1,3), x0(1,3);
-	Range Rx=rangeDimension;
+        realArray x(1,3), x0(1,3);
+        Range Rx=rangeDimension;
 
-	x(0,0)=select.x[0], x(0,1)=select.x[1], x(0,2)=select.x[2];
-	    
-	x0(0,Rx)=x(0,Rx);
-	subSurfaceIndex=-1;
-	elementIndex=-1;
-	  
-	global.project(x,mpParams);
+        x(0,0)=select.x[0], x(0,1)=select.x[1], x(0,2)=select.x[2];
+            
+        x0(0,Rx)=x(0,Rx);
+        subSurfaceIndex=-1;
+        elementIndex=-1;
+          
+        global.project(x,mpParams);
 
-	printf("Pt (%e,%e,%e) was projected to (%e,%e,%e) \n",x0(0,0),x0(0,1),x0(0,2), x(0,0),x(0,1),x(0,2));
-//	int e=subSurfaceIndex(0);
-	int e=elementIndex(0);
-	if( e>=0 && e<numberOfElements )
-	{
-	  int f0=ef(e,0), f1=ef(e,1), f2=ef(e,2);
-	  int ae0 = faceElements(f0,0)==e ? faceElements(f0,1) : faceElements(f0,0);
-	  int ae1 = faceElements(f1,0)==e ? faceElements(f1,1) : faceElements(f1,0);
-	  int ae2 = faceElements(f2,0)==e ? faceElements(f2,1) : faceElements(f2,0);
-	  printf("Element e=%i, nodes=(%i,%i,%i), faces=(%i,%i,%i) adj elements=(%i,%i,%i) sub-surface=%i \n",
-		 e,element(e,0),element(e,1),element(e,2),
-		 f0,f1,f2,ae0,ae1,ae2,tags(e));
-	  printf(" face f0=%i nodes=(%i,%i) e=(%i,%i), f1=%i nodes=(%i,%i) e=(%i,%i), f2=%i nodes=(%i,%i) e=(%i,%i)\n",
-		 f0,face(f0,0),face(f0,1),faceElements(f0,0),faceElements(f0,1),
-		 f1,face(f1,0),face(f1,1),faceElements(f1,0),faceElements(f1,1),
-		 f2,face(f2,0),face(f2,1),faceElements(f2,0),faceElements(f2,1));
-	}
-	else
-	{
-	  printf("Invalid element=%i\n",e);
-	}
+        printf("Pt (%e,%e,%e) was projected to (%e,%e,%e) \n",x0(0,0),x0(0,1),x0(0,2), x(0,0),x(0,1),x(0,2));
+//      int e=subSurfaceIndex(0);
+        int e=elementIndex(0);
+        if( e>=0 && e<numberOfElements )
+        {
+          int f0=ef(e,0), f1=ef(e,1), f2=ef(e,2);
+          int ae0 = faceElements(f0,0)==e ? faceElements(f0,1) : faceElements(f0,0);
+          int ae1 = faceElements(f1,0)==e ? faceElements(f1,1) : faceElements(f1,0);
+          int ae2 = faceElements(f2,0)==e ? faceElements(f2,1) : faceElements(f2,0);
+          printf("Element e=%i, nodes=(%i,%i,%i), faces=(%i,%i,%i) adj elements=(%i,%i,%i) sub-surface=%i \n",
+                 e,element(e,0),element(e,1),element(e,2),
+                 f0,f1,f2,ae0,ae1,ae2,tags(e));
+          printf(" face f0=%i nodes=(%i,%i) e=(%i,%i), f1=%i nodes=(%i,%i) e=(%i,%i), f2=%i nodes=(%i,%i) e=(%i,%i)\n",
+                 f0,face(f0,0),face(f0,1),faceElements(f0,0),faceElements(f0,1),
+                 f1,face(f1,0),face(f1,1),faceElements(f1,0),faceElements(f1,1),
+                 f2,face(f2,0),face(f2,1),faceElements(f2,0),faceElements(f2,1));
+        }
+        else
+        {
+          printf("Invalid element=%i\n",e);
+        }
       }
       
       
@@ -8379,11 +8379,11 @@ update()
 
       if( mergeTolerance<oldMergeTolerance )
       {
-	gi.outputString("You must build the edge curves again if you wish to use a smaller merge tolerance");
+        gi.outputString("You must build the edge curves again if you wish to use a smaller merge tolerance");
       }
       else
       {
-	gi.outputString("Choose `merge edge curves' to merge any un-merged edges");
+        gi.outputString("Choose `merge edge curves' to merge any un-merged edges");
       }
 
       mergedCurvesAreValid=false;
@@ -8395,12 +8395,12 @@ update()
       sScanF(answer(len,answer.length()),"%e",&newSplitToleranceFactor);
       if (newSplitToleranceFactor >= 1.)
       {
-	splitToleranceFactor = newSplitToleranceFactor;
-	printf("splitToleranceFactor=%g\n", splitToleranceFactor);
+        splitToleranceFactor = newSplitToleranceFactor;
+        printf("splitToleranceFactor=%g\n", splitToleranceFactor);
       }
       else
       {
-	gi.createMessageDialog("splitToleranceFactor >= 1", errorDialog);
+        gi.createMessageDialog("splitToleranceFactor >= 1", errorDialog);
       }
       dialog.setTextLabel("split tolerance factor",sPrintF(answer,"%g", splitToleranceFactor));
 
@@ -8421,7 +8421,7 @@ update()
         // recompute nodes on boundary curves so they will be plotted.
         gi.outputString("Determine new boundary nodes on edge curves...");
         buildEdgeCurveBoundaryNodes();
-	recomputeEdgeCurveBoundaryNodes=false;
+        recomputeEdgeCurveBoundaryNodes=false;
       }
       rePlot = false;
     }
@@ -8438,28 +8438,28 @@ update()
       int newNumber=0;
       if (sScanF(answer(len,answer.length()),"%i",&newNumber) == 1)
       {
-	int howBraveAreYouGrasshopper = 3; // kkc 030122
-	if (newNumber >= howBraveAreYouGrasshopper && newNumber != minNumberOfPointsOnAnEdge)
-	{
-	  minNumberOfPointsOnAnEdge=newNumber;
+        int howBraveAreYouGrasshopper = 3; // kkc 030122
+        if (newNumber >= howBraveAreYouGrasshopper && newNumber != minNumberOfPointsOnAnEdge)
+        {
+          minNumberOfPointsOnAnEdge=newNumber;
 
-	  triangulationIsValid=false;
-	  recomputeEdgeCurveBoundaryNodes=true;
+          triangulationIsValid=false;
+          recomputeEdgeCurveBoundaryNodes=true;
 
-	    // recompute nodes on boundary curves so they will be plotted.
-	  gi.outputString("Determine new boundary nodes on edge curves...");
-	  buildEdgeCurveBoundaryNodes();
-	  recomputeEdgeCurveBoundaryNodes=false;
+            // recompute nodes on boundary curves so they will be plotted.
+          gi.outputString("Determine new boundary nodes on edge curves...");
+          buildEdgeCurveBoundaryNodes();
+          recomputeEdgeCurveBoundaryNodes=false;
 
-	  printf("minNumberOfPointsOnAnEdge=%i\n",minNumberOfPointsOnAnEdge);
-	}
-	else if (newNumber < howBraveAreYouGrasshopper)
-	{
-	  aString msg;
-	  sPrintF(msg,"minNumberOfPointsOnAnEdge >= %i",howBraveAreYouGrasshopper);
-	  gi.createMessageDialog(msg, errorDialog);
-	}
-	dialog.setTextLabel("minNumberOfPointsOnAnEdge",sPrintF(answer,"%i",minNumberOfPointsOnAnEdge));
+          printf("minNumberOfPointsOnAnEdge=%i\n",minNumberOfPointsOnAnEdge);
+        }
+        else if (newNumber < howBraveAreYouGrasshopper)
+        {
+          aString msg;
+          sPrintF(msg,"minNumberOfPointsOnAnEdge >= %i",howBraveAreYouGrasshopper);
+          gi.createMessageDialog(msg, errorDialog);
+        }
+        dialog.setTextLabel("minNumberOfPointsOnAnEdge",sPrintF(answer,"%i",minNumberOfPointsOnAnEdge));
       }
       rePlot = false;
     }
@@ -8487,17 +8487,17 @@ update()
       sScanF(answer(len,answer.length()),"%e",&maxDist);
       if (maxDist <= 0.)
       {
-	maxDist = oldMaxDist;
-	gi.createMessageDialog("The max distance between the midpoint of the edges and\n"
-			       "the surface must be positive\n", errorDialog);
+        maxDist = oldMaxDist;
+        gi.createMessageDialog("The max distance between the midpoint of the edges and\n"
+                               "the surface must be positive\n", errorDialog);
       }
       dialog.setTextLabel("max edge distance",sPrintF(answer,"%g",maxDist));
-	
+        
       printf("max edge distance=%g\n",maxDist);
 
       if( maxDist<oldMaxDist )
       {
-	gi.outputString("You must re-build the triangulation if you wish to use a smaller edge distance");
+        gi.outputString("You must re-build the triangulation if you wish to use a smaller edge distance");
         // dialog.setSensitive(true,DialogData::pushButtonWidget,buildEdgeCurvesPushButton);
       }
       rePlot = false;
@@ -8510,12 +8510,12 @@ update()
       intArray & elementFaces  = (intArray &) globalTriangulation->getElementFaces();
       for( int e=0; e<numberOfElements; e++ )
       {
-	int temp=elements(e,1);
-	elements(e,1)=elements(e,2);
-	elements(e,2)=temp;
-	temp=elementFaces(e,0);
-	elementFaces(e,0)=elementFaces(e,2);
-	elementFaces(e,2)=temp;
+        int temp=elements(e,1);
+        elements(e,1)=elements(e,2);
+        elements(e,2)=temp;
+        temp=elementFaces(e,0);
+        elementFaces(e,0)=elementFaces(e,2);
+        elementFaces(e,2)=temp;
       }
       globalTriangulation->eraseUnstructuredMapping(gi);
       globalTriangulation->checkConnectivity();
@@ -8537,19 +8537,19 @@ update()
       mapInfo.graphXInterface=&gi;
       if( globalTriangulation!=NULL )
       {
-	gi.erase();
-	globalTriangulation->update(mapInfo);
+        gi.erase();
+        globalTriangulation->update(mapInfo);
       }
       else
       {
-	for( s=0; s<cs.numberOfSubSurfaces(); s++ )
-	{
-	  if( triangulationSurface[s]!=NULL )
-	  {
-	    gi.erase();
-	    triangulationSurface[s]->update(mapInfo);
-	  }
-	}
+        for( s=0; s<cs.numberOfSubSurfaces(); s++ )
+        {
+          if( triangulationSurface[s]!=NULL )
+          {
+            gi.erase();
+            triangulationSurface[s]->update(mapInfo);
+          }
+        }
       }
       
     }
@@ -8558,10 +8558,10 @@ update()
       gi.erase();
       for( s=0; s<cs.numberOfSubSurfaces(); s++ )
       {
-	if( triangulationSurface[s]!=NULL )
-	{
-	  PlotIt::plot(gi, *triangulationSurface[s],params);
-	}
+        if( triangulationSurface[s]!=NULL )
+        {
+          PlotIt::plot(gi, *triangulationSurface[s],params);
+        }
     
       }
       gi.pause();
@@ -8573,14 +8573,14 @@ update()
     else if( answer == "help topology" )
     {
       gi.createMessageDialog(
-	"   Build the topology (connectivity) of a CompositeSurface\n"
-	"   -------------------------------------------------------\n"
-	"The object is to merge edge curves and build a global triangulation.\n"
-	"\t build edge curve: \tBuild a 3D representation of all trimming curve or part of a trimming curve\n"
-	"\t merge edge curves: \tMatch edge curves with matching edges on adjacent surfaces\n"
-	"User parameters:\n"
-	"\t merge tolerance: expected tolerance in matching adjacent surfaces\n"
-	"\t deltaS \t\t\t: spacing between points on edges of the global triangulation\n", informationDialog);
+        "   Build the topology (connectivity) of a CompositeSurface\n"
+        "   -------------------------------------------------------\n"
+        "The object is to merge edge curves and build a global triangulation.\n"
+        "\t build edge curve: \tBuild a 3D representation of all trimming curve or part of a trimming curve\n"
+        "\t merge edge curves: \tMatch edge curves with matching edges on adjacent surfaces\n"
+        "User parameters:\n"
+        "\t merge tolerance: expected tolerance in matching adjacent surfaces\n"
+        "\t deltaS \t\t\t: spacing between points on edges of the global triangulation\n", informationDialog);
       rePlot = false;
     }
     else if (select.active && select.nSelect==0)
@@ -8601,7 +8601,7 @@ update()
 
       gi.erase();
       if( plotReferenceSurface )
-	PlotIt::plot(gi,cs, refSurPar); // **** plot the surface ****
+        PlotIt::plot(gi,cs, refSurPar); // **** plot the surface ****
 
       // use at least the current bounds for plotting.
       gi.setGlobalBound(xBound);   
@@ -8612,138 +8612,138 @@ update()
 
       if( plotEdgeCurves && faceInfoArray) // can't plot them unless they are there!
       {
-	real oldCurveLineWidth;
-	params.get(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
-	params.set(GraphicsParameters::curveLineWidth,(real)2.);
+        real oldCurveLineWidth;
+        params.get(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
+        params.set(GraphicsParameters::curveLineWidth,(real)2.);
 
-	params.set(GI_POINT_COLOUR,"black");
-	params.set(GI_PLOT_GRID_POINTS_ON_CURVES,false);
-	params.set(GI_PLOT_END_POINTS_ON_CURVES,true); // mark end points of edge curves.
+        params.set(GI_POINT_COLOUR,"black");
+        params.set(GI_PLOT_GRID_POINTS_ON_CURVES,false);
+        params.set(GI_PLOT_END_POINTS_ON_CURVES,true); // mark end points of edge curves.
 
-	for(s=0; s<cs.numberOfSubSurfaces(); s++ )
-	{
-	  EdgeInfo *currentEdge;
-	  
-	  int i, sc;
-	  for (i=0; i<faceInfoArray[s].numberOfLoops; i++)
-	  {
-	    Loop & currentLoop = faceInfoArray[s].loop[i];
-	    
-	    for (sc = 0, currentEdge = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-		 sc++, currentEdge=currentEdge->next )
-	    {
+        for(s=0; s<cs.numberOfSubSurfaces(); s++ )
+        {
+          EdgeInfo *currentEdge;
+          
+          int i, sc;
+          for (i=0; i<faceInfoArray[s].numberOfLoops; i++)
+          {
+            Loop & currentLoop = faceInfoArray[s].loop[i];
+            
+            for (sc = 0, currentEdge = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
+                 sc++, currentEdge=currentEdge->next )
+            {
 // is there already a list?
-	      if (currentEdge->dList > 0 && glIsList(currentEdge->dList))
-	      {
+              if (currentEdge->dList > 0 && glIsList(currentEdge->dList))
+              {
 // plot boundary edges if plotUnMergedCurves==true and plot merged edges (manifold & non-manifold) if
 // plotMergedCurves == true
-		if( (currentEdge->curve->isBoundary() && plotUnMergedCurves) ||
-		    ((currentEdge->curve->isManifold() || currentEdge->curve->isNonManifold()) && plotMergedCurves))
-		  gi.setPlotDL(currentEdge->dList, true);
-		else
+                if( (currentEdge->curve->isBoundary() && plotUnMergedCurves) ||
+                    ((currentEdge->curve->isManifold() || currentEdge->curve->isNonManifold()) && plotMergedCurves))
+                  gi.setPlotDL(currentEdge->dList, true);
+                else
 // all other curves are turned off
-		  gi.setPlotDL(currentEdge->dList, false);
-	      }
-	      else if( (currentEdge->curve->isBoundary() && plotUnMergedCurves) ||
-		       ((currentEdge->curve->isManifold() || 
-			 currentEdge->curve->isNonManifold()) && plotMergedCurves))
-	      { // get a new list which is unlit, plotted, hideable and interactive
-		currentEdge->dList = gi.generateNewDisplayList(false, true, true, true);  
-		glNewList(currentEdge->dList, GL_COMPILE);
+                  gi.setPlotDL(currentEdge->dList, false);
+              }
+              else if( (currentEdge->curve->isBoundary() && plotUnMergedCurves) ||
+                       ((currentEdge->curve->isManifold() || 
+                         currentEdge->curve->isNonManifold()) && plotMergedCurves))
+              { // get a new list which is unlit, plotted, hideable and interactive
+                currentEdge->dList = gi.generateNewDisplayList(false, true, true, true);  
+                glNewList(currentEdge->dList, GL_COMPILE);
 // colour coding of curve segments
-		if (currentEdge->curve->isBoundary())
-		  params.set(GI_MAPPING_COLOUR,"blue"); // one surface
-		else if (currentEdge->curve->isManifold())
-		  params.set(GI_MAPPING_COLOUR,"green"); // two surfaces meet
-		else if (currentEdge->curve->isNonManifold())
-		  params.set(GI_MAPPING_COLOUR,"red"); // > two surfaces meet
-		else // should never be used
-		  params.set(GI_MAPPING_COLOUR,"brown"); // removed or undefined 
+                if (currentEdge->curve->isBoundary())
+                  params.set(GI_MAPPING_COLOUR,"blue"); // one surface
+                else if (currentEdge->curve->isManifold())
+                  params.set(GI_MAPPING_COLOUR,"green"); // two surfaces meet
+                else if (currentEdge->curve->isNonManifold())
+                  params.set(GI_MAPPING_COLOUR,"red"); // > two surfaces meet
+                else // should never be used
+                  params.set(GI_MAPPING_COLOUR,"brown"); // removed or undefined 
 
-		PlotIt::plot(gi,*(currentEdge->curve->getNURBS()), params, currentEdge->dList, false);
-		glEndList();
-	      }
-	    } // end for sc...
-	    
-	  } // end for all surfaces
-	} // end for s...
-	params.set(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
+                PlotIt::plot(gi,*(currentEdge->curve->getNURBS()), params, currentEdge->dList, false);
+                glEndList();
+              }
+            } // end for sc...
+            
+          } // end for all surfaces
+        } // end for s...
+        params.set(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
       } // end if plotEdgeCurves
-	
+        
     
       if( plotTriangulatedSurface && triangulationIsValid )
       {
-	params.set(GI_MAPPING_COLOUR,"LIGHTSTEELBLUE"); // "green"); 
+        params.set(GI_MAPPING_COLOUR,"LIGHTSTEELBLUE"); // "green"); 
 
-	if( globalTriangulation!=NULL && globalTriangulation->getNumberOfNodes()>0 )
-	{
-	  globalTriangulation->setColour("LIGHTSTEELBLUE"); 
-	  PlotIt::plot( gi, *globalTriangulation, params );
-	}
-	else
-	{
-	  for( s=0; s<cs.numberOfSubSurfaces(); s++ )
-	  {
-	    if( triangulationSurface[s]!=NULL )
-	    {
-	      PlotIt::plot(gi, *triangulationSurface[s], params);
-	    }
+        if( globalTriangulation!=NULL && globalTriangulation->getNumberOfNodes()>0 )
+        {
+          globalTriangulation->setColour("LIGHTSTEELBLUE"); 
+          PlotIt::plot( gi, *globalTriangulation, params );
+        }
+        else
+        {
+          for( s=0; s<cs.numberOfSubSurfaces(); s++ )
+          {
+            if( triangulationSurface[s]!=NULL )
+            {
+              PlotIt::plot(gi, *triangulationSurface[s], params);
+            }
     
-	  }
-	}
+          }
+        }
       }
       if( plotBadElements && badElementsComputed && globalTriangulation!=NULL )
       {
-	UnstructuredMapping & global = *globalTriangulation;
+        UnstructuredMapping & global = *globalTriangulation;
 
-	int numberOfBadElements=badElements.getLength(0);
-	printf("plot %i bad elements\n",numberOfBadElements);
+        int numberOfBadElements=badElements.getLength(0);
+        printf("plot %i bad elements\n",numberOfBadElements);
       
-	if( numberOfBadElements>0 )
-	{
-	  int numberOfFaces=numberOfBadElements*3;
+        if( numberOfBadElements>0 )
+        {
+          int numberOfFaces=numberOfBadElements*3;
       
-	  const int numberOfElements = global.getNumberOfElements();
-	  const int numberOfNodes = global.getNumberOfNodes();
+          const int numberOfElements = global.getNumberOfElements();
+          const int numberOfNodes = global.getNumberOfNodes();
       
-	  const realArray & node = global.getNodes();
-	  const intArray & element = global.getElements();
+          const realArray & node = global.getNodes();
+          const intArray & element = global.getElements();
 
-	  realArray line(numberOfFaces,3,2);
-	  int j=0;
-	  for( int i=0; i<numberOfBadElements; i++ )
-	  {
-	    int e=badElements(i);
-	    assert( e>=0 && e<numberOfElements );
-	
-	    int n0=element(e,0), n1=element(e,1), n2=element(e,2);
-	
-	    for( int n=0; n<3; n++ )
-	    {
-	      int n0=element(e,n);
-	      int n1=element(e,(n+1)%3);
-	  
-	      line(j,0,0)=node(n0,0);
-	      line(j,1,0)=node(n0,1);
-	      line(j,2,0)=node(n0,2);
-	      line(j,0,1)=node(n1,0);
-	      line(j,1,1)=node(n1,1);
-	      line(j,2,1)=node(n1,2);
-	      j++;
-	  
-	    }
-	  }
+          realArray line(numberOfFaces,3,2);
+          int j=0;
+          for( int i=0; i<numberOfBadElements; i++ )
+          {
+            int e=badElements(i);
+            assert( e>=0 && e<numberOfElements );
+        
+            int n0=element(e,0), n1=element(e,1), n2=element(e,2);
+        
+            for( int n=0; n<3; n++ )
+            {
+              int n0=element(e,n);
+              int n1=element(e,(n+1)%3);
+          
+              line(j,0,0)=node(n0,0);
+              line(j,1,0)=node(n0,1);
+              line(j,2,0)=node(n0,2);
+              line(j,0,1)=node(n1,0);
+              line(j,1,1)=node(n1,1);
+              line(j,2,1)=node(n1,2);
+              j++;
+          
+            }
+          }
 
-	  // add line colour, line width
-	  params.set(GI_LINE_COLOUR,"red");
-	  real oldCurveLineWidth;
-	  params.get(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
-	  params.set(GraphicsParameters::curveLineWidth,4.);
+          // add line colour, line width
+          params.set(GI_LINE_COLOUR,"red");
+          real oldCurveLineWidth;
+          params.get(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
+          params.set(GraphicsParameters::curveLineWidth,4.);
 
-	  gi.plotLines(line,params);
+          gi.plotLines(line,params);
 
-	  params.set(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
-	}
+          params.set(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
+        }
       
       }
     } // end if rePlot
@@ -8774,7 +8774,7 @@ edgeFromNumber(int n)
   if( !faceInfoArray )
   {
     printF("CompositeTopology::edgeFromNumber:ERROR: There are no edges defined yet. "
-	   "You should build the errors first\n");
+           "You should build the errors first\n");
     OV_ABORT("error");
   }
 
@@ -8786,10 +8786,10 @@ edgeFromNumber(int n)
       Loop & currentLoop = faceInfoArray[s].loop[l];
       int sc;
       for (sc = 0, e = currentLoop.firstEdge; sc<currentLoop.numberOfEdges(); 
-	   sc++, e=e->next )
+           sc++, e=e->next )
       {
-	if(e->edgeNumber == n)
-	  return e;
+        if(e->edgeNumber == n)
+          return e;
       }
     }
   }
@@ -8802,7 +8802,7 @@ unMergeEdge(EdgeInfo & e)
 //  printf("Un-merging edge %i\n", e->edgeNumber);
   e.status = EdgeInfo::edgeCurveIsBoundary;
   e.eraseEdge();
-		  
+                  
   if (e.slave)
   {
     e.slave->master = NULL;
@@ -8813,7 +8813,7 @@ unMergeEdge(EdgeInfo & e)
     e.master->slave = NULL;
     e.master = NULL;
   }
-		  
+                  
   e.curve->usage--;
   e.initialCurve->usage++;
   e.curve = e.initialCurve;
@@ -8913,11 +8913,11 @@ computeTopology(GenericGraphicsInterface & gi, int debug)
       gi.outputString("Merge edge curves...");
       int rt = splitAndMergeEdgeCurves( gi,debug );
       if( rt!=0 ) // *wdh* 030825
-	{
-	  printf("ERROR return from splitAndMergeEdgeCurves\n");
-	  gi.stopReadingCommandFile();
-	  return false;
-	}
+        {
+          printf("ERROR return from splitAndMergeEdgeCurves\n");
+          gi.stopReadingCommandFile();
+          return false;
+        }
       
       mergedCurvesAreValid=true;
     }
@@ -8948,15 +8948,15 @@ computeTopology(GenericGraphicsInterface & gi, int debug)
       globalTriangulation->checkConnectivity(true,&badElements);
       
       if( badElements.getLength(0)==0 )
-	{
-	  gi.outputString("There were no bad elements");
-	}
-	else
-	  {
-	    aString buf;
-	    gi.outputString( sPrintF(buf,"There were %i bad elements in the triangulation\n",
-				     badElements.getLength(0)) );
-	  }
+        {
+          gi.outputString("There were no bad elements");
+        }
+        else
+          {
+            aString buf;
+            gi.outputString( sPrintF(buf,"There were %i bad elements in the triangulation\n",
+                                     badElements.getLength(0)) );
+          }
       triangulationIsValid=true;
     }
 

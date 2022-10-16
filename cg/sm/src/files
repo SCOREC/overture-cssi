@@ -54,7 +54,7 @@ src/assignParabolicInitialConditions.C : src/assignParabolicInitialConditions.bC
 src/assignSpecialInitialConditions.C : src/assignSpecialInitialConditions.bC forcing.h translationAndRotationSolution.h sphereEigenmode.h; $(BPP) -quiet -clean $<
 src/assignHempInitialConditions.C : src/assignHempInitialConditions.bC; $(BPP) -quiet -clean $<
 
-src/userDefinedKnownSolution.C : src/userDefinedKnownSolution.bC; $(BPP) -quiet -clean $<
+src/userDefinedKnownSolution.C : src/userDefinedKnownSolution.bC src/incompressible/ismDiskTractionRoots.h src/incompressible/ismDiskDisplacementRoots.h; $(BPP) -quiet -clean $<
 
 src/assignBoundaryConditions.C : src/assignBoundaryConditions.bC; $(BPP) -quiet -clean $<
 src/assignBoundaryConditionsSOS.C : src/assignBoundaryConditionsSOS.bC boundaryMacros.h forcing.h translationAndRotationSolution.h; $(BPP) -quiet -clean $<

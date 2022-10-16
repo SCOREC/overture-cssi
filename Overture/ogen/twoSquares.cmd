@@ -15,9 +15,10 @@
 $xa=-1.; $xb=1.; $ya=-1.; $yb=1.; 
 $order=2; $factor=1; $interp="i"; # default values
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids";
+$per=0; 
 * 
 * get command line arguments
-GetOptions( "order=i"=>\$order,"factor=i"=> \$factor,"interp=s"=> \$interp);
+GetOptions( "order=i"=>\$order,"factor=i"=> \$factor,"interp=s"=> \$interp,"per=i"=>\$per);
 * 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=3; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
@@ -87,7 +88,6 @@ generate an overlapping grid
     interpolation type
       $interpType
   exit
-
   compute overlap
 exit
 save a grid (compressed)

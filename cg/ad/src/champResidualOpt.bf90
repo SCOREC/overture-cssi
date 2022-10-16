@@ -294,6 +294,9 @@ end if
 ! ========================================================================================
 #beginMacro evalChampConditions(OPTION,DIM,ORDER,GRIDTYPE)
 
+
+   ****** NOT USED ANYMORE **********
+
   if( debug.gt.3 .and. t.lt.2*dt )then
     write(*,'("NAME: eval champ OPTION for dim=DIM order=ORDER grid=GRIDTYPE... t=",e10.2)') t
   end if

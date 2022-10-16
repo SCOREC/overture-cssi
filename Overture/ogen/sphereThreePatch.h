@@ -41,7 +41,7 @@ Sphere
   share
     $shareFlags
   mappingName
-    $baseSphereName = $sphereName . "Base";
+    $baseSphereName = $sphereName . "Base"; # "
     $baseSphereName
 # open graphics
 exit
@@ -55,7 +55,7 @@ reparameterize
     # sa=2 --> patches just match (not including ghost points)
     # fix me: $sa should depend on $phiStart, $phiEnd
     # $sa = .55 + (2*$order-2)*$ds*.5; $sb=$sa; 
-    $sa = .65 + (2*$order-2)*$ds*.5; $sb=$sa; 
+    $sa = .65 + (2*($order-2)+2)*$ds*.5; $sb=$sa; 
     specify sa,sb
       $sa $sb
   exit

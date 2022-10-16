@@ -8,6 +8,7 @@
 #   $ts : forward Euler, implicit, adams PC
 #   $kappa, 
 #   $ktc    : thermal conductivity
+#   $advx, $advy, $advz : constant advection coefficients
 #   $T0     : initial condition given to the temperature
 #   $ic     : specify initial condition commands
 #   $bc     : specify boundary condition commands
@@ -23,6 +24,7 @@
 #   $pulsevxPulse,$vyPulse,$vzPulse : velocity of the TZ pulse 
 #   $pulseAmplitude $pulseExponent $pulsePower : TZ pulse parameters
 #   useChamp : 1=use CHAMP interface conditions
+#   projectT : 1=project interface temperature
 #   $assignKnown : 1 = assign dirichlet BCs using known solution
 #   $useNewTimeSteppingStartup : =1 : This option should properly assign past tine values at startup
 # 
@@ -36,6 +38,7 @@ if( $assignKnown eq "" ){ $assignKnown=0; }
 if( $tz eq "" ){ $tz="turn off twilight zone"; }
 #
 if( $dtMax eq "" ){ $dtMax=1.e20; }
+if( $orderInTime eq "" ){ $orderInTime=2; }
 if( $bdfOrder eq "" ){ $bdfOrder=1; }
 if( $useNewTimeStep eq "" ){ $useNewTimeStep=0; }
 if( $fx eq "" ){ $fx=1.; }
@@ -59,7 +62,12 @@ if( $pulseAmplitude eq "" ){ $pulseAmplitude=1.; }
 if( $pulseExponent eq "" ){ $pulseExponent=40.; }
 if( $pulsePower eq "" ){ $pulsePower=1; }
 if( $useChamp eq "" ){ $useChamp=0; }
+if( $projectT eq "" ){ $projectT=0; }
 if( $useNewTimeSteppingStartup eq "" ){ $useNewTimeSteppingStartup=1; }  # added Dec 10, 2021
+if( $advx eq "" ){ $advx=0.; }
+if( $advy eq "" ){ $advy=0.; }
+if( $advz eq "" ){ $advz=0.; }
+if( $implicitAdvection eq "" ){ $implicitAdvection=0; }
 #
 # ------- start new domain ----------
 #  Cgad solid
@@ -75,18 +83,25 @@ setup $domainName
   implicit factor $implicitFactor 
   if( $useNewStep eq 1 ){ $adcmd ="use new advanceSteps versions"; }else{ $adcmd="#"; }
   $adcmd
-  BDF order $bdfOrder  
+  BDF order $bdfOrder 
+  if( $orderInTime eq 4 ){ $cmd="fourth order accurate in time"; }else{ $cmd="#"; }
+  $cmd  
 # This option should properly assign past tine values at startup *wdh* Dec 10, 2021
 use new time-stepping startup $useNewTimeSteppingStartup    
 # 
   pde parameters
     kappa $kappa
     thermal conductivity $ktc 
-    a 0. 
-    b 0. 
-    c 0. 
+    # values for constant advection 
+    a $advx
+    b $advy
+    c $advz
+    treat advection implicitly $implicitAdvection
     assign known solution at boundaries $assignKnown
   done
+  #
+  project interface temperature $projectT
+  #
   $setAxi = $axisymmetric ? "turn on axisymmetric flow" : "*";
   $setAxi
   $setAxi="";
@@ -114,7 +129,7 @@ use new time-stepping startup $useNewTimeSteppingStartup
   done
   #
   boundary conditions...
-    # turn on CHAMP CHT interface codnitions: 
+    # turn on CHAMP CHT interface conditons: 
     apply champ interface conditions $useChamp
   done
 #
@@ -131,6 +146,7 @@ use new time-stepping startup $useNewTimeSteppingStartup
   if( $tz eq "turn off twilight zone" && $ic eq "" ){ $ic="uniform flow\n" . "T=$T0"; }elsif( $ic eq "" ){ $ic="#";}
     $ic
   continue
+#
 #****  Here we optionally turn on AMR *******
   $amr
   order of AMR interpolation

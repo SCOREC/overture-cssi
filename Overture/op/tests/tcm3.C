@@ -308,6 +308,14 @@ main(int argc, char *argv[])
 {
   Overture::start(argc,argv);  // initialize Overture
 
+  const int np= max(1,Communication_Manager::numberOfProcessors());
+
+  // Find initial memory use
+  Real mem=Overture::getCurrentMemoryUsage();
+  Real maxMem=ParallelUtility::getMaxValue(mem);  // max over all processors
+  Real minMem=ParallelUtility::getMinValue(mem);  // min over all processors
+  Real totalMemInit=ParallelUtility::getSum(mem);  // min over all processors
+
    // This macro will initialize the PETSc solver if OVERTURE_USE_PETSC is defined.
   INIT_PETSC_SOLVER();
 
@@ -763,7 +771,7 @@ main(int argc, char *argv[])
         else if( iterativeSolverType=="hypre" )
         {
           // NOTE: hypre is called through PETSc
-          // NOTE: Hypre AMG is a PC type within a Kyrlov solver such as gmres or bcgs, 
+          // NOTE: Hypre AMG is a PC type within a Krlov solver such as gmres or bcgs, 
           solver.set(OgesParameters::THEparallelSolverMethod,OgesParameters::gmres);
           solver.set(OgesParameters::THEparallelPreconditioner,OgesParameters::hyprePreconditioner);
           solver.set(OgesParameters::THEpreconditioner,OgesParameters::hyprePreconditioner);
@@ -830,7 +838,7 @@ main(int argc, char *argv[])
         // solve again
         if( true )
         {
-          // u=0.;
+          u=0.;
           time0=CPU();
           solver.solve( u,f );   // solve the equations
           time= ParallelUtility::getMaxValue(CPU()-time0);
@@ -848,13 +856,28 @@ main(int argc, char *argv[])
         }
       
       
-        // ---- check the errors in the solution ---
-
-        const int numberOfGridsPoints=max(1,cg.numberOfGridPoints());
+        // memory usage: 
+        const int numberOfGridPoints=max(1,cg.numberOfGridPoints());
         const real solverSize=solver.sizeOf();
         printF(".....solver: size = %8.2e (bytes), grid-pts=%i, reals/grid-pt=%5.2f \n",
-               solverSize,numberOfGridsPoints,solverSize/(numberOfGridsPoints*sizeof(real)));
+               solverSize,numberOfGridPoints,solverSize/(numberOfGridPoints*sizeof(real)));
 
+        mem=Overture::getCurrentMemoryUsage();
+        maxMem=ParallelUtility::getMaxValue(mem);  // max over all processors
+        minMem=ParallelUtility::getMinValue(mem);  // min over all processors
+        real totalMem=ParallelUtility::getSum(mem);  // min over all processors
+        real maxMemRecorded=ParallelUtility::getMaxValue(Overture::getMaximumMemoryUsage());
+        real aveMem=totalMem/np;
+        real realsPerGridPoint = (totalMem*1024.*1024.)/numberOfGridPoints/sizeof(real);
+        printF("\n==== memory/proc: [min=%g,ave=%g,max=%g](Mb), max-recorded=%g (Mb), total=%g (Mb), %5.1f reals/(grid-pt)\n",
+                      minMem,aveMem,maxMem,maxMemRecorded,totalMem,realsPerGridPoint);
+
+        // Remove memory for Overture libraries etc.
+        totalMem -= totalMemInit;
+        realsPerGridPoint = (totalMem*1024.*1024.)/numberOfGridPoints/sizeof(real);
+        printF(" ==== memInit=%g M, total - memInit for libs) = %g (Mb), %5.1f reals/(grid-pt)\n",totalMemInit,totalMem,realsPerGridPoint);
+
+        // ---- check the errors in the solution ---
         // u.display("Here is the solution to Laplacian(u)=f");
         computeTheError( 0,cg,u,err,exact, error );
         worstError=max(worstError,error);

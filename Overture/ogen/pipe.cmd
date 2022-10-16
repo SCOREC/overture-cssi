@@ -2,7 +2,7 @@
 #   Grid for a cylindrical pipe
 #
 # usage: ogen [noplot] pipe -factor=<num> -order=[2/4/6/8] -interp=[e/i]  -rgd=[fixed|var] -name= ...
-#                           -sa=<f> -sb=<f> -radius=<f> -axial=[x|y|z] -per=[0|1]
+#                           -sa=<f> -sb=<f> -radius=<f> -axial=[x|y|z] -per=[0|1] -numGhost=<i>
 # 
 #   [sa,sb] : bounds on the axial length of the pipe
 #   radius  : radius of the pipe
@@ -50,15 +50,16 @@
 $prefix="pipe"; 
 $axial="x"; # axial axis
 $sa=0.; $sb=2.; $radius=1.; $rgd="var"; $per=0; 
-$stretchFactor=2; # make BL grid spacing this many times finer
+$stretchFactor=0; #  2; # make BL grid spacing this many times finer
 # 
 $order=2; $factor=1; $interp="i"; $name="";
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids";
+$numGhost=-1;  # if this value is set, then use this number of ghost points
 # 
 # get command line arguments
 GetOptions("order=i"=>\$order,"factor=i"=>\$factor,"interp=s"=>\$interp,"sa=f"=>\$sa,"sb=f"=> \$sb,"radius=f"=>\$radius,\
            "name=s"=>\$name,"stretchFactor=f"=> \$stretchFactor,"rgd=s"=>\$rgd,"axial=s"=>\$axial,"prefix=s"=>\$prefix,\
-           "perr=i"=>\$per );
+           "perr=i"=>\$per,"numGhost=i"=>\$numGhost );
 # 
 sub min{ local($n,$m)=@_; if( $n<$m ){ return $n; }else{ return $m; } }
 # 
@@ -68,6 +69,8 @@ elsif( $order eq 8 ){ $orderOfAccuracy="eighth order"; $ng=6; }
 if( $interp eq "e" ){ $interpType = "explicit for all grids"; }
 # 
 $suffix = ".order$order"; 
+if( $numGhost ne -1 ){ $ng = $numGhost; } # overide number of ghost
+if( $numGhost ne -1 ){ $suffix .= ".ng$numGhost"; } 
 if( $axial ne "x" ){ $prefix .= $axial; }
 if( $rgd eq "fixed" ){ $prefix = $prefix . "Fixed"; }
 if( $name eq "" ){ $name = $prefix . "$interp$factor" . $suffix . ".hdf"; }
@@ -126,16 +129,19 @@ if( $per == 0 ){ $bc12 = "1 2"; }else{ $bc12="-1 -1"; }
       $nTheta = int( 2.*$pi*($ra+$rb)/2./$ds + 1.5 );  $nr = int( 2*$width/$ds + 1.5 ); 
       $nTheta $nx  $nr 
   mappingName
-     unstretched-cylinder
+     if( $stretchFactor==0 ){ $cylName = "cylinder"; }else{ $cylName="unstretched-cylinder"; }
+     $cylName
+     # unstretched-cylinder
 # pause
   exit
 #
 # cluster grid lines
 # 
   stretch coordinates
+    # SOMETHING IS WRONG HERE --> testExact.C for ism
     # STRT:multigrid levels 0
     Stretch r3:exp to linear
-    $dsBL = $ds/$stretchFactor;
+    if( $stretchFactor>0. ){ $dsBL = $ds/$stretchFactor; }else{ $dsBL=2.; }
     STP:stretch r3 expl: position 1.
     STP:stretch r3 expl: min dx, max dx $dsBL $ds
     # OLD: 2013/09/30: 
@@ -143,7 +149,9 @@ if( $per == 0 ){ $bc12 = "1 2"; }else{ $bc12="-1 -1"; }
     #   $minGridSpacing = $ds/4.; 
     # STP:stretch r3 itanh: position and min dx 1 $minGridSpacing
     # stretch grid
-    STRT:name cylinder
+    if( $stretchFactor==0 ){ $cylName = "stretched-cylinder"; }else{ $cylName="cylinder"; }
+    STRT:name $cylName
+    # STRT:name cylinder
     exit
 # 
 #

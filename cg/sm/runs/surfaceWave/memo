@@ -1,5 +1,155 @@
+
+
 ******************************************
-***** Tues Oct 26, 2021
+***** Wed June 29, 2022
+
+**FIXED** SCALING OF DISK SOLUTION
+
+DISK PLOTS -- SURFACE WAVE
+
+
+---------------- DISK ----------------
+cgsm -noplot surfaceWave.cmd -g=sicFixede32.order2 -ts=modifiedEquationTimeStepping -tf=1 -tp=.1 -cfl=0.9 -known=disk -icase=2 -n=51 -m=1 -bc1=t -bc2=d -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -show=diskTractionMode51Num1G32.show -go=go > diskTractionMode51Num1G32.out
+
+
+cgsm -noplot surfaceWave.cmd -g=sicFixede16.order2 -ts=modifiedEquationTimeStepping -tf=1 -tp=.1 -cfl=0.9 -known=disk -icase=2 -n=51 -m=1 -bc1=t -bc2=d -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -go=og
+
+******************************************
+***** Sat June 25, 2022
+
+REDO DISK PLOTS FOR PAPER 
+
+---------------- DISK ----------------
+
++++++ TRACTION WAS MODE n=2 m=3 +++++
+cgsm -noplot surfaceWave.cmd -g=sicFixede16.order2 -ts=modifiedEquationTimeStepping -tf=1 -tp=.1 -cfl=0.9 -known=disk -icase=2 -n=2 -m=3 -bc1=t -bc2=d -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -show=diskTractionG16.show -go=go
+
+
+cgsm -noplot surfaceWave.cmd -g=sicFixede8.order2 -ts=modifiedEquationTimeStepping -tf=1 -tp=.1 -cfl=0.9 -known=disk -icase=2 -n=2 -m=3 -bc1=t -bc2=d -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -show=diskTractionG8.show -go=og
+
+XXX
+cgsm -noplot surfaceWave.cmd -g=sicFixede4.order2 -ts=modifiedEquationTimeStepping -tf=1 -tp=.1 -cfl=0.9 -known=disk -icase=2 -n=2 -m=3 -bc1=t -bc2=d -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -show=diskTractionG4.show -go=go > diskG4.out
+
++++++ DISPLACEMENT MODE -n=2 -m=1
+Disk - displacement 
+cgsm -noplot surfaceWave.cmd -g=sicFixede16.order2 -ts=modifiedEquationTimeStepping -tf=1 -tp=.1 -cfl=0.9 -known=disk -icase=1 -bc1=d -bc2=d -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -show=diskDisplacementG16.show -go=go >! diskDisplacementG16.out
+
+cgsm -noplot surfaceWave.cmd -g=sicFixede8.order2 -ts=modifiedEquationTimeStepping -tf=1 -tp=.1 -cfl=0.9 -known=disk -icase=1 -bc1=d -bc2=d -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -show=diskDisplacementG8.show -go=go >! diskDisplacementG8.out
+
+cgsm -noplot surfaceWave.cmd -g=sicFixede4.order2 -ts=modifiedEquationTimeStepping -tf=1 -tp=.1 -cfl=0.9 -known=disk -icase=1 -bc1=d -bc2=d -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -show=diskDisplacementG4.show -go=go >! diskDisplacementG4.out
+
+
+
+
+
+REDO ANNULUS PLOTS FOR ISM PAPER
+
+-------------- ANNULUS ----------
+
+bc=DD : mode=(1,1)
+cgsm -noplot surfaceWave -g=annulus8.order2.hdf -known=annulus -icase=1 -n=1 =m=1 -bc1=d -bc2=d -ts=pc2 -tf=1 -tp=.1 -upwindSOS=1 -cdv=.5 -show=annulusMeBcDDG8.show -go=go > annulusMeBcDDG8.out
+
+
+bc=TD :
+cgsm -noplot surfaceWave -g=annulus8.order2.hdf -known=annulus -icase=2 -n=1 =m=1 -bc1=t -bc2=d -ts=pc2 -tf=1 -tp=.1 -upwindSOS=1 -cdv=.5 -show=annulusMeBcTDG8.show -go=go > annulusMeBcTDG8.out
+
+bc=TT traction-traction : mode=(1,1)
+cgsm -noplot surfaceWave -g=annulus8.order2.hdf -known=annulus -icase=3 -m=2 -n=2 -bc1=t -bc2=t -tf=1 -tp=.1 -upwindSOS=1 -cdv=.5 -show=annulusTTm2n2G8.show -go=go
+
+
+
+
+
+******************************************
+***** Tues June 21, 2022
+
+
+MAKE PLOTS FOR ISM PAPER
+
+TD32
+cgsm -noplot surfaceWave -g=stripTractionTractionGrid8np.order2.hdf -known=strip -caseName=rectangleTD -mx=3 -my=2 -bc1=t -bc2=d -tf=1 -tp=.1 -upwindSOS=1 -cdv=.5 -show=strip -show=strip2dMeTDMx3My2.show -go=go >! strip2dMeTDMx3My2.out
+
+TT13
+cgsm -noplot surfaceWave -g=stripTractionTractionGrid8np.order2.hdf -known=strip -caseName=rectangleTT -mx=1 -my=3 -bc1=t -bc2=t -tf=1 -tp=.1 -upwindSOS=1 -cdv=.5 -show=strip -show=strip2dMeTTMx1My3.show -go=go >! strip2dMeTTMx1My3.out
+
+DD23:
+cgsm -noplot surfaceWave -g=stripTractionTractionGrid8np.order2.hdf -known=strip -caseName=rectangleDD -mx=2 -my=3 -bc1=d -bc2=d -tf=1 -tp=.1 -upwindSOS=1 -cdv=.5 -show=strip -show=strip2dMeDDMx2My3.show -go=go >! strip2dMeDDMx2My3.out
+
+
+
+
+TEST NEW 2D periodic strip ILE solutions
+
+>>> FIXED userDefinedKnownSolution for PC2 scheme
+
+TRY PC2 SCHEME **TROUBLE** --> FIXED 
+cgsm -noplot surfaceWave -g=stripTractionTractionGrid8np.order2.hdf -known=strip -caseName=rectangleTT -mx=2 -my=1 -bc1=t -bc2=t -tf=1 -tp=.1 -upwindSOS=1 -cdv=.5 -ts=pc2 -go=og
+
+
+++++ BC=TD
+cgsm -noplot surfaceWave -g=stripTractionTractionGrid8np.order2.hdf -known=strip -caseName=rectangleTD -mx=2 -my=1 -bc1=t -bc2=d -tf=1 -tp=.1 -upwindSOS=1 -cdv=.5 -go=og
+-->t=5.0000e-01 dt=7.7e-03 maxNorm errors:[3.9250e-04,4.3639e-04,1.0333e-02,], maxNorm(u):[7.45e-01,6.01e-01,5.05e+00,]
+>>> Cgsm: ILE22u: t=5.00e-01, steps=65, dt=7.7e-03 TS=ME |div(U)|=3.49e-03, |curl(U)|=7.74e+00, |div(U)|/|grad(U)|=6.90e-04 |grad(U)|=5.05e+00, cpu=1.90e+01(s)
+
+++++ BC=DD
+cgsm -noplot surfaceWave -g=stripTractionTractionGrid8np.order2.hdf -known=strip -caseName=rectangleDD -mx=2 -my=1 -bc1=d -bc2=d -tf=1 -tp=.1 -upwindSOS=1 -cdv=.5 -go=og
+-->t=5.0000e-01 dt=7.7e-03 maxNorm errors:[1.2205e-04,1.1648e-04,8.4620e-04,], maxNorm(u):[8.39e-02,1.03e-01,1.00e+00,]
+>>> Cgsm: ILE22u: t=5.00e-01, steps=65, dt=7.7e-03 TS=ME |div(U)|=6.45e-04, |curl(U)|=1.26e+00, |div(U)|/|grad(U)|=6.46e-04 |grad(U)|=9.98e-01, cpu=1.94e+01(s)
+
+++++ BC=TT
+cgsm -noplot surfaceWave -g=stripTractionTractionGrid8np.order2.hdf -known=strip -caseName=rectangleTT -mx=2 -my=1 -bc1=t -bc2=t -tf=1 -tp=.1 -upwindSOS=1 -cdv=.5 -go=og
+
+
+ +++++ SmRectangleExactSolution:: evalSolution caseName=rectangleTT, (mx,my,mz)=(2,1,1) t=5.000e-01 ++++++
+-->t=5.0000e-01 dt=7.7e-03 maxNorm errors:[1.5338e-04,1.3415e-04,2.1753e-03,], maxNorm(u):[1.98e-01,1.10e-01,1.00e+00,]
+>>> Cgsm: ILE22u: t=5.00e-01, steps=65, dt=7.7e-03 TS=ME |div(U)|=3.51e-04, |curl(U)|=2.23e+00, |div(U)|/|grad(U)|=2.82e-04 |grad(U)|=1.24e+00, cpu=2.80e+01(s)
+
+
+******************************************
+***** Sat Sept 11, 2021
+
+
+MAKE PLOTS FOR ISM PAPER
+
+-------------- ANNULUS ----------
+
+
+
+bc=DD : mode=(1,1)
+cgsm -noplot surfaceWave -g=annulus8.order2.hdf -known=annulus -icase=1 -n=1 =m=1 -bc1=d -bc2=d -ts=pc2 -tf=1 -tp=.1 -upwindSOS=1 -cdv=.5 -show=annulusMeBcDDG8.show -go=go > annulusMeBcDDG8.out
+cgsm surfaceWave -g=annulus8.order2.hdf -known=annulus -icase=1 -n=1 =m=1 -bc1=d -bc2=d -ts=pc2 -tf=1 -tp=.1 -upwindSOS=1 -cdv=.5 -go=og
+
+
+bc=TD :
+cgsm -noplot surfaceWave -g=annulus8.order2.hdf -known=annulus -icase=2 -n=1 =m=1 -bc1=t -bc2=d -ts=pc2 -tf=1 -tp=.1 -upwindSOS=1 -cdv=.5 -show=annulusMeBcTDG8.show -go=go > annulusMeBcTDG8.out
+
+traction-traction : mode=(1,1)
+cgsm -noplot surfaceWave -g=annulus8.order2.hdf -known=annulus -icase=3 -m=1 -n=1 -bc1=t -bc2=t -tf=1 -tp=.1 -upwindSOS=1 -cdv=.5 -show=annulusTTG8.show -go=go
+
+cgsm -noplot surfaceWave -g=annulus8.order2.hdf -known=annulus -icase=3 -bc1=t -bc2=t -tf=1 -tp=.1 -upwindSOS=1 -cdv=.5  -go=og
+
+
+******************************************
+***** Fri May 27, 2021
+
+Runs for plots
+MAKE PLOTS -- periodic strip
+
+cgsm -noplot surfaceWave.cmd -g=stripTractionTractionGrid8np.order2.hdf -ts=me -tf=1 -tp=.1 -cfl=0.9 -known=strip -icase=5 -bc1=t -bc2=d -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -show=stripMeBcTDG8.show -go=go >! stripMeBcTDG8.out
+
+
+cgsm -noplot surfaceWave.cmd -g=case1Grid8np.order2 -ts=me -tf=1 -tp=.1 -cfl=0.9 -known=strip -icase=1 -bc1=t -bc2=d -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -show=stripMeBcTDG8.show -go=go
+
+
+New periodic strip solution : traction-displacement
+
+*NEW* icase=5 -- looks ok
+cgsm -noplot surfaceWave -g=stripTractionTractionGrid4np.order4.ng3.hdf -icase=5 -ts=pc4 -bc1=t -bc2=d -tf=1 -tp=.1 -upwindSOS=1 -cdv=.5 -orderInTime=4 -cfl=.9 -go=og
+
+
+
+-->t=5.0000e-01 dt=4.5e-03 maxNorm errors:[2.0591e-05,6.2764e-06,1.1344e-04,], maxNorm(u):[5.10e-01,2.28e-01,2.87e+00,]
+>>> Cgsm: ILE44u: t=5.00e-01, steps=110, dt=4.5e-03 TS=PC4 |div(U)|=2.45e-05, |curl(U)|=5.43e+00, |div(U)|/|grad(U)|=7.64e-06 |grad(U)|=3.20e+00, cpu=1.81e+01(s)
 
 
 ******************************************
@@ -415,7 +565,7 @@ SEG FAULT AT end:
 cgsm -noplot surfaceWave.cmd -g=case1Grid2np.order2 -ts=pc2 -tf=1 -tp=1 -cfl=0.9 -known=strip -icase=1 -bc1=t -bc2=d -cdv=.25 -upwindSOS=1 -useCurlCurl=1 -go=go
 
 ******************************************
-***** Sat Sept 11 9, 2021
+***** Sat Sept 11, 2021
 
 
 START ON PLOTS FOR PAPER

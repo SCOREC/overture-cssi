@@ -1,6 +1,7 @@
 // fill in the matrix coefficients
 //
-printF("========== Running Sijia's Mapped script ==========\n");
+if( debug & 8 )
+  printF("========== Running Sijia's Mapped script ==========\n");
 // Real coefB[3][3]={0,0,0,0,0,0,0,0,0}; // initialize
 // #define coefA(i,j) coefB[i+1][j+1]
 
@@ -61,10 +62,12 @@ else{
 }
 */
 
-printF("    side1=%i, side2=%i, axis1=%i, axis2=%i, is=%i \n", side,side2,axis1,axis2,is );
-printF("    theta=%g, beta=%g, Sl=%g, SlI=%g, hI=%g \n", theta,beta,Sl,SlI,hI);
-printF("    drl=%g, dsl=%g, drr=%g, dsr=%g \n", drl, dsl,drr,dsr);
-
+if( debug & 8 )
+{
+	printF("    side1=%i, side2=%i, axis1=%i, axis2=%i, is=%i \n", side,side2,axis1,axis2,is );
+	printF("    theta=%g, beta=%g, Sl=%g, SlI=%g, hI=%g \n", theta,beta,Sl,SlI,hI);
+	printF("    drl=%g, dsl=%g, drr=%g, dsr=%g \n", drl, dsl,drr,dsr);
+}
 
 a00  = b1RI * SlI;
  
@@ -84,9 +87,10 @@ a21  = 0;
  
 a22  = 0;
  
- 
-printF("    a00=%g, a01=%g, a02=%g, a10=%g, a11=%g, a12=%g, a20=%g \n", a00,a01,a02,a10,a11,a12,a20);
-
+if( debug & 8 )
+{
+  printF("    a00=%g, a01=%g, a02=%g, a10=%g, a11=%g, a12=%g, a20=%g \n", a00,a01,a02,a10,a11,a12,a20);
+}
 
 if (axis==0){
 	coefA( 0, 0) = a00 - 2.0/SQR(drl) *a20 -2.0/SQR(dsl)*a02;

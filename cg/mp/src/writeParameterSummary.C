@@ -41,6 +41,7 @@ writeParameterSummary( FILE * file )
           " interface communication mode= %s,\n"
           " project interface = %s. (interfaceProjectionOption=%i, interface-ghost=%s)\n"
           " project initial conditions = %i\n"
+          " project interface temperature = %i\n"
           ,
           parameters.dbase.get<real >("cfl"),
           parameters.dbase.get<real >("tFinal"),
@@ -64,7 +65,8 @@ writeParameterSummary( FILE * file )
           (interfaceProjectionGhostOption==0 ? "extrapolate" : 
            interfaceProjectionGhostOption==1 ? "compatibility" : 
            interfaceProjectionGhostOption==2 ? "exact" : "domain BC" ),
-           parameters.dbase.get<bool>("projectMultiDomainInitialConditions")
+           parameters.dbase.get<bool>("projectMultiDomainInitialConditions"),
+           parameters.dbase.get<bool>("projectInterfaceTemperature")
            );
 
 

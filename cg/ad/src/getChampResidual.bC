@@ -202,7 +202,7 @@ void champResidualOpt( const int & nd,
 #endMacro
 
 // ================================================================================================
-/// \brief Evaluate the resdiual in the CHAMP interface conditions
+/// \brief Evaluate the residual in the CHAMP interface conditions
 /// \return the maximum residual
 // ================================================================================================
 real
@@ -280,7 +280,7 @@ getChampResidual( realCompositeGridFunction & u, Parameters & parameters, Real t
 
         // const Real dxs = dx[axis]; 
 
-        // const Real pl    = champParameters(0,side,axis,grid);    // optimized Scwartz Parameter for side 1
+        const Real pL    = champParameters(0,side,axis,grid);    // optimized Scwartz Parameter for side 1
         // const Real pr    = champParameters(1,side,axis,grid);    // optimized Scwartz Parameter for side 2
         const Real theta = champParameters(2,side,axis,grid);    // K1/K2
         const Real beta  = champParameters(3,side,axis,grid);    // D1/D2    
@@ -334,8 +334,9 @@ getChampResidual( realCompositeGridFunction & u, Parameters & parameters, Real t
         // // const real a0 = targetInfo.a[0], a1= targetInfo.a[1]; 
 
  
-        // CHAMP CONDITIONS
-        // Evaluate   S*uR(dx) + n.grad( uR(dx) ) 
+        // ------- CHAMP CONDITIONS ------
+        // Evaluate RHS to the champ interface condition.
+        //   interfaceData.u  = S*uR(dx) + n.grad( uR(dx) )
  
         targetInfo.a[0] =  Sl;  // optimized Schwartz parameter for this domain ("left")
         targetInfo.a[1] = -1.;  // flip sign of normal
@@ -345,7 +346,7 @@ getChampResidual( realCompositeGridFunction & u, Parameters & parameters, Real t
         int interfaceDataOptions = Parameters::heatFluxInterfaceData;
         bool saveTimeHistory=true;
 
-        if( debug & 8 )
+        if( debug & 4 )
         {
           printF("\n");
           printF(" >>>> getChampResidual:: REQUEST INTERFACE DATA for (grid,side,axis)=(%d,%d,%d) t=%9.3e. target: (a0,a1)=(%g,%g)\n",
@@ -370,7 +371,7 @@ getChampResidual( realCompositeGridFunction & u, Parameters & parameters, Real t
         evalResidualOpt();
 
         if( debug & 1 )
-          printF("+++++ getChampResidual for (grid,side,axis)=(%d,%d,%d) maxRes=%8.2e, l2Res=%8.2e\n",grid,side,axis,maxRes,l2Res);
+          printF("+++++ getChampResidual for (grid,side,axis)=(%d,%d,%d) maxRes=%8.2e, l2Res=%8.2e (res. in [N+sL*D]TL = [D_x + sL]TR ), pL=%.4g, SL=%.4g \n",grid,side,axis,maxRes,l2Res,pL,Sl);
 
         maxInterfaceResidual = max(maxInterfaceResidual,maxRes);
 

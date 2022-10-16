@@ -1,15 +1,9 @@
 #include "AdParameters.h"
-// #include "FlowSolutions.h"
 #include "GenericGraphicsInterface.h"
-// #include "FluidPiston.h"
-// #include "PistonMotion.h"
 #include "ParallelUtility.h"
-// #include "DeformingBodyMotion.h"
-// #include "RigidBodyMotion.h"
-// #include "BeamModel.h"
-// #include "BoundaryLayerProfile.h"
-// #include "TimeFunction.h"
+#include "Interface.h"  
 
+#include "AdExactSolutions.h"
 
 // WARNING: Overture type "real" conflicts with complex "real" 
 // Use Overture type "Real" Instead
@@ -18,7 +12,7 @@
 // typedef ::real Real;
 // typedef ::real Real;    
 
-#define ForBoundary(side,axis)   for( int axis=0; axis<numberOfDimensions; axis++ ) \
+#define ForBoundary(side,axis)   for( int axis=0; axis<mg.numberOfDimensions(); axis++ ) \
                                  for( int side=0; side<=1; side++ )
 
 // Forward declaration: 
@@ -385,7 +379,10 @@ getUserDefinedKnownSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua
   else if( userKnownSolution=="concentricCylinders" )
   {
     // ---------- CONCENTRIC CYLINDERS (ANNULII) EIGENFUNCTIONS : TWO DOMAIN  CHT ----------------
-    // See CgAd user-guide for derivation of the solution
+    // See Cgmp reference guide for derivation of the solution
+
+    // --- we could avoid building the vertex array on Cartesian grids ---
+    GET_VERTEX_ARRAY(x);
 
     const int n      = ipar[0];
     const int m      = ipar[1];
@@ -395,30 +392,65 @@ getUserDefinedKnownSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua
     const Real a    = rpar[1];
     const Real b    = rpar[2]; 
     const Real c    = rpar[3]; 
-    const Real D1a  = rpar[4];
+    const Real D1   = rpar[4];
     const Real K1   = rpar[5]; 
-    const Real D2a  = rpar[6]; 
+    const Real D2   = rpar[6]; 
     const Real K2   = rpar[7]; 
      
     // Solution is u = amp * [ c1J*Jn(lam*r) + c1Y*Yn(lam*r) ] cos(m*theta) exp(-Dl*lam^2 t),   a < r < b\n");
     //             u = amp * [ c2J*Jn(lam*r) + c2Y*Yn(lam*r) ] cos(m*theta) exp(-Dr*lam^2 t),   b < r < c\n"); 
 
-    // This next include file was created by ad/codes/concentricAnnulusEigenvalues.maple
-    // This solution assumes radii : ra=.5, rb=1, rc=1.5 (set in the next file)
-    #include "../codes/concentricAnnulusEigenvaluesHeatEquationDirichlet.h"   
-    const Real s = concentricAnnulusEigs[n][m];  // m'th zero of the detreminant condition)
-    assert( m<numRoot && n<numBesselOrder );
+
+    Real s;  // eigenvalue 
+    Real D1a = D1, D2a=D2; // for checking value in the include files below
+
+    const Real eps = REAL_EPSILON*100.;
+    if( fabs(D1-.1)<eps && fabs(D2-.05)<eps && fabs(K2/K1-2.)<eps )
+    {
+      // --- Case 1 ----
+
+      // This solution assumes radii : ra=.5, rb=1, rc=1.5 (set in the next file)
+      // const Real ra=5.00000000000000e-01, rb=1.00000000000000e+00, rc=1.50000000000000e+00, Kr=2.00000000000000e+00; 
+      // const Real D1=1.00000000000000e-01, D2=5.00000000000000e-02; 
+      // This next include file was created by ad/codes/concentricAnnulusEigenvalues.maple
+      #include "../codes/concentricAnnulusEigenvaluesHeatEquationDirichletCase1.h"  
+
+      if( ra!=a || rb!=b || rc!=c || Kr!=K2/K1 || D1!=D1a || D2!=D2a )
+      {
+        printF("userDefinedKnownSolution:ERROR: concentricCylinders requires a=%g, b=%g, c=%g, K2/K1=%g, D1=%g, D2=%g\n",ra,rb,rc,Kr,D1,D2);
+        printF(" a=%g, b=%g, c=%g, K1=%g, K2=%g => K2/K1=%g D1=%g, D2=%g\n",a,b,c,K1,K2,K2/K1,D1a,D2a);
+        OV_ABORT("ERROR");
+      }  
+
+      assert( m<numRoot && n<numBesselOrder );
+      s = concentricAnnulusEigs[n][m];  // m'th zero of the determinant condition)
+    }
+    else
+    {
+      // --- Case 2 ----
+
+      // const Real ra=5.00000000000000e-01, rb=1.00000000000000e+00, rc=1.50000000000000e+00, Kr=5.00000000000000e-01; 
+      // const Real D1=9.00000000000000e-01, D2=8.00000000000000e-01; 
+
+      #include "../codes/concentricAnnulusEigenvaluesHeatEquationDirichletCase2.h" 
+
+      if( ra!=a || rb!=b || rc!=c || Kr!=K2/K1 || D1!=D1a || D2!=D2a )
+      {
+        printF("userDefinedKnownSolution:ERROR: concentricCylinders requires a=%g, b=%g, c=%g, K2/K1=%g, D1=%g, D2=%g\n",ra,rb,rc,Kr,D1,D2);
+        printF(" a=%g, b=%g, c=%g, K1=%g, K2=%g => K2/K1=%g D1=%g, D2=%g\n",a,b,c,K1,K2,K2/K1,D1a,D2a);
+        OV_ABORT("ERROR");
+      } 
+
+      assert( m<numRoot && n<numBesselOrder );
+      s = concentricAnnulusEigs[n][m];  // m'th zero of the determinant condition)
+
+    }
 
     //  c1J = Jn(lam*b) - (Jn(lam*c)/(Yn(lam*c)*Yn(lam*b) 
     //  c2J = Jn(lam*b) - (Jn(lam*a)/(Yn(lam*a)*Yn(lam*b) 
     //  c1Y = -Jn(lamba*a)/Yn(lambda*a) * c1J 
     //  c2Y = -Jn(lamba*c)/Yn(lambda*c) * c2J
-    if( ra!=a || rb!=b || rc!=c || Kr!=K2/K1 || D1!=D1a || D2!=D2a )
-    {
-      printF("userDefinedKnownSolution:ERROR: concentricCylinders requires a=%g, b=%g, c=%g, K2/K1=%g, D1=%g, D2=%g\n",ra,rb,rc,Kr,D1,D2);
-      printF(" a=%g, b=%g, c=%g, K1=%g, K2=%g => K2/K1=%g D1=%g, D2=%g\n",a,b,c,K1,K2,K2/K1,D1a,D2a);
-      OV_ABORT("ERROR");
-    }
+
     const Real alpha1=1./sqrt(D1), alpha2=1./sqrt(D2);
     const Real lambda1=alpha1*s, lambda2=alpha2*s;
 
@@ -437,6 +469,7 @@ getUserDefinedKnownSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua
     if( true && t==0. )
     {
       // CHECK THE SOLUTION : jump conditions
+      printF("concentric cylinders: option=%d (0=inner, 1=outer): gridName=[%s]\n",option,(const char*)mg.getName());
 
       Real r = b; 
       Real z1 = lambda1*r; 
@@ -460,8 +493,34 @@ getUserDefinedKnownSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua
 
       Real jumpFlux = K1*u1r - K2*u2r; 
 
-      if( false )
+      if( true )
         printF(" concentricCylinders:ExactSolution:  **CHECK JUMPS** [T]=%8.2e, [K T_r]=%8.2e\n", abs(u1-u2), abs(jumpFlux));
+
+      // --- check that grids have the correct inner and outer radii ---
+      int axisI=0;  // radial direction is along this axis
+      Index Ib1,Ib2,Ib3;
+      for( int sideI=0; sideI<=1; sideI++ )
+      {
+        getBoundaryIndex(mg.gridIndexRange(),sideI,axisI,Ib1,Ib2,Ib3);
+        RealArray rad(Ib1,Ib2,Ib3);
+        rad = sqrt( SQR(x(Ib1,Ib2,Ib3,0)) + SQR(x(Ib1,Ib2,Ib3,1)) );
+
+        Real re = option==0 ? ( sideI==0 ? a : b ) : ( sideI==0 ? b : c); // expected radius 
+        Real err = max(fabs(rad-re))/re; 
+        if( err > REAL_EPSILON*100. )
+        {
+          Real radEst = max(rad);
+          printF("conCyls:ERROR: grid=%d (%s): radius on side %d is not =%g (est. rad=%g)\n",grid,(const char*)mg.getName(),sideI,re,radEst);
+          printF(" min(rad)=%9.3e, max(rad)=%9.3e\n",min(rad),max(rad));
+          printF(" max(fabs(rad-re))/re = %9.3e\n",err);
+          OV_ABORT("error: fix grids, domain order may be wrong.");
+        }
+        else
+        {
+          printF("conCyls: grid=%d (%s): radius on side %d is =%g (as expected)\n",grid,(const char*)mg.getName(),sideI,re);
+
+        }
+      }
 
       // OV_ABORT("stop here for now");
 
@@ -497,8 +556,7 @@ getUserDefinedKnownSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua
     if( t<=3.*dt )
       printF("CGAD:UDKS: concentric cylinders: n=%d, m=%d, option=%d (0=inner,1=outer), a=%g, b=%g, c=%g,  t=%9.3e\n",n,m,option,a,b,c, t );
 
-    // --- we could avoid building the vertex array on Cartesian grids ---
-    GET_VERTEX_ARRAY(x);
+  
 
 
     // ---- evaluate the solution on the grid ----
@@ -513,12 +571,25 @@ getUserDefinedKnownSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua
         const Real r = sqrt( xd*xd + yd*yd );
 
         ua(i1,i2,i3,nn) = ( cJ*jn(n,lambda*r) + cY*yn(n,lambda*r) )*cos(n*theta)*expt;
+
       }
     }
 
 
   }
 
+  else if( userKnownSolution=="doubleAnnulus"   ||
+           userKnownSolution=="doubleRectangle"    )
+  {
+    if( userKnownSolution=="doubleAnnulus" )
+      printF("Call AdExactSolutions to evaluate the double annulus solution at t=%9.3e\n",t);
+    else
+      printF("Call AdExactSolutions to evaluate the double rectangle solution at t=%9.3e\n",t);
+
+    AdExactSolutions & adExactSolution = dbase.get<AdExactSolutions>("adExactSolution");
+    adExactSolution.evalSolution( t, cg, grid, ua, I1,I2,I3, numberOfTimeDerivatives );
+
+  }
   else if( userKnownSolution=="planeInterfaceMode" )
   {
     // -- Plane interface mode for the Heat equation on two adjacent squares---\n"
@@ -542,38 +613,13 @@ getUserDefinedKnownSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua
     const Real & Kl  = rpar[7];
     const Real & Dr  = rpar[8];
     const Real & Kr  = rpar[9];
-
-
-
-    // // ***** FIX ME: For the two domain problem we need to relate [c1,c2] on the right side to the left side ******
-    // const int & multiDomainProblem = dbase.get<int>("multiDomainProblem"); 
-    // if( multiDomainProblem )
-    // {
-    //   // ---- Determine the coefficients in the multi-domain exact solution -----
-    //   bool interfaceFound=false; 
-    //   const IntegerArray & interfaceType = dbase.get<IntegerArray>("interfaceType");
-    //   ForBoundary(side,axis)
-    //   {
-    //     if( interfaceType(side,axis,grid)!=Parameters::noInterface )
-    //     {
-    //       printF("---UDKS: planeInterfaceMode: Interface found at (side,axis,grid)=(%d,%d,%d)\n",side,axis,grid);
-    //       interfaceFound=true;
-    //       // Get parameters for the opposite side:
-    //       Parameters & pars = getInterfaceParameters( grid, side, axis, *this );
-    //       const Real & Kl =      dbase.get<Real>("thermalConductivity");
-    //       const Real & Kr = pars.dbase.get<Real>("thermalConductivity");
-    //       printF(" Kl=%g, Kr=%g\n",Kl,Kr);
-    //       // OV_ABORT("---UDKS: planeInterfaceMode: stop here for now");
-
-    //     }
-    //   }
-    //   printF(" +++ UDKS: planeInterfaceMode: **WARNING** NO INTERFACE FOUND at t=%9.3e ! ++++++\n",t);
-
-    // }
-    // else if( false )
-    // {
-    //   OV_ABORT("---UDKS: planeInterfaceMode: ERROR: multiDomainProblem==0 !!");
-    // }
+    // Advection velocities: 
+    const Real & uL  = rpar[10];
+    const Real & vL  = rpar[11];
+    const Real & wL  = rpar[12];
+    const Real & uR  = rpar[13];
+    const Real & vR  = rpar[14];
+    const Real & wR  = rpar[15];       
 
     // --- we could avoid building the vertex array on Cartesian grids ---
     GET_VERTEX_ARRAY(x);
@@ -582,14 +628,28 @@ getUserDefinedKnownSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua
     assert( numberOfComponents==1 );  // do this case for now
 
     const Real kypi = ky*Pi; 
-    std::complex<Real> I(0.0,1.0);   // sqrt(-1)
-    std::complex<Real> ss(sr,si);   // complex "s"
-    std::complex<Real> alpha; 
+    std::complex<Real> I(0.0,1.0);             // sqrt(-1)
+    std::complex<Real> ss(sr,si);              // complex "s"
+    std::complex<Real> alphap, alpham;         // alpha+ and alpha- for the appropriate side
     std::complex<Real> expst = amp*exp(ss*t);
 
 
     const int & multiDomainProblem = dbase.get<int>("multiDomainProblem"); 
     std::complex<Real> c1a, c2a;
+
+    // Define velocities scaled by diffusion coeff
+    const Real uDL = uL/Dl, vDL = vL/Dl;
+    const Real uDR = uR/Dr, vDR = vR/Dr;
+
+    // ****  see formula in CgmpRef/tex/planeInterface.tex ******
+
+    std::complex<Real> alphaLp = .5*uDL + sqrt( SQR(.5*uDL) + ss/Dl + kypi*kypi + I*kypi*vDL ); 
+    std::complex<Real> alphaLm = .5*uDL - sqrt( SQR(.5*uDL) + ss/Dl + kypi*kypi + I*kypi*vDL ); 
+
+    std::complex<Real> alphaRp = .5*uDR + sqrt( SQR(.5*uDR) + ss/Dr + kypi*kypi + I*kypi*vDR ); 
+    std::complex<Real> alphaRm = .5*uDR - sqrt( SQR(.5*uDR) + ss/Dr + kypi*kypi + I*kypi*vDR ); 
+
+    // std::complex<Real> alphaR = sqrt( ss/Dr + kypi*kypi );     
 
     if( option==0 )
     {
@@ -599,8 +659,10 @@ getUserDefinedKnownSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua
         printF(">>>> CGAD:UDKS: Plane interface mode:ERROR: left domain: [Dl,Kl]=[%g,%g] != [kappa,thermalConductivity]=[%g,%g] \n",Dl,Kl,kappa[0],thermalConductivity);
         OV_ABORT("ERROR");
       }
-      alpha = sqrt( ss/Dl + kypi*kypi ); 
+      // alpha = sqrt( ss/Dl + kypi*kypi ); 
       c1a = c1; c2a= c2;
+      alphap = alphaLp;
+      alpham = alphaLm;
     }
     else if( option==1 )
     {
@@ -612,29 +674,78 @@ getUserDefinedKnownSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua
         printF(">>>> CGAD:UDKS: Plane interface mode:ERROR: right domain: [Dr,Kr]=[%g,%g] != [kappa,thermalConductivity]=[%g,%g] \n",Dr,Kr,kappa[0],thermalConductivity);        
         OV_ABORT("ERROR");
       }
-      // see formula in CgadUserGuide.
+      // ****  see formula in CgmpRef/tex/planeInterface.tex ******
+
       // we need c1a and c2a to satisfy:
       //    c1a + c2a = c1 + c2
       //  Kr*alphaR(c1a-c2a) = Kl*alphaL( c1-c2) 
-      std::complex<Real> alphaL = sqrt( ss/Dl + kypi*kypi ); 
-      std::complex<Real> alphaR = sqrt( ss/Dr + kypi*kypi ); 
-      std::complex<Real> beta   = (Kl*alphaL)/(Kr*alphaR); 
+      // std::complex<Real> alphaL = sqrt( ss/Dl + kypi*kypi ); 
+      // std::complex<Real> alphaR = sqrt( ss/Dr + kypi*kypi ); 
+      // std::complex<Real> beta   = (Kl*alphaL)/(Kr*alphaR); 
 
-      c1a = .5*( (1.+beta)*c1 + (1.-beta)*c2 );
-      c2a = .5*( (1.-beta)*c1 + (1.+beta)*c2 );
+      // c1a = .5*( (1.+beta)*c1 + (1.-beta)*c2 );
+      // c2a = .5*( (1.-beta)*c1 + (1.+beta)*c2 );
 
-      alpha = alphaR;
+      // alpha = alphaR;
+      std::complex<Real> gamma1 = (Kl/Kr)*(alphaLp-uDL);
+      std::complex<Real> gamma2 = (Kl/Kr)*(alphaLm-uDL);
+      std::complex<Real> a2 = alphaRm-uDR;
+
+      c1a = ( (gamma1-a2)*c1 + (gamma2-a2)*c2 )/( alphaRp-alphaRm );
+      c2a = c1 + c2 - c1a;
+      alphap = alphaRp;
+      alpham = alphaRm;
+
+      // --- check solution: -----
+      Real xd=0., yd=.3;
+
+      Real uL  = std::real( ( c1 *exp(alphaLp*xd) + c2 *exp(alphaLm*xd) )* exp( I*kypi*yd ) * expst );
+      Real uR  = std::real( ( c1a*exp(alphaRp*xd) + c2a*exp(alphaRm*xd) )* exp( I*kypi*yd ) * expst );
+
+      Real uxL = std::real( ( c1 *alphaLp*exp(alphaLp*xd) + c2 *alphaLm*exp(alphaLm*xd) )* exp( I*kypi*yd ) * expst );
+      Real uxR = std::real( ( c1a*alphaRp*exp(alphaRp*xd) + c2a*alphaRm*exp(alphaRm*xd) )* exp( I*kypi*yd ) * expst );      
+      
+      Real jumpT = uL - uR;
+      Real jumpFlux = Kl*( uxL - uDL*uL ) -
+                      Kr*( uxR - uDR*uR );
+
+      // T.t + u*T.x + v*T.y = D*( T.xx + T.yy )
+      // s/D + uD*z + i*k*vD = z^2 - k^2 
+      //   z^2 - uD*z -ik*vD - s/D - ky^2  = 0 
+      Real resLp = abs(  SQR(alphaLp) - uDL*alphaLp - I*kypi*vDL - SQR(kypi) - ss/Dl );
+      Real resLm = abs(  SQR(alphaLm) - uDL*alphaLm - I*kypi*vDL - SQR(kypi) - ss/Dl );
+
+      Real resRp = abs(  SQR(alphaRp) - uDR*alphaRp - I*kypi*vDR - SQR(kypi) - ss/Dr );
+      Real resRm = abs(  SQR(alphaRm) - uDR*alphaRm - I*kypi*vDR - SQR(kypi) - ss/Dr );
+
+
+      printf("CHECK: t=%9.3e:  [T]=%8.2e, [K(T.x-uT)]=%8.2e, resL=%8.2e, resR=%8.2e\n",t,jumpT,jumpFlux,max(resLp,resLm),max(resRp,resRm));
+
+      // OV_ABORT("UDKS:PIM: stop here for now");
+
 
     }
 
-    if( t<=3.*dt )
+    if( t<=dt )
     {
       if( option==0 )
-        printF(">>>> CGAD:UDKS: Plane interface mode:LEFT: amp=%g, [Dl,Kl]=[%g,%g], [sr,si]=[%g,%g], ky=%g, c1a=[%g,%g], c2a=[%g,%g], alpha=[%g,%g]\n",
-                amp,Dl,Kl,sr,si,ky, std::real(c1a),std::imag(c1a), std::real(c2a),std::imag(c2a), std::real(alpha),std::imag(alpha));
-     else
-        printF(">>>> CGAD:UDKS: Plane interface mode:RIGHT: amp=%g, [Dr,Kr]=[%g,%g], [sr,si]=[%g,%g], ky=%g, c1a=[%g,%g], c2a=[%g,%g], alpha=[%g,%g]\n",
-                amp,Dr,Kr,sr,si,ky, std::real(c1a),std::imag(c1a), std::real(c2a),std::imag(c2a),  std::real(alpha),std::imag(alpha));
+      {
+        printF(">>>> CGAD:UDKS: Plane interface mode:LEFT: amp=%g, [Dl,Kl]=[%g,%g], [sr,si]=[%g,%g], ky=%g, c1a=[%g,%g], c2a=[%g,%g]\n",
+                amp,Dl,Kl,sr,si,ky, std::real(c1a),std::imag(c1a), std::real(c2a),std::imag(c2a) );
+      }
+      else
+      {
+        printF(">>>> CGAD:UDKS: Plane interface mode:RIGHT: amp=%g, [Dr,Kr]=[%g,%g], [sr,si]=[%g,%g], ky=%g, c1a=[%g,%g], c2a=[%g,%g]\n",
+                  amp,Dr,Kr,sr,si,ky, std::real(c1a),std::imag(c1a), std::real(c2a),std::imag(c2a) );
+      }
+      printF(">>>  alphap=[%g,%g] alpham=[%g,%g]\n",std::real(alphap),std::imag(alphap),std::real(alpham),std::imag(alpham));
+      printF(">>>> CGAD:UDKS: [uL,vL]=[%g,%g], [uR,vR]=[%g,%g] (advection velocities)\n",uL,vL,uR,vR);
+
+
+      // if( (uL !=0. || uR!=0.) )
+      // {
+      //   OV_ABORT("stop here for now");
+      // }
     }
 
     if( numberOfDimensions==2 )
@@ -643,7 +754,7 @@ getUserDefinedKnownSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua
       FOR_3D(i1,i2,i3,I1,I2,I3)
       { 
         const Real xd = x(i1,i2,i3,0), yd = x(i1,i2,i3,1);
-        ua(i1,i2,i3,nn) = std::real( ( c1a*exp(alpha*xd) +c2a*exp(-alpha*xd) )* exp( I*kypi*yd ) * expst );
+        ua(i1,i2,i3,nn) = std::real( ( c1a*exp(alphap*xd) + c2a*exp(alpham*xd) )* exp( I*kypi*yd ) * expst );
       }
     }
     else
@@ -707,6 +818,7 @@ updateUserDefinedKnownSolution( GenericGraphicsInterface & gi, CompositeGrid & c
       "annulus eigenfunction",
       "plane interface mode",
       "concentric cylinders",
+      "double annulus",
       "done",
       ""
     }; 
@@ -867,6 +979,53 @@ updateUserDefinedKnownSolution( GenericGraphicsInterface & gi, CompositeGrid & c
 
     } 
 
+    else if( answer=="double annulus" )
+    {
+      userKnownSolution="doubleAnnulus";
+
+      printF("--- Double Annulus CHT solution - supports advection diffusion ---\n");
+      printF("  caseName=doubleAnnulusCase5 : no advection.\n");
+
+      aString caseName="doubleAnnulusCase5";    
+      gi.inputString(answer,"Enter caseName");
+      caseName = answer;
+      printF("Setting caseName=[%s]\n",(const char*)caseName); 
+
+      if( !dbase.has_key("adExactSolution") )
+      {
+        AdExactSolutions & adExactSolution = dbase.put<AdExactSolutions>("adExactSolution");
+
+        adExactSolution.initialize( cg, "doubleAnnulus", caseName );
+      }
+
+      dbase.get<bool>("knownSolutionIsTimeDependent") = true;  // known solution is time dependent
+
+    } 
+
+    else if( answer=="double rectangle" )
+    {
+      userKnownSolution="doubleRectangle";
+
+      printF("--- Double Rectangle solution - supports advection diffusion ---\n");
+      printF("  caseName=doubleRectangleDL1KL1DR1KR1 : no advection.\n");
+
+      aString caseName="doubleRectangleDL1KL1DR1KR1";    
+      gi.inputString(answer,"Enter caseName");
+      caseName = answer;
+      printF("Setting caseName=[%s]\n",(const char*)caseName); 
+
+      if( !dbase.has_key("adExactSolution") )
+      {
+        AdExactSolutions & adExactSolution = dbase.put<AdExactSolutions>("adExactSolution");
+
+        adExactSolution.initialize( cg, "doubleRectangle", caseName );
+      }
+
+      dbase.get<bool>("knownSolutionIsTimeDependent") = true;  // known solution is time dependent
+
+    } 
+
+
     else if( answer=="plane interface mode" )
     {
       userKnownSolution="planeInterfaceMode";
@@ -884,8 +1043,18 @@ updateUserDefinedKnownSolution( GenericGraphicsInterface & gi, CompositeGrid & c
       Real & Dr  = rpar[8];
       Real & Kr  = rpar[9];
 
+      // Advection velocities: 
+      Real & uL  = rpar[10];
+      Real & vL  = rpar[11];
+      Real & wL  = rpar[12];
+
+      Real & uR  = rpar[13];
+      Real & vR  = rpar[14];
+      Real & wR  = rpar[15];     
 
       option=0; amp=1; sr=-.1; si=1.; ky=2; c1=1; c2=1; Dl=1; Kl=1.; Dr=1.; Kr=1.;
+      uL=0.; vL=0.; wL=0.; uR=0.; vR=0.; wR=0; 
+
       
       printF("--- Plane interface mode for the Heat equation on two adjacent squares---\n"
              "    u = amp*e^{s*t} * uHat(x) * e^{i*pi*ky*y} (form of solution on each side),\n"
@@ -893,18 +1062,60 @@ updateUserDefinedKnownSolution( GenericGraphicsInterface & gi, CompositeGrid & c
              "    s = sr + I*si (Laplace transform parameter, input)\n"
              "    ky = Fourier mode in Y (input)\n"
              "    c1,c2 : coefficients in solution, differ on two sides of the interface. \n"
-             "    Dl, Kl : diffusivity and thermal thermalConductivity on left"
-             "    Dr, Kr : diffusivity and thermal thermalConductivity on right"
+             "    Dl, Kl : diffusivity and thermal thermalConductivity on left\n"
+             "    Dr, Kr : diffusivity and thermal thermalConductivity on right\n"
+             "    uL,vL,wL : advection velocity on left\n"
+             "    uR,vR,wR : advection velocity on right\n"
              "    option : 0=left-side, 1=right-side.\n"
         );
       
-      gi.inputString(answer,"Enter amp,sr,si,ky,c1,c2, Dl,Kl, Dr, Kr, option for the exact solution");
-      sScanF(answer,"%e %e %e %e %e %e %e %e %e %e %i",&amp,&sr,&si,&ky,&c1,&c2, &Dl,&Kl, &Dr,&Kr,  &option);
+      gi.inputString(answer,"Enter option, amp,sr,si,ky,c1,c2, Dl,Kl, Dr, Kr, uL,vL,wL, uR,vR, wR  for the exact solution");
+      sScanF(answer,"%i %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ",&option,&amp,&sr,&si,&ky,&c1,&c2, &Dl,&Kl, &Dr,&Kr,
+                     &uL,&vL,&wL, &uR,&vR, &wR);
 
       printF("Plane interface mode: Setting amp=%g, [sr,si]=[%g,%g] ky=%g, [c1,c2]=[%g,%g], [Dl,Kl]=[%g,%g], [Dr,Kr]=[%g,%g] option=%d\n",
                amp,sr,si,ky,c1,c2,Dl,Kl,Dr,Kr,option);
+      printF("Plane interface mode: [uL,vL,wL]=[%g,%g,%g], [uR,vR,wR]=[%g,%g,%g] (advection velocities)\n",uL,vL,wL,uR,vR,wR);
 
       dbase.get<bool>("knownSolutionIsTimeDependent")= true;  // known solution is time dependent
+
+      // std::vector<Real> & a = dbase.get<std::vector<Real> >("a");
+      // std::vector<Real> & b = dbase.get<std::vector<Real> >("b");
+      // std::vector<Real> & c = dbase.get<std::vector<Real> >("c"); 
+      // if( option==0 )
+      // {
+      //   uL = a[0]; vL = b[0]; wL = c[0];  // advection velocity for the left side
+      // }
+      // else
+      // {
+      //   uR = a[0]; vR = b[0]; wR = c[0];  // advection velocity for the right side
+      // }
+
+      // // --- Find some parameters from the opposite side ---
+      // const IntegerArray & interfaceType = dbase.get<IntegerArray >("interfaceType");
+      // for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+      // {
+      //   MappedGrid & mg = cg[grid];
+      //   ForBoundary(side,axis)
+      //   {
+      //     if( interfaceType(side,axis,grid) == Parameters::heatFluxInterface && mg.boundaryCondition(side,axis)>0 )
+      //     {
+      //        Parameters & params2 = getInterfaceParameters( grid,side,axis,*this );
+      //        std::vector<Real> & a2 = params2.dbase.get<std::vector<Real> >("a");
+      //        std::vector<Real> & b2 = params2.dbase.get<std::vector<Real> >("b");
+      //        std::vector<Real> & c2 = params2.dbase.get<std::vector<Real> >("c"); 
+
+      //        if( option==0 )
+      //        {
+      //          uR = a2[0]; vR = b2[0]; wR = c2[0];  // advection velocity for the right side
+      //        }
+      //        else
+      //        {
+      //          uL = a2[0]; vL = b2[0]; wL = c2[0];  // advection velocity for the left side
+      //        }
+      //     }
+      //   }
+      // }
 
     }    
 

@@ -4,6 +4,8 @@ include ../config/Makefile.$(VENDOR)
 # over-ride:
 # CC=insure
 
+all = ogmgt
+
 # setenv compile [opt|dbg]
 # compile everything with optimization: (setenv compile opt)
 ifeq ($(compile),opt)
@@ -76,9 +78,16 @@ Oges = ../oges
 # # PETSC_LIBS =
 # # OGES_PETSC =
 
-OGES_PETSC := buildEquationSolvers.o \
-              PETScEquationSolver.o  \
-              MultigridEquationSolver.o 
+
+ifeq ($(strip $(usePPP)),)
+  OGES_PETSC := buildEquationSolvers.o \
+                PETScEquationSolver.o  \
+                MultigridEquationSolver.o 	
+else
+	OGES_PETSC := buildEquationSolvers.o \
+                PETScSolver.o  \
+                MultigridEquationSolver.o 
+endif              
 
 
 

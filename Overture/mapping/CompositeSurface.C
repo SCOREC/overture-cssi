@@ -188,8 +188,8 @@ add( Mapping & surface,
     {
       UnstructuredMapping & um = trim.getTriangulation();
       for (side=0; side<=1; side++)
-	for(axis=0; axis<rangeDimension; axis++ )
-	  trim.setRangeBound(side, axis, (real) um.getRangeBound(side, axis));
+        for(axis=0; axis<rangeDimension; axis++ )
+          trim.setRangeBound(side, axis, (real) um.getRangeBound(side, axis));
       
     }
     else // get the grid for the untrimmed surface
@@ -197,14 +197,14 @@ add( Mapping & surface,
       Mapping &untrim = *trim.surface;
       untrim.getGrid();
       for (side=0; side<=1; side++)
-	for (axis=0; axis<untrim.getRangeDimension(); axis++)
-	  trim.setRangeBound(side, axis, untrim.getRangeBound(side, axis));
+        for (axis=0; axis<untrim.getRangeDimension(); axis++)
+          trim.setRangeBound(side, axis, untrim.getRangeBound(side, axis));
     }
 // AP debug
 //      for (axis=0; axis<rangeDimension; axis++)
 //        printf("Trimmed %s surface, axis=%i, bound=[%e, %e]\n", 
-//  	     (trim.trimmingIsValid()? "valid": "INvalid"), axis, 
-//  	     (real) trim.getRangeBound(Start, axis), (real) trim.getRangeBound(End, axis));
+//           (trim.trimmingIsValid()? "valid": "INvalid"), axis, 
+//           (real) trim.getRangeBound(Start, axis), (real) trim.getRangeBound(End, axis));
   }
   else
   {
@@ -215,7 +215,7 @@ add( Mapping & surface,
 // AP debug
       for (axis=0; axis<rangeDimension; axis++)
         printf("Untrimmed surface, axis=%i, bound=[%e, %e]\n", 
-  	     axis, (real) surface.getRangeBound(Start, axis), (real) surface.getRangeBound(End, axis));
+             axis, (real) surface.getRangeBound(Start, axis), (real) surface.getRangeBound(End, axis));
   }
   
   
@@ -230,27 +230,27 @@ add( Mapping & surface,
 
 // AP debug
 //      printf("CS::add %i: current bounds axis=%i [%e,%e] new surface bounds=[%e,%e]\n",numberOfSurfaces-1,
-//    	   axis,(real)bsCS,(real)beCS,(real)bs,(real)be);
+//         axis,(real)bsCS,(real)beCS,(real)bs,(real)be);
     
     if (bs.isFinite())
     {
       if (bsCS.isFinite())
-	setRangeBound(Start,axis,min((real)getRangeBound(Start,axis), (real)bs));
+        setRangeBound(Start,axis,min((real)getRangeBound(Start,axis), (real)bs));
       else
-	setRangeBound(Start, axis, (real)bs);
+        setRangeBound(Start, axis, (real)bs);
     }
     
     if (be.isFinite())
     {
       if (beCS.isFinite())
-	setRangeBound(End  ,axis,max((real)getRangeBound(End  ,axis), (real)be));	
+        setRangeBound(End  ,axis,max((real)getRangeBound(End  ,axis), (real)be));       
       else
-	setRangeBound(End  , axis, (real)be);
+        setRangeBound(End  , axis, (real)be);
     }
     
 // AP debug
 //      printf("CS::add %i: new composite surface bounds axis=%i [%e, %e]\n",numberOfSurfaces-1,
-//    	   axis, (real) getRangeBound(Start, axis), (real) getRangeBound(End, axis));
+//         axis, (real) getRangeBound(Start, axis), (real) getRangeBound(End, axis));
   }
 
 
@@ -359,8 +359,8 @@ findOutwardTangent( Mapping & map, const realArray & r, const realArray & x, rea
       real norm = SQR(inwardDeltaR(0,0)) + SQR(inwardDeltaR(0,1));
       if( norm==0. )
       {
-	cout << "findOutwardTangent:ERROR: tangent to curve is zero ! \n";
-	throw "error";
+        cout << "findOutwardTangent:ERROR: tangent to curve is zero ! \n";
+        throw "error";
       }
       inwardDeltaR*=1./SQRT(norm);
 
@@ -370,38 +370,38 @@ findOutwardTangent( Mapping & map, const realArray & r, const realArray & x, rea
       {
         const int inOut2 = trim.insideOrOutside( evaluate(r-inwardDeltaR*drShiftFactor), c );
         if( inOut2==+1 )
-  	  inwardDeltaR=-inwardDeltaR;
-	else
-	{
+          inwardDeltaR=-inwardDeltaR;
+        else
+        {
           const int numberOfTries=4;
           for( int itry=0; itry<numberOfTries; itry++ )
-	  {
-	    printf("***CompositeSurface:findOutwardTangent:WARNING: itry=%i, inOut1(r+%5.2e)=%i, inOut2(r-%5.2e)=%i "
-		   "are both outside! Trying with a smaller shift...\n",itry,drShiftFactor,inOut1,drShiftFactor,inOut2);
-	    // **wdh* 990407 drShiftFactor+=.05;
-	    drShiftFactor*=.1;
-	    const int inOut3 = trim.insideOrOutside( r, c );
-	    printf(" insideOrOutside(r)=%i, nearest curve c=%i (1=outer) \n",inOut3,c);
-	    const int inOut4 = trim.insideOrOutside( evaluate(r-inwardDeltaR*drShiftFactor), c );
-	    const int inOut5 = trim.insideOrOutside( evaluate(r+inwardDeltaR*drShiftFactor), c );
-	    if( inOut5==-1 )
-	    {
-	      if( inOut4==+1 )
-	      {
-		inwardDeltaR=-inwardDeltaR;
-		break;
-	      }
-	      else if( itry==(numberOfTries-1) )
-	      {
-		printf(" insideOrOutside(r-dr*%5.2e)=%i, insideOrOutside(r+dr*%5.2e)=%i \n",
+          {
+            printf("***CompositeSurface:findOutwardTangent:WARNING: itry=%i, inOut1(r+%5.2e)=%i, inOut2(r-%5.2e)=%i "
+                   "are both outside! Trying with a smaller shift...\n",itry,drShiftFactor,inOut1,drShiftFactor,inOut2);
+            // **wdh* 990407 drShiftFactor+=.05;
+            drShiftFactor*=.1;
+            const int inOut3 = trim.insideOrOutside( r, c );
+            printf(" insideOrOutside(r)=%i, nearest curve c=%i (1=outer) \n",inOut3,c);
+            const int inOut4 = trim.insideOrOutside( evaluate(r-inwardDeltaR*drShiftFactor), c );
+            const int inOut5 = trim.insideOrOutside( evaluate(r+inwardDeltaR*drShiftFactor), c );
+            if( inOut5==-1 )
+            {
+              if( inOut4==+1 )
+              {
+                inwardDeltaR=-inwardDeltaR;
+                break;
+              }
+              else if( itry==(numberOfTries-1) )
+              {
+                printf(" insideOrOutside(r-dr*%5.2e)=%i, insideOrOutside(r+dr*%5.2e)=%i \n",
                        drShiftFactor,inOut4,drShiftFactor,inOut5);
-		printf("***ERROR something is wrong here. Maybe the surfaces don't match. Continuing...\n");
-		return 1;
-	      }
-	    }
-	  }
-	  
-	}
+                printf("***ERROR something is wrong here. Maybe the surfaces don't match. Continuing...\n");
+                return 1;
+              }
+            }
+          }
+          
+        }
       }
     }
     else
@@ -410,16 +410,16 @@ findOutwardTangent( Mapping & map, const realArray & r, const realArray & x, rea
       // choose the closest boundary.
       if( min(fabs(r(0,0)),fabs(r(0,1))) < min(fabs(r(0,0)-1.),fabs(r(0,1)-1.)) )
       {
-	if( fabs(r(0,0)) < fabs(r(0,1)) )
+        if( fabs(r(0,0)) < fabs(r(0,1)) )
           inwardDeltaR(0,0)=1.;  // we are closest to r_0=0
-        else	    
+        else        
           inwardDeltaR(0,1)=1.;  // we are closest to r_1=0
       }
       else
       {
-	if( fabs(r(0,0)-1.) < fabs(r(0,1)-1.) )
+        if( fabs(r(0,0)-1.) < fabs(r(0,1)-1.) )
           inwardDeltaR(0,0)=-1.;
-        else	    
+        else        
           inwardDeltaR(0,1)=-1.;
       }
     }
@@ -513,8 +513,8 @@ findNearbySurfaces(const int & s,
   {
     if( TRUE || Mapping::debug & 2 )
       printf("  >>>findNearbySurfaces:WARNING:Closest pt not so close: |x-XP| = %e, boundinBox=%e ratio=%6.2e \n",
-	   max(fabs(xP(0,Rx)-x(0,Rx))),max(boundingBox(End,Rx)-boundingBox(Start,Rx)),
-	   max(fabs(xP(0,Rx)-x(0,Rx)))/max(boundingBox(End,Rx)-boundingBox(Start,Rx)) );
+           max(fabs(xP(0,Rx)-x(0,Rx))),max(boundingBox(End,Rx)-boundingBox(Start,Rx)),
+           max(fabs(xP(0,Rx)-x(0,Rx)))/max(boundingBox(End,Rx)-boundingBox(Start,Rx)) );
     printf("  >>>findNearbySurfaces:WARNING: I could be making a mistake in assuming the surfaces are connected\n");
   }
 
@@ -522,15 +522,15 @@ findNearbySurfaces(const int & s,
 
   if( TRUE || Mapping::debug & 2 )
     printf("  projected pt, xP=(%6.2e,%6.2e,%6.2e), from %i hits subsurface = %i \n",
-	 xP(0,0),xP(0,1),xP(0,2),s,nearbySurface);
-	      
+         xP(0,0),xP(0,1),xP(0,2),s,nearbySurface);
+              
   if( abs(signForNormal(s)) != abs(signForNormal(nearbySurface)) || doubleCheck )
   {
     // these surfaces are newly connected
     printf("  normal[s=%i]=(%5.3f,%5.3f,%5.3f), normal[s=%i]=(%5.3f,%5.3f,%5.3f) \n",s,
-	   normal(0,0),normal(0,1),normal(0,2),nearbySurface,normalP(0,0),normalP(0,1),normalP(0,2));
+           normal(0,0),normal(0,1),normal(0,2),nearbySurface,normalP(0,0),normalP(0,1),normalP(0,2));
     printf("  ++++++ subsurface %i is connected to subsurface %i ",s,nearbySurface);
-		
+                
     real nDotN = normal(0,0)*normalP(0,0)+normal(0,1)*normalP(0,1)+normal(0,2)*normalP(0,2);
 
     int nSign= nDotN > 0. ? 1 : -1;
@@ -550,26 +550,26 @@ findNearbySurfaces(const int & s,
       if( findOutwardTangent( (*this)[s],             r,x,  outwardTangent1 )!=0 ||
           findOutwardTangent( (*this)[nearbySurface], rP,xP,outwardTangent2 )!=0 )
       {
-	// findOutwardTangent failed!
+        // findOutwardTangent failed!
         printf("  outward tangent computation failed, skipping this case\n");
-	return; 
+        return; 
       }
       
       // we should have that n2 and t2 are nearly in the same plane as n1 and t1.
       // this means   fabs( (n1 X t1).(n2 X t2 ) ) approx 1
       // **** otherwise we could be at a corner and picking up the wrong outward tangent
       real n1Xt1DotN2Xt2=((normal (0,1)*outwardTangent1(0,2)-normal (0,2)*outwardTangent1(0,1))*
-			  (normalP(0,1)*outwardTangent2(0,2)-normalP(0,2)*outwardTangent2(0,1))+
-			  (normal (0,2)*outwardTangent1(0,0)-normal (0,0)*outwardTangent1(0,2))*
-			  (normalP(0,2)*outwardTangent2(0,0)-normalP(0,0)*outwardTangent2(0,2))+
-			  (normal (0,0)*outwardTangent1(0,1)-normal (0,1)*outwardTangent1(0,0))*
-			  (normalP(0,0)*outwardTangent2(0,1)-normalP(0,1)*outwardTangent2(0,0)) );
+                          (normalP(0,1)*outwardTangent2(0,2)-normalP(0,2)*outwardTangent2(0,1))+
+                          (normal (0,2)*outwardTangent1(0,0)-normal (0,0)*outwardTangent1(0,2))*
+                          (normalP(0,2)*outwardTangent2(0,0)-normalP(0,0)*outwardTangent2(0,2))+
+                          (normal (0,0)*outwardTangent1(0,1)-normal (0,1)*outwardTangent1(0,0))*
+                          (normalP(0,0)*outwardTangent2(0,1)-normalP(0,1)*outwardTangent2(0,0)) );
 
       if( fabs(n1Xt1DotN2Xt2)<.1 )
       {
         printf("\n ** fabs( (n1 X t1).(n2 X t2 ) )=%e, should be near 1. outward tangent computation failed\n",
-	       fabs(n1Xt1DotN2Xt2));
-	return;
+               fabs(n1Xt1DotN2Xt2));
+        return;
       }
       
 
@@ -584,13 +584,13 @@ findNearbySurfaces(const int & s,
         //       -------------------X------------------
         //
         
-	real outwardTangent1DotOutwardTangent2 = (outwardTangent1(0,0)*outwardTangent2(0,0)+
-						  outwardTangent1(0,1)*outwardTangent2(0,1)+
-						  outwardTangent1(0,2)*outwardTangent2(0,2));
+        real outwardTangent1DotOutwardTangent2 = (outwardTangent1(0,0)*outwardTangent2(0,0)+
+                                                  outwardTangent1(0,1)*outwardTangent2(0,1)+
+                                                  outwardTangent1(0,2)*outwardTangent2(0,2));
 
         nSign = outwardTangent1DotOutwardTangent2*nDotN <0. ? 1 : -1;
         if( debug & 2 )
-	  printf("  nSign = %i, outwardTangent1*outwardTangent2 = %g  (<0 means normals in same direction)\n",
+          printf("  nSign = %i, outwardTangent1*outwardTangent2 = %g  (<0 means normals in same direction)\n",
                   nSign,outwardTangent1DotOutwardTangent2);
       }
       else
@@ -608,24 +608,24 @@ findNearbySurfaces(const int & s,
         //                          |
         //
 
-	real outwardTangent1DotN2 = (outwardTangent1(0,0)*normalP(0,0)+
-				     outwardTangent1(0,1)*normalP(0,1)+
-				     outwardTangent1(0,2)*normalP(0,2));
+        real outwardTangent1DotN2 = (outwardTangent1(0,0)*normalP(0,0)+
+                                     outwardTangent1(0,1)*normalP(0,1)+
+                                     outwardTangent1(0,2)*normalP(0,2));
 
-	real outwardTangent2DotN1 = (outwardTangent2(0,0)*normal(0,0)+
-				     outwardTangent2(0,1)*normal(0,1)+
-				     outwardTangent2(0,2)*normal(0,2));
+        real outwardTangent2DotN1 = (outwardTangent2(0,0)*normal(0,0)+
+                                     outwardTangent2(0,1)*normal(0,1)+
+                                     outwardTangent2(0,2)*normal(0,2));
 
         nSign = outwardTangent1DotN2*outwardTangent2DotN1 >0. ? 1 : -1;
         if( debug & 2 )
-	{
-	  printf("  nSign = %i, outwardTangent1=(%g,%g,%g), normalP=(%g,%g,%g) \n",nSign,
-		 outwardTangent1(0,0),outwardTangent1(0,1),outwardTangent1(0,2),
-		 normalP(0,0),normalP(0,1),normalP(0,2));
-	  printf("  outwardTangent2=(%g,%g,%g), normal=(%g,%g,%g) \n",
-		 outwardTangent2(0,0),outwardTangent2(0,1),outwardTangent2(0,2),
-		 normal(0,0),normal(0,1),normal(0,2));
-	}
+        {
+          printf("  nSign = %i, outwardTangent1=(%g,%g,%g), normalP=(%g,%g,%g) \n",nSign,
+                 outwardTangent1(0,0),outwardTangent1(0,1),outwardTangent1(0,2),
+                 normalP(0,0),normalP(0,1),normalP(0,2));
+          printf("  outwardTangent2=(%g,%g,%g), normal=(%g,%g,%g) \n",
+                 outwardTangent2(0,0),outwardTangent2(0,1),outwardTangent2(0,2),
+                 normal(0,0),normal(0,1),normal(0,2));
+        }
       }
     }
     
@@ -654,8 +654,8 @@ findNearbySurfaces(const int & s,
       // change all subsurfaces with signForNormal(s) to +/- signForNormal(nearbySurface)
       for( int ss=0; ss<numberOfSurfaces; ss++ )
       {
-	if( abs(signForNormal(ss))==abs(sn) )
-	  signForNormal(ss)= signForNormal(ss)==sn ? nSign*sNearby : -nSign*sNearby;
+        if( abs(signForNormal(ss))==abs(sn) )
+          signForNormal(ss)= signForNormal(ss)==sn ? nSign*sNearby : -nSign*sNearby;
       }
     }
     
@@ -733,63 +733,63 @@ determineTopology()
       if( map.getClassName()=="TrimmedMapping" )
       {
         TrimmedMapping & trim = (TrimmedMapping &) map;
-	// place some points on each trimming curve
+        // place some points on each trimming curve
         // find any nearby sub-surface
 
         int numberOfPointsToTryPerSide;
 #ifdef OLDSTUFF
-	int cStart= trim.outerCurve==NULL ? 2 : 1;
-	for( int c=cStart; c<trim.numberOfInnerCurves+2; c++ )
-	{
-	  Mapping & curve = c==1 ? *trim.outerCurve : *(trim.innerCurve[c-2]);
+        int cStart= trim.outerCurve==NULL ? 2 : 1;
+        for( int c=cStart; c<trim.numberOfInnerCurves+2; c++ )
+        {
+          Mapping & curve = c==1 ? *trim.outerCurve : *(trim.innerCurve[c-2]);
 #else
-	for ( int c=0; c<trim.getNumberOfTrimCurves(); c++ )
-	{
-	  Mapping & curve = * (trim.getTrimCurve(c));
+        for ( int c=0; c<trim.getNumberOfTrimCurves(); c++ )
+        {
+          Mapping & curve = * (trim.getTrimCurve(c));
 #endif
-	  if( curve.getClassName()=="NurbsMapping" )
-	  {
+          if( curve.getClassName()=="NurbsMapping" )
+          {
             // Normally (in proE ) a trimming curve consists of subCurves, each subCurve
             // matches to one other surface. Thus we only check the midpoint of each sub-curve -- unless
             // there is only one sub-curve, then we check more points.
-	    NurbsMapping & nurb = (NurbsMapping&)curve;
-	    // printf("trimCurve is a nurb, number of subCurves = %i \n",nurb.numberOfSubCurves());
+            NurbsMapping & nurb = (NurbsMapping&)curve;
+            // printf("trimCurve is a nurb, number of subCurves = %i \n",nurb.numberOfSubCurves());
             numberOfPointsToTryPerSide=nurb.numberOfSubCurves()==1 ? 2 : 1;
-	    for( int subCurve=0; subCurve<nurb.numberOfSubCurves(); subCurve++ )
-	    {
+            for( int subCurve=0; subCurve<nurb.numberOfSubCurves(); subCurve++ )
+            {
               printf("Check the mid point of sub-curve %i\n",subCurve);
-	      
+              
               // test a point at the mid-point of the sub-curve
-	      NurbsMapping & subTrimCurve = nurb.subCurve(subCurve);
-	      for( int n=0; n<numberOfPointsToTryPerSide; n++ )
-	      {
-		r(0,0)=(n+.5)/numberOfPointsToTryPerSide;
-		subTrimCurve.map(r,rc);
+              NurbsMapping & subTrimCurve = nurb.subCurve(subCurve);
+              for( int n=0; n<numberOfPointsToTryPerSide; n++ )
+              {
+                r(0,0)=(n+.5)/numberOfPointsToTryPerSide;
+                subTrimCurve.map(r,rc);
 
-		findNearbySurfaces( s,rc,doubleCheck,consistent,inconsistent );
+                findNearbySurfaces( s,rc,doubleCheck,consistent,inconsistent );
 
-		if( fabs(signForNormal(s))==1 ) // this means we are connected to the first surface.
-		  break;
-	      }
-	    }
-	  }
-	  else
-	  {
+                if( fabs(signForNormal(s))==1 ) // this means we are connected to the first surface.
+                  break;
+              }
+            }
+          }
+          else
+          {
             numberOfPointsToTryPerSide=2;
-	    for( int n=0; n<numberOfPointsToTryPerSide; n++ )
-	    {
-	      r(0,0)=(n+.5)/numberOfPointsToTryPerSide;
-	      curve.map(r,rc); // get the unit square coordinates for the sub-surface
+            for( int n=0; n<numberOfPointsToTryPerSide; n++ )
+            {
+              r(0,0)=(n+.5)/numberOfPointsToTryPerSide;
+              curve.map(r,rc); // get the unit square coordinates for the sub-surface
 
-	      findNearbySurfaces( s,rc,doubleCheck,consistent,inconsistent );
+              findNearbySurfaces( s,rc,doubleCheck,consistent,inconsistent );
 
-	      if( fabs(signForNormal(s))==1 ) // this means we are connected to the first surface.
-		break;
-	    }
-	  }
+              if( fabs(signForNormal(s))==1 ) // this means we are connected to the first surface.
+                break;
+            }
+          }
           // if( fabs(signForNormal(s))==1 )
           //  break;
-	}
+        }
       }
       else
       {
@@ -797,26 +797,26 @@ determineTopology()
         // subsurface these points are projected onto
         int numberOfPointsToTryPerSide=1;
         for( int axis=0; axis<=1; axis++ )
-	{
-	  for( int side=Start; side<=End; side++ )
-	  {
-	    for( int n=0; n<numberOfPointsToTryPerSide; n++ )
-	    {
+        {
+          for( int side=Start; side<=End; side++ )
+          {
+            for( int n=0; n<numberOfPointsToTryPerSide; n++ )
+            {
               int axisp1 = (axis+1) % 2;
-	      r(0,axisp1)=(n+.5)/numberOfPointsToTryPerSide;
-	      r(0,axis)=side; 
+              r(0,axisp1)=(n+.5)/numberOfPointsToTryPerSide;
+              r(0,axis)=side; 
 
               findNearbySurfaces( s,r,doubleCheck,consistent,inconsistent  );
 
-	      if( fabs(signForNormal(s))==1 )
-		break;
-	    }
-	    // if( fabs(signForNormal(s))==1 )
-	    //  break;
-	  }
-	  // if( fabs(signForNormal(s))==1 )
-	  //  break;
-	}
+              if( fabs(signForNormal(s))==1 )
+                break;
+            }
+            // if( fabs(signForNormal(s))==1 )
+            //  break;
+          }
+          // if( fabs(signForNormal(s))==1 )
+          //  break;
+        }
       }
 
     }
@@ -888,7 +888,7 @@ printStatistics(FILE *file /* =stdout */ )
 {
   fprintf(file,"  ========== Statistics for CompositeSurface =================\n"
           " number of projections=%i, number of project inverses=%i \n"
-	  "   Timings:                      seconds     %%   \n",
+          "   Timings:                      seconds     %%   \n",
           totalNumberOfProjections,totalNumberOfProjectInverses);
   
   timing[totalTime]=max(timing[0],REAL_MIN*10.);
@@ -941,7 +941,7 @@ remove( const int & surfaceNumber )
   if( surfaceNumber<0 || surfaceNumber>=numberOfSurfaces )
   {
     printf("CompositeSurface::remove:ERROR: unable to remove surface number %i, this does not exist!\n",
-	   surfaceNumber);
+           surfaceNumber);
     return -1;
   }
   surfaces.deleteElement(surfaceNumber);
@@ -996,14 +996,14 @@ recomputeBoundingBox()
       be = surfaces[s].getMapping().getRangeBound(End,axis);
 
       if (bs.isFinite())
-	xBound(Start,axis) = min(xBound(Start,axis), (real) bs);
+        xBound(Start,axis) = min(xBound(Start,axis), (real) bs);
     
       if (be.isFinite())
-	xBound(End,axis) = max(xBound(End,axis), (real) be);
+        xBound(End,axis) = max(xBound(End,axis), (real) be);
 
 // AP debug
 //        printf("CS::recomputeBB: surface=%i, axis=%i, bounds=[%e, %e]\n", s, axis,
-//    	     (real) bs, (real) be);
+//           (real) bs, (real) be);
     } // end for axis
   } // end for numberOfSurfaces
 
@@ -1014,7 +1014,7 @@ recomputeBoundingBox()
     setRangeBound(End,   axis, xBound(End,axis));
 // AP debug
 //      printf("CS::recomputeBB: new composite surface bounds axis=%i [%e, %e]\n",axis, 
-//    	   xBound(Start,axis), xBound(End,axis));
+//         xBound(Start,axis), xBound(End,axis));
   }
   
 }
@@ -1031,7 +1031,7 @@ getColour( const int & surfaceNumber ) const
   if( surfaceNumber<0 || surfaceNumber>=numberOfSurfaces )
   {
     printf("CompositeSurface::getColour:ERROR: invalid surface number %i, this does not exist!\n",
-	   surfaceNumber);
+           surfaceNumber);
     return 0;
   }
   return surfaceColour[surfaceNumber];
@@ -1049,7 +1049,7 @@ setColour( const int & surfaceNumber, const aString & colour )
   if( surfaceNumber<0 || surfaceNumber>=numberOfSurfaces )
   {
     printf("CompositeSurface::setColour:ERROR: invalid surface number %i, this does not exist!\n",
-	   surfaceNumber);
+           surfaceNumber);
     return -1;
   }
   // printf("CompositeSurface::setColour: surfaceColour[%i]=%s\n",surfaceNumber,(const char*)colour);
@@ -1093,8 +1093,8 @@ getNormals(const intArray & subSurfaceIndex, const realArray & xr, realArray & n
       if( l2Norm(i)==0. )
       {
         if( rBase!=rBound )
-  	  cout << "CompositeSurface::getNormal:ERROR: the normal for the neighbour is zero too! \n";
-	return 1;
+          cout << "CompositeSurface::getNormal:ERROR: the normal for the neighbour is zero too! \n";
+        return 1;
       }
     }
     if( subSurfaceIndex(i)>=0 )
@@ -1140,7 +1140,7 @@ insideOrOutside( realArray & x, IntegerArray & inside )
 
 int CompositeSurface::
 project( realArray & x, 
-	 MappingProjectionParameters & mpParams )
+         MappingProjectionParameters & mpParams )
 //===========================================================================
 /// \brief  
 ///    Project the points x(i,0:2) onto the surface. Also return the sub-surface index
@@ -1207,13 +1207,13 @@ project( realArray & x,
       
     if( debug & 2 )
       printF("CompositeSurface::project onto the unstructured surface. \n");
-	
+        
     if( !mpParams.projectOntoReferenceSurface() )
     {
       // do NOT project onto the reference surface *wdh* 090710
 
       if( true )
-	printF("CompositeSurface::project onto the unstructured surface ONLY. \n"); 
+        printF("CompositeSurface::project onto the unstructured surface ONLY. \n"); 
 
       // Is this correct: ? *wdh* 090710
       xOld=x;
@@ -1232,9 +1232,9 @@ project( realArray & x,
 
       if( mpParams.getMatchNormals() )
       {
-	// When this option is on we should check to see if the closest element is next
-	// to a corner in the surface in which case we should choose the closest element
-	// to be the one whose normal best matches the input normal.
+        // When this option is on we should check to see if the closest element is next
+        // to a corner in the surface in which case we should choose the closest element
+        // to be the one whose normal best matches the input normal.
       }
 
 
@@ -1249,83 +1249,83 @@ project( realArray & x,
       realArray x0, r0, xr0;
       for( int i=xBase; i<=xBound; i++ )
       {
-	int e = elementIndex(i);  // this is the element we are in!
-	assert( e>=0 && e<numberOfElements );
+        int e = elementIndex(i);  // this is the element we are in!
+        assert( e>=0 && e<numberOfElements );
 
-	// fillin the subSurfaceIndex from the elementIndex.
-	const int s=elementSurface(e);
-	subSurfaceIndex(i)=s;  
-	  
-	if(  debug & 2 ) 
-	  printf("CompositeSurface::project point i=%i projected onto element %i, subSurface =%i\n",i,e,s);
+        // fillin the subSurfaceIndex from the elementIndex.
+        const int s=elementSurface(e);
+        subSurfaceIndex(i)=s;  
+          
+        if(  debug & 2 ) 
+          printf("CompositeSurface::project point i=%i projected onto element %i, subSurface =%i\n",i,e,s);
 
-	if( s>=0 && s<numberOfSubSurfaces() )
-	{
-	  // collect up all consecutive points that belong to this surface
-	  int iStart=i, iEnd=i;
-	  for( int j=i+1; j<=xBound; j++ )
-	  {
-	    int e2=elementIndex(j);
-	    assert( e2>=0 && e2<numberOfElements );
-	    if( elementSurface(e2)==s )
-	    {
-	      iEnd=j;
-	      i++;
-	    }
-	    else
-	    {
-	      break;
-	    }
-	  }
-	  if( debug & 4 ) printf("CS:project:project points [%i,%i] onto surface %i (i=%i)\n",iStart,iEnd,s,i);
-	    
-	  Range J(iStart,iEnd), J0=iEnd-iStart+1;
-	  x0.redim(J0,3);
-	  r0.redim(J0,2);
-	  xr0.redim(J0,3,2);
+        if( s>=0 && s<numberOfSubSurfaces() )
+        {
+          // collect up all consecutive points that belong to this surface
+          int iStart=i, iEnd=i;
+          for( int j=i+1; j<=xBound; j++ )
+          {
+            int e2=elementIndex(j);
+            assert( e2>=0 && e2<numberOfElements );
+            if( elementSurface(e2)==s )
+            {
+              iEnd=j;
+              i++;
+            }
+            else
+            {
+              break;
+            }
+          }
+          if( debug & 4 ) printf("CS:project:project points [%i,%i] onto surface %i (i=%i)\n",iStart,iEnd,s,i);
+            
+          Range J(iStart,iEnd), J0=iEnd-iStart+1;
+          x0.redim(J0,3);
+          r0.redim(J0,2);
+          xr0.redim(J0,3,2);
 
-	  x0(J0,0)=x(J,0); x0(J0,1)=x(J,1); x0(J0,2)=x(J,2); 
+          x0(J0,0)=x(J,0); x0(J0,1)=x(J,1); x0(J0,2)=x(J,2); 
 
-	  r0=-1; // We could get an initial guess if we knew the r coordinates of the triangulation
+          r0=-1; // We could get an initial guess if we knew the r coordinates of the triangulation
               
-	  Mapping *mapPointer = &cs[s];
-	  if( cs[s].getClassName()=="TrimmedMapping" )
-	    mapPointer = ((TrimmedMapping&)cs[s]).untrimmedSurface();
+          Mapping *mapPointer = &cs[s];
+          if( cs[s].getClassName()=="TrimmedMapping" )
+            mapPointer = ((TrimmedMapping&)cs[s]).untrimmedSurface();
 
-	  Mapping & subSurface = *mapPointer;
+          Mapping & subSurface = *mapPointer;
 
-	  subSurface.inverseMap(x0,r0);
+          subSurface.inverseMap(x0,r0);
 
-	  if( max(fabs(r0)) < 2. )
-	  {
-	    subSurface.map(r0,x0,xr0);
+          if( max(fabs(r0)) < 2. )
+          {
+            subSurface.map(r0,x0,xr0);
 
-	    xOld(J,R3)=x0(J0,R3); 
+            xOld(J,R3)=x0(J0,R3); 
 
-	    // *** we need to compute normals too ****
+            // *** we need to compute normals too ****
 
-	    normal(J,axis1)=xr0(J0,1,0)*xr0(J0,2,1)-xr0(J0,2,0)*xr0(J0,1,1);
-	    normal(J,axis2)=xr0(J0,2,0)*xr0(J0,0,1)-xr0(J0,0,0)*xr0(J0,2,1);
-	    normal(J,axis3)=xr0(J0,0,0)*xr0(J0,1,1)-xr0(J0,1,0)*xr0(J0,0,1);
+            normal(J,axis1)=xr0(J0,1,0)*xr0(J0,2,1)-xr0(J0,2,0)*xr0(J0,1,1);
+            normal(J,axis2)=xr0(J0,2,0)*xr0(J0,0,1)-xr0(J0,0,0)*xr0(J0,2,1);
+            normal(J,axis3)=xr0(J0,0,0)*xr0(J0,1,1)-xr0(J0,1,0)*xr0(J0,0,1);
 
-	    realArray norm;
-	    norm = SQRT( SQR(normal(J,0))+SQR(normal(J,1))+SQR(normal(J,2))  ) ;
+            realArray norm;
+            norm = SQRT( SQR(normal(J,0))+SQR(normal(J,1))+SQR(normal(J,2))  ) ;
 
-	    norm=cs.getSignForNormal(s)/max(REAL_MIN,norm);
+            norm=cs.getSignForNormal(s)/max(REAL_MIN,norm);
     
-	    int dir;
-	    for( dir=0; dir<rangeDimension; dir++ ) 
-	      normal(J,dir)*=norm;
-	  }
-	  else
-	  {
-	    printf("***CS:project:ERROR: inverting sub-surface %i\n",s);
-	  }
-	}
-	else
-	{
-	  printf("***CS:project:ERROR: invalid sub-surface, s=%i, numberOfSubSurfaces=%i\n",s,numberOfSubSurfaces());
-	}
+            int dir;
+            for( dir=0; dir<rangeDimension; dir++ ) 
+              normal(J,dir)*=norm;
+          }
+          else
+          {
+            printf("***CS:project:ERROR: inverting sub-surface %i\n",s);
+          }
+        }
+        else
+        {
+          printf("***CS:project:ERROR: invalid sub-surface, s=%i, numberOfSubSurfaces=%i\n",s,numberOfSubSurfaces());
+        }
       } // end for i 
       
     } // end project onto the reference surface
@@ -1335,12 +1335,12 @@ project( realArray & x,
   {
     // invert when we don't have a triangulation:
     project( subSurfaceIndex,
-	     x,
-	     rProject,
-	     xOld,
-	     xrProject,
-	     normal,
-	     ignoreThisSubSurface );
+             x,
+             rProject,
+             xOld,
+             xrProject,
+             normal,
+             ignoreThisSubSurface );
   }
   
   x=xOld;
@@ -1350,9 +1350,9 @@ project( realArray & x,
 
 void CompositeSurface::
 project( intArray & subSurfaceIndex,
-	 realArray & x, 
-	 realArray & rProject, 
-	 realArray & xProject,
+         realArray & x, 
+         realArray & rProject, 
+         realArray & xProject,
          realArray & xrProject,
          realArray & normal /* = Overture::nullRealDistributedArray() */,
          const intArray & ignoreThisSubSurface /* = Overture::nullIntArray() */,
@@ -1450,10 +1450,10 @@ project( intArray & subSurfaceIndex,
     printf("\n *************CompositeSurface::project points ***********\n");
     if( Mapping::debug & 64 )
       printf("CompositeSurface: found: foundButOutside=%i, notFound=%i, maybeFound=%i, unableToFind=%i \n",
-	   foundButOutside,notFound,maybeFound,unableToFind);
+           foundButOutside,notFound,maybeFound,unableToFind);
     for( int i=rBase; i<=rBound; i++ )
       printf("CS: i=%4i, old x=(%7.2e,%7.2e,%7.2e) new=(%7.2e,%7.2e,%7.2e) tangent=(%7.2e,%7.2e,%7.2e) dist=%6.2e\n",
-	     i,xProject(i,0),xProject(i,1),xProject(i,2),x(i,0),x(i,1),x(i,2),
+             i,xProject(i,0),xProject(i,1),xProject(i,2),x(i,0),x(i,1),x(i,2),
              x(i,0)-xProject(i,0),x(i,1)-xProject(i,1),x(i,2)-xProject(i,2),
              SQRT( SQR(x(i,0)-xProject(i,0))+SQR(x(i,1)-xProject(i,1))+SQR(x(i,2)-xProject(i,2))) );
   }
@@ -1475,7 +1475,7 @@ project( intArray & subSurfaceIndex,
     for( i=rBase; i<=rBound; i++ )
     {
       if( found(i)>maybeFound ) // this point has already been found, or cannot be found, skip it
-	continue;
+        continue;
      
 
       // if no guess is given, choose surface found for the previous point ** not in vector version ***
@@ -1486,43 +1486,43 @@ project( intArray & subSurfaceIndex,
 
       // first check the old sub-surface
       if( s==0 )
-	index(i) = initialGuessForSubSurface(i)!=subSurfaceToIgnore ? initialGuessForSubSurface(i) : -1;
+        index(i) = initialGuessForSubSurface(i)!=subSurfaceToIgnore ? initialGuessForSubSurface(i) : -1;
       else
-	index(i)=-1;
+        index(i)=-1;
 
       if( index(i)<0 )
       {
-	// look for closest surface based on the bounding boxes
-	real minimumDistanceToABox=distMin(i);
-	for( int ss=startingSurface(i); ss<numberOfSurfaces; ss++ )
-	{
-	  if( ss!=subSurfaceToIgnore && ss!=initialGuessForSubSurface(i) && isVisible(ss) )
-	  {
-	    // check the distance to the bounding box 
-	    // const RealArray & boundingBox = surfaces[ss].getMapping().getBoundingBox();
+        // look for closest surface based on the bounding boxes
+        real minimumDistanceToABox=distMin(i);
+        for( int ss=startingSurface(i); ss<numberOfSurfaces; ss++ )
+        {
+          if( ss!=subSurfaceToIgnore && ss!=initialGuessForSubSurface(i) && isVisible(ss) )
+          {
+            // check the distance to the bounding box 
+            // const RealArray & boundingBox = surfaces[ss].getMapping().getBoundingBox();
             Mapping & map = surfaces[ss].getMapping();
-	    real boxDim=0., distanceToBox=0.;
-	    for( int dir=0; dir<rangeDimension; dir++ )
-	    {
+            real boxDim=0., distanceToBox=0.;
+            for( int dir=0; dir<rangeDimension; dir++ )
+            {
               real xa=(real)map.getRangeBound(Start,dir), xb=(real)map.getRangeBound(End,dir);
-	      
+              
               boxDim=max(boxDim,xb-xa);
-	      real dist= max(max(xa-x(i,dir),x(i,dir)-xb),0.);
-	      distanceToBox+=SQR(dist);
-	    }
-	    if( distanceToBox < SQR(boxDim)*.01 )
-	    { // point is inside this bounding box
-	      index(i)=ss;
-	      minimumDistanceToABox=0.;
-	      break;
-	    }
-	    else if( distanceToBox<minimumDistanceToABox )
-	    {
-	      index(i)=ss;
-	      minimumDistanceToABox=distanceToBox;
-	    }
-	  }
-	}
+              real dist= max(max(xa-x(i,dir),x(i,dir)-xb),0.);
+              distanceToBox+=SQR(dist);
+            }
+            if( distanceToBox < SQR(boxDim)*.01 )
+            { // point is inside this bounding box
+              index(i)=ss;
+              minimumDistanceToABox=0.;
+              break;
+            }
+            else if( distanceToBox<minimumDistanceToABox )
+            {
+              index(i)=ss;
+              minimumDistanceToABox=distanceToBox;
+            }
+          }
+        }
         startingSurface(i)=index(i)>=0 ? index(i)+1 : numberOfSurfaces;  // start search here next time
       }
 
@@ -1545,14 +1545,14 @@ project( intArray & subSurfaceIndex,
   
       // collect a contiguous set of points that need to be inverted from the SAME surface
       while( iNext<=rBound && (found(iNext)>maybeFound || index(iNext)<0) )  // skip points we have found already
-	iNext++;
+        iNext++;
       if( iNext>rBound )
-	break;
+        break;
       
       int iStart=iNext, iEnd=iNext;
       int surf=index(iStart);
       while( iEnd<rBound && found(iEnd+1)<=maybeFound && index(iEnd+1)==surf )
-	iEnd++;
+        iEnd++;
 
       iNext=iEnd+1;  // here is where we start the next search
 
@@ -1560,7 +1560,7 @@ project( intArray & subSurfaceIndex,
       Range Ri(iStart,iEnd);
 
       if( Mapping::debug & 2 )
-	printf("*** try to invert sub-surface %i for points (%i,%i) \n",surf,iStart,iEnd);
+        printf("*** try to invert sub-surface %i for points (%i,%i) \n",surf,iStart,iEnd);
 
       bool trimmedSurface = surfaces[surf].getClassName()=="TrimmedMapping";
 
@@ -1569,13 +1569,13 @@ project( intArray & subSurfaceIndex,
       real time1=getCPU();
       if( trimmedSurface )
       {
-	if( invertUntrimmedSurface )
-	{
+        if( invertUntrimmedSurface )
+        {
           TrimmedMapping & trim=(TrimmedMapping&)(surfaces[surf].getMapping());
-	  trim.untrimmedSurface()->inverseMapC(x(Ri,xAxes),rP(Ri,Axes));
-	}
-	else
-	  surfaces[surf].inverseMapC(x(Ri,xAxes),rP(Ri,Axes),Overture::nullRealDistributedArray(),mapParams);  
+          trim.untrimmedSurface()->inverseMapC(x(Ri,xAxes),rP(Ri,Axes));
+        }
+        else
+          surfaces[surf].inverseMapC(x(Ri,xAxes),rP(Ri,Axes),Overture::nullRealDistributedArray(),mapParams);  
       }
       else
       {
@@ -1592,95 +1592,95 @@ project( intArray & subSurfaceIndex,
       time1=getCPU();
       if( trimmedSurface )
       {
-	// for a TrimmedMapping we evaluate the untrimmed surface since the point r has 
-	// already been projected onto the valid part of the TrimmedMapping
-	TrimmedMapping & trim =(TrimmedMapping &) surfaces[surf].getMapping();
-	trim.untrimmedSurface()->mapC(r2(Ri,Axes),xx(Ri,xAxes),xr(Ri,xAxes,Axes));
+        // for a TrimmedMapping we evaluate the untrimmed surface since the point r has 
+        // already been projected onto the valid part of the TrimmedMapping
+        TrimmedMapping & trim =(TrimmedMapping &) surfaces[surf].getMapping();
+        trim.untrimmedSurface()->mapC(r2(Ri,Axes),xx(Ri,xAxes),xr(Ri,xAxes,Axes));
       }
       else
-	surfaces[surf].mapC(r2(Ri,Axes),xx(Ri,xAxes),xr(Ri,xAxes,Axes));
+        surfaces[surf].mapC(r2(Ri,Axes),xx(Ri,xAxes),xr(Ri,xAxes,Axes));
 
       timing[timeToProjectEvaluateMapping]+=getCPU()-time1;
         // ***** where ***
       for( i=iStart; i<=iEnd; i++ )
       {
-	if( trimmedSurface && !invertUntrimmedSurface )
-	{
-	  possibleSurface(i)=mask(i); // mask returned from inverseMap, -1=outside, 1=inside
-	}
-	else
-	  possibleSurface(i) = fabs(rP(i,0)-.5)<=.5 && fabs(rP(i,1)-.5)<=.5 ?  insideSurface : outsideSurface;
+        if( trimmedSurface && !invertUntrimmedSurface )
+        {
+          possibleSurface(i)=mask(i); // mask returned from inverseMap, -1=outside, 1=inside
+        }
+        else
+          possibleSurface(i) = fabs(rP(i,0)-.5)<=.5 && fabs(rP(i,1)-.5)<=.5 ?  insideSurface : outsideSurface;
       }
-	
+        
       // dist(i) = distance from x to it's projected value.
       dist(Ri) = SQR(xx(Ri,0)-x(Ri,0))+SQR(xx(Ri,1)-x(Ri,1))+SQR(xx(Ri,2)-x(Ri,2));
 
       if( s==0  ) // *wdh* 980915 
       {
-	// If we have moved off the previous surface we were on then increase the distance to this
+        // If we have moved off the previous surface we were on then increase the distance to this
         // previous surface a bit so that we prefer to move onto another nearby surface. 
         // This helps us go around corners.
-	// Add on the distance between the current point and the previous point
+        // Add on the distance between the current point and the previous point
 
         
         // stepLength = distance from last position to the next
-	const realArray & stepLength=evaluate(SQR(xProject(Ri,0)-x(Ri,0))+
-					      SQR(xProject(Ri,1)-x(Ri,1))+
-					      SQR(xProject(Ri,2)-x(Ri,2)));
+        const realArray & stepLength=evaluate(SQR(xProject(Ri,0)-x(Ri,0))+
+                                              SQR(xProject(Ri,1)-x(Ri,1))+
+                                              SQR(xProject(Ri,2)-x(Ri,2)));
 
-	  /* ----
-	  where( initialGuessForSubSurface(Ri)>=0 && possibleSurface(Ri)==outsideSurface )
-	  {
-	    dist(Ri) += stepLength(Ri);
-	  }
+          /* ----
+          where( initialGuessForSubSurface(Ri)>=0 && possibleSurface(Ri)==outsideSurface )
+          {
+            dist(Ri) += stepLength(Ri);
+          }
          --- */
         if( TRUE )
-	{
-	  // check for corners. If we have gone around a sharp corner then total step length may
+        {
+          // check for corners. If we have gone around a sharp corner then total step length may
           // have decreased significantly. We need to correct this.
-	  for( i=iStart; i<=iEnd; i++ )
-	  {
-	    if(	possibleSurface(i)==outsideSurface && initialGuessForSubSurface(i)>=0 && subSurfaceIndex(i)>=0 &&
-		rP(i,0)!=Mapping::bogus )
-	    {
-	      const real dist1=SQR(xProject(i,0)-xx(i,0))+SQR(xProject(i,1)-xx(i,1))+SQR(xProject(i,2)-xx(i,2));
-	      // *** if(  dist1<.75*dist2 || dist2<.75*dist1)  // note that the distances are squared .75*.75=
-	      if(  dist1<.75*stepLength(i) )
-	      {
+          for( i=iStart; i<=iEnd; i++ )
+          {
+            if( possibleSurface(i)==outsideSurface && initialGuessForSubSurface(i)>=0 && subSurfaceIndex(i)>=0 &&
+                rP(i,0)!=Mapping::bogus )
+            {
+              const real dist1=SQR(xProject(i,0)-xx(i,0))+SQR(xProject(i,1)-xx(i,1))+SQR(xProject(i,2)-xx(i,2));
+              // *** if(  dist1<.75*dist2 || dist2<.75*dist1)  // note that the distances are squared .75*.75=
+              if(  dist1<.75*stepLength(i) )
+              {
                 // ***** need to check distance for actual point found on the composite surface****
-		if( Mapping::debug & 2 )
-		{
-		  printf("***CS: point %4i moved off previous surface, maybe a corner. stepLength=%e, "
-			 "ds_new=%e, xx=(%8.3e,%8.3e,%8.3e)\n",i,SQRT(stepLength(i)),SQRT(dist1),
-			 xx(i,0),xx(i,1),xx(i,2));
-		}
-		
+                if( Mapping::debug & 2 )
+                {
+                  printf("***CS: point %4i moved off previous surface, maybe a corner. stepLength=%e, "
+                         "ds_new=%e, xx=(%8.3e,%8.3e,%8.3e)\n",i,SQRT(stepLength(i)),SQRT(dist1),
+                         xx(i,0),xx(i,1),xx(i,2));
+                }
+                
                 dist(i)+=stepLength(i);  // increase this so we prefer to move around the corner.
-		
-		corner(i)=TRUE;            // this is a corner.
-		cornerFound=TRUE;
-		xSave(i,xAxes)=x(i,xAxes); // save orginal x
+                
+                corner(i)=TRUE;            // this is a corner.
+                cornerFound=TRUE;
+                xSave(i,xAxes)=x(i,xAxes); // save orginal x
                 // replace x by it's projected value on the boundary 
-		// ***no*** x(i,xAxes)=xx(i,xAxes);   // ******************** this could be wrong ***********
+                // ***no*** x(i,xAxes)=xx(i,xAxes);   // ******************** this could be wrong ***********
 
-	      }
-	      else
-	      {
-		printf("***CS: point %4i has moved off the previous surface, NO corner? dist1=%e, stepLength=%e\n",
-		       i,dist1,SQRT(stepLength(i)));
-	      }
-	    }
-	  }
-	}
-	
+              }
+              else
+              {
+                printf("***CS: point %4i has moved off the previous surface, NO corner? dist1=%e, stepLength=%e\n",
+                       i,dist1,SQRT(stepLength(i)));
+              }
+            }
+          }
+        }
+        
       }
 
       if( Mapping::debug & 2 )
-	for( i=iStart; i<=iEnd; i++ )
-	  printf("CS: surface %i : point i=%4i, rP=(%8.3e,%8.3e), dist=%7.2e, possibleSurface=%s,"
-		 " best so far=%i \n",
-		 surf,i,rP(i,0),rP(i,1),dist(i),possibleSurface(i)==1 ? "inside " : "outside",
-		 subSurfaceIndex(i));
+        for( i=iStart; i<=iEnd; i++ )
+          printf("CS: surface %i : point i=%4i, rP=(%8.3e,%8.3e), dist=%7.2e, possibleSurface=%s,"
+                 " best so far=%i \n",
+                 surf,i,rP(i,0),rP(i,1),dist(i),possibleSurface(i)==1 ? "inside " : "outside",
+                 subSurfaceIndex(i));
       
     }
     
@@ -1690,58 +1690,58 @@ project( intArray & subSurfaceIndex,
       if( surf>=0 && possibleSurface(i) && found(i)!=surfaceFound )
       {
         if( possibleSurface(i)==insideSurface && surf==initialGuessForSubSurface(i) )
-	{
-	  if( fabs(rP(i,0)-.5)<=.5 && fabs(rP(i,1)-.5)<=.5 ) // ****** need ?? ******** is this correct? ******
-  	  { // we are inside the same surface as the last step, assume this is good if we are close
-	    // compute distance from the last point
-	    real stepLength=SQR(xx(i,0)-xProject(i,0))+SQR(xx(i,1)-xProject(i,1))+SQR(xx(i,2)-xProject(i,2));
+        {
+          if( fabs(rP(i,0)-.5)<=.5 && fabs(rP(i,1)-.5)<=.5 ) // ****** need ?? ******** is this correct? ******
+          { // we are inside the same surface as the last step, assume this is good if we are close
+            // compute distance from the last point
+            real stepLength=SQR(xx(i,0)-xProject(i,0))+SQR(xx(i,1)-xProject(i,1))+SQR(xx(i,2)-xProject(i,2));
 
-	    distMin(i)=dist(i);
-	    subSurfaceIndex(i)=surf;
-	    rProject(i,Axes)=rP(i,Axes);
-	    xProject(i,xAxes)=xx(i,xAxes);
-	    xrProject(i,xAxes,Axes)=xr(i,xAxes,Axes);
+            distMin(i)=dist(i);
+            subSurfaceIndex(i)=surf;
+            rProject(i,Axes)=rP(i,Axes);
+            xProject(i,xAxes)=xx(i,xAxes);
+            xrProject(i,xAxes,Axes)=xr(i,xAxes,Axes);
 
             const real stepLengthFactor=.25;  // =1.
 
              // subSurfaceIndex(i)<0 on the first time thru
-	    if( dist(i)<=stepLengthFactor*stepLength || subSurfaceIndex(i)<0 )
-	      found(i)=surfaceFound;
-	    else
-	    {  // not close, call it "outside"
-	      found(i)=foundButOutside;
+            if( dist(i)<=stepLengthFactor*stepLength || subSurfaceIndex(i)<0 )
+              found(i)=surfaceFound;
+            else
+            {  // not close, call it "outside"
+              found(i)=foundButOutside;
               if( debug & 2 )
-  	        printf("*** CS:WARNING pt %3i inside same surface %i, as before, but not close?? "
+                printf("*** CS:WARNING pt %3i inside same surface %i, as before, but not close?? "
                        "dist=%e > stepLength=%e*** \n", i,surf,SQRT(dist(i)),SQRT(stepLength));
-	    }
-	  }
-	  else
-	  {
+            }
+          }
+          else
+          {
             if( Mapping::debug & 2 )
               printf("*** CS:point has crossed the boundary of surface %i, maybe moving to a new surface \n",surf);
-	  }
-	}
+          }
+        }
         // **** if not marching: if both surfaces are close, choose the one that keeps the normal continuous
 /* -------
         if( !marching && i>rBase && dist(i)< eps )
-	{
-	  newNormal(0,xAxes) = 0;
-	  if( newNormal.normal(i-1) > normal(i).normal(i-1) )
-	  {
+        {
+          newNormal(0,xAxes) = 0;
+          if( newNormal.normal(i-1) > normal(i).normal(i-1) )
+          {
             // prefer this new point.
-	  }
-	}
+          }
+        }
 ----- */
         if( dist(i)<distMin(i) )
-	{
+        {
           // this surface is closer than any previous
           found(i)=possibleSurface(i)==outsideSurface ? foundButOutside : maybeFound;  
           distMin(i)=dist(i);
-	  subSurfaceIndex(i)=surf;
+          subSurfaceIndex(i)=surf;
           rProject(i,Axes)=rP(i,Axes);
           xProject(i,xAxes)=xx(i,xAxes);
           xrProject(i,xAxes,Axes)=xr(i,xAxes,Axes);
-	}
+        }
       }
     }
     
@@ -1769,8 +1769,8 @@ project( intArray & subSurfaceIndex,
     {
       if( corner(i) )
       {
-	// we have gone over a corner -- re-adjust the position x, which was previously changed to be
-	// the intersection point with the corner, to be approximately the correct distance along the new surface
+        // we have gone over a corner -- re-adjust the position x, which was previously changed to be
+        // the intersection point with the corner, to be approximately the correct distance along the new surface
         //
         //                   xOld   xP       xSave
         //       =============O=====O-------->O
@@ -1779,99 +1779,99 @@ project( intArray & subSurfaceIndex,
         //                              \
         //                               X <------- rotate tangent around to here
 
-	tangent(0,xAxes)=xSave(i,xAxes)-xProject(i,xAxes);
+        tangent(0,xAxes)=xSave(i,xAxes)-xProject(i,xAxes);
 
-	// we need to determine a new tangent vector 
-	// rotate the tangent vector around the corner by an angle theta.
-	// theta is the angle between the old normal and the new normal.
-	const real cosTheta = sum(oldNormal(i,xAxes)*normal(i,xAxes));
+        // we need to determine a new tangent vector 
+        // rotate the tangent vector around the corner by an angle theta.
+        // theta is the angle between the old normal and the new normal.
+        const real cosTheta = sum(oldNormal(i,xAxes)*normal(i,xAxes));
            
         if( cosTheta<.75 ) // no need to adjust if cos(theta) is near +1.
-	{
-	  // b = the vector orthogonal to oldNormal and in the plane of oldNormal and normal
-	  // (b is not the tangent since the tangent may cross the corner at an angle).
-	  b(0,xAxes)=normal(i,xAxes)-cosTheta*oldNormal(i,xAxes);
-	  real normB =sum(b*b);
-	  if( fabs(normB)>epsilon )
-	  {
-	    b*=1./SQRT(normB);
-	  
-	    const real sinTheta = sum(b*normal(i,xAxes));
+        {
+          // b = the vector orthogonal to oldNormal and in the plane of oldNormal and normal
+          // (b is not the tangent since the tangent may cross the corner at an angle).
+          b(0,xAxes)=normal(i,xAxes)-cosTheta*oldNormal(i,xAxes);
+          real normB =sum(b*b);
+          if( fabs(normB)>epsilon )
+          {
+            b*=1./SQRT(normB);
+          
+            const real sinTheta = sum(b*normal(i,xAxes));
 
-	    // tangent = alpha*a() + beta*b() + gamma*c()
-	    //       a() = old normal
-	    //       c() = new Normal X old Normal (normalized)
-	    //       b() = a() X c() =  normal() - cosTheta*oldNormal()  (normalized)
-	    // new tangent = (alpha*cos-gamma*sin) a() + (+alpha*sin+beta*cos) b() + gamma c()
-	    //             = oldTangent + (alpha*(cos-1)+gamma*sin) a() + (-alpha*sin+beta*(cos-1)) b()
-	    real alpha=sum(tangent*oldNormal(i,xAxes));
-	    real beta=sum(tangent*b);
-	    tangent(0,xAxes)+=(alpha*(cosTheta-1.)-beta*sinTheta)*oldNormal(i,xAxes) +
-	      (alpha*sinTheta+beta*(cosTheta-1.))*b(0,xAxes);
+            // tangent = alpha*a() + beta*b() + gamma*c()
+            //       a() = old normal
+            //       c() = new Normal X old Normal (normalized)
+            //       b() = a() X c() =  normal() - cosTheta*oldNormal()  (normalized)
+            // new tangent = (alpha*cos-gamma*sin) a() + (+alpha*sin+beta*cos) b() + gamma c()
+            //             = oldTangent + (alpha*(cos-1)+gamma*sin) a() + (-alpha*sin+beta*(cos-1)) b()
+            real alpha=sum(tangent*oldNormal(i,xAxes));
+            real beta=sum(tangent*b);
+            tangent(0,xAxes)+=(alpha*(cosTheta-1.)-beta*sinTheta)*oldNormal(i,xAxes) +
+              (alpha*sinTheta+beta*(cosTheta-1.))*b(0,xAxes);
       
       
-	    // findOutwardTangent( Mapping & map, const realArray & r, const realArray & x, realArray & outwardTangent );
+            // findOutwardTangent( Mapping & map, const realArray & r, const realArray & x, realArray & outwardTangent );
       
-	    xProject(i,xAxes)+=tangent(0,xAxes);
-	    printf("CS: Moving pt %4i around the corner n=(%4.1f,%4.1f,%4.1f), t=(%4.1f,%4.1f,%4.1f), cos=%6.2e"
-		   " sin=%6.2e b=(%4.1f,%4.1f,%4.1f), n_old=(%4.1f,%4.1f,%4.1f)\n",i,
-		   normal(i,0),normal(i,1),normal(i,2), tangent(0,0),tangent(0,1),tangent(0,2),cosTheta,sinTheta,
-		   b(0,0),b(0,1),b(0,2), oldNormal(i,0),oldNormal(i,1),oldNormal(i,2));
-	  }
-	  else if( cosTheta<0. )
-	  {
-	    // this must be a 180 degree turn! really need to get the tangent to the edge in this case
-	    printf("CompositeSurface:project:WARNING: the corner has apparently rotated by 180 degrees, cos(theta)=%e\n"
-		   "Setting t -> -t , this case should be handled in a better way",cosTheta);
-	  
-	    xProject(i,xAxes)-=tangent(0,xAxes);  // reverse the tangent
-	  }
-	
-	  // re-project this point
-	  if( TRUE )   // ***** fix this *** duplicate code from above
-	  {
-	    // invert the surface mapping.
-	    int surf=subSurfaceIndex(i);
-	    const bool trimmedSurface = surfaces[surf].getClassName()=="TrimmedMapping";
+            xProject(i,xAxes)+=tangent(0,xAxes);
+            printf("CS: Moving pt %4i around the corner n=(%4.1f,%4.1f,%4.1f), t=(%4.1f,%4.1f,%4.1f), cos=%6.2e"
+                   " sin=%6.2e b=(%4.1f,%4.1f,%4.1f), n_old=(%4.1f,%4.1f,%4.1f)\n",i,
+                   normal(i,0),normal(i,1),normal(i,2), tangent(0,0),tangent(0,1),tangent(0,2),cosTheta,sinTheta,
+                   b(0,0),b(0,1),b(0,2), oldNormal(i,0),oldNormal(i,1),oldNormal(i,2));
+          }
+          else if( cosTheta<0. )
+          {
+            // this must be a 180 degree turn! really need to get the tangent to the edge in this case
+            printf("CompositeSurface:project:WARNING: the corner has apparently rotated by 180 degrees, cos(theta)=%e\n"
+                   "Setting t -> -t , this case should be handled in a better way",cosTheta);
+          
+            xProject(i,xAxes)-=tangent(0,xAxes);  // reverse the tangent
+          }
+        
+          // re-project this point
+          if( TRUE )   // ***** fix this *** duplicate code from above
+          {
+            // invert the surface mapping.
+            int surf=subSurfaceIndex(i);
+            const bool trimmedSurface = surfaces[surf].getClassName()=="TrimmedMapping";
 
-	    rP(i,Axes)=rProject(i,Axes);
-	    if( trimmedSurface )
-	    {
-	      if( invertUntrimmedSurface )
-	      {
-		TrimmedMapping & trim=(TrimmedMapping&)(surfaces[surf].getMapping());
-		trim.untrimmedSurface()->inverseMapC(xProject(i,xAxes),rP(i,Axes));
-	      }
-	      else
-		surfaces[surf].inverseMapC(xProject(i,xAxes),rP(i,Axes),
-					   Overture::nullRealDistributedArray(),mapParams);  
-	    }
-	    else
-	    {
-	      surfaces[surf].inverseMapC(xProject(i,xAxes),rP(i,Axes));
-	    }
+            rP(i,Axes)=rProject(i,Axes);
+            if( trimmedSurface )
+            {
+              if( invertUntrimmedSurface )
+              {
+                TrimmedMapping & trim=(TrimmedMapping&)(surfaces[surf].getMapping());
+                trim.untrimmedSurface()->inverseMapC(xProject(i,xAxes),rP(i,Axes));
+              }
+              else
+                surfaces[surf].inverseMapC(xProject(i,xAxes),rP(i,Axes),
+                                           Overture::nullRealDistributedArray(),mapParams);  
+            }
+            else
+            {
+              surfaces[surf].inverseMapC(xProject(i,xAxes),rP(i,Axes));
+            }
       
-	    // evaluate the mapping to find the projected point
-	    // first make sure the r values are in [0,1]
-	    r2(i,Axes)=max(0.,min(1.,rP(i,Axes)));  
-	    if( trimmedSurface )
-	    {
-	      // for a TrimmedMapping we evaluate the untrimmed surface since the point r has 
-	      // already been projected onto the valid part of the TrimmedMapping
-	      TrimmedMapping & trim =(TrimmedMapping &) surfaces[surf].getMapping();
-	      trim.untrimmedSurface()->mapC(r2(i,Axes),xx(i,xAxes),xr(i,xAxes,Axes));
-	    }
-	    else
-	      surfaces[surf].mapC(r2(i,Axes),xx(i,xAxes),xr(i,xAxes,Axes));
-	  
-	    rProject(i,Axes)=r2(i,Axes);
-	    xProject(i,xAxes)=xx(i,xAxes);
-	    xrProject(i,xAxes,Axes)=xr(i,xAxes,Axes);
-	  }
-	}
+            // evaluate the mapping to find the projected point
+            // first make sure the r values are in [0,1]
+            r2(i,Axes)=max(0.,min(1.,rP(i,Axes)));  
+            if( trimmedSurface )
+            {
+              // for a TrimmedMapping we evaluate the untrimmed surface since the point r has 
+              // already been projected onto the valid part of the TrimmedMapping
+              TrimmedMapping & trim =(TrimmedMapping &) surfaces[surf].getMapping();
+              trim.untrimmedSurface()->mapC(r2(i,Axes),xx(i,xAxes),xr(i,xAxes,Axes));
+            }
+            else
+              surfaces[surf].mapC(r2(i,Axes),xx(i,xAxes),xr(i,xAxes,Axes));
+          
+            rProject(i,Axes)=r2(i,Axes);
+            xProject(i,xAxes)=xx(i,xAxes);
+            xrProject(i,xAxes,Axes)=xr(i,xAxes,Axes);
+          }
+        }
 
-	x(i,xAxes)=xSave(i,xAxes); // restore original point
-	
+        x(i,xAxes)=xSave(i,xAxes); // restore original point
+        
       }
       
     }
@@ -1893,8 +1893,8 @@ project( intArray & subSurfaceIndex,
     if( found(i)==notFound || found(i)==unableToFind )
     {
       if( Mapping::debug & 2 )
-	printf("***CompositeSurface::project:ERROR: point i=%5i, x=(%e,%e,%e) : unable to project! \n",
-	       i,x(i,0),x(i,1),x(i,2));
+        printf("***CompositeSurface::project:ERROR: point i=%5i, x=(%e,%e,%e) : unable to project! \n",
+               i,x(i,0),x(i,1),x(i,2));
       subSurfaceIndex(i)=-1;
       xrProject(i,Range(0,2),Range(0,1))=0.;
       xrProject(i,0,0)=1.;
@@ -1903,14 +1903,14 @@ project( intArray & subSurfaceIndex,
     else if( found(i)==foundButOutside )
     {
       if( Mapping::debug & 2 )
-	printf("***CS::project: i=%5i, xProject=(%10.3e,%10.3e,%10.3e) n=(%4.2f,%4.2f,%4.2f) (subSurf %i): outside but close! \n",
-	       i,x(i,0),x(i,1),x(i,2),normal(i,0),normal(i,1),normal(i,2),subSurfaceIndex(i));
+        printf("***CS::project: i=%5i, xProject=(%10.3e,%10.3e,%10.3e) n=(%4.2f,%4.2f,%4.2f) (subSurf %i): outside but close! \n",
+               i,x(i,0),x(i,1),x(i,2),normal(i,0),normal(i,1),normal(i,2),subSurfaceIndex(i));
     }
     else
     {
       if( Mapping::debug & 2 )
-	printf("***CS::project: i=%5i, xProject=(%10.3e,%10.3e,%10.3e) n=(%4.2f,%4.2f,%4.2f)  (subSurf %i) \n",
-	       i,xProject(i,0),xProject(i,1),xProject(i,2),normal(i,0),normal(i,1),normal(i,2),subSurfaceIndex(i));
+        printf("***CS::project: i=%5i, xProject=(%10.3e,%10.3e,%10.3e) n=(%4.2f,%4.2f,%4.2f)  (subSurf %i) \n",
+               i,xProject(i,0),xProject(i,1),xProject(i,2),normal(i,0),normal(i,1),normal(i,2),subSurfaceIndex(i));
     }
   }
   
@@ -1920,12 +1920,12 @@ project( intArray & subSurfaceIndex,
 
 void CompositeSurface::
 oldProject( intArray & subSurfaceIndex,
-	    realArray & x, 
-	    realArray & rProject, 
-	    realArray & xProject,
-	    realArray & xrProject,
-	    realArray & normal /* = Overture::nullRealDistributedArray() */,
-	    const intArray & ignoreThisSubSurface /* = Overture::nullIntArray() */ )
+            realArray & x, 
+            realArray & rProject, 
+            realArray & xProject,
+            realArray & xrProject,
+            realArray & normal /* = Overture::nullRealDistributedArray() */,
+            const intArray & ignoreThisSubSurface /* = Overture::nullIntArray() */ )
 //===========================================================================
 // /Purpose: 
 //   Project the points x(i,0:2) onto the surface. Also return the sub-surface index
@@ -1991,30 +1991,30 @@ oldProject( intArray & subSurfaceIndex,
         // look for closest surface based on the bounding boxes
         real minimumDistanceToABox=distMin;
         for( int ss=0; ss<numberOfSurfaces; ss++ )
-	{
-	  if( !surfaceWasChecked(ss) && ss!=subSurfaceToIgnore )
-	  {
+        {
+          if( !surfaceWasChecked(ss) && ss!=subSurfaceToIgnore )
+          {
             // check the distance to the bounding box 
             const RealArray & boundingBox = surfaces[ss].getMapping().approximateGlobalInverse->getBoundingBox();
-	    real distanceToBox=0.;
-	    for( int dir=0; dir<rangeDimension; dir++ )
-	    {
-	      real dist= max(max(boundingBox(Start,dir)-x(i,dir),x(i,dir)-boundingBox(End,dir)),0.);
-	      distanceToBox+=SQR(dist);
-	    }
+            real distanceToBox=0.;
+            for( int dir=0; dir<rangeDimension; dir++ )
+            {
+              real dist= max(max(boundingBox(Start,dir)-x(i,dir),x(i,dir)-boundingBox(End,dir)),0.);
+              distanceToBox+=SQR(dist);
+            }
             if( distanceToBox == 0. )
-	    { // point is inside this bounding box
-	      index=ss;
+            { // point is inside this bounding box
+              index=ss;
               minimumDistanceToABox=0.;
-	      break;
-	    }
+              break;
+            }
             else if( distanceToBox<minimumDistanceToABox )
-	    {
-	      index=ss;
-	      minimumDistanceToABox=distanceToBox;
-	    }
-	  }
-	}
+            {
+              index=ss;
+              minimumDistanceToABox=distanceToBox;
+            }
+          }
+        }
       }
 
       if( index<0 )
@@ -2033,18 +2033,18 @@ oldProject( intArray & subSurfaceIndex,
         if( Mapping::debug & 2 )
           printf(" non-trimmed surface : rProject=(%e,%e)",rProject(i,0),rProject(i,1));
         if( fabs(rProject(i,0)-.5)<=.51 && fabs(rProject(i,1)-.5)<=.51 )
-	{ // inside or close
+        { // inside or close
           rr(0,Axes)=max(0.,min(1.,rProject(i,Axes)));  // **** wdh
           surfaces[index].map(rr,xx,xr);
 
           possibleSurface=fabs(rProject(i,0)-.5)<=.5 && fabs(rProject(i,1)-.5)<=.5 ?  1 : 2;
-	  dist = SQR(xx(0,0)-x(i,0))+SQR(xx(0,1)-x(i,1))+SQR(xx(0,2)-x(i,2));
-	}
+          dist = SQR(xx(0,0)-x(i,0))+SQR(xx(0,1)-x(i,1))+SQR(xx(0,2)-x(i,2));
+        }
       }
       else
       {
-	const TrimmedMapping & trim = (TrimmedMapping &) surfaces[index].getMapping();
-	
+        const TrimmedMapping & trim = (TrimmedMapping &) surfaces[index].getMapping();
+        
         // invert trimmed surface
         trim.surface->inverseMapC(x(i,xAxes),rProject(i,Axes));
 
@@ -2058,61 +2058,61 @@ oldProject( intArray & subSurfaceIndex,
           printf(" after evaluating trimmed surface, mask=%i",mask(0,0));
 
         if( mask(0,0)>0 || trim.distanceToBoundary(0)<1.e-2 )  // ***
-	{
+        {
           possibleSurface= mask(0,0)>0 ? 1 : 2;  // 1=inside, 2 = outside but may be close to trimmed boundary
           if( Mapping::debug & 2 && mask(0,0)<=0 )
             printf("*** close to a boundary of a trimmed surface *** ");
           dist = SQR(xx(0,0)-x(i,0))+SQR(xx(0,1)-x(i,1))+SQR(xx(0,2)-x(i,2));
           if( initialGuessForSubSurface>=0 && possibleSurface== 2 )
-	  { // this is approximate *** ***** xProject may not be defined the first time ****
+          { // this is approximate *** ***** xProject may not be defined the first time ****
             dist += (SQR(xProject(i,0)-x(i,0))+SQR(xProject(i,1)-x(i,1))+SQR(xProject(i,2)-x(i,2)));
-	  }
-	}
+          }
+        }
         else
-	{
+        {
           if( Mapping::debug & 2 )
             printf("*** from trimmed surface: trim.distanceToBoundary(i)=%e \n",trim.distanceToBoundary(0));
-	}
+        }
       }
       if( possibleSurface )
       {
         if( Mapping::debug & 2 )
           printf(", distance=%e \n",dist);
         if( possibleSurface==1 && index==initialGuessForSubSurface )
-	{
-	  if( fabs(rProject(i,0)-.5)<=.5 && fabs(rProject(i,1)-.5)<=.5 )
-  	  { // we are inside the same surface as the last step, assume this is good if we are close
-	    // compute distance from the last point
-	    real stepLength=SQR(xx(0,0)-xProject(i,0))+SQR(xx(0,1)-xProject(i,1))+SQR(xx(0,2)-xProject(i,2));
-	    if( dist<=stepLength )
-	    {
+        {
+          if( fabs(rProject(i,0)-.5)<=.5 && fabs(rProject(i,1)-.5)<=.5 )
+          { // we are inside the same surface as the last step, assume this is good if we are close
+            // compute distance from the last point
+            real stepLength=SQR(xx(0,0)-xProject(i,0))+SQR(xx(0,1)-xProject(i,1))+SQR(xx(0,2)-xProject(i,2));
+            if( dist<=stepLength )
+            {
               found=possibleSurface;
-	      distMin=dist;
-	      subSurfaceIndex(i)=index;
-	      xProject(i,xAxes)=xx(0,xAxes);
-	      xrProject(i,xAxes,Axes)=xr(0,xAxes,Axes);
-	      break;
-	    }
+              distMin=dist;
+              subSurfaceIndex(i)=index;
+              xProject(i,xAxes)=xx(0,xAxes);
+              xrProject(i,xAxes,Axes)=xr(0,xAxes,Axes);
+              break;
+            }
             else
-	    {
-	      if( Mapping::debug & 2 )
-		printf(" *** INFO inside initial surface %i, but not close?? *** \n",index);
-	    }
-	  }
-	  else
-	  {
+            {
+              if( Mapping::debug & 2 )
+                printf(" *** INFO inside initial surface %i, but not close?? *** \n",index);
+            }
+          }
+          else
+          {
             if( Mapping::debug & 2 )
               printf(" *** point has crossed the boundary of surface %i, maybe moving to a new surface \n",index);
-	  }
-	}
+          }
+        }
         if( dist<distMin )
-	{
+        {
           found=possibleSurface;
           distMin=dist;
-	  subSurfaceIndex(i)=index;
+          subSurfaceIndex(i)=index;
           xProject(i,xAxes)=xx(0,xAxes);
           xrProject(i,xAxes,Axes)=xr(0,xAxes,Axes);
-	}
+        }
       }
       else
       {
@@ -2292,7 +2292,7 @@ get( const GenericDataBase & dir, const aString & name)    // get from a databas
   if( CompositeSurface::className != "CompositeSurface" )
   {
     cout << "CompositeSurface::get ERROR in className!, got=[" 
-	 << (const char *) CompositeSurface::className 
+         << (const char *) CompositeSurface::className 
          << "]" << endl;
   }
 
@@ -2376,22 +2376,22 @@ get( const GenericDataBase & dir, const aString & name)    // get from a databas
       Mapping & map = (*this)[i];
       for( int axis=0; axis<map.getRangeDimension(); axis++ )
       {
-	if( i==0 )
-	{
-	  xBound(Start,axis)= REAL_MAX;
-	  xBound(End  ,axis)=-REAL_MAX;
-	}
-	b = map.getRangeBound(Start,axis);
-	if( b.isFinite() )
-	  xBound(Start,axis)=min(xBound(Start,axis),(real)b);
-	b = map.getRangeBound(End,axis);
-	if( b.isFinite() )
-	  xBound(End,axis)=max(xBound(End,axis),(real)b);
+        if( i==0 )
+        {
+          xBound(Start,axis)= REAL_MAX;
+          xBound(End  ,axis)=-REAL_MAX;
+        }
+        b = map.getRangeBound(Start,axis);
+        if( b.isFinite() )
+          xBound(Start,axis)=min(xBound(Start,axis),(real)b);
+        b = map.getRangeBound(End,axis);
+        if( b.isFinite() )
+          xBound(End,axis)=max(xBound(End,axis),(real)b);
       }
     }
     for( int axis=0; axis<getRangeDimension(); axis++ )
       for( int side=Start; side<=End; side++ )
-	setRangeBound(side,axis,xBound(side,axis));
+        setRangeBound(side,axis,xBound(side,axis));
   }
   
 
@@ -2548,7 +2548,7 @@ refineSubSurface( const int s )
   if( s<0 || s>numberOfSubSurfaces() )
   {
     printF("CompositeSurface::refineSubSurface: invalid sub-surface s=%i. There are %i sub-surfaces\n",
-	   s,numberOfSubSurfaces() );
+           s,numberOfSubSurfaces() );
     return 1;
   }
 
@@ -2563,45 +2563,45 @@ refineSubSurface( const int s )
       int numberOfTriangles=trim.getTriangulation().getNumberOfElements();
       if( numberOfTriangles<maxNumberOfTriangles/2 )
       {
-	real maxArea,minAngle,elementDensity;
-	trim.getTriangulationParameters( maxArea, minAngle, elementDensity );
-	if( elementDensity<=0. )
-	  elementDensity=.05;
-	else
-	  elementDensity/=sqrt(2.);
-	if( maxArea<=0. )
-	{
-	  maxArea=SQR(.05);
-	  // Scale the area by the jacobian -- 
-	  realArray rg(1,2),xg(1,3),dxdr(1,3,2);
-	  rg(0,0) = .5;
-	  rg(0,1) = .5;
-	  trim.untrimmedSurface()->map(rg,xg,dxdr);
+        real maxArea,minAngle,elementDensity;
+        trim.getTriangulationParameters( maxArea, minAngle, elementDensity );
+        if( elementDensity<=0. )
+          elementDensity=.05;
+        else
+          elementDensity/=sqrt(2.);
+        if( maxArea<=0. )
+        {
+          maxArea=SQR(.05);
+          // Scale the area by the jacobian -- 
+          realArray rg(1,2),xg(1,3),dxdr(1,3,2);
+          rg(0,0) = .5;
+          rg(0,1) = .5;
+          trim.untrimmedSurface()->map(rg,xg,dxdr);
 
-	  maxArea *= (.5*sqrt( SQR(dxdr(0,1,0)*dxdr(0,2,1)-dxdr(0,1,1)-dxdr(0,2,0)) + 
-			       SQR(dxdr(0,0,0)*dxdr(0,2,1)-dxdr(0,0,1)-dxdr(0,2,0)) +
-			       SQR(dxdr(0,0,0)*dxdr(0,1,1)-dxdr(0,0,1)-dxdr(0,1,0)) ));
-	}
-	else
-	  maxArea/=2.;
+          maxArea *= (.5*sqrt( SQR(dxdr(0,1,0)*dxdr(0,2,1)-dxdr(0,1,1)-dxdr(0,2,0)) + 
+                               SQR(dxdr(0,0,0)*dxdr(0,2,1)-dxdr(0,0,1)-dxdr(0,2,0)) +
+                               SQR(dxdr(0,0,0)*dxdr(0,1,1)-dxdr(0,0,1)-dxdr(0,1,0)) ));
+        }
+        else
+          maxArea/=2.;
 
 
-	trim.setMaxAreaForTriangulation( maxArea );
-	trim.setElementDensityToleranceForTriangulation( elementDensity );
-	printf("Surface %i: triangulate with: maxArea=%e elementDensity=%e\n",s,maxArea,elementDensity);
-		  
-	trim.triangulate();
+        trim.setMaxAreaForTriangulation( maxArea );
+        trim.setElementDensityToleranceForTriangulation( elementDensity );
+        printf("Surface %i: triangulate with: maxArea=%e elementDensity=%e\n",s,maxArea,elementDensity);
+                  
+        trim.triangulate();
       }
       else
       {
-	printf("Surface %i already has %i triangles. I will not refine this any more\n",s,numberOfTriangles);
+        printf("Surface %i already has %i triangles. I will not refine this any more\n",s,numberOfTriangles);
       }
     }
     else
     { // for a surface with invalid trim curves the untrimmedSurface is plotted
       Mapping & refSurface = *trim.untrimmedSurface();
       for( int axis=0; axis<domainDimension; axis++ )
-	refSurface.setGridDimensions(axis, 2*refSurface.getGridDimensions(axis)); 
+        refSurface.setGridDimensions(axis, 2*refSurface.getGridDimensions(axis)); 
     }
   }
   else
@@ -2631,7 +2631,7 @@ update( MappingInformation & mapInfo )
   GenericGraphicsInterface & gi = *mapInfo.graphXInterface;
   
   const bool executeCommand = (mapInfo.commandOption == MappingInformation::readOneCommand && 
-			       mapInfo.command!=NULL);
+                               mapInfo.command!=NULL);
 
   aString command="";
   SelectionInfo localSelect, *selectPtr;
@@ -2658,7 +2658,7 @@ update( MappingInformation & mapInfo )
   gui.setExitCommand("exit", "Exit");
 
   DialogData & interface = (mapInfo.commandOption == MappingInformation::readOneCommand && 
-			    mapInfo.interface!=NULL) ? *mapInfo.interface : (DialogData &)gui;
+                            mapInfo.interface!=NULL) ? *mapInfo.interface : (DialogData &)gui;
 
   char buff[180];  // buffer for sprintf
 
@@ -2731,12 +2731,12 @@ update( MappingInformation & mapInfo )
     {
       MappingRC & map = mapInfo.mappingList[i];
       if( map.getDomainDimension()==2 &&
-	  map.getDomainDimension()== (map.getRangeDimension()-1) && map.mapPointer!=this &&
-	  map.getClassName() != "CompositeSurface")
+          map.getDomainDimension()== (map.getRangeDimension()-1) && map.mapPointer!=this &&
+          map.getClassName() != "CompositeSurface")
       {
-	// sPrintF(opCommand3[j], "%d", i);  // *wdh* 010314 : use names instead, more robust
+        // sPrintF(opCommand3[j], "%d", i);  // *wdh* 010314 : use names instead, more robust
         opCommand3[j]=map.getName(mappingName);
-	opLabel3[j++]=map.getName(mappingName);
+        opLabel3[j++]=map.getName(mappingName);
       }
     }
     int noneIndex = j;
@@ -2757,10 +2757,10 @@ update( MappingInformation & mapInfo )
 
 // fourth option menu
     aString opCommand4[] = {"selection function 0", "selection function 1", "selection function 2",
-			    "selection function 3", "selection function 4", "selection function 5", 
+                            "selection function 3", "selection function 4", "selection function 5", 
                             "selection function 6", "refine plot", "query point", ""};
     aString opLabel4[] = {"No Operation", "Flip Normal", "Hide Surface", 
-			  "Show Surface", "Delete Surface", "Examine Surface", 
+                          "Show Surface", "Delete Surface", "Examine Surface", 
                           "Query Surface", "refine plot", "query point", "" };
 
 // initial choice: BC number
@@ -2772,21 +2772,21 @@ update( MappingInformation & mapInfo )
     aString tbLabels[] = {"Shade", "Grid", "Boundary", /* "Labels", "Squares", "Axes", */
                           "Normals", "pick closest", ""};
     aString tbCommands[] = {"plot shaded surfaces (3D) toggle",
-			    "plot grid lines on boundaries (3D) toggle",
-			    "plot sub-surface boundaries (toggle)",
-//  			    "plot labels (toggle)",
-//  			    "plot number labels (toggle)",
-//  			    "plot axes (toggle)",
-			    "plot normals (toggle)",
+                            "plot grid lines on boundaries (3D) toggle",
+                            "plot sub-surface boundaries (toggle)",
+//                          "plot labels (toggle)",
+//                          "plot number labels (toggle)",
+//                          "plot axes (toggle)",
+                            "plot normals (toggle)",
                             "pick closest",
-			    ""};
+                            ""};
     int tbState[] = {plotShadedMappingBoundaries, 
-		     plotLinesOnMappingBoundaries, 
-		     plotMappingEdges, 
-//  		     plotTitleLabels,
-//  		     labelGridsAndBoundaries,
-//  		     gi.getPlotTheAxes(),
-		     plotMappingNormals,
+                     plotLinesOnMappingBoundaries, 
+                     plotMappingEdges, 
+//                   plotTitleLabels,
+//                   labelGridsAndBoundaries,
+//                   gi.getPlotTheAxes(),
+                     plotMappingNormals,
                      pickClosest};
     
     addPrefix(tbCommands, prefix);
@@ -2796,42 +2796,42 @@ update( MappingInformation & mapInfo )
 
 // setup a user defined menu and some user defined buttons
     aString buttonCommands[] = {"plotObject", 
-				"erase",
-				"flip normals (toggle)", 
-				"determine topology",
-				"unhide all sub-surfaces", 
-				"hide all sub-surfaces", 
-				"delete hidden sub-surfaces", 
+                                "erase",
+                                "flip normals (toggle)", 
+                                "determine topology",
+                                "unhide all sub-surfaces", 
+                                "hide all sub-surfaces", 
+                                "delete hidden sub-surfaces", 
                                 "delete unhidden",
-				"print parameters",
+                                "print parameters",
                                 "recompute bounds",
                                 "show broken surfaces",
-				""};
+                                ""};
     aString buttonLabels[] = {"Replot",
-			      "Erase",
-			      "Flip normals", 
-			      "Topology", 
-			      "Show all",
-			      "Hide all",
-			      "Delete hidden",
+                              "Erase",
+                              "Flip normals", 
+                              "Topology", 
+                              "Show all",
+                              "Hide all",
+                              "Delete hidden",
                               "delete unhidden",
-			      "print parameters",
+                              "print parameters",
                               "recompute bounds",
                               "show broken surfaces",
-			      ""};
+                              ""};
   
     addPrefix(buttonCommands, prefix);
     interface.setPushButtons(buttonCommands, buttonLabels, 4); // 4 rows
 
 // setup textlabels
     aString textCmd[] = {"mappingName", "examine a sub-surface", "hide sub-surfaces",
-			 "unhide sub-surfaces", "delete sub-surfaces", "change the sign of a normal",
+                         "unhide sub-surfaces", "delete sub-surfaces", "change the sign of a normal",
                          "debug",
-			 ""};
+                         ""};
     aString textLbl[] = {"Name:", "Examine sub-surface #", "Hide sub-surface #", 
-			 "Show sub-surface #", "Delete sub-surface #", "Flip normal on sub-surface #",
+                         "Show sub-surface #", "Delete sub-surface #", "Flip normal on sub-surface #",
                          "debug",
-			 ""};
+                         ""};
     aString textInit[8];
     int cnt=0;
     mnIndex = cnt;      textInit[cnt++] = getName(mappingName);           // mapping name
@@ -2872,11 +2872,11 @@ update( MappingInformation & mapInfo )
     {
       MappingRC & map = mapInfo.mappingList[i];
       if( map.getDomainDimension()==2 &&
-	  map.getDomainDimension()== (map.getRangeDimension()-1) &&
-	  map.getClassName() != "CompositeSurface")
+          map.getDomainDimension()== (map.getRangeDimension()-1) &&
+          map.getClassName() != "CompositeSurface")
       {
-	sPrintF(opCommand3[j], "%d", i);
-	opLabel3[j++]=map.getName(Mapping::mappingName);
+        sPrintF(opCommand3[j], "%d", i);
+        opLabel3[j++]=map.getName(Mapping::mappingName);
       }
     }
     int noneIndex = j;
@@ -3006,9 +3006,9 @@ update( MappingInformation & mapInfo )
         answer="plotObject";
       else
       {
-	gi.savePickCommands(false); // temporarily turn off saving of pick commands.  
+        gi.savePickCommands(false); // temporarily turn off saving of pick commands.  
 
-	gi.getAnswer(answer, "", select);
+        gi.getAnswer(answer, "", select);
 
         gi.savePickCommands(true); // turn back on
       }
@@ -3034,13 +3034,13 @@ update( MappingInformation & mapInfo )
       sScanF(answer(19,answer.length()-1),"%d",&s);
       if ( noOp <= s && s < numberOfSelections )
       {
-	selectFunction = s;
-	selectOption_->setCurrentChoice(s);
-	gi.outputString(sPrintF(buf, "Selection function: %d", s));
+        selectFunction = s;
+        selectOption_->setCurrentChoice(s);
+        gi.outputString(sPrintF(buf, "Selection function: %d", s));
       }
       else
       {
-	gi.outputString(sPrintF(buf, "Error: Bad selection function: %d", s));
+        gi.outputString(sPrintF(buf, "Error: Bad selection function: %d", s));
       }
       plotObject = false;
     }
@@ -3061,36 +3061,36 @@ update( MappingInformation & mapInfo )
       aString rest = answer(len+1,answer.length()-1);
       if (rest == "none")
       {
-	gi.outputString("Adding NO mapping");
-	continue;
+        gi.outputString("Adding NO mapping");
+        continue;
       }
       else
       {
-	int mapNumber = -1;
-	// sScanF(rest,"%d",&mapNumber);
-	int num=mapInfo.mappingList.getLength();
-	for( int i=0; i<num; i++ )
-	{
-	  if( mapInfo.mappingList[i].getName(mappingName)==rest )
-	  {
-	    mapNumber=i;
-	    break;
-	  }
-	}
-	if ( 0 <= mapNumber )
-	{
-	  MappingRC & map = mapInfo.mappingList[mapNumber];
-	  add( *map.mapPointer, mapNumber );
-	  setColour(numberOfSubSurfaces()-1, gi.getColourName(numberOfSubSurfaces()-1));
-	  gi.outputString(sPrintF(buf, "Adding mapping `%s'", SC map.getName(mappingName)));
+        int mapNumber = -1;
+        // sScanF(rest,"%d",&mapNumber);
+        int num=mapInfo.mappingList.getLength();
+        for( int i=0; i<num; i++ )
+        {
+          if( mapInfo.mappingList[i].getName(mappingName)==rest )
+          {
+            mapNumber=i;
+            break;
+          }
+        }
+        if ( 0 <= mapNumber )
+        {
+          MappingRC & map = mapInfo.mappingList[mapNumber];
+          add( *map.mapPointer, mapNumber );
+          setColour(numberOfSubSurfaces()-1, gi.getColourName(numberOfSubSurfaces()-1));
+          gi.outputString(sPrintF(buf, "Adding mapping `%s'", SC map.getName(mappingName)));
 
-	}
-	else
-	{
-	  gi.outputString(sPrintF(buf, "Error: Bad mapping name: %s", SC rest));
+        }
+        else
+        {
+          gi.outputString(sPrintF(buf, "Error: Bad mapping name: %s", SC rest));
           gi.stopReadingCommandFile();
-	}
-	
+        }
+        
       }
     }
     else if( answer=="add all mappings" )
@@ -3098,25 +3098,25 @@ update( MappingInformation & mapInfo )
       int num=mapInfo.mappingList.getLength();
       for( int i=0; i<num; i++ )
       {
-  	MappingRC & map = mapInfo.mappingList[i];
-  	if( map.getDomainDimension()==2 &&
-	    map.getDomainDimension()== (map.getRangeDimension()-1) && map.mapPointer!=this )
-  	{
-	  bool alreadyInTheList=FALSE;
-	  for( int s=0; s<numberOfSubSurfaces(); s++ )
-  	  {
-	    if( map.mapPointer==&(*this)[s] )
-  	    {
-  	      alreadyInTheList=TRUE;
-  	      break;
-  	    }
-  	  }
-	  if( !	alreadyInTheList )  
-  	  {
-	    add( *(map.mapPointer),i );
-  	    setColour(i,gi.getColourName(i));
-  	  }
-  	}
+        MappingRC & map = mapInfo.mappingList[i];
+        if( map.getDomainDimension()==2 &&
+            map.getDomainDimension()== (map.getRangeDimension()-1) && map.mapPointer!=this )
+        {
+          bool alreadyInTheList=FALSE;
+          for( int s=0; s<numberOfSubSurfaces(); s++ )
+          {
+            if( map.mapPointer==&(*this)[s] )
+            {
+              alreadyInTheList=TRUE;
+              break;
+            }
+          }
+          if( ! alreadyInTheList )  
+          {
+            add( *(map.mapPointer),i );
+            setColour(i,gi.getColourName(i));
+          }
+        }
       }
       plotObject=TRUE;
     }//                     01234567890123456789
@@ -3126,15 +3126,15 @@ update( MappingInformation & mapInfo )
       sScanF(answer(18,answer.length()-1),"%d",&s);
       if (0 <= s && s<numberOfSubSurfaces())
       {
-	mappingToHide = s;
-	gi.outputString(sPrintF(buf, "Hide sub-surface %i", s));
-	visible(s)=FALSE;
+        mappingToHide = s;
+        gi.outputString(sPrintF(buf, "Hide sub-surface %i", s));
+        visible(s)=FALSE;
       }
       else
       {
-//	gi.createMessageDialog(sPrintF(buf, "Invalid sub-surface %i",s), errorDialog);
-	gi.outputString(sPrintF(buf, "Invalid sub-surface %i",s));
-	interface.setTextLabel(hideIndex, sPrintF(buf, "%i", mappingToHide)); // (re)set the textlabel
+//      gi.createMessageDialog(sPrintF(buf, "Invalid sub-surface %i",s), errorDialog);
+        gi.outputString(sPrintF(buf, "Invalid sub-surface %i",s));
+        interface.setTextLabel(hideIndex, sPrintF(buf, "%i", mappingToHide)); // (re)set the textlabel
       }
 
     }//                     01234567890123456789
@@ -3144,15 +3144,15 @@ update( MappingInformation & mapInfo )
       sScanF(answer(20,answer.length()-1),"%d",&s);
       if (0 <= s && s<numberOfSubSurfaces())
       {
-	mappingToShow = s;
-	gi.outputString(sPrintF(buf, "Show sub-surface %i", s));
-	visible(s)=TRUE;
+        mappingToShow = s;
+        gi.outputString(sPrintF(buf, "Show sub-surface %i", s));
+        visible(s)=TRUE;
       }
       else
       {
-//	gi.createMessageDialog(sPrintF(buf, "Invalid sub-surface %i",s), errorDialog);
-	gi.outputString(sPrintF(buf, "Invalid sub-surface %i",s));
-	interface.setTextLabel(showIndex, sPrintF(buf, "%i", mappingToShow)); // (re)set the textlabel
+//      gi.createMessageDialog(sPrintF(buf, "Invalid sub-surface %i",s), errorDialog);
+        gi.outputString(sPrintF(buf, "Invalid sub-surface %i",s));
+        interface.setTextLabel(showIndex, sPrintF(buf, "%i", mappingToShow)); // (re)set the textlabel
       }
 
     }//                     012345678901234567890123456789
@@ -3170,17 +3170,17 @@ update( MappingInformation & mapInfo )
       sScanF(answer(20,answer.length()-1),"%d",&s);
       if (0 <= s && s<numberOfSubSurfaces())
       {
-	mappingToDelete = s;
-	gi.outputString(sPrintF(buf, "Deleting sub-surface %i", s));
+        mappingToDelete = s;
+        gi.outputString(sPrintF(buf, "Deleting sub-surface %i", s));
 // delete the display lists for surface # s
-	eraseCompositeSurface(gi, s);
-  	remove(s);
+        eraseCompositeSurface(gi, s);
+        remove(s);
       }
       else
       {
-//	gi.createMessageDialog(sPrintF(buf, "Invalid sub-surface %i",s), errorDialog);
-	gi.outputString(sPrintF(buf, "Invalid sub-surface %i",s));
-	interface.setTextLabel(deleteIndex, sPrintF(buf, "%i", mappingToDelete)); // (re)set the textlabel
+//      gi.createMessageDialog(sPrintF(buf, "Invalid sub-surface %i",s), errorDialog);
+        gi.outputString(sPrintF(buf, "Invalid sub-surface %i",s));
+        interface.setTextLabel(deleteIndex, sPrintF(buf, "%i", mappingToDelete)); // (re)set the textlabel
       }
 
     }
@@ -3190,21 +3190,21 @@ update( MappingInformation & mapInfo )
       bool singleSelect = (fabs(select.r[0]-select.r[1]) + fabs(select.r[2]-select.r[3]) <= 1.e-5);
       if( pickClosest || singleSelect )
       {
-	select.nSelect = 1;
-	select.selection(0,0) = select.globalID;
+        select.nSelect = 1;
+        select.selection(0,0) = select.globalID;
       }
       for( int i=0; i<select.nSelect; i++ )
       {
-	for( int s=0; s<numberOfSurfaces; s++ )
-	{
-	  if( select.selection(i,0) == surfaces[s].getMapping().getGlobalID() )
-	  {
-	    gi.outputString(sPrintF(buf, "Sub-surface %i will be deleted",s));
+        for( int s=0; s<numberOfSurfaces; s++ )
+        {
+          if( select.selection(i,0) == surfaces[s].getMapping().getGlobalID() )
+          {
+            gi.outputString(sPrintF(buf, "Sub-surface %i will be deleted",s));
 // erase the display lists for surface #s
-	    eraseCompositeSurface(gi, s);
-	    remove(s);
-	  }
-	}
+            eraseCompositeSurface(gi, s);
+            remove(s);
+          }
+        }
       }
     }
     else if( (len=answer.matches("refine surface")) )
@@ -3223,84 +3223,84 @@ update( MappingInformation & mapInfo )
       bool singleSelect = (fabs(select.r[0]-select.r[1]) + fabs(select.r[2]-select.r[3]) <= 1.e-5);
       if( pickClosest || singleSelect)
       {
-	select.nSelect = 1;
-	select.selection(0,0) = select.globalID;
+        select.nSelect = 1;
+        select.selection(0,0) = select.globalID;
       }
       for( int i=0; i<select.nSelect; i++ )
       {
-	for( int s=0; s<numberOfSurfaces; s++ )
-	{
-	  if( select.selection(i,0) == surfaces[s].getMapping().getGlobalID() )
-	  {
-	    gi.outputString(sPrintF(buf, "refine the surface plot of sub-surface %i",s));
+        for( int s=0; s<numberOfSurfaces; s++ )
+        {
+          if( select.selection(i,0) == surfaces[s].getMapping().getGlobalID() )
+          {
+            gi.outputString(sPrintF(buf, "refine the surface plot of sub-surface %i",s));
             gi.outputToCommandFile(sPrintF("refine surface %i\n",s));   // * finish me **
 
             refineSubSurface( s );
 //             Mapping & map = (*this)[s];
-// 	    if( map.getClassName()=="TrimmedMapping" )
-// 	    {
+//          if( map.getClassName()=="TrimmedMapping" )
+//          {
 //               TrimmedMapping & trim = (TrimmedMapping &)map;
 //               if( trim.trimmingIsValid() )
-// 	      {
+//            {
 //                 int numberOfTriangles=trim.getTriangulation().getNumberOfElements();
 //                 const int maxNumberOfTriangles=100000;
-// 		if( numberOfTriangles<maxNumberOfTriangles/2 )
-// 		{
-// 		  real maxArea,minAngle,elementDensity;
-// 		  trim.getTriangulationParameters( maxArea, minAngle, elementDensity );
-// 		  if( elementDensity<=0. )
-// 		    elementDensity=.05;
-// 		  else
-// 		    elementDensity/=sqrt(2.);
-// 		  if( maxArea<=0. )
-// 		  {
-// 		    maxArea=SQR(.05);
-// 		    // Scale the area by the jacobian -- 
-// 		    realArray rg(1,2),xg(1,3),dxdr(1,3,2);
-// 		    rg(0,0) = .5;
-// 		    rg(0,1) = .5;
-// 		    trim.untrimmedSurface()->map(rg,xg,dxdr);
+//              if( numberOfTriangles<maxNumberOfTriangles/2 )
+//              {
+//                real maxArea,minAngle,elementDensity;
+//                trim.getTriangulationParameters( maxArea, minAngle, elementDensity );
+//                if( elementDensity<=0. )
+//                  elementDensity=.05;
+//                else
+//                  elementDensity/=sqrt(2.);
+//                if( maxArea<=0. )
+//                {
+//                  maxArea=SQR(.05);
+//                  // Scale the area by the jacobian -- 
+//                  realArray rg(1,2),xg(1,3),dxdr(1,3,2);
+//                  rg(0,0) = .5;
+//                  rg(0,1) = .5;
+//                  trim.untrimmedSurface()->map(rg,xg,dxdr);
 // 
-// 		    maxArea *= (.5*sqrt( SQR(dxdr(0,1,0)*dxdr(0,2,1)-dxdr(0,1,1)-dxdr(0,2,0)) + 
-// 					 SQR(dxdr(0,0,0)*dxdr(0,2,1)-dxdr(0,0,1)-dxdr(0,2,0)) +
-// 					 SQR(dxdr(0,0,0)*dxdr(0,1,1)-dxdr(0,0,1)-dxdr(0,1,0)) ));
-// 		  }
-// 		  else
-// 		    maxArea/=2.;
+//                  maxArea *= (.5*sqrt( SQR(dxdr(0,1,0)*dxdr(0,2,1)-dxdr(0,1,1)-dxdr(0,2,0)) + 
+//                                       SQR(dxdr(0,0,0)*dxdr(0,2,1)-dxdr(0,0,1)-dxdr(0,2,0)) +
+//                                       SQR(dxdr(0,0,0)*dxdr(0,1,1)-dxdr(0,0,1)-dxdr(0,1,0)) ));
+//                }
+//                else
+//                  maxArea/=2.;
 // 
 // 
-// 		  trim.setMaxAreaForTriangulation( maxArea );
-// 		  trim.setElementDensityToleranceForTriangulation( elementDensity );
+//                trim.setMaxAreaForTriangulation( maxArea );
+//                trim.setElementDensityToleranceForTriangulation( elementDensity );
 //                   printf("Surface %i: triangulate with: maxArea=%e elementDensity=%e\n",s,maxArea,elementDensity);
-// 		  
-// 		  trim.triangulate();
-// 		}
-// 		else
-// 		{
-// 		  printf("Surface %i already has %i triangles. I will not refine this any more\n",s,numberOfTriangles);
-// 		}
-// 	      }
-// 	      else
-// 	      { // for a surface with invalid trim curves the untrimmedSurface is plotted
-// 		Mapping & refSurface = *trim.untrimmedSurface();
-// 		for( int axis=0; axis<domainDimension; axis++ )
-// 		  refSurface.setGridDimensions(axis, 2*refSurface.getGridDimensions(axis)); 
-// 	      }
-// 	    }
-// 	    else
-// 	    {
-// 	      for( int axis=0; axis<map.getDomainDimension(); axis++ )
-// 		map.setGridDimensions(axis, 2*map.getGridDimensions(axis)); 
+//                
+//                trim.triangulate();
+//              }
+//              else
+//              {
+//                printf("Surface %i already has %i triangles. I will not refine this any more\n",s,numberOfTriangles);
+//              }
+//            }
+//            else
+//            { // for a surface with invalid trim curves the untrimmedSurface is plotted
+//              Mapping & refSurface = *trim.untrimmedSurface();
+//              for( int axis=0; axis<domainDimension; axis++ )
+//                refSurface.setGridDimensions(axis, 2*refSurface.getGridDimensions(axis)); 
+//            }
+//          }
+//          else
+//          {
+//            for( int axis=0; axis<map.getDomainDimension(); axis++ )
+//              map.setGridDimensions(axis, 2*map.getGridDimensions(axis)); 
 // 
-// 	    }
+//          }
 // 
             plotObject=true;
-	    eraseCompositeSurface(gi,s);  // This will erase the display list and redraw
+            eraseCompositeSurface(gi,s);  // This will erase the display list and redraw
 
-	  }
+          }
 
 
-	}
+        }
       }
     }    else if( select.nSelect > 0 && selectFunction == noOp )
     {
@@ -3311,7 +3311,7 @@ update( MappingInformation & mapInfo )
       for( int s=numberOfSurfaces-1; s>=0; s-- )
       {
         if( !visible(s) )
-  	  remove(s);
+          remove(s);
       }
     }
     else if( answer=="delete unhidden" )
@@ -3320,10 +3320,10 @@ update( MappingInformation & mapInfo )
       for( int s=numberOfSurfaces-1; s>=0; s-- )
       {
         if( visible(s) )
-  	  remove(s);
+          remove(s);
         else
           visible(s)=true;
-	
+        
       }
     }
     else if( select.nSelect > 0 && selectFunction == showSurface )
@@ -3332,22 +3332,22 @@ update( MappingInformation & mapInfo )
       bool singleSelect = (fabs(select.r[0]-select.r[1]) + fabs(select.r[2]-select.r[3]) <= 1.e-5);
       if( pickClosest ||singleSelect)
       {
-	select.nSelect = 1;
-	select.selection(0,0) = select.globalID;
+        select.nSelect = 1;
+        select.selection(0,0) = select.globalID;
       }
       for( int i=0; i<select.nSelect; i++ )
       {
-	for( int s=0; s<numberOfSurfaces; s++ )
-	{
-	  if( select.selection(i,0)==surfaces[s].getMapping().getGlobalID() )
-	  {
-	    gi.outputString(sPrintF(buf, "Sub-surface %i will be shown",s));
-	    visible(s)=TRUE;
+        for( int s=0; s<numberOfSurfaces; s++ )
+        {
+          if( select.selection(i,0)==surfaces[s].getMapping().getGlobalID() )
+          {
+            gi.outputString(sPrintF(buf, "Sub-surface %i will be shown",s));
+            visible(s)=TRUE;
 
             gi.outputToCommandFile(sPrintF("unhide sub-surfaces %i\n",s)); 
 
-	  }
-	}
+          }
+        }
       }
     }
     else if( select.nSelect > 0 && selectFunction == hideSurface )
@@ -3356,22 +3356,22 @@ update( MappingInformation & mapInfo )
       bool singleSelect = (fabs(select.r[0]-select.r[1]) + fabs(select.r[2]-select.r[3]) <= 1.e-5);
       if( pickClosest || singleSelect )
       {
-	select.nSelect = 1;
-	select.selection(0,0) = select.globalID;
+        select.nSelect = 1;
+        select.selection(0,0) = select.globalID;
       }
       for( int i=0; i<select.nSelect; i++ )
       {
-	for( int s=0; s<numberOfSurfaces; s++ )
-	{
-	  if( select.selection(i,0) == surfaces[s].getMapping().getGlobalID() )
-	  {
-	    gi.outputString(sPrintF(buf, "Sub-surface %i will be hidden",s));
-	    visible(s)=FALSE;
+        for( int s=0; s<numberOfSurfaces; s++ )
+        {
+          if( select.selection(i,0) == surfaces[s].getMapping().getGlobalID() )
+          {
+            gi.outputString(sPrintF(buf, "Sub-surface %i will be hidden",s));
+            visible(s)=FALSE;
 
             gi.outputToCommandFile(sPrintF("hide sub-surfaces %i\n",s)); 
 
-	  }
-	}
+          }
+        }
       }
     }
     else if( select.nSelect > 0 && selectFunction == querySurface )
@@ -3381,21 +3381,21 @@ update( MappingInformation & mapInfo )
       int numSelected=0;
       for( int i=0; i<select.nSelect; i++ )
       {
-	for( int s=0; s<numberOfSurfaces; s++ )
-	{
-	  if( select.selection(i,0) == surfaces[s].getMapping().getGlobalID() )
-	  {
-	    gi.outputString(sPrintF(buf,"sub-surface %4i: name=%s file-ID=%i colour=%s",
-				    s,(const char*)(*this)[s].getName(mappingName),
-				    surfaceIdentifier(s),(const char*)surfaceColour[s]));
+        for( int s=0; s<numberOfSurfaces; s++ )
+        {
+          if( select.selection(i,0) == surfaces[s].getMapping().getGlobalID() )
+          {
+            gi.outputString(sPrintF(buf,"sub-surface %4i: name=%s file-ID=%i colour=%s",
+                                    s,(const char*)(*this)[s].getName(mappingName),
+                                    surfaceIdentifier(s),(const char*)surfaceColour[s]));
             
             if( select.globalID==select.selection(i,0) )
               gi.outputString(sPrintF(buf,"*closest sub-surface: %4i: name=%s file-ID=%i colour=%s",
-				    s,(const char*)(*this)[s].getName(mappingName),
-				    surfaceIdentifier(s),(const char*)surfaceColour[s]));
+                                    s,(const char*)(*this)[s].getName(mappingName),
+                                    surfaceIdentifier(s),(const char*)surfaceColour[s]));
             numSelected++;
-	  }
-	}
+          }
+        }
       }
     }
     else if( select.nSelect > 0 && selectFunction == examineSurface )
@@ -3403,29 +3403,29 @@ update( MappingInformation & mapInfo )
 // examine the closest sub-surface
       for( int s=0; s<numberOfSurfaces; s++ )
       {
-	if( select.globalID == surfaces[s].getMapping().getGlobalID() )
-	{
+        if( select.globalID == surfaces[s].getMapping().getGlobalID() )
+        {
           gi.outputToCommandFile(sPrintF("examine a sub-surface %i\n",s)); 
 
-	  gi.outputString(sPrintF(buf, "Sub-surface %i was selected. Visible=%i, ID=%i, "
-				  "signForNormal=%i, name=%s", s, visible(s), surfaceIdentifier(s), 
-				  (signForNormal.getLength(0)>s ? signForNormal(s) : 0),
-				  SC (*this)[s].getName(mappingName)));
+          gi.outputString(sPrintF(buf, "Sub-surface %i was selected. Visible=%i, ID=%i, "
+                                  "signForNormal=%i, name=%s", s, visible(s), surfaceIdentifier(s), 
+                                  (signForNormal.getLength(0)>s ? signForNormal(s) : 0),
+                                  SC (*this)[s].getName(mappingName)));
 
-	  mappingToExamine = s;
-	  gi.outputString(sPrintF(buf, "Examine sub-surface %i", s));
-	  gi.erase();
-	  params.set(GI_TOP_LABEL,sPrintF(buff,"sub-surface %i", s));
-	  params.set(GI_PLOT_THE_OBJECT_AND_EXIT,FALSE);
-	  Mapping *map = &(*this)[s];  // make a pointer so virtual function call works.
-	  map->update( mapInfo );
+          mappingToExamine = s;
+          gi.outputString(sPrintF(buf, "Examine sub-surface %i", s));
+          gi.erase();
+          params.set(GI_TOP_LABEL,sPrintF(buff,"sub-surface %i", s));
+          params.set(GI_PLOT_THE_OBJECT_AND_EXIT,FALSE);
+          Mapping *map = &(*this)[s];  // make a pointer so virtual function call works.
+          map->update( mapInfo );
 // delete the display lists so that sub-surface s will get replotted properly
-	  eraseCompositeSurface(gi, s);
-	
-	  params.set(GI_PLOT_THE_OBJECT_AND_EXIT,TRUE);
-	  params.set(GI_TOP_LABEL,getName(mappingName));
-	  plotObject=true;
-	}
+          eraseCompositeSurface(gi, s);
+        
+          params.set(GI_PLOT_THE_OBJECT_AND_EXIT,TRUE);
+          params.set(GI_TOP_LABEL,getName(mappingName));
+          plotObject=true;
+        }
       }
     }
     else if( (select.nSelect > 0 && selectFunction == pickToQueryPoint) || 
@@ -3435,21 +3435,21 @@ update( MappingInformation & mapInfo )
       if( (len=answer.matches("query surface point")) )
       {
         // reading from a command file:
-	sScanF(answer(len,answer.length()-1)," %i %e %e %e\n",&select.globalID,
-	       &select.x[0],&select.x[1],&select.x[2]);
+        sScanF(answer(len,answer.length()-1)," %i %e %e %e\n",&select.globalID,
+               &select.x[0],&select.x[1],&select.x[2]);
       }
       for( int s=0; s<numberOfSurfaces; s++ )
       {
-	if( select.globalID == surfaces[s].getMapping().getGlobalID() )
-	{
+        if( select.globalID == surfaces[s].getMapping().getGlobalID() )
+        {
           gi.outputToCommandFile(sPrintF("query surface point %i %e %e %e\n",select.globalID,
                       select.x[0],select.x[1],select.x[2])); 
 
           printF(">>>query surface point x=(%e %e %e)\n",select.x[0],select.x[1],select.x[2]); 
-	  gi.outputString(sPrintF(buf, "The point was found on surface %i. ID=%i, "
-				  "signForNormal=%i, name=%s, colour=%s", s, surfaceIdentifier(s), 
-				  (signForNormal.getLength(0)>s ? signForNormal(s) : 0),
-				  SC (*this)[s].getName(mappingName),(const char*)surfaceColour[s]));
+          gi.outputString(sPrintF(buf, "The point was found on surface %i. ID=%i, "
+                                  "signForNormal=%i, name=%s, colour=%s", s, surfaceIdentifier(s), 
+                                  (signForNormal.getLength(0)>s ? signForNormal(s) : 0),
+                                  SC (*this)[s].getName(mappingName),(const char*)surfaceColour[s]));
 
           const bool isTrimmedMapping = (*this)[s].getClassName()=="TrimmedMapping";
           Mapping & map = (!isTrimmedMapping) ? (*this)[s] : 
@@ -3457,39 +3457,39 @@ update( MappingInformation & mapInfo )
 
           // printF(" surface s=%i : isTrimmedMapping=%i\n",s,(int)isTrimmedMapping);
 
-	  realArray x(1,3),r(1,3),xr(1,3,2);
+          realArray x(1,3),r(1,3),xr(1,3,2);
           x(0,0)=select.x[0];
           x(0,1)=select.x[1];
           x(0,2)=select.x[2];
-	  r=-1;
-   	  map.inverseMap(x,r);
+          r=-1;
+          map.inverseMap(x,r);
 
           map.map(r,x,xr);
 
           real xDist=sqrt( SQR(x(0,0)-select.x[0])+SQR(x(0,1)-select.x[1])+SQR(x(0,2)-select.x[2]) );
-	  printF(" ...closest point on surface: x=(%9.3e,%9.3e,%9.3e) r=(%9.3e,%9.3e) (dist to picked pt=%8.2e)\n",
+          printF(" ...closest point on surface: x=(%9.3e,%9.3e,%9.3e) r=(%9.3e,%9.3e) (dist to picked pt=%8.2e)\n",
                  x(0,0),x(0,1),x(0,2),r(0,0),r(0,1),xDist);
 
           if( false )
-	  {
-	    printF(" check inverse again with an initial guess\n");
-	    map.inverseMap(x,r);
-	  }
-	  
-	  real nv[3];
-	  nv[0] = xr(0,1,0)*xr(0,2,1)-xr(0,2,0)*xr(0,1,1);
-	  nv[1] = xr(0,2,0)*xr(0,0,1)-xr(0,0,0)*xr(0,2,1);
-	  nv[2] = xr(0,0,0)*xr(0,1,1)-xr(0,1,0)*xr(0,0,1);
-	  real anorm =max(REAL_MIN*100.,sqrt(SQR(nv[0])+SQR(nv[1])+SQR(nv[2]))); 
-	  nv[0]/=anorm; nv[1]/=anorm; nv[2]/=anorm;
-	 
-	  printF(" ...parametric derivatives: xr=(%9.3e,%9.3e,%9.3e), xs=(%9.3e,%9.3e,%9.3e)\n",
+          {
+            printF(" check inverse again with an initial guess\n");
+            map.inverseMap(x,r);
+          }
+          
+          real nv[3];
+          nv[0] = xr(0,1,0)*xr(0,2,1)-xr(0,2,0)*xr(0,1,1);
+          nv[1] = xr(0,2,0)*xr(0,0,1)-xr(0,0,0)*xr(0,2,1);
+          nv[2] = xr(0,0,0)*xr(0,1,1)-xr(0,1,0)*xr(0,0,1);
+          real anorm =max(REAL_MIN*100.,sqrt(SQR(nv[0])+SQR(nv[1])+SQR(nv[2]))); 
+          nv[0]/=anorm; nv[1]/=anorm; nv[2]/=anorm;
+         
+          printF(" ...parametric derivatives: xr=(%9.3e,%9.3e,%9.3e), xs=(%9.3e,%9.3e,%9.3e)\n",
                  xr(0,0,0),xr(0,1,0),xr(0,2,0),
                  xr(0,0,1),xr(0,1,1),xr(0,2,1));
-	  printF(" ...normal to surface = (%9.3e,%9.3e,%9.3e)\n",nv[0],nv[1],nv[2]); 
+          printF(" ...normal to surface = (%9.3e,%9.3e,%9.3e)\n",nv[0],nv[1],nv[2]); 
 
 
-	}
+        }
       }
     }
     else if( answer=="determine topology" )
@@ -3500,7 +3500,7 @@ update( MappingInformation & mapInfo )
       }
       else
       {
-	updateTopology();
+        updateTopology();
       }
       
     }//                     012345678901234567890123456789
@@ -3520,24 +3520,24 @@ update( MappingInformation & mapInfo )
       sScanF(answer(22,answer.length()-1),"%d",&s);
       if (0 <= s && s<numberOfSubSurfaces())
       {
-	mappingToExamine = s;
-	gi.outputString(sPrintF(buf, "Examine sub-surface %i", s));
-	gi.erase();
-	params.set(GI_TOP_LABEL,sPrintF(buff,"sub-surface %i", s));
-	params.set(GI_PLOT_THE_OBJECT_AND_EXIT,FALSE);
-	Mapping *map = &(*this)[s];  // make a pointer so virtual function call works.
-	map->update( mapInfo );
+        mappingToExamine = s;
+        gi.outputString(sPrintF(buf, "Examine sub-surface %i", s));
+        gi.erase();
+        params.set(GI_TOP_LABEL,sPrintF(buff,"sub-surface %i", s));
+        params.set(GI_PLOT_THE_OBJECT_AND_EXIT,FALSE);
+        Mapping *map = &(*this)[s];  // make a pointer so virtual function call works.
+        map->update( mapInfo );
 // delete the display lists so that sub-surface s will get replotted properly
-	eraseCompositeSurface(gi, s);
-	
-	params.set(GI_PLOT_THE_OBJECT_AND_EXIT,TRUE);
-	params.set(GI_TOP_LABEL,getName(mappingName));
+        eraseCompositeSurface(gi, s);
+        
+        params.set(GI_PLOT_THE_OBJECT_AND_EXIT,TRUE);
+        params.set(GI_TOP_LABEL,getName(mappingName));
       }
       else
       {
-//	gi.createMessageDialog(sPrintF(buf, "Invalid sub-surface %i",s), errorDialog);
-	gi.outputString(sPrintF(buf, "Invalid sub-surface %i",s));
-	interface.setTextLabel(examineIndex, sPrintF(buf, "%i", mappingToExamine)); // (re)set the textlabel
+//      gi.createMessageDialog(sPrintF(buf, "Invalid sub-surface %i",s), errorDialog);
+        gi.outputString(sPrintF(buf, "Invalid sub-surface %i",s));
+        interface.setTextLabel(examineIndex, sPrintF(buf, "%i", mappingToExamine)); // (re)set the textlabel
       }
       
     }//                                          012345678901234567890123456789
@@ -3552,15 +3552,15 @@ update( MappingInformation & mapInfo )
       sScanF(answer(28,answer.length()-1),"%d",&s);
       if (0 <= s && s<numberOfSubSurfaces())
       {
-	mappingToFlip = s;
-	gi.outputString(sPrintF(buf, "Flip the normal on sub-surface %i", s));
-	signForNormal(s)=-signForNormal(s);
+        mappingToFlip = s;
+        gi.outputString(sPrintF(buf, "Flip the normal on sub-surface %i", s));
+        signForNormal(s)=-signForNormal(s);
       }
       else
       {
-//	gi.createMessageDialog(sPrintF(buf, "Invalid sub-surface %i",s), errorDialog);
-	gi.outputString(sPrintF(buf, "Invalid sub-surface %i",s));
-	interface.setTextLabel(flipIndex, sPrintF(buf, "%i", mappingToFlip)); // (re)set the textlabel
+//      gi.createMessageDialog(sPrintF(buf, "Invalid sub-surface %i",s), errorDialog);
+        gi.outputString(sPrintF(buf, "Invalid sub-surface %i",s));
+        interface.setTextLabel(flipIndex, sPrintF(buf, "%i", mappingToFlip)); // (re)set the textlabel
       }
       
     }
@@ -3570,26 +3570,26 @@ update( MappingInformation & mapInfo )
       bool singleSelect = (fabs(select.r[0]-select.r[1]) + fabs(select.r[2]-select.r[3]) <= 1.e-5);
       if (singleSelect)
       {
-	select.nSelect = 1;
-	select.selection(0,0) = select.globalID;
+        select.nSelect = 1;
+        select.selection(0,0) = select.globalID;
       }
       for( int i=0; i<select.nSelect; i++ )
       {
-	for( int s=0; s<numberOfSurfaces; s++ )
-	{
-	  if( select.selection(i,0) == surfaces[s].getMapping().getGlobalID() )
-	  {
-	    gi.outputString(sPrintF(buf, "Reversing the normal of sub surface %i",s));
-	    signForNormal(s)=-signForNormal(s);
-	  }
-	}
+        for( int s=0; s<numberOfSurfaces; s++ )
+        {
+          if( select.selection(i,0) == surfaces[s].getMapping().getGlobalID() )
+          {
+            gi.outputString(sPrintF(buf, "Reversing the normal of sub surface %i",s));
+            signForNormal(s)=-signForNormal(s);
+          }
+        }
       }
     }//                     0123456789012345678901234567890123456789
     else if( answer(0,31)=="plot shaded surfaces (3D) toggle" ) // add these
     {
       plotShadedMappingBoundaries = !plotShadedMappingBoundaries;   
 //        gridLineColourOption=plotShadedMappingBoundaries ? GraphicsParameters::defaultColour :
-//  	GraphicsParameters::colourByGrid;
+//      GraphicsParameters::colourByGrid;
       params.set(GI_PLOT_SHADED_MAPPING_BOUNDARIES,plotShadedMappingBoundaries);
 //        params.set(GI_GRID_LINE_COLOUR_OPTION,gridLineColourOption);
     }//                     01234567890123456789012345678901234567890
@@ -3627,7 +3627,7 @@ update( MappingInformation & mapInfo )
     else if( answer=="colour surface by grid number" )
     {
       for( int s=0; s<numberOfSubSurfaces(); s++ )
-	setColour(s,gi.getColourName(s));
+        setColour(s,gi.getColourName(s));
       eraseCompositeSurface(gi);
     }
     else if( answer=="set surface colour" )
@@ -3640,16 +3640,16 @@ update( MappingInformation & mapInfo )
       if( answer2!="no change" )
       {
         if( ss<0 || ss>numberOfSubSurfaces() )
-	{
-	  for( int s=0; s<numberOfSubSurfaces(); s++ )
-	    setColour(s,answer2);
+        {
+          for( int s=0; s<numberOfSubSurfaces(); s++ )
+            setColour(s,answer2);
           printf("Change all surfaces to be %s\n",(const char *)answer2);
-	}
-	else
-	{
+        }
+        else
+        {
           setColour(ss,answer2);
           printf("Change surface %i to be %s\n",ss,(const char *)answer2);
-	}
+        }
       }
       eraseCompositeSurface(gi);
       
@@ -3663,31 +3663,31 @@ update( MappingInformation & mapInfo )
       for( int s=0; s<numberOfSubSurfaces(); s++ )
       {
         Mapping & map = (*this)[s];
-	
-	printf("sub-surface %4i: visible=%i",s,visible(s));
+        
+        printf("sub-surface %4i: visible=%i",s,visible(s));
 
         int numTriangles=0;
         if( map.getClassName()=="TrimmedMapping" )
-	{
+        {
           TrimmedMapping & trim = (TrimmedMapping &)map;
-	  if( trim.hasTriangulation() )
-	  {
+          if( trim.hasTriangulation() )
+          {
             numTriangles=trim.getTriangulation().getNumberOfElements();
-	  }
-	}
+          }
+        }
         printf(" triangles=%7i,",numTriangles);
-	totalTriangles+=numTriangles;
+        totalTriangles+=numTriangles;
         if( numTriangles>maxTriangles )
-	{
-	  maxTriangles=numTriangles;
-	  maxTrianglesSurface=s;
-	}
-	
-	printf(" name=%.30s, ID=%i colour=%s",
-	       (const char*)map.getName(mappingName),surfaceIdentifier(s),(const char*)surfaceColour[s]);
+        {
+          maxTriangles=numTriangles;
+          maxTrianglesSurface=s;
+        }
+        
+        printf(" name=%.30s, ID=%i colour=%s",
+               (const char*)map.getName(mappingName),surfaceIdentifier(s),(const char*)surfaceColour[s]);
 
         printf("\n");
-	
+        
       }
       printf(" Total triangles for plotting all surfaces=%i\n",totalTriangles);
       printf(" Surface %i (ID=%i) had the most triangles with %7i.\n",
@@ -3708,17 +3708,17 @@ update( MappingInformation & mapInfo )
       real xBound[2][3]={REAL_MAX,REAL_MAX,REAL_MAX,-(REAL_MAX/4),-(REAL_MAX/4),-(REAL_MAX/4)};
       for( int s=0; s<numberOfSurfaces; s++ )
       {
-	Mapping & surface = (*this)[s];
-	for( int axis=0; axis<rangeDimension; axis++ )
-	{
-	  xBound[Start][axis]=min(xBound[Start][axis],(real)surface.getRangeBound(Start,axis));
-	  xBound[End  ][axis]=max(xBound[End  ][axis],(real)surface.getRangeBound(End  ,axis));
-	}
+        Mapping & surface = (*this)[s];
+        for( int axis=0; axis<rangeDimension; axis++ )
+        {
+          xBound[Start][axis]=min(xBound[Start][axis],(real)surface.getRangeBound(Start,axis));
+          xBound[End  ][axis]=max(xBound[End  ][axis],(real)surface.getRangeBound(End  ,axis));
+        }
       }
       for( int axis=0; axis<rangeDimension; axis++ )
       {
-	setRangeBound(Start, axis,xBound[Start][axis]);
-	setRangeBound(End  , axis,xBound[End  ][axis]);
+        setRangeBound(Start, axis,xBound[Start][axis]);
+        setRangeBound(End  , axis,xBound[End  ][axis]);
       }
 
     }
@@ -3728,20 +3728,20 @@ update( MappingInformation & mapInfo )
       for( int s=0; s<numberOfSubSurfaces(); s++ )
       {
         if( (*this)[s].getClassName()=="TrimmedMapping" )
-	{
-	  TrimmedMapping & trim = (TrimmedMapping&)((*this)[s]);
-	  if( !trim.trimmingIsValid() )
-	  {
+        {
+          TrimmedMapping & trim = (TrimmedMapping&)((*this)[s]);
+          if( !trim.trimmingIsValid() )
+          {
             printf("Surface %i (ID=%i) has invalid trimming curves\n",s,surfaceIdentifier(s));
             numBroken++;
-	  }
-	}
+          }
+        }
       }
       if( numBroken==0 )
         gi.outputString("There are no broken surfaces");
       else
       {
-	printf("There were %i broken surfaces\n",numBroken);
+        printf("There were %i broken surfaces\n",numBroken);
       }
     }
     
@@ -3756,33 +3756,33 @@ update( MappingInformation & mapInfo )
     else if( answer=="project a point" )
     {
       MappingProjectionParameters mpParams;
-      intArray & subSurfaceIndex = mpParams.getIntArray(MappingProjectionParameters::subSurfaceIndex);	
+      intArray & subSurfaceIndex = mpParams.getIntArray(MappingProjectionParameters::subSurfaceIndex);  
 
       realArray x(1,3), x0(1,3), x2(2,3);
       Range all;
       while(1) 
       {
         gi.inputString(line,"Enter a point to project x,y,z (hit enter to finish)");
-	if( line!="" )
-	{
-	  sScanF(line,"%e %e %e",&x(0,0),&x(0,1),&x(0,2));
-	}
-	else
-	{
-	  break;
-	}
-	
-	x0=x;
-	
+        if( line!="" )
+        {
+          sScanF(line,"%e %e %e",&x(0,0),&x(0,1),&x(0,2));
+        }
+        else
+        {
+          break;
+        }
+        
+        x0=x;
+        
         project(x,mpParams);
 
         printf(" Point x=(%9.3e,%9.3e,%9.3e) projected to x(%9.3e,%9.3e,%9.3e) subSurface %i\n",
-	       x0(0,0),x0(0,1),x0(0,2), x(0,0),x(0,1),x(0,2), subSurfaceIndex(0));
+               x0(0,0),x0(0,1),x0(0,2), x(0,0),x(0,1),x(0,2), subSurfaceIndex(0));
 
-	params.set(GI_POINT_SIZE,(real)6.);
+        params.set(GI_POINT_SIZE,(real)6.);
         x2(0,all)=x0;
-	x2(1,all)=x;
-	gi.plotPoints(x2,params);
+        x2(1,all)=x;
+        gi.plotPoints(x2,params);
 
       }
     }
@@ -3807,15 +3807,15 @@ update( MappingInformation & mapInfo )
     {
       aString newName = "";
       if (answer.length() > 12)
-	newName = answer(12,answer.length()-1);
+        newName = answer(12,answer.length()-1);
 
       if (newName != "" && newName != " ")
-	{
-	  setName(mappingName, newName);
-	  params.set(GI_TOP_LABEL,getName(mappingName));
-	}
+        {
+          setName(mappingName, newName);
+          params.set(GI_TOP_LABEL,getName(mappingName));
+        }
       else
-	gi.outputString("Invalid name");
+        gi.outputString("Invalid name");
       aString name = getName(mappingName); // gcc warning, setTextLabel should take const aString &
       interface.setTextLabel(mnIndex,name); // (re)set the textlabel
     }
@@ -3836,14 +3836,14 @@ update( MappingInformation & mapInfo )
     {
       if( executeCommand )
       {
-	returnValue= 1;  // when executing a single command, return 1 if the command was not recognised.
+        returnValue= 1;  // when executing a single command, return 1 if the command was not recognised.
         break;
       }
       else
       {
-	gi.outputString( sPrintF(buff,"Unknown response=%s", (const char*)answer) );
-	gi.stopReadingCommandFile();
-	plotObject=FALSE;
+        gi.outputString( sPrintF(buff,"Unknown response=%s", (const char*)answer) );
+        gi.stopReadingCommandFile();
+        plotObject=FALSE;
       }
 
     }
@@ -3861,7 +3861,7 @@ update( MappingInformation & mapInfo )
       PlotIt::plot(gi,*this,params);  
 // moved to ogshow/plotCompositeSurface.C
 //      if( plotNormals )
-//	gi.plotSubSurfaceNormals(*this,params);
+//      gi.plotSubSurfaceNormals(*this,params);
 
     }
   }

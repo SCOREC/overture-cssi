@@ -243,7 +243,7 @@ $cmd
 # do not use symmetry corner boundary condition
 # For 4th-order + Neumann: solve for 2 ghost AND boundary point:
 # solve equation with boundary conditions
-******
+# ******
 # -- direct/sparse solver on coarse grid: 
   Oges parameters
     # choose best direct solver
@@ -259,11 +259,15 @@ $cmd
        $atolcg
      debug 
       $ogesDebug 
-     #
+     # match options from tcm3 -- July 9, 2022
+     # doesn't work? : parallel generalized minimal residual
      define petscOption -pc_hypre_boomeramg_cycle_type V
-     define petscOption -pc_hypre_boomeramg_strong_threshold .25
+     # define petscOption -pc_hypre_boomeramg_strong_threshold .25
+     define petscOption -pc_hypre_boomeramg_strong_threshold .5
      #  CLJP Ruge-Stueben  modifiedRuge-Stueben   Falgout  PMIS  HMIS
-     define petscOption -pc_hypre_boomeramg_coarsen_type PMIS
+     # define petscOption -pc_hypre_boomeramg_coarsen_type PMIS
+     define petscOption -pc_hypre_boomeramg_coarsen_type Falgout
+     define petscOption -pc_hypre_boomeramg_max_levels 20
   exit
 # Solve the coarse grid equations using the smoother:
 if( $solveCoarseGridBySmoother == 1 ){ $cmd = "iterate on coarse grid"; }else{ $cmd="#"; }

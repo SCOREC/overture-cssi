@@ -550,6 +550,9 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
     MappedGrid & mg = *u.getMappedGrid();
     const int & numberOfDimensions = mg.numberOfDimensions();
 
+    const int orderOfAccuracy=parameters.dbase.get<int >("orderOfAccuracy");
+    assert( orderOfAccuracy==2 || orderOfAccuracy==4 );  
+
     const bool twilightZoneFlow = parameters.dbase.get<bool >("twilightZoneFlow");
 
     Range N = parameters.dbase.get<Range >("Rt");   // time dependent variables
@@ -582,7 +585,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
     {
     // ** Note that we are assigning the RHS for the implicit solve ***
         if( debug() & 2 )
-            printP("AD: applyBCForImplicitTimeStepping: fill RHS for implicit solve, t=%9.3e\n",t);
+            printP("AD: applyBCForImplicitTimeStepping: fill RHS for implicit solve, orderOfAccuracy=%d, t=%9.3e\n",orderOfAccuracy,t);
 
     // The RHS for the interface equations is placed in the BoundaryDataArray
         BoundaryData::BoundaryDataArray & pBoundaryData = parameters.getBoundaryData(grid);
@@ -702,7 +705,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
             // *** TEST NEW WAY **** April 8, 2021 
                         if( debug() & 4 )
                         {
-                            printP("REQUEST DATA for (grid,side,axis)=(%d,%d,%d) interfaceType(side,axis,grid)=%d\n",grid,side,axis,interfaceType(side,axis,grid));
+                            printP("applyBCImp:REQUEST DATA for (grid,side,axis)=(%d,%d,%d) interfaceType(side,axis,grid)=%d\n",grid,side,axis,interfaceType(side,axis,grid));
                             if( bc==Parameters::dirichletInterface )
                                 printP("applyBCImp: dirichletInterface: TEST:request heatFluxInterface interface data, t=%9.3e\n",t);
                             else
@@ -713,6 +716,9 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
             // Range Rx=numberOfDimensions;
                         getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
                         getGhostIndex(   mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
+            // *wdh* April 16, 2022
+            //getBoundaryIndex(mg.indexRange(),side,axis,Ib1,Ib2,Ib3);
+            //getGhostIndex(   mg.indexRange(),side,axis,Ig1,Ig2,Ig3);
 
                         interfaceData.u.redim(Ib1,Ib2,Ib3,N); // heat flux is returned here 
                         interfaceData.t=t;
@@ -730,16 +736,12 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
                         }
                         
             // We pass the coefficients in the dirichlet, neumann or mixed BC
-            // *** THIS IS NOT CORRECT -- FIX ME ***
 
             // From ins/src/addedMassImplicitBoundaryConditions.bC: 
             //Parameters & bulkSolidParams = getInterfaceParameters( grid,side,axis,parameters );
 
                         GridFaceDescriptor & myGFD = getInterfaceGridFaceDescriptor( grid, side, axis, parameters );
                         real *sourceMixedBC = myGFD.dbase.get<real[2]>("sourceMixedBC");
-
-                        if( debug() & 8 )
-                            printF("After getInterfaceGridFaceDescriptor: myGFD.a=[%g,%g], sourceMixedBC=[%g,%g]\n",myGFD.a[0],myGFD.a[1],sourceMixedBC[0],sourceMixedBC[1]);
 
 
 
@@ -750,6 +752,11 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
 
                         targetInfo.a[0]=sourceMixedBC[0]; targetInfo.a[1]=sourceMixedBC[1]; targetInfo.a[2]=0.; 
             // const real a0 = targetInfo.a[0], a1= targetInfo.a[1]; 
+
+                        if( debug() & 2 )
+                            printF("--- applyBC: After getInterfaceGridFaceDescriptor: [a0,a1]=[%g,%g] myGFD.a=[%g,%g], sourceMixedBC=[%g,%g]\n",
+                                              a0,a1,myGFD.a[0],myGFD.a[1],sourceMixedBC[0],sourceMixedBC[1]);
+
 
                         if( applyChampInterfaceConditions )
                         { 
@@ -766,6 +773,10 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
                             targetInfo.a[1] = -1.;  // flip sign of normal
               // Do this for now: 
                             targetInfo.dbase.put<int>("getChampData")=1;
+                        }
+                        else
+                        {
+              // What should we do here ?
                         }
 
                         int interfaceDataOptions = Parameters::heatFluxInterfaceData;
@@ -788,6 +799,8 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
                         {
                             if( applyChampInterfaceConditions )
                             {
+                                    Index Ib1,Ib2,Ib3; 
+                                    getBoundaryIndex(mg.indexRange(),side,axis,Ib1,Ib2,Ib3);
                                     OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
                                     const RealArray & champParameters = parameters.dbase.get<RealArray>("champParameters");
                   // const real Sl    = champParameters(0,side,axis,grid);
@@ -798,6 +811,8 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
                                     const Real theta = champParameters(2,side,axis,grid);    // K1/K2
                                     const Real beta  = champParameters(3,side,axis,grid);    // D1/D2    
                                     const Real Sl    = champParameters(4,side,axis,grid);    // pl/dxs; 
+                                    const Real KLR = theta;
+                                    const Real DLR = beta;
                   // printF("**** ADD TZ Correction to results from getData for CHAMP:  Sl=%g, theta=%g, beta=%g *********************************\n",Sl,theta,beta);                  
                                     OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal);
                                     RealArray ue(Ib1,Ib2,Ib3,N), uex(Ib1,Ib2,Ib3,N), uey(Ib1,Ib2,Ib3,N), uexx(Ib1,Ib2,Ib3,N), ueyy(Ib1,Ib2,Ib3,N);
@@ -812,28 +827,63 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
                     // const Real dxs = dx[axis];   // *** FIX ME need dx[opposite-side]
                     // We use dx fro the opposite side
                                         const Real dxs = champParameters(5,side,axis,grid); // value saved in champBoundaryConditions.bC 
-                                        const real a0 = Sl;
-                                        const real a1 = theta + Sl*dxs*theta;
-                    // const real a2 = dxs*( beta      ) + Sl*( .5*SQR(dxs)*beta      );
-                    // const real a3 = dxs*( (beta-1.) ) + Sl*( .5*SQR(dxs)*(beta-1.) );
-                    // const real a4 = a3; // for 3D 
-                                        real axx, ayy, azz;
-                                        if( axis==0 )
+                                        if( orderOfAccuracy==2 )
                                         {
-                                            axx = (beta   )*( dxs + Sl*( .5*SQR(dxs) ) );
-                                            ayy = (beta-1.)*( dxs + Sl*( .5*SQR(dxs) ) );
-                                            azz = ayy; // for 3D 
+                                            const real a0 = Sl;
+                                            const real a1 = theta + Sl*dxs*theta;
+                      // const real a2 = dxs*( beta      ) + Sl*( .5*SQR(dxs)*beta      );
+                      // const real a3 = dxs*( (beta-1.) ) + Sl*( .5*SQR(dxs)*(beta-1.) );
+                      // const real a4 = a3; // for 3D 
+                                            real axx, ayy, azz;
+                                            if( axis==0 )
+                                            {
+                                                axx = (beta   )*( dxs + Sl*( .5*SQR(dxs) ) );
+                                                ayy = (beta-1.)*( dxs + Sl*( .5*SQR(dxs) ) );
+                                                azz = ayy; // for 3D 
+                                            }
+                                            else if( axis==1 )
+                                            {
+                                                ayy = (beta   )*( dxs + Sl*( .5*SQR(dxs) ) );
+                                                axx = (beta-1.)*( dxs + Sl*( .5*SQR(dxs) ) );
+                                                azz = axx; // for 3D       
+                                            }
+                                            assert( numberOfDimensions==2 );
+                                            int n=0;
+                                            assert( N.getLength()==1 );
+                                            interfaceData.u(Ib1,Ib2,Ib3,n) += a0*ue + a1*( normal(Ib1,Ib2,Ib3,0)*uex + normal(Ib1,Ib2,Ib3,1)*uey ) + axx*uexx + ayy*ueyy;
                                         }
-                                        else if( axis==1 )
+                                        else if( orderOfAccuracy==4 )
                                         {
-                                            ayy = (beta   )*( dxs + Sl*( .5*SQR(dxs) ) );
-                                            axx = (beta-1.)*( dxs + Sl*( .5*SQR(dxs) ) );
-                                            azz = axx; // for 3D       
+                                            if( true )
+                                                printF("Add TZ correction for CHAMP4 at t=%9.3e, KLR=%g\n",t,KLR);
+                                            int n=0;
+                                            assert( N.getLength()==1 );
+                                            if( axis==0 )
+                                            {
+                                                RealArray uexxx(Ib1,Ib2,Ib3,N), uexyy(Ib1,Ib2,Ib3,N), uexxxx(Ib1,Ib2,Ib3,N), uexxyy(Ib1,Ib2,Ib3,N), ueyyyy(Ib1,Ib2,Ib3,N);
+                                                e.gd( uexxx ,xLocal,mg.numberOfDimensions(),rectangular,0,3,0,0,Ib1,Ib2,Ib3,N,t);
+                                                e.gd( uexyy ,xLocal,mg.numberOfDimensions(),rectangular,0,1,2,0,Ib1,Ib2,Ib3,N,t);
+                                                e.gd( uexxxx,xLocal,mg.numberOfDimensions(),rectangular,0,4,0,0,Ib1,Ib2,Ib3,N,t);
+                                                e.gd( uexxyy,xLocal,mg.numberOfDimensions(),rectangular,0,2,2,0,Ib1,Ib2,Ib3,N,t);
+                                                e.gd( ueyyyy,xLocal,mg.numberOfDimensions(),rectangular,0,0,4,0,Ib1,Ib2,Ib3,N,t);
+                                                RealArray L1(Ib1,Ib2,Ib3,N),L2(Ib1,Ib2,Ib3,N),L3(Ib1,Ib2,Ib3,N),L4(Ib1,Ib2,Ib3,N);
+                                                const Real nSign = 2*side-1;
+                                                L1 = (KLR*nSign)*uex;
+                                                L2 = DLR*uexx + (DLR-1.)*ueyy;
+                                                L3 = (KLR*DLR*nSign)*( uexxx ) + ((KLR*DLR-KLR)*nSign)*( uexyy );
+                                                L4 = (DLR*DLR)*( uexxxx + 2.*uexxyy + ueyyyy ) - ueyyyy - (2.*DLR)*( uexxyy + ueyyyy) + 2.*ueyyyy;
+                                                interfaceData.u(Ib1,Ib2,Ib3,n) += Sl*( ue + dxs*L1 + (dxs*dxs*.5)*L2 + (dxs*dxs*dxs/6.)*L3 + (dxs*dxs*dxs*dxs/24.)*L4 )
+                                                                                                                          + L1 + dxs*L2 + (dxs*dxs*.5)*L3 + (dxs*dxs*dxs/6.)*L4;
+                                            }
+                                            else if( axis==1 )
+                                            {
+                                                OV_ABORT("finish me");
+                                            }
                                         }
-                                        assert( numberOfDimensions==2 );
-                                        int n=0;
-                                        assert( N.getLength()==1 );
-                                        interfaceData.u(Ib1,Ib2,Ib3,n) += a0*ue + a1*( normal(Ib1,Ib2,Ib3,0)*uex + normal(Ib1,Ib2,Ib3,1)*uey ) + axx*uexx + ayy*ueyy;
+                                        else
+                                        {
+                                            OV_ABORT("error -- orderOfAccuracy");
+                                        }
                                     }
                                     else
                                     {
@@ -859,44 +909,133 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
                                         const Real dr2 = mg.gridSpacing(axisp1); 
                                         int jsv[3]={0,0,0}, &js1=jsv[0], &js2=jsv[1], &js3=jsv[2];
                                         jsv[axisp1]=1; 
-                                        RealArray uep(Ib1+js1,Ib2+js2,Ib3+js3,N), uem(Ib1-js1,Ib2-js2,Ib3-js3,N);
-                                        e.gd( uep,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1+js1,Ib2+js2,Ib3+js3,N,t);
-                                        e.gd( uem,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1-js1,Ib2-js2,Ib3-js3,N,t);
-                                        RealArray uer2(Ib1,Ib2,Ib3,N), uer2r2(Ib1,Ib2,Ib3,N);
-                                        uer2   = ( uep - uem )*(1./(2.*dr2));
-                                        uer2r2 = ( uep -2.*ue + uem )*(1./(dr2*dr2));
-                    // -- compute the mixed derivative w.r.t r1 and r2 ----
-                                        RealArray uepp(Ib1+1,Ib2+1,Ib3,N), uemm(Ib1-1,Ib2-1,Ib3,N), uepm(Ib1+1,Ib2-1,Ib3,N), uemp(Ib1-1,Ib2+1,Ib3,N);
-                                        e.gd( uemm,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1-1,Ib2-1,Ib3,N,t);
-                                        e.gd( uepm,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1+1,Ib2-1,Ib3,N,t);
-                                        e.gd( uemp,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1-1,Ib2+1,Ib3,N,t);
-                                        e.gd( uepp,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1+1,Ib2+1,Ib3,N,t);
-                                        RealArray uer1r2(Ib1,Ib2,Ib3,N);
-                                        uer1r2 = ( uepp - uemp -  uepm + uemm )*(1./(4.*dr1*dr2));   // D0r1 * D0r2 
                                         int n=0;
                                         assert( N.getLength()==1 );
                     // interfaceData.u(Ib1,Ib2,Ib3,n) += a0*ue + a1*( normal(Ib1,Ib2,Ib3,0)*uex + normal(Ib1,Ib2,Ib3,1)*uey ) + a2*uexx + a3*ueyy;
                     // Some coefficients in the CHAMP conditions were saved when the matrix was created (champBoundaryConditions.bC)
                                         RealArray & cc = myGFD.dbase.get<RealArray>("ccChamp");
-                    // RealArray cc(Ib1,Ib2,Ib3,6); // need to save these when matrix is formed.  **FIX ME***
-                    // cc=0.;
-                    // cc(Ib1,Ib2,Ib3,1) = beta; 
-                    // cc(Ib1,Ib2,Ib3,3) = -1.; 
-                    // OV_ABORT("finish me");
-                                        RealArray Nc(Ib1,Ib2,Ib3,N);
-                                        Nc = theta*( normal(Ib1,Ib2,Ib3,0)*uex + normal(Ib1,Ib2,Ib3,1)*uey ) + cc(Ib1,Ib2,Ib3,0)*uer2; 
-                                        interfaceData.u(Ib1,Ib2,Ib3,n) += Sl*ue   
-                                                                                                            + cc(Ib1,Ib2,Ib3,1)*( uexx + ueyy ) 
-                                                                                                            + cc(Ib1,Ib2,Ib3,2)*uer1r2 
-                                                                                                            + cc(Ib1,Ib2,Ib3,3)*uer2r2
-                                                                                                            + cc(Ib1,Ib2,Ib3,4)*uer2
-                                                                                                            + cc(Ib1,Ib2,Ib3,5)*Nc;
+                                        if( orderOfAccuracy==2 )
+                                        {
+                                            const RealArray & dra = mg.gridSpacing(); 
+                                            real dr[3]={dra(0),dra(1),dra(2)};
+                      // evaluate the exact solution at points on and near the boundary
+                                            Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
+                                            I1=Ib1; I2=Ib2; I3=Ib3;
+                                            for( int dir=0; dir<numberOfDimensions; dir++ )
+                                            {
+                                                Iv[dir] = Range( Iv[dir].getBase()-2, Iv[dir].getBound()+2 );  // we have a 5-pt stencil
+                                            }
+                                            RealArray ue(I1,I2,I3,N);
+                                            e.gd( ue,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,I1,I2,I3,N,t);
+                                            RealArray    uer(Ib1,Ib2,Ib3),    ues(Ib1,Ib2,Ib3);
+                                            RealArray   uerr(Ib1,Ib2,Ib3),   uers(Ib1,Ib2,Ib3),   uess(Ib1,Ib2,Ib3);
+                                            uer  = ((ue(Ib1+1,Ib2,Ib3)-ue(Ib1-1,Ib2,Ib3))/(2.*dr[0]));
+                                            ues  = ((ue(Ib1,Ib2+1,Ib3)-ue(Ib1,Ib2-1,Ib3))/(2.*dr[1]));
+                                            uerr = ((ue(Ib1+1,Ib2,Ib3)-2.*ue(Ib1,Ib2,Ib3)+ue(Ib1-1,Ib2,Ib3))/(SQR(dr[0])));
+                                            uers = ((((ue(Ib1+1,Ib2+1,Ib3)-ue(Ib1+1,Ib2-1,Ib3))/(2.*dr[1]))-((ue(Ib1-1,Ib2+1,Ib3)-ue(Ib1-1,Ib2-1,Ib3))/(2.*dr[1])))/(2.*dr[0]));
+                                            uess = ((ue(Ib1,Ib2+1,Ib3)-2.*ue(Ib1,Ib2,Ib3)+ue(Ib1,Ib2-1,Ib3))/(SQR(dr[1])));
+                      // interfaceData.u(Ib1,Ib2,Ib3,n) += Sl*ue(Ib1,Ib2,Ib3); 
+                      // interfaceData.u(Ib1,Ib2,Ib3,n) +=  cc(Ib1,Ib2,Ib3, 0)*ue(Ib1,Ib2,Ib3);
+                                            interfaceData.u(Ib1,Ib2,Ib3,n) +=  cc(Ib1,Ib2,Ib3, 0)*ue(Ib1,Ib2,Ib3)
+                                                                                                                +cc(Ib1,Ib2,Ib3, 1)*uer
+                                                                                                                +cc(Ib1,Ib2,Ib3, 2)*ues
+                                                                                                                +cc(Ib1,Ib2,Ib3, 3)*uerr
+                                                                                                                +cc(Ib1,Ib2,Ib3, 4)*uers
+                                                                                                                +cc(Ib1,Ib2,Ib3, 5)*uess;
+                      // RealArray uep(Ib1+js1,Ib2+js2,Ib3+js3,N), uem(Ib1-js1,Ib2-js2,Ib3-js3,N);
+                      // e.gd( uep,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1+js1,Ib2+js2,Ib3+js3,N,t);
+                      // e.gd( uem,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1-js1,Ib2-js2,Ib3-js3,N,t);
+                      // RealArray uer2(Ib1,Ib2,Ib3,N), uer2r2(Ib1,Ib2,Ib3,N);
+                      // uer2   = ( uep - uem )*(1./(2.*dr2));
+                      // uer2r2 = ( uep -2.*ue + uem )*(1./(dr2*dr2));
+                      // // -- compute the mixed derivative w.r.t r1 and r2 ----
+                      // RealArray uepp(Ib1+1,Ib2+1,Ib3,N), uemm(Ib1-1,Ib2-1,Ib3,N), uepm(Ib1+1,Ib2-1,Ib3,N), uemp(Ib1-1,Ib2+1,Ib3,N);
+                      // e.gd( uemm,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1-1,Ib2-1,Ib3,N,t);
+                      // e.gd( uepm,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1+1,Ib2-1,Ib3,N,t);
+                      // e.gd( uemp,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1-1,Ib2+1,Ib3,N,t);
+                      // e.gd( uepp,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1+1,Ib2+1,Ib3,N,t);
+                      // RealArray uer1r2(Ib1,Ib2,Ib3,N);
+                      // uer1r2 = ( uepp - uemp -  uepm + uemm )*(1./(4.*dr1*dr2));   // D0r1 * D0r2       
+                      // RealArray Nc(Ib1,Ib2,Ib3,N);
+                      // Nc = theta*( normal(Ib1,Ib2,Ib3,0)*uex + normal(Ib1,Ib2,Ib3,1)*uey ) + cc(Ib1,Ib2,Ib3,0)*uer2; 
+                      // interfaceData.u(Ib1,Ib2,Ib3,n) += Sl*ue   
+                      //                                   + cc(Ib1,Ib2,Ib3,1)*( uexx + ueyy ) 
+                      //                                   + cc(Ib1,Ib2,Ib3,2)*uer1r2 
+                      //                                   + cc(Ib1,Ib2,Ib3,3)*uer2r2
+                      //                                   + cc(Ib1,Ib2,Ib3,4)*uer2
+                      //                                   + cc(Ib1,Ib2,Ib3,5)*Nc;
+                                        }
+                                        else
+                                        {
+                                            const RealArray & dra = mg.gridSpacing(); 
+                                            real dr[3]={dra(0),dra(1),dra(2)};
+                      // evaluate the exact solution at points on and near the boundary
+                                            Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
+                                            I1=Ib1; I2=Ib2; I3=Ib3;
+                                            for( int dir=0; dir<numberOfDimensions; dir++ )
+                                            {
+                                                Iv[dir] = Range( Iv[dir].getBase()-2, Iv[dir].getBound()+2 );  // we have a 5-pt stencil
+                                            }
+                                            RealArray ue(I1,I2,I3,N);
+                                            e.gd( ue,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,I1,I2,I3,N,t);
+                                            RealArray    uer(Ib1,Ib2,Ib3),    ues(Ib1,Ib2,Ib3);
+                                            RealArray   uerr(Ib1,Ib2,Ib3),   uers(Ib1,Ib2,Ib3),   uess(Ib1,Ib2,Ib3);
+                                            RealArray  uerrr(Ib1,Ib2,Ib3),  uerrs(Ib1,Ib2,Ib3),  uerss(Ib1,Ib2,Ib3),  uesss(Ib1,Ib2,Ib3);
+                                            RealArray uerrrr(Ib1,Ib2,Ib3), uerrrs(Ib1,Ib2,Ib3), uerrss(Ib1,Ib2,Ib3), uersss(Ib1,Ib2,Ib3), uessss(Ib1,Ib2,Ib3);
+                                            uer  = (((1./12.)*ue(Ib1-2,Ib2,Ib3)-(2./3.)*ue(Ib1-1,Ib2,Ib3)+(2./3.)*ue(Ib1+1,Ib2,Ib3)-(1./12.)*ue(Ib1+2,Ib2,Ib3))/(dr[0]));
+                                            ues  = (((1./12.)*ue(Ib1,Ib2-2,Ib3)-(2./3.)*ue(Ib1,Ib2-1,Ib3)+(2./3.)*ue(Ib1,Ib2+1,Ib3)-(1./12.)*ue(Ib1,Ib2+2,Ib3))/(dr[1]));
+                                            uerr = ((-1.*ue(Ib1-2,Ib2,Ib3)+16.*ue(Ib1-1,Ib2,Ib3)-30.*ue(Ib1,Ib2,Ib3)+16.*ue(Ib1+1,Ib2,Ib3)-1.*ue(Ib1+2,Ib2,Ib3))/(12.*SQR(dr[0])));
+                                            uers = (((1./12.)*(((1./12.)*ue(Ib1-2,Ib2-2,Ib3)-(2./3.)*ue(Ib1-2,Ib2-1,Ib3)+(2./3.)*ue(Ib1-2,Ib2+1,Ib3)-(1./12.)*ue(Ib1-2,Ib2+2,Ib3))/(dr[1]))-(2./3.)*(((1./12.)*ue(Ib1-1,Ib2-2,Ib3)-(2./3.)*ue(Ib1-1,Ib2-1,Ib3)+(2./3.)*ue(Ib1-1,Ib2+1,Ib3)-(1./12.)*ue(Ib1-1,Ib2+2,Ib3))/(dr[1]))+(2./3.)*(((1./12.)*ue(Ib1+1,Ib2-2,Ib3)-(2./3.)*ue(Ib1+1,Ib2-1,Ib3)+(2./3.)*ue(Ib1+1,Ib2+1,Ib3)-(1./12.)*ue(Ib1+1,Ib2+2,Ib3))/(dr[1]))-(1./12.)*(((1./12.)*ue(Ib1+2,Ib2-2,Ib3)-(2./3.)*ue(Ib1+2,Ib2-1,Ib3)+(2./3.)*ue(Ib1+2,Ib2+1,Ib3)-(1./12.)*ue(Ib1+2,Ib2+2,Ib3))/(dr[1])))/(dr[0]));
+                                            uess = ((-1.*ue(Ib1,Ib2-2,Ib3)+16.*ue(Ib1,Ib2-1,Ib3)-30.*ue(Ib1,Ib2,Ib3)+16.*ue(Ib1,Ib2+1,Ib3)-1.*ue(Ib1,Ib2+2,Ib3))/(12.*SQR(dr[1])));
+                                            uerrr = (((-1./2.)*ue(Ib1-2,Ib2,Ib3)+1.*ue(Ib1-1,Ib2,Ib3)-1.*ue(Ib1+1,Ib2,Ib3)+(1./2.)*ue(Ib1+2,Ib2,Ib3))/(pow(dr[0],3)));
+                                            uerrs = ((-1.*(((1./12.)*ue(Ib1-2,Ib2-2,Ib3)-(2./3.)*ue(Ib1-2,Ib2-1,Ib3)+(2./3.)*ue(Ib1-2,Ib2+1,Ib3)-(1./12.)*ue(Ib1-2,Ib2+2,Ib3))/(dr[1]))+16.*(((1./12.)*ue(Ib1-1,Ib2-2,Ib3)-(2./3.)*ue(Ib1-1,Ib2-1,Ib3)+(2./3.)*ue(Ib1-1,Ib2+1,Ib3)-(1./12.)*ue(Ib1-1,Ib2+2,Ib3))/(dr[1]))-30.*(((1./12.)*ue(Ib1,Ib2-2,Ib3)-(2./3.)*ue(Ib1,Ib2-1,Ib3)+(2./3.)*ue(Ib1,Ib2+1,Ib3)-(1./12.)*ue(Ib1,Ib2+2,Ib3))/(dr[1]))+16.*(((1./12.)*ue(Ib1+1,Ib2-2,Ib3)-(2./3.)*ue(Ib1+1,Ib2-1,Ib3)+(2./3.)*ue(Ib1+1,Ib2+1,Ib3)-(1./12.)*ue(Ib1+1,Ib2+2,Ib3))/(dr[1]))-1.*(((1./12.)*ue(Ib1+2,Ib2-2,Ib3)-(2./3.)*ue(Ib1+2,Ib2-1,Ib3)+(2./3.)*ue(Ib1+2,Ib2+1,Ib3)-(1./12.)*ue(Ib1+2,Ib2+2,Ib3))/(dr[1])))/(12.*SQR(dr[0])));
+                                            uerss = (((1./12.)*((-1.*ue(Ib1-2,Ib2-2,Ib3)+16.*ue(Ib1-2,Ib2-1,Ib3)-30.*ue(Ib1-2,Ib2,Ib3)+16.*ue(Ib1-2,Ib2+1,Ib3)-1.*ue(Ib1-2,Ib2+2,Ib3))/(12.*SQR(dr[1])))-(2./3.)*((-1.*ue(Ib1-1,Ib2-2,Ib3)+16.*ue(Ib1-1,Ib2-1,Ib3)-30.*ue(Ib1-1,Ib2,Ib3)+16.*ue(Ib1-1,Ib2+1,Ib3)-1.*ue(Ib1-1,Ib2+2,Ib3))/(12.*SQR(dr[1])))+(2./3.)*((-1.*ue(Ib1+1,Ib2-2,Ib3)+16.*ue(Ib1+1,Ib2-1,Ib3)-30.*ue(Ib1+1,Ib2,Ib3)+16.*ue(Ib1+1,Ib2+1,Ib3)-1.*ue(Ib1+1,Ib2+2,Ib3))/(12.*SQR(dr[1])))-(1./12.)*((-1.*ue(Ib1+2,Ib2-2,Ib3)+16.*ue(Ib1+2,Ib2-1,Ib3)-30.*ue(Ib1+2,Ib2,Ib3)+16.*ue(Ib1+2,Ib2+1,Ib3)-1.*ue(Ib1+2,Ib2+2,Ib3))/(12.*SQR(dr[1]))))/(dr[0]));
+                                            uesss = (((-1./2.)*ue(Ib1,Ib2-2,Ib3)+1.*ue(Ib1,Ib2-1,Ib3)-1.*ue(Ib1,Ib2+1,Ib3)+(1./2.)*ue(Ib1,Ib2+2,Ib3))/(pow(dr[1],3)));
+                                            uerrrr = ((ue(Ib1-2,Ib2,Ib3)-4.*ue(Ib1-1,Ib2,Ib3)+6.*ue(Ib1,Ib2,Ib3)-4.*ue(Ib1+1,Ib2,Ib3)+ue(Ib1+2,Ib2,Ib3))/(pow(dr[0],4)));
+                                            uerrrs = (((-1./2.)*(((1./12.)*ue(Ib1-2,Ib2-2,Ib3)-(2./3.)*ue(Ib1-2,Ib2-1,Ib3)+(2./3.)*ue(Ib1-2,Ib2+1,Ib3)-(1./12.)*ue(Ib1-2,Ib2+2,Ib3))/(dr[1]))+1.*(((1./12.)*ue(Ib1-1,Ib2-2,Ib3)-(2./3.)*ue(Ib1-1,Ib2-1,Ib3)+(2./3.)*ue(Ib1-1,Ib2+1,Ib3)-(1./12.)*ue(Ib1-1,Ib2+2,Ib3))/(dr[1]))-1.*(((1./12.)*ue(Ib1+1,Ib2-2,Ib3)-(2./3.)*ue(Ib1+1,Ib2-1,Ib3)+(2./3.)*ue(Ib1+1,Ib2+1,Ib3)-(1./12.)*ue(Ib1+1,Ib2+2,Ib3))/(dr[1]))+(1./2.)*(((1./12.)*ue(Ib1+2,Ib2-2,Ib3)-(2./3.)*ue(Ib1+2,Ib2-1,Ib3)+(2./3.)*ue(Ib1+2,Ib2+1,Ib3)-(1./12.)*ue(Ib1+2,Ib2+2,Ib3))/(dr[1]))/(pow(dr[0],3))));
+                                            uerrss = ((-1.*((-1.*ue(Ib1-2,Ib2-2,Ib3)+16.*ue(Ib1-2,Ib2-1,Ib3)-30.*ue(Ib1-2,Ib2,Ib3)+16.*ue(Ib1-2,Ib2+1,Ib3)-1.*ue(Ib1-2,Ib2+2,Ib3))/(12.*SQR(dr[1])))+16.*((-1.*ue(Ib1-1,Ib2-2,Ib3)+16.*ue(Ib1-1,Ib2-1,Ib3)-30.*ue(Ib1-1,Ib2,Ib3)+16.*ue(Ib1-1,Ib2+1,Ib3)-1.*ue(Ib1-1,Ib2+2,Ib3))/(12.*SQR(dr[1])))-30.*((-1.*ue(Ib1,Ib2-2,Ib3)+16.*ue(Ib1,Ib2-1,Ib3)-30.*ue(Ib1,Ib2,Ib3)+16.*ue(Ib1,Ib2+1,Ib3)-1.*ue(Ib1,Ib2+2,Ib3))/(12.*SQR(dr[1])))+16.*((-1.*ue(Ib1+1,Ib2-2,Ib3)+16.*ue(Ib1+1,Ib2-1,Ib3)-30.*ue(Ib1+1,Ib2,Ib3)+16.*ue(Ib1+1,Ib2+1,Ib3)-1.*ue(Ib1+1,Ib2+2,Ib3))/(12.*SQR(dr[1])))-1.*((-1.*ue(Ib1+2,Ib2-2,Ib3)+16.*ue(Ib1+2,Ib2-1,Ib3)-30.*ue(Ib1+2,Ib2,Ib3)+16.*ue(Ib1+2,Ib2+1,Ib3)-1.*ue(Ib1+2,Ib2+2,Ib3))/(12.*SQR(dr[1]))))/(12.*SQR(dr[0])));
+                                            uersss = (((1./12.)*(((-1./2.)*ue(Ib1-2,Ib2-2,Ib3)+1.*ue(Ib1-2,Ib2-1,Ib3)-1.*ue(Ib1-2,Ib2+1,Ib3)+(1./2.)*ue(Ib1-2,Ib2+2,Ib3))/(pow(dr[1],3)))-(2./3.)*(((-1./2.)*ue(Ib1-1,Ib2-2,Ib3)+1.*ue(Ib1-1,Ib2-1,Ib3)-1.*ue(Ib1-1,Ib2+1,Ib3)+(1./2.)*ue(Ib1-1,Ib2+2,Ib3))/(pow(dr[1],3)))+(2./3.)*(((-1./2.)*ue(Ib1+1,Ib2-2,Ib3)+1.*ue(Ib1+1,Ib2-1,Ib3)-1.*ue(Ib1+1,Ib2+1,Ib3)+(1./2.)*ue(Ib1+1,Ib2+2,Ib3))/(pow(dr[1],3)))-(1./12.)*(((-1./2.)*ue(Ib1+2,Ib2-2,Ib3)+1.*ue(Ib1+2,Ib2-1,Ib3)-1.*ue(Ib1+2,Ib2+1,Ib3)+(1./2.)*ue(Ib1+2,Ib2+2,Ib3))/(pow(dr[1],3))))/(dr[0]));
+                                            uessss = ((ue(Ib1,Ib2-2,Ib3)-4.*ue(Ib1,Ib2-1,Ib3)+6.*ue(Ib1,Ib2,Ib3)-4.*ue(Ib1,Ib2+1,Ib3)+ue(Ib1,Ib2+2,Ib3))/(pow(dr[1],4)));
+                      // printF("TZ correction: champ4: Sl=%9.3e \n",Sl);
+                      // ::display(cc(Ib1,Ib2,Ib3, 0),"cc(Ib1,Ib2,Ib3, 0)","%9.3e");
+                      // printF("TZ correction: ||uer||=%8.2e\n",max(fabs(uer)));
+                      // printF("TZ correction: ||ues||=%8.2e\n",max(fabs(ues)));
+                      // printF("TZ correction: ||uerr||=%8.2e\n",max(fabs(uerr)));
+                      // printF("TZ correction: ||uers||=%8.2e\n",max(fabs(uers)));
+                      // printF("TZ correction: ||uess||=%8.2e\n",max(fabs(uess)));
+                      // printF("TZ correction: ||uerrr||=%8.2e\n",max(fabs(uerrr)));
+                      // printF("TZ correction: ||uerrs||=%8.2e\n",max(fabs(uerrs)));
+                      // printF("TZ correction: ||uerss||=%8.2e\n",max(fabs(uerss)));
+                      // printF("TZ correction: ||uesss||=%8.2e\n",max(fabs(uesss)));
+                      // printF("TZ correction: ||uerrrr||=%8.2e\n",max(fabs(uerrrr)));
+                      // printF("TZ correction: ||uerrrs||=%8.2e\n",max(fabs(uerrrs)));
+                      // printF("TZ correction: ||uerrss||=%8.2e\n",max(fabs(uerrss)));
+                      // printF("TZ correction: ||uersss||=%8.2e\n",max(fabs(uersss)));
+                      // printF("TZ correction: ||uessss||=%8.2e\n",max(fabs(uessss)));
+                      // interfaceData.u(Ib1,Ib2,Ib3,n) += Sl*ue(Ib1,Ib2,Ib3); 
+                      // interfaceData.u(Ib1,Ib2,Ib3,n) +=  cc(Ib1,Ib2,Ib3, 0)*ue(Ib1,Ib2,Ib3);
+                                            interfaceData.u(Ib1,Ib2,Ib3,n) +=  cc(Ib1,Ib2,Ib3, 0)*ue(Ib1,Ib2,Ib3)
+                                                                                                                +cc(Ib1,Ib2,Ib3, 1)*uer
+                                                                                                                +cc(Ib1,Ib2,Ib3, 2)*ues
+                                                                                                                +cc(Ib1,Ib2,Ib3, 3)*uerr
+                                                                                                                +cc(Ib1,Ib2,Ib3, 4)*uers
+                                                                                                                +cc(Ib1,Ib2,Ib3, 5)*uess
+                                                                                                                +cc(Ib1,Ib2,Ib3, 6)*uerrr
+                                                                                                                +cc(Ib1,Ib2,Ib3, 7)*uerrs
+                                                                                                                +cc(Ib1,Ib2,Ib3, 8)*uerss
+                                                                                                                +cc(Ib1,Ib2,Ib3, 9)*uesss
+                                                                                                                +cc(Ib1,Ib2,Ib3,10)*uerrrr
+                                                                                                                +cc(Ib1,Ib2,Ib3,11)*uerrrs
+                                                                                                                +cc(Ib1,Ib2,Ib3,12)*uerrss
+                                                                                                                +cc(Ib1,Ib2,Ib3,13)*uersss
+                                                                                                                +cc(Ib1,Ib2,Ib3,14)*uessss;
+                                        }
                                     }
                 // OV_ABORT("Cgad::applyBoundaryConditionsForImplicitTimeStepping get RHS for CHAMP -- STOP HERE FOR NOW");  
                             }
                             else
                             {
-                                    printF("**** ADD TZ Correction to results from getData **CHECK ME**\n");
+                                    printF("**** applyBC: ADD TZ Correction to results from getData a0=%g, a1=%g **CHECK ME**\n",a0,a1);
                   // fix me for parallel
                                     OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
                                     int rectangular=0;
@@ -936,6 +1075,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
 
                         if( debug() & 8 )
                         {
+                            printP("AFTER REQUEST DATA FOR INTERFACE + TZ FIX (grid,side,axis)=(%d,%d,%d) t=%9.3e\n",grid,side,axis,t);
                             ::display(interfaceData.u(Ib1,Ib2,Ib3,N),"AFTER REQUEST DATA FOR INTERFACE + TZ FIX","%7.4f ");
                             ::display(bd,"bd: existing boundary data","%7.4f ");
                             printP("MAX DIFF getInterface - bd = %8.2e\n",max(fabs(bd(Ib1,Ib2,Ib3,N)-interfaceData.u(Ib1,Ib2,Ib3,N))));
@@ -946,6 +1086,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
                             if( multiDomainProblem )
                             {  // FILL IN RHS FOR implicit CHAMP condition
                                 uLocal(Ig1,Ig2,Ig3,N) = interfaceData.u(Ib1,Ib2,Ib3,N);
+                                bd(Ib1,Ib2,Ib3,N)     = interfaceData.u(Ib1,Ib2,Ib3,N);      // *wdh* March 25, 2022
                                 if( debug() & 8 )
                                 {
                                     ::display(uLocal(Ib1,Ib2,Ib3,N),"RHS ON BOUNDARY FOR CHAMP face uLocal(Ib1,Ib2,Ib3,N)","%7.4f ");
@@ -1016,6 +1157,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
                 }
                 else if( bc==Parameters::dirichletInterface  && !applyChampInterfaceConditions )
                 {
+          // DIRICHLET INTERFACE (NO CHAMP)
                     getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
                     const int includeGhost=1;
                     bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
@@ -1040,9 +1182,13 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
                             int rectangular=0;
                             e.gd( ue,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,N,t);
 
-                            ::display(ue(Ib1,Ib2,Ib3,N),"Cgad:imp: EXACT RHS for dirichlet BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
+                            ::display(ue(Ib1,Ib2,Ib3,N),"Cgad:applyImpBC: EXACT RHS for dirichlet BC: ue(Ib1,Ib2,Ib3,N)","%7.4f ");
 
-              // printP("Cgad:imp: set RHS to exact\n");
+                            ::display(fabs(bd(Ib1,Ib2,Ib3,N)-ue(Ib1,Ib2,Ib3,N)),
+                                                      "Cgad:applyImpBC: ERROR in RHS for Dirichlet BC: bd-ue","%7.4f ");
+
+
+              // printP("Cgad:applyImpBC: set RHS to exact\n");
               // bd(Ib1,Ib2,Ib3,N)=ue(Ib1,Ib2,Ib3,N);  // *****************************************************************
 
                         }
@@ -1085,7 +1231,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
 
                         if( debug() & 4 && twilightZoneFlow )
                         {
-                            ::display(bd(Ib1,Ib2,Ib3,N),"Cgad:imp: RHS for Neumann BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
+                            ::display(bd(Ib1,Ib2,Ib3,N),"Cgad:applyImpBC: RHS for Neumann BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
 
                             OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
                             RealArray ue(Ib1,Ib2,Ib3,N), uex(Ib1,Ib2,Ib3,N), uey(Ib1,Ib2,Ib3,N);
@@ -1101,15 +1247,15 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
                                     real a0=mixedCoeff(n,side,axis,grid), a1=mixedNormalCoeff(n,side,axis,grid);
                                     ue(Ib1,Ib2,Ib3,n)=a1*(uex(Ib1,Ib2,Ib3,n)*normal(Ib1,Ib2,Ib3,0)+
                                                                                 uey(Ib1,Ib2,Ib3,n)*normal(Ib1,Ib2,Ib3,1))+ a0*ue(Ib1,Ib2,Ib3,n);
-                                    ::display(ue(Ib1,Ib2,Ib3,n),"Cgad:imp: EXACT RHS for Neumann BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
+                                    ::display(ue(Ib1,Ib2,Ib3,n),"Cgad:applyImpBC: EXACT RHS for Neumann BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
                                     ::display(fabs(bd(Ib1,Ib2,Ib3,n)-ue(Ib1,Ib2,Ib3,n)),
-                                                      "Cgad:imp: ERROR in RHS for Neumann BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
+                                                      "Cgad:applyImpBC: ERROR in RHS for Neumann BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
 
                   // ** bd(Ib1,Ib2,Ib3,N) *= 1./a1;
                                     
                                 }
                             }
-              // printP("Cgad:imp: set RHS to exact\n");
+              // printP("Cgad:applyImpBC: set RHS to exact\n");
               // bd(Ib1,Ib2,Ib3,N)=ue(Ib1,Ib2,Ib3,N);  // ***********************************************************
                         }
                         
@@ -1148,7 +1294,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
 
                                 if( debug() & 8 )
                                 {
-                                    printP("Cgad:imp: set RHS to exact where interface meets adj-dirichlet "
+                                    printP("Cgad:applyImpBC: set RHS to exact where interface meets adj-dirichlet "
                                                   " (side,axis)=(%i,%i) (side2,dir2)=(%i,%i) Jv=[%i,%i][%i,%i][%i,%i]\n",
                                                   side,axis,side2,dir2,Jb1.getBase(),Jb1.getBound(),Jb2.getBase(),Jb2.getBound(),
                                                   Jb3.getBase(),Jb3.getBound() );

@@ -1,16 +1,21 @@
 #
 # Two co-centric annulii for a two-domain example (e.g. for conjugate heat transfer)
 #
-# NOTE: THIS VERSION HAS THE ANNLUUS WITH r1=r and r2=theta (reversed from normal)
+# NOTE: THIS VERSION SUPPORTS THE ANNULUS WITH r1=r and r2=theta (reversed from normal)
 #
 # usage: ogen [noplot] doubleAnnulusGrid-factor=<num> -order=[2/4/6/8] -interp=[e/i]
 # 
 # examples:
-#     ogen -noplot doubleAnnulusGrid -order=2 -interp=e -factor=0.5
-#     ogen -noplot doubleAnnulusGrid -order=2 -interp=e -factor=1
-#     ogen -noplot doubleAnnulusGrid -order=2 -interp=e -factor=2
-#     ogen -noplot doubleAnnulusGrid -order=2 -interp=e -factor=4
-#     ogen -noplot doubleAnnulusGrid -order=2 -interp=e -factor=8
+#     ogen -noplot doubleAnnulusGrid -order=2 -radialAxis=0 -interp=e -factor=0.5
+#     ogen -noplot doubleAnnulusGrid -order=2 -radialAxis=0 -interp=e -factor=1
+#     ogen -noplot doubleAnnulusGrid -order=2 -radialAxis=0 -interp=e -factor=2
+#     ogen -noplot doubleAnnulusGrid -order=2 -radialAxis=0 -interp=e -factor=4
+#     ogen -noplot doubleAnnulusGrid -order=2 -radialAxis=0 -interp=e -factor=8
+# 
+#     ogen -noplot doubleAnnulusGrid -prefix=doubleAnnulusRadAxis1Grid -order=2 -radialAxis=1 -interp=e -factor=1
+#     ogen -noplot doubleAnnulusGrid -prefix=doubleAnnulusRadAxis1Grid -order=2 -radialAxis=1 -interp=e -factor=2
+#     ogen -noplot doubleAnnulusGrid -prefix=doubleAnnulusRadAxis1Grid -order=2 -radialAxis=1 -interp=e -factor=4
+#     ogen -noplot doubleAnnulusGrid -prefix=doubleAnnulusRadAxis1Grid -order=2 -radialAxis=1 -interp=e -factor=8
 #
 # Double quarter annulus
 #    ogen -noplot doubleAnnulusGrid -prefix=doubleQuarterAnnulusGrid -theta2=.25 -order=2 -interp=e -factor=1
@@ -19,9 +24,11 @@ $prefix="doubleAnnulusGrid";
 $theta1=0; $theta2=1.; # range of theta (normalized to [0,1])
 $order=2; $factor=1; $interp="i"; # default values
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids";
+$radialAxis=0;   # make the radius axis coordinate direction 0 
 # 
 # get command line arguments
-GetOptions( "order=i"=>\$order,"factor=f"=>\$factor,"interp=s"=>\$interp,"prefix=s"=> \$prefix,"theta1=f"=>\$theta1,"theta2=f"=>\$theta2 );
+GetOptions( "order=i"=>\$order,"factor=f"=>\$factor,"interp=s"=>\$interp,"prefix=s"=> \$prefix,\
+            "theta1=f"=>\$theta1,"theta2=f"=>\$theta2,"radialAxis=i"=>\$radialAxis );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
@@ -43,6 +50,10 @@ create mappings
 #
 # --- INNER ANNULUS ---
 #
+if( $radAxis == 1 ){ $innerAnnulus0="innerAnnulus";  $innerAnnulus1="innerAnnulus1";  }else{\
+                     $innerAnnulus0="innerAnnulus0"; $innerAnnulus1="innerAnnulus"; }
+if( $radAxis == 1 ){ $outerAnnulus0="outerAnnulus";  $outerAnnulus1="outerAnnulus1";  }else{\
+                     $outerAnnulus0="outerAnnulus0"; $outerAnnulus1="outerAnnulus"; }                     
 Annulus
  # keep the number of radial points on the annulus fixed:
   inner and outer radii
@@ -53,12 +64,14 @@ Annulus
     $nr = int( ($middleRad-$innerRad)/$ds + 2.5 );
     $nTheta $nr
   mappingName
-   innerAnnulus0
+   $innerAnnulus0
 exit
-# FLIP r1 <-> r2 
+# 
+# Optionally FLIP r1 <-> r2 
+#
 reparameterize
   transform which mapping?
-    innerAnnulus0
+    $innerAnnulus0
   reorient domain coordinates
     1 0
   boundary conditions
@@ -67,7 +80,7 @@ reparameterize
   share
     0 100 0 0 
   mappingName
-   innerAnnulus    
+   $innerAnnulus1   
 exit
 #
 # ---- OUTER ANNULUS ----
@@ -80,12 +93,14 @@ Annulus
     $nr = int( ($outerRad-$middleRad)/$ds + 2.5 );
     $nTheta $nr
   mappingName
-   outerAnnulus0
+   $outerAnnulus0
 exit
+#
 # FLIP r1 <-> r2 
+#
 reparameterize
   transform which mapping?
-    outerAnnulus0
+    $outerAnnulus0
   reorient domain coordinates
     1 0
   boundary conditions
@@ -94,7 +109,7 @@ reparameterize
   share
     100 2  0 0    
   mappingName
-   outerAnnulus 
+   $outerAnnulus1
 exit
 #
 exit
@@ -103,17 +118,17 @@ generate an overlapping grid
     outerAnnulus
   done
   change parameters
- # choose implicit or explicit interpolation
+    # choose implicit or explicit interpolation
     specify a domain
- # domain name:
+      # domain name:
       outerDomain 
- # grids in the domain:
+      # grids in the domain:
       outerAnnulus
       done
     specify a domain
- # domain name:
+      # domain name:
       innerDomain 
- # grids in the domain:
+      # grids in the domain:
       innerAnnulus
       done
 # 

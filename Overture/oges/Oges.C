@@ -582,10 +582,22 @@ setEquationAndBoundaryConditions( OgesParameters::EquationEnum equation,
       else if( equation==OgesParameters::advectionDiffusionEquationOperator )
       {
         // I + a(x).grad + div( s(x) grad )
+   
+        if( varCoeff!=NULL )
+        {
+          realMappedGridFunction & variableCoeff = (*varCoeff)[grid];
+          op[grid].coefficients(MappedGridOperators::divergenceScalarGradient,coeff[grid],variableCoeff);
+        }
+        else
+        {
+          // -- constant diffusivity --- added April 27, 2022 *wdh*
+          op[grid].coefficients( MappedGridOperators::laplacianOperator,coeff[grid] );
+          OV_GET_SERIAL_ARRAY(real,coeff[grid],coeffLocal);
+          coeffLocal *= constantCoeff(1,grid);     // multiply by Diffusivity
 
-        assert( varCoeff!=NULL );
-        realMappedGridFunction & variableCoeff = (*varCoeff)[grid];
-        op[grid].coefficients(MappedGridOperators::divergenceScalarGradient,coeff[grid],variableCoeff);
+          printF("\n ++++ OGES:setEqn: advectionDiffusionEquationOperator: grid=%d, constant diffusivity, I - kappa*dt*Delta, -kappa*dt =%9.3e\n",
+                 grid,constantCoeff(1,grid));       
+        }
 
         assert( advectionCoeff!=NULL );
         realMappedGridFunction & advCoeff = (*advectionCoeff)[grid];
