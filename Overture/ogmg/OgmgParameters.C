@@ -251,7 +251,7 @@ init()
   if( !dbase.has_key("orderOfCoarseLevels") ){ dbase.put<int>( "orderOfCoarseLevels")=-1; }// 
 
   // Max iterations for the coarse grid solver: 
-  if( !dbase.has_key("maxIterationsCoarseGgrid") ){ dbase.put<int>( "maxIterationsCoarseGrid")=10000; }// -1 = use default
+  if( !dbase.has_key("maxIterationsCoarseGrid") ){ dbase.put<int>( "maxIterationsCoarseGrid")=10000; }// -1 = use default
 }
 
 // =================================================================================
