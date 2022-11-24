@@ -211,7 +211,8 @@ evalSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua,
     mg.update(MappedGrid::THEcenter | MappedGrid::THEvertex );
 
     OV_GET_SERIAL_ARRAY(real,mg.center(),xLocal);
-    OV_GET_SERIAL_ARRAY(real,ua,uLocal);
+  // OV_GET_SERIAL_ARRAY(real,ua,uLocal);
+    RealArray & uLocal = ua;
 
   // These next parameters should be set in the following include files
     int m=-1, n=-1;

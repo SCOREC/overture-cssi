@@ -2,6 +2,8 @@
 #include "Cgsm.h"
 #include "SmParameters.h"
 #include "display.h"
+#include "ParallelUtility.h"
+
 
 // lapack routines
 #ifdef OV_USE_DOUBLE

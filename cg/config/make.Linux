@@ -84,7 +84,8 @@ CC_FLAGS_FIXFP = -ffloat-store -mno-sse -mno-sse2
 ## ## Fortran Compiler options
 
 ## *wdh* 2020/11/08  allow unlimited length lines for f90 
-FC_FLAGS_REQ = $(OV_FORTRAN_FLAGS) $(OV_AUTO_DOUBLE_FLAGS) -ffree-line-length-none
+## -fallow-argument-mismatch added for gfortran 11.3.0 to compile ncarfft
+FC_FLAGS_REQ = $(OV_FORTRAN_FLAGS) $(OV_AUTO_DOUBLE_FLAGS) -ffree-line-length-none -fallow-argument-mismatch
 # FC_FLAGS_DBG = -g -fbounds-check 
 ifneq ($(FC),fort77)
   FC_FLAGS_DBG = -g 
@@ -99,7 +100,7 @@ FC_FLAGS_PROF = -pg
 
 ## ## Fortran Compiler options (compiled without auto double)
 
-FC_FLAGSS_REQ = $(OV_FORTRAN_FLAGS) 
+FC_FLAGSS_REQ = $(OV_FORTRAN_FLAGS) -fallow-argument-mismatch
 ifneq ($(FC),fort77)
   FC_FLAGSS_DBG = -g 
 else

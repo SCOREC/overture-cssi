@@ -1,4 +1,62 @@
 **********************************
+*****  Sun Nov 20, 2022
+
+TEST ON cg66
+
+mpirun -np 1 $cgmxp -noplot cic.planeWaveBC.cmd -g=cice32.order4 -ts=me -tp=.1 -tf=1.0 -go=go 
+
+np=8
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  6.60e+00    1.27e-02    7.68e-09   100.000   6.596e+00   6.595e+00
+setup and initialize................  1.38e-02    2.66e-05    1.61e-11     0.210   1.461e-02   1.369e-02
+initial conditions..................  6.46e-01    1.24e-03    7.51e-10     9.788   6.459e-01   6.455e-01
+advance.............................  5.74e+00    1.10e-02    6.68e-09    87.013   5.747e+00   5.737e+00
+  advance rectangular grids.........  3.77e+00    7.26e-03    4.39e-09    57.204   4.337e+00   3.191e+00
+  advance curvilinear grids.........  1.13e-01    2.16e-04    1.31e-10     1.706   8.505e-01   6.727e-03
+  
+np=4
+total time..........................  1.05e+01    2.02e-02    1.22e-08   100.000   1.052e+01   1.052e+01
+setup and initialize................  1.80e-02    3.45e-05    2.09e-11     0.171   1.866e-02   1.773e-02
+initial conditions..................  1.04e+00    2.01e-03    1.21e-09     9.914   1.044e+00   1.043e+00
+advance.............................  9.14e+00    1.76e-02    1.06e-08    86.857   9.145e+00   9.136e+00
+  advance rectangular grids.........  7.24e+00    1.39e-02    8.43e-09    68.839   7.257e+00   7.223e+00
+  advance curvilinear grids.........  2.15e-01    4.14e-04    2.50e-10     2.045   8.397e-01   6.929e-03
+
+
+np=1
+total time..........................  3.41e+01    6.56e-02    3.97e-08   100.000   3.412e+01   3.412e+01
+setup and initialize................  5.32e-02    1.02e-04    6.19e-11     0.156   5.322e-02   5.322e-02
+initial conditions..................  3.70e+00    7.12e-03    4.31e-09    10.858   3.704e+00   3.704e+00
+advance.............................  2.92e+01    5.61e-02    3.40e-08    85.572   2.919e+01   2.919e+01
+  advance rectangular grids.........  2.74e+01    5.26e-02    3.18e-08    80.178   2.735e+01   2.735e+01
+  advance curvilinear grids.........  7.80e-01    1.50e-03    9.07e-10     2.285   7.797e-01   7.797e-01
+
+
+
+
+mpirun -np 1 $cgmxp -noplot cic.planeWaveBC.cmd -g=cice8.order4 -ts=me -tp=.1 -tf=1.0 -go=go 
+
+np=1
+>>> t=1.00e+00 dt=7.1e-03 max errors:[1.61e-05,2.57e-05,1.34e-06, max(u):[7.93e-01,1.06e+00,1.16e+00,] (140 steps)
+
+
+
+TS=PC ??
+mpirun -np 2 $cgmxp -noplot cic.planeWaveBC.cmd -g=cice2.order4 -ts=pc -tp=.1 -tf=10.0 -show=cic.show -go=go 
+
+np=4:
+
+np=2:
+>>> t=1.00e+01 dt=2.0e-02 max errors:[3.12e-03,3.59e-03,1.07e-03, max(u):[7.93e-01,1.06e+00,1.16e+00,] (500 steps)
+
+np=1
+>>> t=1.00e+01 dt=2.0e-02 max errors:[3.12e-03,3.59e-03,1.07e-03, max(u):[7.93e-01,1.06e+00,1.16e+00,] (500 steps)
+
+serial
+>>> t=1.00e+01 dt=2.0e-02 max errors:[3.12e-03,3.59e-03,1.07e-03, max(u):[7.93e-01,1.06e+00,1.16e+00,] (500 steps)
+
+
+**********************************
 *****  Mar 4, 2019
 
 TRY GOLD *** TROUBLE ***

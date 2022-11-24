@@ -375,10 +375,10 @@ Real uRvIm[]={
                     RealArray rv(1,1), wv(1,3);
                     rv=0.;
                     rv(0,0)=0.;
-                    nurbs[n].map(rv,wv);
+                    nurbs[n].mapS(rv,wv);
                     printF("r=%g, wv=[%g,%g]\n",rv(0,0),wv(0,0),wv(0,1));
                     rv(0,0)=1.;
-                    nurbs[n].map(rv,wv);
+                    nurbs[n].mapS(rv,wv);
                     printF("r=%g, wv=[%g,%g]\n",rv(0,0),wv(0,0),wv(0,1));    
                 }
             printF("  ra=%g, rb=%g, rc=%g, sr=%g, si=%g, nth=%d\n",ra,rb,rc,sr,si,nth);
@@ -563,10 +563,10 @@ Real uRvIm[]={
                     RealArray rv(1,1), wv(1,3);
                     rv=0.;
                     rv(0,0)=0.;
-                    nurbs[n].map(rv,wv);
+                    nurbs[n].mapS(rv,wv);
                     printF("r=%g, wv=[%g,%g]\n",rv(0,0),wv(0,0),wv(0,1));
                     rv(0,0)=1.;
-                    nurbs[n].map(rv,wv);
+                    nurbs[n].mapS(rv,wv);
                     printF("r=%g, wv=[%g,%g]\n",rv(0,0),wv(0,0),wv(0,1));    
                 }
             printF("  ra=%g, rb=%g, rc=%g, sr=%g, si=%g, nth=%d\n",ra,rb,rc,sr,si,nth);
@@ -580,6 +580,7 @@ Real uRvIm[]={
         if( true )
             printF("============= %s : caseName = %s, domain=%d =============\n",
                 (const char*)exactSolution,(const char*)caseName,domain);
+
 
         if( 0==1 )
         {
@@ -659,7 +660,7 @@ Real uRvIm[]={
 
                 rv(0,0) = (r-a)/(b-a); // scale r to [0,1]
 
-                nurbs[0].map( rv,wv );  // eval Real and Im parts of u
+                nurbs[0].mapS( rv,wv );  // eval Real and Im parts of u
                 u = ( wv(0,0) + I*wv(0,1) ) ;
 
         // --- form the spatial part (complex) of the solution ---
@@ -898,10 +899,10 @@ Real uRvIm[]={
                     RealArray rv(1,1), wv(1,3);
                     rv=0.;
                     rv(0,0)=0.;
-                    nurbs[n].map(rv,wv);
+                    nurbs[n].mapS(rv,wv);
                     printF("r=%g, wv=[%g,%g]\n",rv(0,0),wv(0,0),wv(0,1));
                     rv(0,0)=1.;
-                    nurbs[n].map(rv,wv);
+                    nurbs[n].mapS(rv,wv);
                     printF("r=%g, wv=[%g,%g]\n",rv(0,0),wv(0,0),wv(0,1));    
                 }
             printF("  xa=%g, xb=%g, xc=%g, sr=%g, si=%g, ky=%g\n",xa,xb,xc,sr,si,ky);
@@ -1084,10 +1085,10 @@ Real uRvIm[]={
                     RealArray rv(1,1), wv(1,3);
                     rv=0.;
                     rv(0,0)=0.;
-                    nurbs[n].map(rv,wv);
+                    nurbs[n].mapS(rv,wv);
                     printF("r=%g, wv=[%g,%g]\n",rv(0,0),wv(0,0),wv(0,1));
                     rv(0,0)=1.;
-                    nurbs[n].map(rv,wv);
+                    nurbs[n].mapS(rv,wv);
                     printF("r=%g, wv=[%g,%g]\n",rv(0,0),wv(0,0),wv(0,1));    
                 }
             printF("  xa=%g, xb=%g, xc=%g, sr=%g, si=%g, ky=%g\n",xa,xb,xc,sr,si,ky);
@@ -1271,10 +1272,10 @@ Real uRvIm[]={
                     RealArray rv(1,1), wv(1,3);
                     rv=0.;
                     rv(0,0)=0.;
-                    nurbs[n].map(rv,wv);
+                    nurbs[n].mapS(rv,wv);
                     printF("r=%g, wv=[%g,%g]\n",rv(0,0),wv(0,0),wv(0,1));
                     rv(0,0)=1.;
-                    nurbs[n].map(rv,wv);
+                    nurbs[n].mapS(rv,wv);
                     printF("r=%g, wv=[%g,%g]\n",rv(0,0),wv(0,0),wv(0,1));    
                 }
             printF("  xa=%g, xb=%g, xc=%g, sr=%g, si=%g, ky=%g\n",xa,xb,xc,sr,si,ky);
@@ -1458,10 +1459,10 @@ Real uRvIm[]={
                     RealArray rv(1,1), wv(1,3);
                     rv=0.;
                     rv(0,0)=0.;
-                    nurbs[n].map(rv,wv);
+                    nurbs[n].mapS(rv,wv);
                     printF("r=%g, wv=[%g,%g]\n",rv(0,0),wv(0,0),wv(0,1));
                     rv(0,0)=1.;
-                    nurbs[n].map(rv,wv);
+                    nurbs[n].mapS(rv,wv);
                     printF("r=%g, wv=[%g,%g]\n",rv(0,0),wv(0,0),wv(0,1));    
                 }
             printF("  xa=%g, xb=%g, xc=%g, sr=%g, si=%g, ky=%g\n",xa,xb,xc,sr,si,ky);
@@ -1520,7 +1521,7 @@ Real uRvIm[]={
 
                 rv(0,0) = (x-a)/(b-a); // scale r to [0,1]
 
-                nurbs[0].map( rv,wv );  // eval Real and Im parts of u
+                nurbs[0].mapS( rv,wv );  // eval Real and Im parts of u
                 u = ( wv(0,0) + I*wv(0,1) ) ;
 
         // --- form the spatial part (complex) of the solution ---
@@ -1597,7 +1598,8 @@ evalSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua,
 
     MappedGrid & mg = cg[grid];
 
-    OV_GET_SERIAL_ARRAY(real,ua,uLocal);
+  // OV_GET_SERIAL_ARRAY(real,ua,uLocal);
+    RealArray & uLocal = ua;
 
   // -- Here are the real and imaginary parts of the spatial solution ---
     realCompositeGridFunction & wRe = dbase.get<realCompositeGridFunction>("wRe");

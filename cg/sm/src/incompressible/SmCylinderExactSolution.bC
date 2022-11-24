@@ -335,16 +335,16 @@ initialize( CompositeGrid & cg, const aString & caseName )
 
       rv(0,0) = (r-ra)/(rb-ra); // scale r to [0,1]
 
-      nurbs[0].map( rv,wv );  // eval radial component of ur
+      nurbs[0].mapS( rv,wv );  // eval radial component of ur
       ur     = ( wv(0,0) + I*wv(0,1) ) ;
 
-      nurbs[1].map( rv,wv );  // eval radial component of uTheta
+      nurbs[1].mapS( rv,wv );  // eval radial component of uTheta
       uTheta = ( wv(0,0) + I*wv(0,1) ) ;
 
-      nurbs[2].map( rv,wv );  // eval radial component of uz
+      nurbs[2].mapS( rv,wv );  // eval radial component of uz
       uz     = ( wv(0,0) + I*wv(0,1) ) ; 
 
-      nurbs[3].map( rv,wv );  // eval radial component of p
+      nurbs[3].mapS( rv,wv );  // eval radial component of p
       p      = ( wv(0,0) + I*wv(0,1) ) ; 
 
       // if( fabs(r-ra)<1.e-5  || fabs(r-rb)<1.e-5 )
@@ -415,7 +415,8 @@ evalSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua,
 
   MappedGrid & mg = cg[grid];
 
-  OV_GET_SERIAL_ARRAY(real,ua,uLocal);
+  // OV_GET_SERIAL_ARRAY(real,ua,uLocal);
+  RealArray & uLocal = ua;
 
   // -- Here are the real and imaginary parts of the spatial solution ---
   realCompositeGridFunction & wRe = dbase.get<realCompositeGridFunction>("wRe");

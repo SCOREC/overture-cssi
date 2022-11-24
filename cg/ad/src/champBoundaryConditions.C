@@ -458,6 +458,13 @@ int getChampParameters( int grid, int side, int axis, int grid2, int side2, int 
 int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Parameters & parameters, Real dt )
 {
 
+#ifdef USE_PPP
+  // *** fix for parallel ****
+    OV_ABORT("FIX ME FOR PARALLEL");
+    
+#else
+
+
     const int debug = parameters.dbase.get<int>("debug");
 
     CompositeGrid & cg = *coeffcg.getCompositeGrid();
@@ -4194,6 +4201,8 @@ FOR_3IJ(i1,i2,i3,Ib1,Ib2,Ib3,j1,j2,j3,Jb1,Jb2,Jb3)
   // OV_ABORT("champBoundaryConditions : END: STOP HERE FOR NOW");
     
     return 0;
+
+#endif
 
 }
 

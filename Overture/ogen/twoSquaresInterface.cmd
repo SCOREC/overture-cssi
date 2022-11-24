@@ -94,9 +94,9 @@ if( $name eq "" ){ $name = $prefix . "$interp$factor" . $suffix . ".hdf"; }
 # $bcRight= "100 1  1  1"; 
 # *new* Sept. 17, 2016: 
 if( $orientation eq "horizontal" ){\
-  $bcLeft = "1 100  3  4"; $bcRight= "100 6 7 8"; }\
+  $bcLeft = "1 100  3  4"; $bcRight= "100 6 7 8";  $shareLeft="0 100 0 0"; $shareRight="100 0 0 0"; }\
 else{\
-  $bcLeft = "1 2 3 100"; $bcRight= "5 6 100 8"; }\
+  $bcLeft = "1 2 3 100"; $bcRight= "5 6 100 8";  $shareLeft="0 0 0 100"; $shareRight="0 0 100 0"; }\
 # 
 if( $orientation eq "horizontal" ){\
   if( $bc eq "p" ){ $bcLeft ="1 100 -1 -1"; $bcRight="100 6 -1 -1"; $shareLeft="0 100 0 0"; $shareRight="100 0 0 0"; }\

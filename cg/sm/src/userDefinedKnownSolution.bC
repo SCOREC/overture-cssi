@@ -510,11 +510,15 @@ OV_GET_SERIAL_ARRAY_CONST(real,mg.vertex(),x);
 
       // eval velocity 
       int numberOfTimeDerivatives=1; 
-      knownSolution.evalSolution( tc, cg, grid, vgf[prevVelocity][grid], I1,I2,I3, numberOfTimeDerivatives );
+      OV_GET_SERIAL_ARRAY(real,vgf[prevVelocity][grid],vgfLocal);
+      knownSolution.evalSolution( tc, cg, grid, vgfLocal, I1,I2,I3, numberOfTimeDerivatives );
+      // knownSolution.evalSolution( tc, cg, grid, vgf[prevVelocity][grid], I1,I2,I3, numberOfTimeDerivatives );
 
       // eval acceleration      
       numberOfTimeDerivatives=2; 
-      knownSolution.evalSolution( tc, cg, grid, vtgf[prevVelocity][grid], I1,I2,I3, numberOfTimeDerivatives );
+      OV_GET_SERIAL_ARRAY(real,vtgf[prevVelocity][grid],vtgfLocal);
+      knownSolution.evalSolution( tc, cg, grid, vtgfLocal, I1,I2,I3, numberOfTimeDerivatives );
+      // knownSolution.evalSolution( tc, cg, grid, vtgf[prevVelocity][grid], I1,I2,I3, numberOfTimeDerivatives );
     }
     
     // --- save pressure for time extrapolation ---
@@ -528,7 +532,9 @@ OV_GET_SERIAL_ARRAY_CONST(real,mg.vertex(),x);
       assert( pgf !=NULL );
 
       int numberOfTimeDerivatives=-1; // this means only compute the pressure 
-      knownSolution.evalSolution( tc, cg, grid, pgf[prevPressure][grid], I1,I2,I3, numberOfTimeDerivatives ); 
+      OV_GET_SERIAL_ARRAY(real,pgf[prevPressure][grid],pgfLocal);
+      knownSolution.evalSolution( tc, cg, grid, pgfLocal, I1,I2,I3, numberOfTimeDerivatives ); 
+      // knownSolution.evalSolution( tc, cg, grid, pgf[prevPressure][grid], I1,I2,I3, numberOfTimeDerivatives ); 
 
     }
   }
@@ -979,6 +985,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     }
     else if( iswCase==5 )
     {
+      
       // -- traction - displacement strip 
       if( numberOfDimensions==2 )
       {

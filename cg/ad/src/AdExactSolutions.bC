@@ -213,11 +213,11 @@ getParameter( const aString & name, Real & value )
     rv=0.;
 
     rv(0,0)=0.;
-    nurbs[n].map(rv,wv);
+    nurbs[n].mapS(rv,wv);
     printF("r=%g, wv=[%g,%g]\n",rv(0,0),wv(0,0),wv(0,1));
 
     rv(0,0)=1.;
-    nurbs[n].map(rv,wv);
+    nurbs[n].mapS(rv,wv);
     printF("r=%g, wv=[%g,%g]\n",rv(0,0),wv(0,0),wv(0,1));    
 
   }
@@ -317,6 +317,7 @@ initialize( CompositeGrid & cg, const aString & solution, const aString & caseNa
       printF("============= %s : caseName = %s, domain=%d =============\n",
         (const char*)exactSolution,(const char*)caseName,domain);
 
+
     if( 0==1 )
     {
       // Plot radial solution for testing 
@@ -395,7 +396,7 @@ initialize( CompositeGrid & cg, const aString & solution, const aString & caseNa
 
         rv(0,0) = (r-a)/(b-a); // scale r to [0,1]
 
-        nurbs[0].map( rv,wv );  // eval Real and Im parts of u
+        nurbs[0].mapS( rv,wv );  // eval Real and Im parts of u
         u = ( wv(0,0) + I*wv(0,1) ) ;
 
         // --- form the spatial part (complex) of the solution ---
@@ -544,7 +545,7 @@ initialize( CompositeGrid & cg, const aString & solution, const aString & caseNa
 
         rv(0,0) = (x-a)/(b-a); // scale r to [0,1]
 
-        nurbs[0].map( rv,wv );  // eval Real and Im parts of u
+        nurbs[0].mapS( rv,wv );  // eval Real and Im parts of u
         u = ( wv(0,0) + I*wv(0,1) ) ;
 
         // --- form the spatial part (complex) of the solution ---
@@ -621,7 +622,8 @@ evalSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua,
 
   MappedGrid & mg = cg[grid];
 
-  OV_GET_SERIAL_ARRAY(real,ua,uLocal);
+  // OV_GET_SERIAL_ARRAY(real,ua,uLocal);
+  RealArray & uLocal = ua;
 
   // -- Here are the real and imaginary parts of the spatial solution ---
   realCompositeGridFunction & wRe = dbase.get<realCompositeGridFunction>("wRe");

@@ -600,6 +600,13 @@ coeff(m,i1,i2,i3)=0.
 int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Parameters & parameters, Real dt )
 {
 
+#ifdef USE_PPP
+  // *** fix for parallel ****
+  OV_ABORT("FIX ME FOR PARALLEL");
+  
+#else
+
+
   const int debug = parameters.dbase.get<int>("debug");
 
   CompositeGrid & cg = *coeffcg.getCompositeGrid();
@@ -1704,6 +1711,8 @@ int Cgad::champBoundaryConditions( realCompositeGridFunction & coeffcg, Paramete
   // OV_ABORT("champBoundaryConditions : END: STOP HERE FOR NOW");
   
   return 0;
+
+#endif
 
 }
 

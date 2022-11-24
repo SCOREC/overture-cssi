@@ -157,7 +157,8 @@ evalSolution(Real t, CompositeGrid & cg, int grid, RealArray & ua,
     int pc        = numberOfDimensions;       // may change below if we only eval the pressure
 
     OV_GET_SERIAL_ARRAY(real,mg.center(),xLocal);
-    OV_GET_SERIAL_ARRAY(real,ua,uLocal);
+  // OV_GET_SERIAL_ARRAY(real,ua,uLocal);
+    RealArray & uLocal = ua;
 
 
     Real A1,B1, A2,B2, A3, B3, P1, P2, P1p, P1m, P2p, P2m, P3p, P3m;

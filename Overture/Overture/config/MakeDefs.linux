@@ -111,6 +111,9 @@ CCFLAGSF= $(CC_INCLUDES) $(STD_OPT_FLAG)
 # things that need to be compiled with no optimization use the following
 CCFLAGSG= $(CC_INCLUDES) -g
 
+# ubuntu: gfortran 11.3.0 : to compile ncarfft
+FF_FLAGS += -fallow-argument-mismatch
+
 # Notes: There seems to be problems using -O with g77
 #        Some older versions of the egcs compiler also had trouble with -fPIC, removing it seemed to work.
 FFLAGS=    $(FF_FLAGS) $(OverturePrecision)  $(FortranDouble) $(FORTRAN_OPTIMIZATION_FLAG) $(Include)

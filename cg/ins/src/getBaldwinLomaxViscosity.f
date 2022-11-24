@@ -2,23 +2,23 @@
 
 c These next include files will define the macros that will define the difference approximations
 c The actual macro is called below
-c Use this next macro to declare the statement functions that are defined below
-c To include derivatives of rx use OPTION=RX
+! Use this next macro to declare the statement functions that are defined below
+! To include derivatives of rx use OPTION=RX
 
 
-c Define statement functions for difference approximations of order 2 
-c To include derivatives of rx use OPTION=RX
-c To include derivatives of rx use OPTION=RX
+! Define statement functions for difference approximations of order 2 
+! To include derivatives of rx use OPTION=RX
+! To include derivatives of rx use OPTION=RX
 
 
 
-c Use this next macro to declare the statement functions that are defined below
-c To include derivatives of rx use OPTION=RX
+! Use this next macro to declare the statement functions that are defined below
+! To include derivatives of rx use OPTION=RX
 
 
-c Define statement functions for difference approximations of order 4 
-c To include derivatives of rx use OPTION=RX
-c To include derivatives of rx use OPTION=RX
+! Define statement functions for difference approximations of order 4 
+! To include derivatives of rx use OPTION=RX
+! To include derivatives of rx use OPTION=RX
 
 c **********************************************************************
 c  This file contains some commonly used macros.
@@ -616,10 +616,10 @@ c======================================================================
      & i2,i3)+rzz23(i1,i2,i3))*ur2(i1,i2,i3,kd)+(sxx23(i1,i2,i3)+
      & syy23(i1,i2,i3)+szz23(i1,i2,i3))*us2(i1,i2,i3,kd)+(txx23(i1,i2,
      & i3)+tyy23(i1,i2,i3)+tzz23(i1,i2,i3))*ut2(i1,i2,i3,kd)
-c============================================================================================
-c Define derivatives for a rectangular grid
-c
-c============================================================================================
+       !============================================================================================
+       ! Define derivatives for a rectangular grid
+       !
+       !============================================================================================
        h12(kd) = 1./(2.*dx(kd))
        h22(kd) = 1./(dx(kd)**2)
        ux23r(i1,i2,i3,kd)=(u(i1+1,i2,i3,kd)-u(i1-1,i2,i3,kd))*h12(0)

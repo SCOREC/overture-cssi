@@ -13,6 +13,9 @@ check-quiet: buildGrids
 	ln -sf $(common)/src/check.p .
 	./check.p -solver=cgsm -verbose=0
 
+square8.order2.hdf:
+	${Overture}/bin/ogen noplot ${Overture}/sampleGrids/squareArg -order=2 -nx=8 
+
 square10.order2.hdf:
 	${Overture}/bin/ogen noplot ${Overture}/sampleGrids/squareArg -order=2 -nx=10 
 
@@ -20,7 +23,7 @@ square16.order2.hdf:
 	${Overture}/bin/ogen noplot ${Overture}/sampleGrids/squareArg -order=2 -nx=16 
 
 # build grids that are used by the regression tests (and not already in Overture/sampleGrids)
-buildGrids: square10.order2.hdf square16.order2.hdf
+buildGrids: square8.order2.hdf square10.order2.hdf square16.order2.hdf
 
 
 cgsm:

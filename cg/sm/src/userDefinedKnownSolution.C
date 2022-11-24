@@ -411,10 +411,14 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
                     const int prevVelocity = (currentVelocity - level + numberOfVelocityFunctions) % numberOfVelocityFunctions;
           // eval velocity 
                     int numberOfTimeDerivatives=1; 
-                    rectangleExact.evalSolution( tc, cg, grid, vgf[prevVelocity][grid], I1,I2,I3, numberOfTimeDerivatives );
+                    OV_GET_SERIAL_ARRAY(real,vgf[prevVelocity][grid],vgfLocal);
+                    rectangleExact.evalSolution( tc, cg, grid, vgfLocal, I1,I2,I3, numberOfTimeDerivatives );
+          // rectangleExact.evalSolution( tc, cg, grid, vgf[prevVelocity][grid], I1,I2,I3, numberOfTimeDerivatives );
           // eval acceleration      
                     numberOfTimeDerivatives=2; 
-                    rectangleExact.evalSolution( tc, cg, grid, vtgf[prevVelocity][grid], I1,I2,I3, numberOfTimeDerivatives );
+                    OV_GET_SERIAL_ARRAY(real,vtgf[prevVelocity][grid],vtgfLocal);
+                    rectangleExact.evalSolution( tc, cg, grid, vtgfLocal, I1,I2,I3, numberOfTimeDerivatives );
+          // rectangleExact.evalSolution( tc, cg, grid, vtgf[prevVelocity][grid], I1,I2,I3, numberOfTimeDerivatives );
                 }
         // --- save pressure for time extrapolation ---
                 const int currentPressure = dbase.get<int>("currentPressure");
@@ -425,7 +429,9 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
                     const int prevPressure = (currentPressure - level + numberOfPressureFunctions) % numberOfPressureFunctions;
                     assert( pgf !=NULL );
                     int numberOfTimeDerivatives=-1; // this means only compute the pressure 
-                    rectangleExact.evalSolution( tc, cg, grid, pgf[prevPressure][grid], I1,I2,I3, numberOfTimeDerivatives ); 
+                    OV_GET_SERIAL_ARRAY(real,pgf[prevPressure][grid],pgfLocal);
+                    rectangleExact.evalSolution( tc, cg, grid, pgfLocal, I1,I2,I3, numberOfTimeDerivatives ); 
+          // rectangleExact.evalSolution( tc, cg, grid, pgf[prevPressure][grid], I1,I2,I3, numberOfTimeDerivatives ); 
                 }
             }
         
@@ -924,6 +930,7 @@ Real t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20,t
         }
         else if( iswCase==5 )
         {
+            
       // -- traction - displacement strip 
             if( numberOfDimensions==2 )
             {

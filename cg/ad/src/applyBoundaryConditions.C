@@ -107,8 +107,10 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
     if( knownSolution == Parameters::userDefinedKnownSolution && assignKnownSolutionAtBoundaries )
     {
     // Fill in Dirichlet BCs with the known solution
+
         OV_GET_SERIAL_ARRAY(real,u,uLocal);
-        RealArray ua; 
+
+    // RealArray ua; 
 
         Index Ib1,Ib2,Ib3;
         ForBoundary(side,axis)
@@ -118,8 +120,10 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
                 printF("))))))))) CGAD:applyExplicitBC:  Set Known solution at dirichlet BC (side,axis,grid)=(%dm%dm%d) t=%9.3e  (((((((((\n",side,axis,grid,t);
 
                 getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-                ua = parameters.getKnownSolution(t, grid, Ib1,Ib2,Ib3 );  
-                uLocal(Ib1,Ib2,Ib3,C) = ua(Ib1,Ib2,Ib3,C); 
+                const realMappedGridFunction & ua = parameters.getKnownSolution(t, grid, Ib1,Ib2,Ib3 ); 
+                OV_GET_SERIAL_ARRAY_CONST(real,ua,uaLocal);
+
+                uLocal(Ib1,Ib2,Ib3,C) = uaLocal(Ib1,Ib2,Ib3,C); 
 
 
         //  getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua, 
@@ -597,7 +601,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
         {
       // ----- Fill in Dirichlet BCs with the known solution ------
             OV_GET_SERIAL_ARRAY(real,u,uLocal);
-            RealArray ua; 
+      // RealArray ua; 
 
             Index Ib1,Ib2,Ib3;
             ForBoundary(side,axis)
@@ -605,8 +609,11 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
                 if( mg.boundaryCondition(side,axis) == AdParameters::dirichletBoundaryCondition )
                 {
                     getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-                    ua = parameters.getKnownSolution(t, grid, Ib1,Ib2,Ib3 );  
-                    uLocal(Ib1,Ib2,Ib3,N) = ua(Ib1,Ib2,Ib3,N); 
+          // ua = parameters.getKnownSolution(t, grid, Ib1,Ib2,Ib3 ); 
+                    const realMappedGridFunction & ua = parameters.getKnownSolution(t, grid, Ib1,Ib2,Ib3 ); 
+                    OV_GET_SERIAL_ARRAY_CONST(real,ua,uaLocal);
+
+                    uLocal(Ib1,Ib2,Ib3,N) = uaLocal(Ib1,Ib2,Ib3,N); 
 
 
           //  getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua, 
