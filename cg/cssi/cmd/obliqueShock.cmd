@@ -1,17 +1,17 @@
 *
-*  cgcns command file: oblique shock -- exact solution
+*  cgcssi command file: oblique shock -- exact solution
 *     Solve the Euler equations with Godunov's method and AMR
 * 
 * Usage:
-*    cgcns [-noplot] obliqueShock.cmd -g=<grid> -l=<levels> -r=<ratio> -tf=<final time> ...
+*    cgcssi [-noplot] obliqueShock.cmd -g=<grid> -l=<levels> -r=<ratio> -tf=<final time> ...
 *          -tp=<tPlot> -xs=<xstep> -show=<show file> 
 *
 * Examples:
-*   cgcns obliqueShock.cmd -g=square20.hdf -l=2 -r=2 -tf=1. -tp=.1 
-*   cgcns obliqueShock.cmd -g=square256.hdf -l=2 -r=2 -tf=.5 -tp=.1
+*   cgcssi obliqueShock.cmd -g=square20.hdf -l=2 -r=2 -tf=1. -tp=.1 
+*   cgcssi obliqueShock.cmd -g=square256.hdf -l=2 -r=2 -tf=.5 -tp=.1
 *
 * --- set default values for parameters ---
-$grid="square20.hdf"; $show = " "; $backGround="square"; $cnsVariation="godunov"; 
+$grid="square20.hdf"; $show = " "; $backGround="square"; $cssiVariation="godunov"; 
 $ratio=2;  $nrl=2;  # refinement ratio and number of refinement levels
 $tFinal=1.; $tPlot=.1; $cfl=.9; $debug=1; $tol=.2; $x0=.5; $dtMax=1.e10; $nbz=2; 
 $xStep="x=-1.5"; $go="halt"; 
@@ -19,11 +19,11 @@ $xStep="x=-1.5"; $go="halt";
 * ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"l=i"=> \$nrl,"r=i"=> \$ratio, "tf=f"=>\$tFinal,"debug=i"=> \$debug, \
             "tp=f"=>\$tPlot, "xStep=s"=>\$xStep, "bg=s"=>\$backGround,"show=s"=>\$show,"go=s"=>\$go,\
-            "cnsVariation=s"=>\$cnsVariation );
+            "cssiVariation=s"=>\$cssiVariation );
 * -------------------------------------------------------------------------------------------------
-if( $cnsVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
-if( $cnsVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
-if( $cnsVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
+if( $cssiVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
+if( $cssiVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
+if( $cssiVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }

@@ -1,22 +1,22 @@
 #==============================================================
-# cgcns example: shock hitting a moving cylinder (with AMR)
+# cgcssi example: shock hitting a moving cylinder (with AMR)
 #
 # Examples:
-#     cgcns cicShockMove -g=cice2.order2
-#     cgcns cicShockMove -g=cice2.order2 -amr=1
+#     cgcssi cicShockMove -g=cice2.order2
+#     cgcssi cicShockMove -g=cice2.order2 -amr=1
 #    
 # Parallel:
-#   mpirun -np 1 $cgcnsp cicShockMove -g=cic2e -fullGridGenFreq=1
-#   mpirun -np 1 $cgcnsp cicShockMove -g=cice1.order2 -fullGridGenFreq=1
-#   mpirun -np 1 $cgcnsp cicShockMove -g=cice2.order2 -fullGridGenFreq=1
-#   totalview srun -a -N1 -n1 -ppdebug $cgcnsp cicShockMove -g=cice2.order2 -fullGridGenFreq=1
-#   srun -N1 -n2 -ppdebug $cgcnsp cicShockMove -g=cice2.order2 -fullGridGenFreq=1
-#   srun -N1 -n4 -ppdebug $cgcnsp cicShockMove -g=cice4.order2 -fullGridGenFreq=1 
+#   mpirun -np 1 $cgcssip cicShockMove -g=cic2e -fullGridGenFreq=1
+#   mpirun -np 1 $cgcssip cicShockMove -g=cice1.order2 -fullGridGenFreq=1
+#   mpirun -np 1 $cgcssip cicShockMove -g=cice2.order2 -fullGridGenFreq=1
+#   totalview srun -a -N1 -n1 -ppdebug $cgcssip cicShockMove -g=cice2.order2 -fullGridGenFreq=1
+#   srun -N1 -n2 -ppdebug $cgcssip cicShockMove -g=cice2.order2 -fullGridGenFreq=1
+#   srun -N1 -n4 -ppdebug $cgcssip cicShockMove -g=cice4.order2 -fullGridGenFreq=1 
 #=============================================================
 #
 # --- set default values for parameters ---
 # 
-$cnsVariation="godunov"; $ts="pc"; $show=" ";
+$cssiVariation="godunov"; $ts="pc"; $show=" ";
 $grid="cic.hdf"; $backGround="backGround"; $bcn="slipWall"; $uInflow=.1; 
 $mg="square"; $mt="shift"; $vg0=0.; $vg1=0.; $vg2=0.; $fullGridGenFreq=10;
 $tFinal=1.; $tPlot=.05; $cfl=.9; $mu=.0; $Prandtl=.72; $thermalExpansivity=.1; 
@@ -28,7 +28,7 @@ $amr=0;
 # 
 #
 # ----------------------------- get command line arguments ---------------------------------------
-GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet, "cnsVariation=s"=>\$cnsVariation,\
+GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet, "cssiVariation=s"=>\$cssiVariation,\
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug, \
  "nu=f"=>\$nu,"cfl=f"=>\$cfl, "bg=s"=>\$backGround, "go=s"=>\$go,"fullGridGenFreq=i"=>\$fullGridGenFreq,\
  "noplot=s"=>\$noplot,"dtMax=f"=>\$dtMax,"bcn=s"=>\$bcn,"vg0=f"=>\$vg0,"vg1=f"=>\$vg1,"vg2=f"=>\$vg2,\
@@ -41,9 +41,9 @@ if( $tz eq "none" ){ $tz="turn off twilight zone"; }
 if( $tz eq "poly" ){ $tz="turn on twilight zone\n turn on polynomial"; $cdv=0.; }
 if( $tz eq "trig" ){ $tz="turn on twilight zone\n turn on trigonometric"; $cdv=0.; }
 if( $order eq "2" ){ $order = "second order accurate"; }else{ $order = "fourth order accurate"; }
-if( $cnsVariation eq "godunov" ){ $cnsVariation="compressible Navier Stokes (Godunov)"; $ts="fe"; }
-if( $cnsVariation eq "jameson" ){ $cnsVariation="compressible Navier Stokes (Jameson)"; }  
-if( $cnsVariation eq "nonconservative" ){ $cnsVariation="compressible Navier Stokes (non-conservative)"; } 
+if( $cssiVariation eq "godunov" ){ $cssiVariation="compressible Navier Stokes (Godunov)"; $ts="fe"; }
+if( $cssiVariation eq "jameson" ){ $cssiVariation="compressible Navier Stokes (Jameson)"; }  
+if( $cssiVariation eq "nonconservative" ){ $cssiVariation="compressible Navier Stokes (non-conservative)"; } 
 if( $ts eq "fe" ){ $ts="forward Euler"; }
 if( $ts eq "be" ){ $ts="backward Euler"; }
 if( $ts eq "im" ){ $ts="implicit"; }
@@ -55,7 +55,7 @@ if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
 #
 # specify the overlapping grid to use:
 $grid
-  $cnsVariation
+  $cssiVariation
   done
 # -- time stepping method:
   $ts

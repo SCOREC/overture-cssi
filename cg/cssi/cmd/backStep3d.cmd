@@ -1,19 +1,19 @@
 *
-* cgcns command file for a 3d shock past a backward facing step
+* cgcssi command file for a 3d shock past a backward facing step
 *
 * Usage:
-*    cgcns [-noplot] backStep3d.cmd -g=<grid>  -amr=[0|1] -l=<levels> -r=<ratio> -tf=<final time> ...
+*    cgcssi [-noplot] backStep3d.cmd -g=<grid>  -amr=[0|1] -l=<levels> -r=<ratio> -tf=<final time> ...
 *          -tp=<tPlot> -xs=<xstep> -show=<show file> 
 *
 * Examples:
-*     cgcns backStep3d.cmd -g=backStepSmooth3de1.order2 -amr=0 -tf=1. -tp=.1 -xStep="x=-1.5"
-*     cgcns backStep3d.cmd -g=backStepSmooth3de1.order2 -l=2 -r=2 -tf=1. -tp=.1 -xStep="x=-1.5" 
-*     cgcns backStep3d.cmd -g=backStepSmooth3de2.order2 -l=2 -r=2 -tf=1. -tp=.1 -xStep="x=-1.5"
-*     cgcns backStep3d.cmd -g=backStepSmooth3de1.order2 -l=2 -r=2 -tf=1. -tp=.1 -xStep="x=-1.5" -show="backStep3d.show"
+*     cgcssi backStep3d.cmd -g=backStepSmooth3de1.order2 -amr=0 -tf=1. -tp=.1 -xStep="x=-1.5"
+*     cgcssi backStep3d.cmd -g=backStepSmooth3de1.order2 -l=2 -r=2 -tf=1. -tp=.1 -xStep="x=-1.5" 
+*     cgcssi backStep3d.cmd -g=backStepSmooth3de2.order2 -l=2 -r=2 -tf=1. -tp=.1 -xStep="x=-1.5"
+*     cgcssi backStep3d.cmd -g=backStepSmooth3de1.order2 -l=2 -r=2 -tf=1. -tp=.1 -xStep="x=-1.5" -show="backStep3d.show"
 *     
 *
 $tFinal=1.; $tPlot=.1; $show="";
-$grid="backStepSmooth3de1.order2.hdf"; $show = " "; $cnsVariation="godunov"; 
+$grid="backStepSmooth3de1.order2.hdf"; $show = " "; $cssiVariation="godunov"; 
 $amr=1; $numberOfLevels=2;  $refinementRatio=4;  $regrid=2; 
 * --- set default values for parameters ---
 $ratio=2;  $nrl=2;  # refinement ratio and number of refinement levels
@@ -23,12 +23,12 @@ $xStep="x=-1.5"; $go="halt";
 * ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"l=i"=> \$nrl,"r=i"=> \$ratio, "tf=f"=>\$tFinal,"debug=i"=> \$debug, \
             "tp=f"=>\$tPlot, "xStep=s"=>\$xStep, "bg=s"=>\$backGround,"show=s"=>\$show,"go=s"=>\$go,\
-            "cnsVariation=s"=>\$cnsVariation );
+            "cssiVariation=s"=>\$cssiVariation );
 * -------------------------------------------------------------------------------------------------
 if( $amr eq "0" ){ $amr="turn off adaptive grids"; }else{ $amr="turn on adaptive grids"; }
-if( $cnsVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
-if( $cnsVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
-if( $cnsVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
+if( $cssiVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
+if( $cssiVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
+if( $cssiVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }

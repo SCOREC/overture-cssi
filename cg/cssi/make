@@ -18,11 +18,11 @@ PETSC_FILES_OBJ := $(addprefix $(OBJPREFIX),$(PETSC_FILES))
 endif
  
 ifneq ($(OV_RPATH),)
-LIBS := $(OV_RPATH)$(CGBUILDPREFIX)cns/lib -L$(CGBUILDPREFIX)cns/lib -lCgcns \
+LIBS := $(OV_RPATH)$(CGBUILDPREFIX)cssi/lib -L$(CGBUILDPREFIX)cssi/lib -lCgcssi \
         $(OV_RPATH)$(CGBUILDPREFIX)common/lib -L$(CGBUILDPREFIX)common/lib -lCgCommon \
         $(LIBS)  $(LAPACK_LIBRARIES) 
 else
-LIBS := -L$(CGBUILDPREFIX)cns/lib -lCgcns \
+LIBS := -L$(CGBUILDPREFIX)cssi/lib -lCgcssi \
         -L$(CGBUILDPREFIX)common/lib -lCgCommon \
         $(LIBS)  $(LAPACK_LIBRARIES) 
 endif

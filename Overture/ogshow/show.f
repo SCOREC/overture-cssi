@@ -489,7 +489,7 @@ c Get_Solutions_1
 c
 c   Retrieve the plot objects when the solutions are stored
 c  as a sequence (i.e. Bill's cgshow format that is used by
-c  CGINS, CGCNS, CGEST )
+c  CGINS, CGCSSI, CGEST )
 c
 c==================================================================
       implicit integer (a-z)

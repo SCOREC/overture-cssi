@@ -12,7 +12,7 @@
 ///
 ///      - Cgad : advection diffusion solver.  
 ///      - Cgasf : all-speed flow solver (not mature).
-///      - Cgcns : compressible flow solver.
+///      - Cgcssi : compressible flow solver.
 ///      - Cgins : incompressible flow solver.
 ///      - Cgsm : solid mechanics solver.
 ///      - Cgmx (Maxwell) : Maxwell's equation solver (electro-magnetics).

@@ -1,5 +1,5 @@
 %-----------------------------------------------------------------------
-% Cgcns: Compressible Navier Stokes Solver
+% Cgcssi: Compressible Navier Stokes Solver
 %        REFERENCE MANUAL
 %-----------------------------------------------------------------------
 \documentclass{article}
@@ -61,12 +61,12 @@
 \newcommand{\Overture}{{\bf Over\-ture\ }}
 \newcommand{\OverBlown}{{\bf Over\-Blown\ }}
 \newcommand{\OverBlownINS}{{\bf Over\-Blown\-INS\ }}
-\newcommand{\OverBlownCNS}{{\bf Over\-Blown\-CNS\ }}
+\newcommand{\OverBlownCSSI}{{\bf Over\-Blown\-CSSI\ }}
 \newcommand{\overBlown}{{\bf over\-Blown\ }}
 
 \newcommand{\obDir}{\homeHenshaw/res/OverBlown}
 \newcommand{\ogenDir}{\homeHenshaw/Overture/ogen}
-\newcommand{\cnsDocDir}{../cns}
+\newcommand{\cssiDocDir}{../cssi}
 
 % *** See http://www.eng.cam.ac.uk/help/tpl/textprocessing/squeeze.html
 % By default, LaTeX doesn't like to fill more than 0.7 of a text page with tables and graphics, nor does it like too many figures per page. This behaviour can be changed by placing lines like the following before \begin{document}
@@ -118,7 +118,7 @@
 \vspace{5\baselineskip}
 \begin{flushleft}
 {\Large
-{\bf Cgcns} Reference Manual: An Overture Solver for the Compressible Navier--Stokes Equations 
+{\bf Cgcssi} Reference Manual: An Overture Solver for the Compressible Navier--Stokes Equations 
   on Composite Overlapping Grids \\
 }
 \vspace{2\baselineskip}
@@ -143,14 +143,14 @@ Troy, NY, USA, 12180. \\
 
 \noindent{\bf\large Abstract:}
 
-{\bf Cgcns} can be used 
+{\bf Cgcssi} can be used 
 to solve the compressible Navier-Stokes equations, the reactive Euler equations,
 multi-fluid and multi-phase equations on moving overlapping grids with
 adaptive mesh refinement.
-This document is a reference manual for Cgcns and
+This document is a reference manual for Cgcssi and
 describes the governing equations, equations of state, reactions,
 and boundary conditions. Also included are the results from a 
-collection of computations that demonstrate the capabilities of Cgcns.
+collection of computations that demonstrate the capabilities of Cgcssi.
 
 
 
@@ -167,15 +167,15 @@ collection of computations that demonstrate the capabilities of Cgcns.
 \section{Introduction}
 
 
-Cgcns solves the compressible Navier-Stokes equations and reactive Euler (i.e. inviscid) equations
+Cgcssi solves the compressible Navier-Stokes equations and reactive Euler (i.e. inviscid) equations
 (and variations thereof, see below)
 on overlapping grids and is built upon the \Overture 
 framework~\cite{Brown97},\cite{Henshaw96a},\cite{iscope97}. 
 
-Cgcns can be used to solve problems in complex geometry and moving and deforming
-geometry. Cgcns uses adaptive mesh refinement (AMR).
+Cgcssi can be used to solve problems in complex geometry and moving and deforming
+geometry. Cgcssi uses adaptive mesh refinement (AMR).
 
-Cgcns can be used to solve the
+Cgcssi can be used to solve the
 \begin{enumerate}
    \item Euler equations.
    \item reactive Euler equations with
@@ -194,7 +194,7 @@ Here are some papers that describe the algorithms
 \putbib[\homeHenshaw/papers/henshaw]
 \end{bibunit}
 
-Here are some papers that use Cgcns to solve problems
+Here are some papers that use Cgcssi to solve problems
 \begin{bibunit}[unsrt] % [siam]
 \nocite{hybridMultiphase2012a,fsi2012,OzlemSchwendemanKapilaHenshaw2012,SchwendemanKapilaHenshawLeeds2012,mprxn2009,fct2009,kapila2006,eliasson2007,mfrxn2007,mfjwl2006,ReedFriedHenshawTarver2006}
 \putbib[\homeHenshaw/papers/henshaw]
@@ -451,7 +451,7 @@ Note that on the axis $r=0$, $v=0$ and thus
      \text{etc.} & 
 \end{align}
 
-When using Cgcns to compute axisymmetric flow, the $r$ direction corresponds to the $y-$axis and the axis of symmetry
+When using Cgcssi to compute axisymmetric flow, the $r$ direction corresponds to the $y-$axis and the axis of symmetry
 is $y=0$. 
 
 % --------------------------------------------------------------------------------------------------------------
@@ -460,7 +460,7 @@ is $y=0$.
 Finish me ...
 
 % -----------------------------------------------------------------------------------------------------------------
-\input cnsBoundaryConditions
+\input cssiBoundaryConditions
 
 
 
@@ -473,12 +473,12 @@ There are a number of equations of state available.
 Notes to developers:
 To add a new equation of state change the files
 \begin{enumerate}
-  \item CnsParameters.\{h,C\} : add EOS enums and names, change getDerivedFunction to define p for plotting.
+  \item CssiParameters.\{h,C\} : add EOS enums and names, change getDerivedFunction to define p for plotting.
   \item setupPde.C - change EOS menu 
   \item eosdat.h - define EOS for fortran
   \item dudr2d.f - change getp2d
   \item consPrim.bf - define conservative to primitive conversion
-  \item Cgcns.C - output EOS name for info. 
+  \item Cgcssi.C - output EOS name for info. 
 \end{enumerate}
 
 
@@ -653,7 +653,7 @@ and thus
 % ------------------------------------------------------------------------------------------
 \subsection{User defined equation of state} \label{sec:userDefinedEOS}
 
-New equations of state can be created by changing the file {\tt cg/cns/src/userDefinedEOS.C}.
+New equations of state can be created by changing the file {\tt cg/cssi/src/userDefinedEOS.C}.
 
 ***FINISH ME***
 
@@ -769,7 +769,7 @@ The Hugoniot only depends on the thermodynamic quantities and not the velocity.
 
 \begin{figure}[hbt]
   \begin{center}
-    \includegraphics[width=.75\linewidth]{\cnsDocDir/fig/Hugoniot}
+    \includegraphics[width=.75\linewidth]{\cssiDocDir/fig/Hugoniot}
   \end{center}
 \caption{Hugoniot curves and Rayleigh line for the 1D reacting flow problem. The solution must always remain
   on the Rayleigh line. The Hugoniot curve moves upward to the right as $Y$ increases. The final state
@@ -830,8 +830,8 @@ of $Y$
 
 \begin{figure}[hbt]
  \begin{center}
-   \includegraphics[width=.48\linewidth]{\cnsDocDir/fig/profileIdealOneStep}
-   \includegraphics[width=.48\linewidth]{\cnsDocDir/fig/profileMieGruneisen}
+   \includegraphics[width=.48\linewidth]{\cssiDocDir/fig/profileIdealOneStep}
+   \includegraphics[width=.48\linewidth]{\cssiDocDir/fig/profileMieGruneisen}
  \end{center}
 \caption{Profiles of a steady (Chapman-Jouget) detonation for an ideal gas (left) and
    the Mie-Gruneisen EOS (right). } \label{fig:detonationCJ}
@@ -859,8 +859,8 @@ Figure~\ref{fig:detonationCJIdealComparison} compares a computed solution with t
 for the case of an ideal gas ($\alpha=0$, $\beta=0$).
 \begin{figure}[hbt]
 \begin{center}
-  \includegraphics[width=.75\linewidth]{\cnsDocDir/fig/profileIdealvsComputedLevel2}
-  \includegraphics[width=.75\linewidth]{\cnsDocDir/fig/profileIdealvsComputedLevel3}
+  \includegraphics[width=.75\linewidth]{\cssiDocDir/fig/profileIdealvsComputedLevel2}
+  \includegraphics[width=.75\linewidth]{\cssiDocDir/fig/profileIdealvsComputedLevel3}
  \end{center}
 \caption{Comparison of the computed solution versus the analytic solution for a steady (Chapman-Jouget) detonation for an ideal gas. Left: 2-levels of AMR $r=4$. Right: 3-levels of AMR. } \label{fig:detonationCJIdealComparison}
 \end{figure}
@@ -889,8 +889,8 @@ Figure~\ref{fig:detonationCJComparisonKappa1p5} compares a computed solution wit
 a different case with $\kappa=3/2$.
 \begin{figure}[hbt]
 \begin{center}
-  \includegraphics[width=.49\linewidth]{\cnsDocDir/fig/profileMGvsComputedKappa1p5Level2}
-  \includegraphics[width=.49\linewidth]{\cnsDocDir/fig/profileMGvsComputedKappa1p5Level3}
+  \includegraphics[width=.49\linewidth]{\cssiDocDir/fig/profileMGvsComputedKappa1p5Level2}
+  \includegraphics[width=.49\linewidth]{\cssiDocDir/fig/profileMGvsComputedKappa1p5Level3}
  \end{center}
 \caption{Comparison of the computed solution ($t=1$) versus the analytic solution for a steady (Chapman-Jouget) detonation for the Mie-Gruneisen EOS. Left: 2-levels of AMR $r=4$. Right: 3-levels of AMR. The
 base grid has $\Delta x = 5.e-3$ before refinements were added.} \label{fig:detonationCJComparisonKappa1p5}
@@ -909,8 +909,8 @@ base grid has $\Delta x = 5.e-3$ before refinements were added.} \label{fig:deto
 
 \begin{figure}[hbt]
 \begin{center}
-  \includegraphics[width=.49\linewidth]{\cnsDocDir/fig/profileMGconserved}
-  \includegraphics[width=.49\linewidth]{\cnsDocDir/fig/profileMGconervedComputed}
+  \includegraphics[width=.49\linewidth]{\cssiDocDir/fig/profileMGconserved}
+  \includegraphics[width=.49\linewidth]{\cssiDocDir/fig/profileMGconervedComputed}
  \end{center}
 \caption{Diagnostics of the solution. The error in some conserved quantities is shown for
    the analytic solution (left, note scale) and the computed solution (right). The case was for a 
@@ -932,11 +932,11 @@ base grid has $\Delta x = 5.e-3$ before refinements were added.} \label{fig:deto
 
 
 \clearpage
-\section{Convergence results}\index{convergence results!CNS}
+\section{Convergence results}\index{convergence results!CSSI}
 
 
 
-% Here is a collection of interesting examples computed with the Cgcns compressible solver.
+% Here is a collection of interesting examples computed with the Cgcssi compressible solver.
 
 % \subsection{Incompressible flow past a mast and sail}
 

@@ -60,12 +60,12 @@ Changes:
 
    o 2012/11/24 - fixed a bug in the Neumann BC with TZ when calling with multiple components. (neumann.C)
    o 2013/08/03 - fixed bugs in ogen and the HyperbolicMapping when building grids on a periodic channel.
-   o 2013/09/09 - cgcns, cgins and cgsm now have their own versions of userDefinedInitialConditions.C and
-                  userDefinedKnownSolution.C found the cns/src, ins/src and sm/src, respectively) 
+   o 2013/09/09 - cgcssi, cgins and cgsm now have their own versions of userDefinedInitialConditions.C and
+                  userDefinedKnownSolution.C found the cssi/src, ins/src and sm/src, respectively) 
                   (instead of using the version found in common/src). 
    o 2013/09/11 - For the explicit hole cutters in Ogen: one can now specify which grids the explicit hole cutter
                   can cut holes in. 
-   o 2013/09/27 - The CG solvers (Cgins, Cgcns, Cgsm, Cgmx, Cgasf) now check for grid with negative volumes
+   o 2013/09/27 - The CG solvers (Cgins, Cgcssi, Cgsm, Cgmx, Cgasf) now check for grid with negative volumes
                   and abort if any negative volumes are found.
    o 2013/11/22 - fixed the cgins AFS solver so that restarts can be made from a show file that has solutions
                   at a different grid resolution.
@@ -89,7 +89,7 @@ Changes:
    o 2014/12/31 - bug fixed with hyperbolic grid generator - "match to mapping" boundary condition was broken
                   when mapping was a side of an existing grid.
    o 2015/03/27 - the userDefinedBoundaryValue routines have been changed a bit. There are now separate versions for
-                  each of the CG solvers -- Cgins, Cgcns, Cgad, etc.
+                  each of the CG solvers -- Cgins, Cgcssi, Cgad, etc.
    o 2015/05/19 - Cgmx: added user defined known solution; fixed external forcing with modified equation 
                   time-stepping to be fourth-order accurate.
    o 2015/05    - Cgmx is now compiled by default when typing "make" in the main cg directory.
@@ -125,7 +125,7 @@ Changes:
    o 110713 - fixed a bug with AMR and moving grids. In rare cases, values on exposed points may
               not have been assigned properly. 
    o 110727 - fixed the moving grid generator so the vertex array is no longer built on Cartesian grids.
-              This will save memory for cgcns and cgins with moving grids.
+              This will save memory for cgcssi and cgins with moving grids.
    o 110731 - fixed a bug in the SweepMapping in the way it computes the normal to the sweep surface.
               If you have previously made a grid with the SweepMapping and it
               no longer works you may need to set the 'orientation' to be -1 to change the direction
@@ -136,7 +136,7 @@ Changes:
    o 110817 - there is now an option in the grid plotter to save the composite grid to a file. This
               grid can then, for example, be read back into ogen and changed or regenerated.
    o 110828 - it should now be possible to use a hyperbolic grid (or DataPointMapping) for parallel
-              computations with cgins or cgcns. Previously I recommended that these mappings be
+              computations with cgins or cgcssi. Previously I recommended that these mappings be
               converted to Nurbs. The Nurbs mapping currently will use more memory in parallel
               as all control points are duplicated on each processor. 
    o 110828 - fixed a bug in the parallel line smoother for Ogmg.
@@ -295,7 +295,7 @@ Main features:
 
 Also available are the CG (composite grid) suite of PDE solvers (built using Overture):
  - cgad: advection diffusion 
- - cgcns: compressible Navier-Stokes, reactive Euler equations. 
+ - cgcssi: compressible Navier-Stokes, reactive Euler equations. 
  - cgins: incompressible Navier-Stokes with heat transfer. 
  - cgmx: time domain Maxwell's equations solver.
  - cgmp: multi-domain, multi-physics solver (e.g. conjugate heat transfer)

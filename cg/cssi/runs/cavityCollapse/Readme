@@ -21,7 +21,7 @@ http://www.overtureframework.org/publications/OzlemSchwedemanKapilaHenshawShockI
     Grid:
       ogen -noplot multifluidChannelGrid.cmd
     Run:
-      cgcns multifluidChannel.cmd
+      cgcssi multifluidChannel.cmd
 
 
 (2) Sphere cavity collapse from Section 5.1 
@@ -29,4 +29,4 @@ http://www.overtureframework.org/publications/OzlemSchwedemanKapilaHenshawShockI
     Grid:
       ogen -noplot sphericalCavityGrid.cmd
     Run:
-      cgcns sphericalCavity.cmd
+      cgcssi sphericalCavity.cmd

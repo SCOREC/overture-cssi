@@ -3223,7 +3223,7 @@ int MovingGrids::
 getBoundaryAcceleration( MappedGrid & c, realSerialArray & gtt, int grid, real t0, int option )
 // ============================================================================================
 // /Description: provide the acceleration (or other time derivative) of the boundary. (This routine
-//  is called by cnsBC and insBC4.bC).
+//  is called by cssiBC and insBC4.bC).
 // 
 //
 // /gtt (output) : the acceleration of the boundary, g'', (if option==0). 

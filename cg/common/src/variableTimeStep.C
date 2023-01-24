@@ -315,7 +315,7 @@ advanceVariableTimeStepAdamsPredictorCorrector( real & t0, real & dt0, int & num
       // fn[mab0] <- du/dt(t0)
       //      getUt( gf[mab0].t,gf[mab0],fn[mab0],gf[mab0].t);
 
-      gf[mab1].u=gf[mab0].u;  // 990903 give initial values to avoid NAN's at ghost points for CNS
+      gf[mab1].u=gf[mab0].u;  // 990903 give initial values to avoid NAN's at ghost points for CSSI
       if( parameters.useConservativeVariables() )
       {
 	printf("*********  advanceAdamsPredictorCorrector: convert primitiveToConservative\n");

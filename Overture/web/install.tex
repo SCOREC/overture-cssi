@@ -865,14 +865,14 @@ To configure and build the parallel version (you need to install P++ first):
   \item The primer example pwave is a good example of a small parallel code. Many of the
         other primer examples may run in parallel but are generally not good examples of how to write efficient
         parallel code.
-  \item The cg solvers cgcns, cgins, cgad, cgmx, cgsm, and cgmp run in parallel but not all options will work. 
+  \item The cg solvers cgcssi, cgins, cgad, cgmx, cgsm, and cgmp run in parallel but not all options will work. 
         cgasf does not run in parallel yet. 
 %   \item There are some issues with the parallel I/O (through hdf5) that we don't fully understand. 
 %         There are collective and non-collective read/write modes in hdf5. Non-collective mode is currently the 
 %         default and seems more stable. Collective writes, however, are generally much faster. When running cg codes
 %         you can turn on the collective modes as follows:
 % \begin{verbatim}
-%            mpirun -np 2 cgcns -readCollective -writeCollective cicShockg.cmd
+%            mpirun -np 2 cgcssi -readCollective -writeCollective cicShockg.cmd
 % \end{verbatim}
 \end{itemize}
 

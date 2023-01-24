@@ -1,8 +1,8 @@
 #==============================================================
-# cgcns example: flow past a wind turbine and tower
+# cgcssi example: flow past a wind turbine and tower
 #
 # Usage:
-#       cgcns turbineAndTower -g=<grid-name> -amr=[0|1]  -moveOnly=[0|1|2]  -memoryCheck=[0|1] -freqFullUpdate=[0|1]
+#       cgcssi turbineAndTower -g=<grid-name> -amr=[0|1]  -moveOnly=[0|1|2]  -memoryCheck=[0|1] -freqFullUpdate=[0|1]
 #
 # -moveOnly : 
 #   0 = solve and move grids
@@ -10,18 +10,18 @@
 #   2 = move grids only
 #
 # Examples: NOTE: use grid with less stretching 
-#     cgcns turbineAndTower -g=turbineAndTower1Towerse2.order2.s2 -tp=.01 -tf=5. -moveOnly=1 [Ok
+#     cgcssi turbineAndTower -g=turbineAndTower1Towerse2.order2.s2 -tp=.01 -tf=5. -moveOnly=1 [Ok
 #  -- non-moving: 
-#     cgcns turbineAndTower -g=turbineAndTower1Towerse2.order2.s1 -tp=.01 -tf=5. -move=0 
-#     mpirun -np 4 $cgcnsp turbineAndTower -g=turbineAndTower1Towerse2.order2.s2 -tp=.01 -tf=5. -move=0 
-#     mpirun -np 4 $cgcnsp turbineAndTower -g=turbineAndTower1Towerse2.order2.ml1 -tp=.01 -tf=5. -move=0 
+#     cgcssi turbineAndTower -g=turbineAndTower1Towerse2.order2.s1 -tp=.01 -tf=5. -move=0 
+#     mpirun -np 4 $cgcssip turbineAndTower -g=turbineAndTower1Towerse2.order2.s2 -tp=.01 -tf=5. -move=0 
+#     mpirun -np 4 $cgcssip turbineAndTower -g=turbineAndTower1Towerse2.order2.ml1 -tp=.01 -tf=5. -move=0 
 #   
 #    
 #=============================================================
 #
 # --- set default values for parameters ---
 # 
-$cnsVariation="godunov"; $ts="pc"; $show=" ";
+$cssiVariation="godunov"; $ts="pc"; $show=" ";
 $grid="turbineAndTower1Towerse2.order2.ml1"; $backGround="backGround"; $bcn="slipWall";  $vIn=1.;
 $mg="square"; $mt="shift"; $vg0=0.; $vg1=0.; $vg2=0.; $move=1; $moveOnly=0;
 $tFinal=10.; $tPlot=.1; $cfl=.9; $mu=.0; $Prandtl=.72; $thermalExpansivity=.1; 
@@ -35,7 +35,7 @@ $pi=4.*atan2(1.,1.);
 # 
 #
 # ----------------------------- get command line arguments ---------------------------------------
-GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet, "cnsVariation=s"=>\$cnsVariation,\
+GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet, "cssiVariation=s"=>\$cssiVariation,\
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug,"memoryCheck=i"=>\$memoryCheck, \
  "nu=f"=>\$nu,"cfl=f"=>\$cfl, "bg=s"=>\$backGround, "go=s"=>\$go,"freqFullUpdate=i"=>\$freqFullUpdate,\
  "noplot=s"=>\$noplot,"dtMax=f"=>\$dtMax,"bcn=s"=>\$bcn,"vg0=f"=>\$vg0,"vg1=f"=>\$vg1,"vg2=f"=>\$vg2,\
@@ -49,9 +49,9 @@ if( $tz eq "none" ){ $tz="turn off twilight zone"; }
 if( $tz eq "poly" ){ $tz="turn on twilight zone\n turn on polynomial"; $cdv=0.; }
 if( $tz eq "trig" ){ $tz="turn on twilight zone\n turn on trigonometric"; $cdv=0.; }
 if( $order eq "2" ){ $order = "second order accurate"; }else{ $order = "fourth order accurate"; }
-if( $cnsVariation eq "godunov" ){ $cnsVariation="compressible Navier Stokes (Godunov)"; $ts="fe"; }
-if( $cnsVariation eq "jameson" ){ $cnsVariation="compressible Navier Stokes (Jameson)"; }  
-if( $cnsVariation eq "nonconservative" ){ $cnsVariation="compressible Navier Stokes (non-conservative)"; } 
+if( $cssiVariation eq "godunov" ){ $cssiVariation="compressible Navier Stokes (Godunov)"; $ts="fe"; }
+if( $cssiVariation eq "jameson" ){ $cssiVariation="compressible Navier Stokes (Jameson)"; }  
+if( $cssiVariation eq "nonconservative" ){ $cssiVariation="compressible Navier Stokes (non-conservative)"; } 
 if( $ts eq "fe" ){ $ts="forward Euler"; }
 if( $ts eq "be" ){ $ts="backward Euler"; }
 if( $ts eq "im" ){ $ts="implicit"; }
@@ -64,7 +64,7 @@ if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
 #
 # specify the overlapping grid to use:
 $grid
-  $cnsVariation
+  $cssiVariation
   $moveOnly
   done
 if( $memoryCheck ne 0 ){ $cmd="turn on memory checking"; }else{ $cmd="#"; }

@@ -1,46 +1,46 @@
 *
-* cgcns command file for a shock hitting a sphere (one quadrant only)
+* cgcssi command file for a shock hitting a sphere (one quadrant only)
 *
-*  usage: cgcns [-noplot] quarterSphere -g=<name> -l=<levels> -r=[ratio] -tf=<tFinal> -tp=<tPlot> ...
+*  usage: cgcssi [-noplot] quarterSphere -g=<name> -l=<levels> -r=[ratio] -tf=<tFinal> -tp=<tPlot> ...
 *               -x0=<num> -show=<name> -go=[run/halt]
 *
 * Examples:
 *
-*  cgcns -noplot quarterSphere -g=quarterSphere1e.hdf -l=2 -r=2 -tf=.5 -tp=.05 -x0=-1. -show=quarterSphere1el2r2.show
-*  cgcns -noplot quarterSphere -g=quarterSphere1e.hdf -l=3 -r=2 -tf=1.5 -tp=.05 -x0=-1. -go=halt
+*  cgcssi -noplot quarterSphere -g=quarterSphere1e.hdf -l=2 -r=2 -tf=.5 -tp=.05 -x0=-1. -show=quarterSphere1el2r2.show
+*  cgcssi -noplot quarterSphere -g=quarterSphere1e.hdf -l=3 -r=2 -tf=1.5 -tp=.05 -x0=-1. -go=halt
 * 
-*  srun -N1 -n4 -ppdebug $cgcnsp -noplot quarterSphere -g=quarterSphere2e.hdf -l=2 -r=2 -tf=1.5 -tp=.25 -x0=-1 -show=qs2el2r2.show >! qs2el2r2.N1.n4.out &
+*  srun -N1 -n4 -ppdebug $cgcssip -noplot quarterSphere -g=quarterSphere2e.hdf -l=2 -r=2 -tf=1.5 -tp=.25 -x0=-1 -show=qs2el2r2.show >! qs2el2r2.N1.n4.out &
 * 
-*  srun -N1 -n8 -ppdebug $cgcnsp -noplot quarterSphere -g=quarterSphere2e.hdf -l=1 -r=2 -tf=1.5 -tp=.25 -x0=-1 -show=qs2el2r2.show >! qs2el1r2.N1.n8.out &
+*  srun -N1 -n8 -ppdebug $cgcssip -noplot quarterSphere -g=quarterSphere2e.hdf -l=1 -r=2 -tf=1.5 -tp=.25 -x0=-1 -show=qs2el2r2.show >! qs2el1r2.N1.n8.out &
 * 
-*  srun -N2 -n16 -ppdebug $cgcnsp -noplot quarterSphere -g=quarterSphere2e.hdf -l=2 -r=2 -tf=1.5 -tp=.25 -x0=-1 -show=qs2el2r2.show >! qs2el2r2.N2.n16.out &
+*  srun -N2 -n16 -ppdebug $cgcssip -noplot quarterSphere -g=quarterSphere2e.hdf -l=2 -r=2 -tf=1.5 -tp=.25 -x0=-1 -show=qs2el2r2.show >! qs2el2r2.N2.n16.out &
 * 
-*  srun -N2 -n16 -ppdebug $cgcnsp -noplot quarterSphere -g=quarterSphere2e.hdf -l=3 -r=2 -tf=1. -tp=.25 -x0=-1 -show=qs2el3r2.show >! qs2el3r2.N2.n16.out &
+*  srun -N2 -n16 -ppdebug $cgcssip -noplot quarterSphere -g=quarterSphere2e.hdf -l=3 -r=2 -tf=1. -tp=.25 -x0=-1 -show=qs2el3r2.show >! qs2el3r2.N2.n16.out &
 *
-*  srun -N4 -n32 -ppdebug $cgcnsp -noplot quarterSphere -g=quarterSphere2e.hdf -l=2 -r=4 -tf=1.5 -tp=.25 -x0=-1 -show=qs2el2r4.show >! qs2el2r4.N4.n32.out &
+*  srun -N4 -n32 -ppdebug $cgcssip -noplot quarterSphere -g=quarterSphere2e.hdf -l=2 -r=4 -tf=1.5 -tp=.25 -x0=-1 -show=qs2el2r4.show >! qs2el2r4.N4.n32.out &
 *
-*  srun -N2 -n16 -ppdebug $cgcnsp -noplot quarterSphere -g=quarterSphere4e.hdf -l=2 -r=4 -tf=1. -tp=.25 -x0=-1 -show=qs4el2r4.show >! qs4el2r4.N2.n16.out &
+*  srun -N2 -n16 -ppdebug $cgcssip -noplot quarterSphere -g=quarterSphere4e.hdf -l=2 -r=4 -tf=1. -tp=.25 -x0=-1 -show=qs4el2r4.show >! qs4el2r4.N2.n16.out &
 *
-*  srun -N2 -n16 -ppdebug memcheck_all $cgcnsp -noplot quarterSphere -g=quarterSphere2e.hdf -l=1 -r=2 -tf=.1 -tp=.05 -x0=-1 -show=qs2el2r2.show >! qs2el1r2.N2.n16.out &
+*  srun -N2 -n16 -ppdebug memcheck_all $cgcssip -noplot quarterSphere -g=quarterSphere2e.hdf -l=1 -r=2 -tf=.1 -tp=.05 -x0=-1 -show=qs2el2r2.show >! qs2el1r2.N2.n16.out &
 * 
-*  srun -N2 -n8 -ppdebug memcheck_all $cgcnsp -noplot quarterSphere -g=quarterSphere1e.hdf -l=1 -r=2 -tf=.1  -tp=.05 -x0=-1 -show=qs1e.show >! qs1e.N2.n8.out &
+*  srun -N2 -n8 -ppdebug memcheck_all $cgcssip -noplot quarterSphere -g=quarterSphere1e.hdf -l=1 -r=2 -tf=.1  -tp=.05 -x0=-1 -show=qs1e.show >! qs1e.N2.n8.out &
 * 
-*  srun -N2 -n8 -ppdebug memcheck_all $cgcnsp -noplot quarterSphere -g=quarterSphere2e.hdf -l=1 -r=2 -tf=.1  -tp=.05 -x0=-1 -show=qs2e.show >! qs2e.N2.n8.out &
+*  srun -N2 -n8 -ppdebug memcheck_all $cgcssip -noplot quarterSphere -g=quarterSphere2e.hdf -l=1 -r=2 -tf=.1  -tp=.05 -x0=-1 -show=qs2e.show >! qs2e.N2.n8.out &
 * 
-*  srun -N2 -n8 -ppdebug $cgcnsp -noplot quarterSphere -g=quarterSphere8e.hdf -l=2 -r=2 -tf=.02 -tp=.01 -x0=0. -show=qs8el2r2.show >! qs8el2r2.N2.n8.out &
+*  srun -N2 -n8 -ppdebug $cgcssip -noplot quarterSphere -g=quarterSphere8e.hdf -l=2 -r=2 -tf=.02 -tp=.01 -x0=0. -show=qs8el2r2.show >! qs8el2r2.N2.n8.out &
 * 
-* mpirun -np 2 $cgcnsp noplot quarterSphere >! quarterSphere2el2r2.out &
-* srun -N2 -n4 -ppdebug $cgcnsp noplot quarterSphere >! quarterSphere2el2r2.out &
-* mpirun -np 2 $cgcnsp noplot quarterSphere >! test.out &
-* mpirun-wdh -np 16 $cgcnsp noplot quarterSphere >! quarterSphere3el2r4.out &
-* mpirun-wdh -np 4 $cgcnsp noplot quarterSphere >! quarterSphere1el2r2.out &
-* mpirun-wdh -np 8 $cgcnsp noplot quarterSphere >! quarterSphere1el2r4.out &
+* mpirun -np 2 $cgcssip noplot quarterSphere >! quarterSphere2el2r2.out &
+* srun -N2 -n4 -ppdebug $cgcssip noplot quarterSphere >! quarterSphere2el2r2.out &
+* mpirun -np 2 $cgcssip noplot quarterSphere >! test.out &
+* mpirun-wdh -np 16 $cgcssip noplot quarterSphere >! quarterSphere3el2r4.out &
+* mpirun-wdh -np 4 $cgcssip noplot quarterSphere >! quarterSphere1el2r2.out &
+* mpirun-wdh -np 8 $cgcssip noplot quarterSphere >! quarterSphere1el2r4.out &
 *
-* srun -N12 -n24 -ppdebug $cgcnsp -noplot quarterSphere >! quarterSphere2el2r2np24.out 
-* srun -N16 -n32 -ppdebug $cgcnsp -noplot quarterSphere >! quarterSphere2el2r2np32.out 
-* srun -N16 -n32 -ppdebug $cgcnsp -noplot quarterSphere >! quarterSphere2el2r4np32.out 
-* totalview srun -a -N2 -n2 -ppdebug $cgcnsp p.cmd
-* srun -ppdebug -N4 -n4 memcheck_all  $cgcnsp -noplot quarterSphere
+* srun -N12 -n24 -ppdebug $cgcssip -noplot quarterSphere >! quarterSphere2el2r2np24.out 
+* srun -N16 -n32 -ppdebug $cgcssip -noplot quarterSphere >! quarterSphere2el2r2np32.out 
+* srun -N16 -n32 -ppdebug $cgcssip -noplot quarterSphere >! quarterSphere2el2r4np32.out 
+* totalview srun -a -N2 -n2 -ppdebug $cgcssip p.cmd
+* srun -ppdebug -N4 -n4 memcheck_all  $cgcssip -noplot quarterSphere
 *
 * --- set default values for parameters ---
 $go="run"; $show = " "; $noplot=""; 
@@ -66,9 +66,9 @@ if( $go eq "run" ){ $go = "movie mode\n finish"; }else{ $go="break"; }
 *
 * --- quarter-sphere ---
 *   
-*  srun -N1 -n4 -ppdebug $cgcnsp -noplot quarterSphere >! quarterSphere2el2r2.N1.n4.out &
+*  srun -N1 -n4 -ppdebug $cgcssip -noplot quarterSphere >! quarterSphere2el2r2.N1.n4.out &
 * $grid ="quarterSphere2e.hdf";  $tFinal=1.5; $tPlot=.25; $x0=-1.; $amr=$amrOn; $ratio=2; $nrl=2; $backGround="channel"; $show="qs2el2r2.show";
-*  srun -N2 -n16 -ppdebug $cgcnsp -noplot quarterSphere >! quarterSphere2el3r2.N2.n16.out &
+*  srun -N2 -n16 -ppdebug $cgcssip -noplot quarterSphere >! quarterSphere2el3r2.N2.n16.out &
 * $grid ="quarterSphere2e.hdf";  $tFinal=1.; $tPlot=.25; $x0=-1.; $amr=$amrOn; $ratio=2; $nrl=3; $backGround="channel"; $show="qs2el3r2.show";
 *
 * $grid ="quarterSphere1e.hdf";  $tFinal=1.8; $tPlot=.05; $x0=-2.; $amr=$amrOff; $ratio=2; $nrl=2; $backGround="channel"; $show="qs.show";

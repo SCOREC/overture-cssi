@@ -1,4 +1,4 @@
-! This file automatically generated from cnsSlipWallBC.bf with bpp.
+! This file automatically generated from cssiSlipWallBC.bf with bpp.
 !
 ! routines for applying a slip wall BC
 !
@@ -71,7 +71,7 @@ c To include derivatives of rx use OPTION=RX
 
 
 
-      subroutine cnsSlipWallBC(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,
+      subroutine cssiSlipWallBC(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,
      & nd4b,ipar,rpar, u, u2,  gv, gv2, gtt, mask, x,rsxy, bc, 
      & indexRange, exact, uKnown, pdb, ierr )
 !========================================================================
@@ -1551,7 +1551,7 @@ c===============================================================================
 
 
       ierr=0
-      ! write(*,*) 'Inside cnsSlipWallBC'
+      ! write(*,*) 'Inside cssiSlipWallBC'
 
       rc                =ipar(0)
       uc                =ipar(1)
@@ -1599,13 +1599,13 @@ c===============================================================================
       ! Look up parameters from the data base,  *new way*
        ok=getReal(pdb,'densityLowerBound',densityLowerBound)
        if( ok.eq.0 )then
-         write(*,'("*** cnsSlipWallBC:ERROR: unable to find 
+         write(*,'("*** cssiSlipWallBC:ERROR: unable to find 
      & densityLowerBound")')
          stop 2233
        end if
        ok=getReal(pdb,'pressureLowerBound',pressureLowerBound)
        if( ok.eq.0 )then
-         write(*,'("*** cnsSlipWallBC:ERROR: unable to find 
+         write(*,'("*** cssiSlipWallBC:ERROR: unable to find 
      & pressureLowerBound")')
          stop 2233
        end if
@@ -1656,7 +1656,7 @@ c===============================================================================
         ! *********************************************************************
 
         if( gridIsMoving.ne.0 )then
-          write(*,'("cnsSlipWallBC:ERROR: gridIsMoving not implemented 
+          write(*,'("cssiSlipWallBC:ERROR: gridIsMoving not implemented 
      & yet for rectangular")')
           ! '
           stop 6642
@@ -1730,7 +1730,7 @@ c===============================================================================
      & ,0.,m,t)
             end do
 
-    !  write(*,'("cnsSlip: i1,i2=",2i3," x,y=",2e10.2," rho,u,v,t=",4e10.2)') i1,i2,x(i1    ,i2    ,i3,0),x(i1    ,i2    ,i3,1),uv(rc),uv(uc),uv(vc),uv(tc)
+    !  write(*,'("cssiSlip: i1,i2=",2i3," x,y=",2e10.2," rho,u,v,t=",4e10.2)') i1,i2,x(i1    ,i2    ,i3,0),x(i1    ,i2    ,i3,1),uv(rc),uv(uc),uv(vc),uv(tc)
 
             u(i1-is1,i2-is2,i3,unc)=2.*u(i1,i2,i3,unc)-u(i1+is1,i2+is2,
      & i3,unc) + uvm(unc)-2.*uv(unc)+uvp(unc)
@@ -2089,13 +2089,13 @@ c===============================================================================
            ! *******************slipWallPressureEntropySymmetry****************
            ! ******************************************************************
 
-           ! write(*,'(" cnsSlipWall: slipWallPressureEntropySymmetry used")')
+           ! write(*,'(" cssiSlipWall: slipWallPressureEntropySymmetry used")')
            if( dt.lt.0. )then
-             write(*,'(" ***cnsSlipWall:WARNING: dt<0 for t=",e12.3)') 
+             write(*,'(" ***cssiSlipWall:WARNING: dt<0 for t=",e12.3)') 
      & t
              dt=0.
            else
-             write(*,'(" ***cnsSlipWall:INFO: t,dt=",2(e12.3,1x))') t,
+             write(*,'(" ***cssiSlipWall:INFO: t,dt=",2(e12.3,1x))') t,
      & dt
            end if
 
@@ -2437,13 +2437,13 @@ c===============================================================================
            ! **********************slipWallTaylor  ****************************
            ! ******************************************************************
 
-           write(*,'(" cnsSlipWall: slipWallTaylor used")')
+           write(*,'(" cssiSlipWall: slipWallTaylor used")')
            if( dt.lt.0. )then
-             write(*,'(" ***cnsSlipWall:WARNING: dt<0 for t=",e12.3)') 
+             write(*,'(" ***cssiSlipWall:WARNING: dt<0 for t=",e12.3)') 
      & t
              dt=0.
            else
-             write(*,'(" ***cnsSlipWall:INFO: t,dt=",2(e12.3,1x))') t,
+             write(*,'(" ***cssiSlipWall:INFO: t,dt=",2(e12.3,1x))') t,
      & dt
            end if
 
@@ -2877,21 +2877,21 @@ c===============================================================================
            ! ******************************************************************
 
            if( gridIsMoving.eq.1 )then
-             write(*,'(" cnsSlipWall: slipWallCharacteristic used with 
+             write(*,'(" cssiSlipWall: slipWallCharacteristic used with 
      & moving grids")')
              ! '
            endif
 
            if( debug.gt.1 ) then
-             write(*,'(" cnsSlipWall: slipWallCharacteristic used")')
+             write(*,'(" cssiSlipWall: slipWallCharacteristic used")')
            end if
            if( dt.lt.0. )then
-             write(*,'(" ***cnsSlipWall:WARNING: dt<0 for t=",e12.3)') 
+             write(*,'(" ***cssiSlipWall:WARNING: dt<0 for t=",e12.3)') 
      & t
              dt=0.
            else
              if( debug.gt.1 ) then
-               write(*,'(" ***cnsSlipWall:INFO: t,dt=",2(e12.3,1x))') 
+               write(*,'(" ***cssiSlipWall:INFO: t,dt=",2(e12.3,1x))') 
      & t,dt
              end if
            end if
@@ -3606,7 +3606,7 @@ c===============================================================================
            end do
 
           else if( dt.gt.0. )then
-            write(*,'("cnsSlipWallBC: ERROR gridIsMoving=",i2," 
+            write(*,'("cssiSlipWallBC: ERROR gridIsMoving=",i2," 
      & bcOption=",i3," dt=",e10.2)') gridIsMoving,bcOption,dt
              ! '
             write(*,'("  .. grid,side,axis=",3i4," bc=",i6)') grid,
@@ -3764,7 +3764,7 @@ c===============================================================================
 
       else
 
-        write(*,'("cnsSlipWallBC:ERROR:Unknown bcOption=",i5)') 
+        write(*,'("cssiSlipWallBC:ERROR:Unknown bcOption=",i5)') 
      & bcOption
         stop 17342
 

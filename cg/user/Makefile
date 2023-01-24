@@ -1,5 +1,5 @@
 #
-# Makefile for building a locally altered version of cgcns, cgins, ... with changes made by a user. 
+# Makefile for building a locally altered version of cgcssi, cgins, ... with changes made by a user. 
 # You can, for example, make changes to some of the files and put the changes here so the originials are 
 # not altered.
 #
@@ -32,8 +32,8 @@ include make
 # List of packages to build
 PKGS := src 
 
-vpath % $(PKGS) ../cns/src ../ins/src
-VPATH = $(PKGS) ../cns/src ../ins/src
+vpath % $(PKGS) ../cssi/src ../ins/src
+VPATH = $(PKGS) ../cssi/src ../ins/src
 
 SRC_FILES := 
 FSRC :=
@@ -42,20 +42,20 @@ FSRCNO :=
 TESTS := 
 PKG_INCLUDE := $(foreach p, $(PKGS), $(p)/files)
 
-all: $(BINDIR)cgcns
+all: $(BINDIR)cgcssi
 
 # Here are the application main programs that we can build here
-APPS := cgcns cgcns aero getEnergy
+APPS := cgcssi cgcssi aero getEnergy
 
-# Short forms (so we can type "make cgcns" or "make aero") 
-cgcns: $(BINDIR)cgcns
+# Short forms (so we can type "make cgcssi" or "make aero") 
+cgcssi: $(BINDIR)cgcssi
 cgins: $(BINDIR)cgins
 aero: $(BINDIR)aero
 getEnergy: $(BINDIR)getEnergy
 
 usage: 
 	-@echo "usage : "
-	-@echo "        % make " $(COPTS) "<all|cgcns>"
+	-@echo "        % make " $(COPTS) "<all|cgcssi>"
 
 config_os:
 	-@echo "using configuration for $(OS)"
@@ -120,12 +120,12 @@ $(OBJSO) : $(OBJPREFIX)%.o : %.f
 EXTRAOBJ = $(OBJ) $(OBJN) $(OBJO) $(OBJSO)
 
 libCommon:=$(CGBUILDPREFIX)common/libCgCommon
-libCgcns:=$(LIBDIR)../cgcns/lib/libCgcns
+libCgcssi:=$(LIBDIR)../cgcssi/lib/libCgcssi
 libCgins:=$(LIBDIR)../cgins/lib/libCgins
 
-# Make cgcns in the bin dir:
-$(BINDIR)cgcns: $(libCommon) $(libCgcns) $(OBJDIR)cgcnsMain.o $(EXTRAOBJ)
-	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)cgcnsMain.o $(EXTRAOBJ) $(CGCNS_EXTRA_FILES) $(CNSLIBS)
+# Make cgcssi in the bin dir:
+$(BINDIR)cgcssi: $(libCommon) $(libCgcssi) $(OBJDIR)cgcssiMain.o $(EXTRAOBJ)
+	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)cgcssiMain.o $(EXTRAOBJ) $(CGCSSI_EXTRA_FILES) $(CSSILIBS)
 
 # Make cgins in the bin dir:
 $(BINDIR)cgins: $(libCommon) $(libCgins) $(OBJDIR)cginsMain.o $(EXTRAOBJ)
@@ -140,8 +140,8 @@ $(BINDIR)aero: $(libCommon) $(libAero) $(OBJDIR)aero.o
 $(BINDIR)getEnergy: $(libCommon) $(libGetEnergy) $(OBJDIR)getEnergy.o 
 	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)getEnergy.o $(LIBS)
 
-# build the Cgcns library
-$(libCgcns):; @cd ../cgcns; $(MAKE) -$(MAKEFLAGS) lib
+# build the Cgcssi library
+$(libCgcssi):; @cd ../cgcssi; $(MAKE) -$(MAKEFLAGS) lib
 
 # build the Cgins library
 $(libCgins):; @cd ../cgins; $(MAKE) -$(MAKEFLAGS) lib
@@ -169,12 +169,12 @@ cleano:
 cleandep:
 	-rm -f $(OBJPREFIX)*.d
 clean:
-	-rm -f *~ */*~ $(OBJPREFIX)*.o $(DEPPREFIX)*.d $(DEPPREFIX)depdep $(BINDIR)cgcns $(BINDIR)cgins $(LIBDIR)*.a  \
-         $(BINDIR)aero $(BINDIR)getEnergy cmd/*.show* cmd/*.debug cmd/*.check cmd/*.log cmd/*.move cmd/cgcns.cmd cmd/cgins.cmd
+	-rm -f *~ */*~ $(OBJPREFIX)*.o $(DEPPREFIX)*.d $(DEPPREFIX)depdep $(BINDIR)cgcssi $(BINDIR)cgins $(LIBDIR)*.a  \
+         $(BINDIR)aero $(BINDIR)getEnergy cmd/*.show* cmd/*.debug cmd/*.check cmd/*.log cmd/*.move cmd/cgcssi.cmd cmd/cgins.cmd
 
 # remove all c and c++ .o files, dependencies and executables (but leave fortran .o files)
 cleanc: 
-	-rm -f $(DEPPREFIX)*.d $(COBJ) $(BINDIR)cgcns $(BINDIR)cgins $(LIBDIR)*.a
+	-rm -f $(DEPPREFIX)*.d $(COBJ) $(BINDIR)cgcssi $(BINDIR)cgins $(LIBDIR)*.a
 
 # include dependencies except for a list of commands 
 ifeq ($(NODEP),)

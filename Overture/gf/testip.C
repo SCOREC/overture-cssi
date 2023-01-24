@@ -33,7 +33,7 @@
 // 
 // testip -in=square128 -out=square40 -tz=trig
 // 
-// testip -noplot -in=/home/henshaw.0/runs/cgcns/quarterSphere1el2r4.show -out=/home/henshaw.0/runs/cgcns/quarterSphere1el2r2.show
+// testip -noplot -in=/home/henshaw.0/runs/cgcssi/quarterSphere1el2r4.show -out=/home/henshaw.0/runs/cgcssi/quarterSphere1el2r2.show
 //
 // --- NEW InterpolatePointsOnAGrid (serial/parallel) version  ----
 // mpirun -np 1 testip -in=square5 -out=square5 -iw=3 -noplot -testOld=0 -testNew=0 -testParallel=1 -testPoints=1 -debug=3

@@ -1,10 +1,10 @@
-! This file automatically generated from cnsdts.bf with bpp.
-        subroutine cnsdtsCNS(nd, n1a,n1b,n2a,n2b,n3a,n3b, nd1a,nd1b,
+! This file automatically generated from cssidts.bf with bpp.
+        subroutine cssidtsCSSI(nd, n1a,n1b,n2a,n2b,n3a,n3b, nd1a,nd1b,
      & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy, rsxy,  u,uu, gv,dw, p, 
      & dp, dtVar, bc, ipar, rpar, ierr )
 c======================================================================
 c
-c    Determine the time step for the CNS equations.
+c    Determine the time step for the CSSI equations.
 c    ---------------------------------------------
 c
 c nd : number of space dimensions
@@ -44,7 +44,7 @@ c======================================================================
         real dxi,dyi,dzi,dri,dsi,dti,dr2i,ds2i,dt2i
         real ad21,ad22,ad41,ad42,cd22,cd42,adc
         real ad21n,ad22n,ad41n,ad42n,cd22n,cd42n
-        real adCNS,adSPAL
+        real adCSSI,adSPAL
         real scaleFactor,factor,cDt,cdv,cr,crr
         integer i1a,i2a,i3a
         real yy,yEps,xa,ya,za
@@ -1290,30 +1290,30 @@ c Include "selfAdjointArtificialDiffusion.h"
         kc=nc
         ec=kc+1
         mukt = max(4./3.*mu,(gamma-1.)*kThermal)
-c write(*,'("cnsdts: gridType,gridIsImplicit,implicitMethod,implicitOption,useLocalTimeStepping=",10i3)') gridType,gridIsImplicit,implicitMethod,implicitOption,useLocalTimeStepping
-c write(*,'("cnsdts: n1a,n1b,n2a,n2b,n3a,n3b=",6i4)') n1a,n1b,n2a,n2b,n3a,n3b
-c write(*,'("cnsdts: av2,aw2,av4,aw4,mu,kThermal=",10f6.3)') av2,aw2,av4,aw4,mu,kThermal
+c write(*,'("cssidts: gridType,gridIsImplicit,implicitMethod,implicitOption,useLocalTimeStepping=",10i3)') gridType,gridIsImplicit,implicitMethod,implicitOption,useLocalTimeStepping
+c write(*,'("cssidts: n1a,n1b,n2a,n2b,n3a,n3b=",6i4)') n1a,n1b,n2a,n2b,n3a,n3b
+c write(*,'("cssidts: av2,aw2,av4,aw4,mu,kThermal=",10f6.3)') av2,aw2,av4,aw4,mu,kThermal
         if( orderOfAccuracy.ne.2 .and. orderOfAccuracy.ne.4 )then
-          write(*,'("cnsdts:ERROR orderOfAccuracy=",i6)') 
+          write(*,'("cssidts:ERROR orderOfAccuracy=",i6)') 
      & orderOfAccuracy
           stop 1
         end if
         if( gridType.ne.rectangular .and. gridType.ne.curvilinear )then
-          write(*,'("cnsdts:ERROR gridType=",i6)') gridType
+          write(*,'("cssidts:ERROR gridType=",i6)') gridType
           stop 2
         end if
         if( uc.lt.0 .or. vc.lt.0 .or. (nd.eq.3 .and. wc.lt.0) )then
-          write(*,'("cnsdts:ERROR uc,vc,ws=",3i6)') uc,vc,wc
+          write(*,'("cssidts:ERROR uc,vc,ws=",3i6)') uc,vc,wc
           stop 4
         end if
         if( turbulenceModel.eq.kEpsilon .and. (kc.lt.uc+nd .or. 
      & kc.gt.1000) )then
-          write(*,'("cnsdts:ERROR in kc: nd,uc,vc,wc,kc=",2i6)') nd,uc,
+          write(*,'("cssidts:ERROR in kc: nd,uc,vc,wc,kc=",2i6)') nd,uc,
      & vc,wc,kc
           stop 5
         end if
         if( nd.ne.2 .and. nd.ne.3 )then
-          write(*,'("cnsdts:ERROR nd=",i6)') nd
+          write(*,'("cssidts:ERROR nd=",i6)') nd
           stop 1
         end if
         ! ** these are needed by self-adjoint terms **fix**
@@ -1333,10 +1333,10 @@ c write(*,'("cnsdts: av2,aw2,av4,aw4,mu,kThermal=",10f6.3)') av2,aw2,av4,aw4,mu,
           call getSpalartAllmarasParameters(cb1, cb2, cv1, sigma, 
      & sigmai, kappa, cw1, cw2, cw3, cw3e6, cv1e3, cd0, cr0)
         else if( turbulenceModel.eq.kEpsilon )then
-         ! write(*,'(" cnsdts: k-epsilon: nc,kc,ec=",3i3)') nc,kc,ec
+         ! write(*,'(" cssidts: k-epsilon: nc,kc,ec=",3i3)') nc,kc,ec
           call getKEpsilonParameters( cMu,cEps1,cEps2,sigmaEpsI,
      & sigmaKI )
-          !  write(*,'(" cnsdts: cMu,cEps1,cEps2,sigmaEpsI,sigmaKI=",5f8.3)') cMu,cEps1,cEps2,sigmaEpsI,sigmaKI
+          !  write(*,'(" cssidts: cMu,cEps1,cEps2,sigmaEpsI,sigmaKI=",5f8.3)') cMu,cEps1,cEps2,sigmaEpsI,sigmaKI
         else if( turbulenceModel.ne.noTurbulenceModel )then
           stop 88
         end if
@@ -1348,15 +1348,15 @@ c write(*,'("cnsdts: av2,aw2,av4,aw4,mu,kThermal=",10f6.3)') av2,aw2,av4,aw4,mu,
         dtMaxInverse=1./dtMax
         !     correction factors for divergence damping term
         !     this is an over estimate ****
-ckkc 070921 no div damping in cns if( cdv.eq.0. )then
-ckkc 070921 no div damping in cns    scaleFactor=0.
-ckkc 070921 no div damping in cns  else
-ckkc 070921 no div damping in cns    scaleFactor = 1.
-ckkc 070921 no div damping in cns    if( isAxisymmetric.eq.1 )then
-ckkc 070921 no div damping in cns      scaleFactor=2.
-ckkc 070921 no div damping in cns    end if
-ckkc 070921 no div damping in cns  end if
-ckkc 070921 no div damping in cns  factor=1.5*scaleFactor
+ckkc 070921 no div damping in cssi if( cdv.eq.0. )then
+ckkc 070921 no div damping in cssi    scaleFactor=0.
+ckkc 070921 no div damping in cssi  else
+ckkc 070921 no div damping in cssi    scaleFactor = 1.
+ckkc 070921 no div damping in cssi    if( isAxisymmetric.eq.1 )then
+ckkc 070921 no div damping in cssi      scaleFactor=2.
+ckkc 070921 no div damping in cssi    end if
+ckkc 070921 no div damping in cssi  end if
+ckkc 070921 no div damping in cssi  factor=1.5*scaleFactor
         if( gridIsMoving.ne.0 )then
           ! compute uu = u -gv
           if( nd.eq.2 )then
@@ -1396,13 +1396,13 @@ ckkc 070921 no div damping in cns  factor=1.5*scaleFactor
            if( gridIsImplicit.eq.0 )then
 c Don't split by ADTYPE since this makes the file too long for no big benefit.
 c if( use2ndOrderAD.eq.0 .and. use4thOrderAD.eq.0 )then 
-c  getTimeSteppingEigenvaluesByOrder(CNS,GLOBAL,EXPLICIT,NONE)
+c  getTimeSteppingEigenvaluesByOrder(CSSI,GLOBAL,EXPLICIT,NONE)
 c else if( use2ndOrderAD.eq.1 .and. use4thOrderAD.eq.0 )then 
-c  getTimeSteppingEigenvaluesByOrder(CNS,GLOBAL,EXPLICIT,AD2)
+c  getTimeSteppingEigenvaluesByOrder(CSSI,GLOBAL,EXPLICIT,AD2)
 c else if( use2ndOrderAD.eq.0 .and. use4thOrderAD.eq.1 )then 
-c  getTimeSteppingEigenvaluesByOrder(CNS,GLOBAL,EXPLICIT,AD4)
+c  getTimeSteppingEigenvaluesByOrder(CSSI,GLOBAL,EXPLICIT,AD4)
 c else if( use2ndOrderAD.eq.1 .and. use4thOrderAD.eq.1 )then 
-c  getTimeSteppingEigenvaluesByOrder(CNS,GLOBAL,EXPLICIT,AD24)
+c  getTimeSteppingEigenvaluesByOrder(CSSI,GLOBAL,EXPLICIT,AD24)
 c else
 c   stop 123
 c end if
@@ -2310,7 +2310,7 @@ c ...............................................
                 end if
               else if( orderOfAccuracy.eq.4 )then
                ! no fourth order versions yet   
-               ! getTimeSteppingEigenvaluesByDimension(CNS,GLOBAL,EXPLICIT,AD24,4)
+               ! getTimeSteppingEigenvaluesByDimension(CSSI,GLOBAL,EXPLICIT,AD24,4)
                  stop 321
               else
                 stop 123
@@ -2319,13 +2319,13 @@ c ...............................................
             !kkc 060228 activated this line, not sure what differs yet
 c Don't split by ADTYPE since this makes the file too long for no big benefit.
 c if( use2ndOrderAD.eq.0 .and. use4thOrderAD.eq.0 )then 
-c  getTimeSteppingEigenvaluesByOrder(CNS,GLOBAL,IMPLICIT,NONE)
+c  getTimeSteppingEigenvaluesByOrder(CSSI,GLOBAL,IMPLICIT,NONE)
 c else if( use2ndOrderAD.eq.1 .and. use4thOrderAD.eq.0 )then 
-c  getTimeSteppingEigenvaluesByOrder(CNS,GLOBAL,IMPLICIT,AD2)
+c  getTimeSteppingEigenvaluesByOrder(CSSI,GLOBAL,IMPLICIT,AD2)
 c else if( use2ndOrderAD.eq.0 .and. use4thOrderAD.eq.1 )then 
-c  getTimeSteppingEigenvaluesByOrder(CNS,GLOBAL,IMPLICIT,AD4)
+c  getTimeSteppingEigenvaluesByOrder(CSSI,GLOBAL,IMPLICIT,AD4)
 c else if( use2ndOrderAD.eq.1 .and. use4thOrderAD.eq.1 )then 
-c  getTimeSteppingEigenvaluesByOrder(CNS,GLOBAL,IMPLICIT,AD24)
+c  getTimeSteppingEigenvaluesByOrder(CSSI,GLOBAL,IMPLICIT,AD24)
 c else
 c   stop 123
 c end if
@@ -3052,7 +3052,7 @@ c ...............................................
                 end if
               else if( orderOfAccuracy.eq.4 )then
                ! no fourth order versions yet   
-               ! getTimeSteppingEigenvaluesByDimension(CNS,GLOBAL,IMPLICIT,AD24,4)
+               ! getTimeSteppingEigenvaluesByDimension(CSSI,GLOBAL,IMPLICIT,AD24,4)
                  stop 321
               else
                 stop 123
@@ -3063,13 +3063,13 @@ c ...............................................
             if( gridIsImplicit.eq.0 )then
 c Don't split by ADTYPE since this makes the file too long for no big benefit.
 c if( use2ndOrderAD.eq.0 .and. use4thOrderAD.eq.0 )then 
-c  getTimeSteppingEigenvaluesByOrder(CNS,LOCAL,EXPLICIT,NONE)
+c  getTimeSteppingEigenvaluesByOrder(CSSI,LOCAL,EXPLICIT,NONE)
 c else if( use2ndOrderAD.eq.1 .and. use4thOrderAD.eq.0 )then 
-c  getTimeSteppingEigenvaluesByOrder(CNS,LOCAL,EXPLICIT,AD2)
+c  getTimeSteppingEigenvaluesByOrder(CSSI,LOCAL,EXPLICIT,AD2)
 c else if( use2ndOrderAD.eq.0 .and. use4thOrderAD.eq.1 )then 
-c  getTimeSteppingEigenvaluesByOrder(CNS,LOCAL,EXPLICIT,AD4)
+c  getTimeSteppingEigenvaluesByOrder(CSSI,LOCAL,EXPLICIT,AD4)
 c else if( use2ndOrderAD.eq.1 .and. use4thOrderAD.eq.1 )then 
-c  getTimeSteppingEigenvaluesByOrder(CNS,LOCAL,EXPLICIT,AD24)
+c  getTimeSteppingEigenvaluesByOrder(CSSI,LOCAL,EXPLICIT,AD24)
 c else
 c   stop 123
 c end if
@@ -4057,7 +4057,7 @@ c ...............................................
                  end if
                else if( orderOfAccuracy.eq.4 )then
                 ! no fourth order versions yet   
-                ! getTimeSteppingEigenvaluesByDimension(CNS,LOCAL,EXPLICIT,AD24,4)
+                ! getTimeSteppingEigenvaluesByDimension(CSSI,LOCAL,EXPLICIT,AD24,4)
                   stop 321
                else
                  stop 123
@@ -4066,13 +4066,13 @@ c ...............................................
              !kkc 060228 activated this line, not sure what differs yet
 c Don't split by ADTYPE since this makes the file too long for no big benefit.
 c if( use2ndOrderAD.eq.0 .and. use4thOrderAD.eq.0 )then 
-c  getTimeSteppingEigenvaluesByOrder(CNS,LOCAL,IMPLICIT,NONE)
+c  getTimeSteppingEigenvaluesByOrder(CSSI,LOCAL,IMPLICIT,NONE)
 c else if( use2ndOrderAD.eq.1 .and. use4thOrderAD.eq.0 )then 
-c  getTimeSteppingEigenvaluesByOrder(CNS,LOCAL,IMPLICIT,AD2)
+c  getTimeSteppingEigenvaluesByOrder(CSSI,LOCAL,IMPLICIT,AD2)
 c else if( use2ndOrderAD.eq.0 .and. use4thOrderAD.eq.1 )then 
-c  getTimeSteppingEigenvaluesByOrder(CNS,LOCAL,IMPLICIT,AD4)
+c  getTimeSteppingEigenvaluesByOrder(CSSI,LOCAL,IMPLICIT,AD4)
 c else if( use2ndOrderAD.eq.1 .and. use4thOrderAD.eq.1 )then 
-c  getTimeSteppingEigenvaluesByOrder(CNS,LOCAL,IMPLICIT,AD24)
+c  getTimeSteppingEigenvaluesByOrder(CSSI,LOCAL,IMPLICIT,AD24)
 c else
 c   stop 123
 c end if
@@ -4879,7 +4879,7 @@ c ...............................................
                  end if
                else if( orderOfAccuracy.eq.4 )then
                 ! no fourth order versions yet   
-                ! getTimeSteppingEigenvaluesByDimension(CNS,LOCAL,IMPLICIT,AD24,4)
+                ! getTimeSteppingEigenvaluesByDimension(CSSI,LOCAL,IMPLICIT,AD24,4)
                   stop 321
                else
                  stop 123
@@ -4889,7 +4889,7 @@ c ...............................................
         !kkc  stop 916
          end if
         if( useLocalTimeStepping.eq.1 )then
-          write(*,'(" cnsdts: local dt, grid=",i3," dtVar (min,max)=(",
+          write(*,'(" cssidts: local dt, grid=",i3," dtVar (min,max)=(",
      & e10.2,",",e10.2,")")') grid,dtVarMin,dtVarMax
           ! '
         end if

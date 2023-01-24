@@ -1,11 +1,11 @@
-#include "Cgcns.h"
+#include "Cgcssi.h"
 #include "GenericGraphicsInterface.h"
 
 // ===================================================================================================================
 /// \brief Build the dialog that shows the various options for time stepping
 /// \param dialog (input) : 
 // ===================================================================================================================
-int Cgcns::
+int Cgcssi::
 buildTimeSteppingDialog(DialogData & dialog )
 {
   // Add the "method" dialog so it appears first
@@ -34,7 +34,7 @@ buildTimeSteppingDialog(DialogData & dialog )
   DomainSolver::buildTimeSteppingDialog(dialog);
 
   // Over-ride the defaults
-  dialog.setWindowTitle("Cgcns Time Stepping Parameters");
+  dialog.setWindowTitle("Cgcssi Time Stepping Parameters");
   dialog.setExitCommand("close time stepping", "close");
   dialog.setOptionMenuColumns(1);
 
@@ -48,7 +48,7 @@ buildTimeSteppingDialog(DialogData & dialog )
 /// \param dialog (input) : 
 //  \return return 1 if the command was found, 0 otherwise.
 // ===================================================================================================================
-int Cgcns::
+int Cgcssi::
 getTimeSteppingOption(const aString & answer,
 		      DialogData & dialog )  
 {

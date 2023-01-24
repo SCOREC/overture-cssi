@@ -1,26 +1,26 @@
 ***************************************************************
-* cgcns: specified motion of a piston
+* cgcssi: specified motion of a piston
 *   Usage:
-*      cgcns pistonSpecifiedMotion -g=<grid> -tp=<> -tf=<> -bcOption=<> -pp=<> -go=[go|halt|og]
+*      cgcssi pistonSpecifiedMotion -g=<grid> -tp=<> -tf=<> -bcOption=<> -pp=<> -go=[go|halt|og]
 * 
 * Examples:
-*  cgcns pistonSpecifiedMotion -g=plug4.hdf -bcOption=0
-*  cgcns pistonSpecifiedMotion -g=plug16.hdf -bcOption=0
+*  cgcssi pistonSpecifiedMotion -g=plug4.hdf -bcOption=0
+*  cgcssi pistonSpecifiedMotion -g=plug16.hdf -bcOption=0
 *    -> 0.200 1.65e-03 5.61e-04 0.00e+00 3.41e-04 1.40e+00 5.88e-03 1.29e+01 (      29,      29)
-*  cgcns -noplot pistonSpecifiedMotion -g=plug32.hdf -bcOption=0 -tf=.2 -go=go
+*  cgcssi -noplot pistonSpecifiedMotion -g=plug32.hdf -bcOption=0 -tf=.2 -go=go
 *    -> 0.200 7.06e-04 2.86e-04 0.00e+00 1.46e-04 1.40e+00 1.52e-03 2.30e+00 (      24,      24)
-*  cgcns pistonSpecifiedMotion -g=plug16.hdf -bcOption=0 -rho0=.1 -p0=.1
+*  cgcssi pistonSpecifiedMotion -g=plug16.hdf -bcOption=0 -rho0=.1 -p0=.1
 *    -> 0.200 8.48e-05 4.80e-04 0.00e+00 3.43e-04 1.00e+00 5.00e-03 1.25e+01 (      29,      29)
 *
-*   cgcns -noplot pistonSpecifiedMotion -g=nonPlug16 -bcOption=4 -tp=.1 -tf=.2 -go=go [OK 
+*   cgcssi -noplot pistonSpecifiedMotion -g=nonPlug16 -bcOption=4 -tp=.1 -tf=.2 -go=go [OK 
 * 
-*   cgcns -noplot pistonSpecifiedMotion -g=noPlug8 -bcOption=4 -tp=.1 -tf=.2 -go=go 
+*   cgcssi -noplot pistonSpecifiedMotion -g=noPlug8 -bcOption=4 -tp=.1 -tf=.2 -go=go 
 *   ->    0.200 3.06e-05 2.19e-05 0.00e+00 6.25e-06 1.40e+00 1.11e-02 2.14e-01 (      20,      20)
-*   cgcns -noplot pistonSpecifiedMotion -g=plug8 -bcOption=4 -tp=.1 -tf=.2 -go=go 
+*   cgcssi -noplot pistonSpecifiedMotion -g=plug8 -bcOption=4 -tp=.1 -tf=.2 -go=go 
 *   ->    0.200 3.06e-05 2.19e-05 0.00e+00 6.25e-06 1.40e+00 1.11e-02 3.56e-01 (      22,      22)
 *
-*   cgcns pistonSpecifiedMotion -g=nonPlug8.hdf -ap=-1. -pp=4 -bcOption=4 -tp=.01 -tf=1. -go=halt
-*   cgcns -noplot pistonSpecifiedMotion -g=nonPlug8.hdf -ap=-1. -pp=4 -bcOption=4 -tp=.01 -tf=1. -godOrder=1 -go=go >! psm8.out
+*   cgcssi pistonSpecifiedMotion -g=nonPlug8.hdf -ap=-1. -pp=4 -bcOption=4 -tp=.01 -tf=1. -go=halt
+*   cgcssi -noplot pistonSpecifiedMotion -g=nonPlug8.hdf -ap=-1. -pp=4 -bcOption=4 -tp=.01 -tf=1. -godOrder=1 -go=go >! psm8.out
 *  
 **************************************************************
 *
@@ -35,7 +35,7 @@ $ad=0.; # Godunov linear dissipation
   $pp = 4.;  # C2 solution
   $ap=-.5; $pp=3;  # C0 solution
 * --- set default values for parameters ---
-$grid="plug2.hdf"; $show = " "; $backGround="square"; $cnsVariation="godunov"; 
+$grid="plug2.hdf"; $show = " "; $backGround="square"; $cssiVariation="godunov"; 
 $ratio=2;  $nrl=2;  # refinement ratio and number of refinement levels
 $x0=.5; $dtMax=1.e10; $nbz=2; 
 $xStep="x=-1.5"; $go="halt"; 
@@ -43,13 +43,13 @@ $xStep="x=-1.5"; $go="halt";
 * ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"l=i"=> \$nrl,"r=i"=> \$ratio, "tf=f"=>\$tFinal,"debug=i"=> \$debug,"cfl=f"=>\$cfl, \
             "tp=f"=>\$tPlot, "xStep=s"=>\$xStep, "bg=s"=>\$backGround,"show=s"=>\$show,"go=s"=>\$go,\
-            "cnsVariation=s"=>\$cnsVariation,"bcOption=i"=> \$bcOption, "rho0=f"=>\$rho0,"p0=f"=>\$p0,\
+            "cssiVariation=s"=>\$cssiVariation,"bcOption=i"=> \$bcOption, "rho0=f"=>\$rho0,"p0=f"=>\$p0,\
             "gridToMove=s"=>\$gridToMove,"ap=f"=>\$ap,"pp=f"=>\$pp,"en=s"=>\$en,"godOrder=f"=>\$godOrder,\
             "dtMax=f"=>\$dtMax,"checkForWallHeating=i"=>\$checkForWallHeating,"ad=f"=>\$ad   );
 * -------------------------------------------------------------------------------------------------
-if( $cnsVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
-if( $cnsVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
-if( $cnsVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
+if( $cssiVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
+if( $cssiVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
+if( $cssiVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }

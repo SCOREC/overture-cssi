@@ -26,7 +26,7 @@ cp publications/{henshawAMROG,mog2005,henshawMaxwell2006,henshawSchwendemanPOG20
 
 cp publications/{NeumannWave.pdf,SIAM_CSE_2003.pdf,Rap2002.pdf,KPYWave2002.pdf} $webPage/publications
 
-cp publications/{HenshawKreissYstrom.pdf,henshawIMR10.pdf,henshawPetersson2001.pdf,autoGrid.pdf,cgicns.pdf,bcns.pdf,insdiv.pdf} $webPage/publications
+cp publications/{HenshawKreissYstrom.pdf,henshawIMR10.pdf,henshawPetersson2001.pdf,autoGrid.pdf,cgicssi.pdf,bcssi.pdf,insdiv.pdf} $webPage/publications
 
 cp publications/{aiaa02Henshaw.pdf,nggcfs2002Henshaw.pdf,reactamr.pdf,automg.pdf,henshawNggcfs05.pdf} $webPage/publications
 

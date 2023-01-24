@@ -1,10 +1,10 @@
-#Include "icnscfMacros.h"
+#Include "icssicfMacros.h"
 
-      subroutine cnsNoSlipWallBC(nd,nd1a,nd1b,nd2a,nd2b,nd3a,
+      subroutine cssiNoSlipWallBC(nd,nd1a,nd1b,nd2a,nd2b,nd3a,
      &                           nd3b,nd4a,nd4b,u,x,aj,rsxy,ipar,rpar,
      &                           indexRange,bc)
 c
-c     no-slip wall, zero mass flux boundary conditions for cnsdu (Jameson)
+c     no-slip wall, zero mass flux boundary conditions for cssidu (Jameson)
 c
 c
 c     051221 kkc : Initial Version
@@ -18,9 +18,9 @@ c             f is the total flux (convective and artificial viscosity) for the 
 c             equation.
 c         iv) There are several ways to impose the flux condition.  Right now we assume
 c             that viscous fluxes, f^a, satisfy f^a_{i-1/2} = -f^a_{i+1/2} when the artificial
-c             viscosity is computed in cnsdu. XXX NOTE THIS IS A CONDITION ON cnsdu22, cnsdu22a
-c             THAT IS CURRENTLY ONLY SATISFIED IN cnsdu22a.
-c          v) Given (iv) and the simple flux averagin in cnsdu,  we now have the condition
+c             viscosity is computed in cssidu. XXX NOTE THIS IS A CONDITION ON cssidu22, cssidu22a
+c             THAT IS CURRENTLY ONLY SATISFIED IN cssidu22a.
+c          v) Given (iv) and the simple flux averagin in cssidu,  we now have the condition
 c             \rho_{i-1}( a_{11}u + a_{12}v )_{i-1} ) = -\rho_{i+1}( a_{11}u + a_{12}v )_{i+1} ) .
 c             We can either extrapolate \rho and compute the velocity or vice versa.  Right
 c             now we choose to extrapolate \rho using a limited extrapolation starting with 3^{rd}
@@ -267,17 +267,17 @@ ckkc            rhs(axis) = -alpha*rhs(axis)
       return
       end
 
-      subroutine cnsNoSlipWallBCCoeff(nd,nd1a,nd1b,nd2a,nd2b,nd3a,
+      subroutine cssiNoSlipWallBCCoeff(nd,nd1a,nd1b,nd2a,nd2b,nd3a,
      &     nd3b,nd4a,nd4b,coeff,rhs,u,x,aj,rsxy,iprm,rprm,
      &     indexRange,bc,bd, bt, nbv, cfrhs)
 c
-c     no-slip wall, zero mass flux boundary conditions for icns
+c     no-slip wall, zero mass flux boundary conditions for icssi
 c
 c
 c     060312 kkc : Initial Version
 c
 c     This subroutine applies the no-slip wall boundary condition to the coefficient matrix
-c     and the right hand side vector for the implicit CNS method.
+c     and the right hand side vector for the implicit CSSI method.
 c
 c     Notes:
 c          i) we set velocity = 0 on the boundary
@@ -286,8 +286,8 @@ c             f is the total flux (convective and artificial viscosity) for the 
 c             equation.
 c         iv) There are several ways to impose the flux condition.  Right now we assume
 c             that viscous fluxes, f^a, satisfy f^a_{i-1/2} = -f^a_{i+1/2} when the artificial
-c             viscosity is computed. XXX NOTE THIS IS A CONDITION ON icns.
-c          v) Given (iv) and the simple flux averagin in cnsdu,  we now have the condition
+c             viscosity is computed. XXX NOTE THIS IS A CONDITION ON icssi.
+c          v) Given (iv) and the simple flux averagin in cssidu,  we now have the condition
 c             \rho_{i-1}( a_{11}u + a_{12}v )_{i-1} ) = -\rho_{i+1}( a_{11}u + a_{12}v )_{i+1} ) .
 c             We can either extrapolate \rho and compute the velocity or vice versa.  Right
 c             now we choose to extrapolate \rho using a limited extrapolation starting with 3^{rd}
@@ -371,10 +371,10 @@ c      integer m1,m2,m3,icf
       real exo1,exo2,exo3
       real rx,xyz
 
-      include 'icnssfdec.h'
+      include 'icssisfdec.h'
       rx(i1,i2,i3,e,c) = rsxy(i1,i2,i3,e-1,c-1)
       xyz(i1,i2,i3,c) = x(i1,i2,i3,c)
-      include 'icnssf.h'
+      include 'icssisf.h'
 
       exo1(i1,i2,i3,is1,is2,is3,c) = max( u(i1+is1,i2+is2,i3+is3,c),
      &                                u(i1+2*is1,i2+2*is2,i3+2*is3,c) )
@@ -698,7 +698,7 @@ c     if ( axis.eq.0 ) then
                norm(2) = norm(2)/
      &              sqrt(norm(1)*norm(1)+norm(2)*norm(2))
                
-c           i1,i2,i3 are set by the icnscf macros
+c           i1,i2,i3 are set by the icssicf macros
                i1 = i1g
                i2 = i2g 
                i3 = i3g

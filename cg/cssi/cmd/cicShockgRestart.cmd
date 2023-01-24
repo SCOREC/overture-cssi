@@ -1,14 +1,14 @@
 *
-*  cgcns command file: shock hitting a cylinder
+*  cgcssi command file: shock hitting a cylinder
 *     Solve the Euler equations with Godunov's method and AMR
 * 
 *      *** Demonstrate the reading of a restart file ***
 * 
 *  (1) First run the command file cicShockg.cmd saving the show file "cicShockg.show"
-*          cgcns cicShockg
+*          cgcssi cicShockg
 *  (2) Now run this command file -- it will read the initial conditions from the
 *      show file created in step 1
-*          cgcns cicShockgRestart
+*          cgcssi cicShockgRestart
 * 
 * Background colour:0 black
 * Foreground colour:0 white

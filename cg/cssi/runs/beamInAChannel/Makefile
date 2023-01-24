@@ -1,7 +1,7 @@
-# CgCns example -- shock hitting a deforming beam
+# CgCssi example -- shock hitting a deforming beam
 
 ogen        = $(Overture)/bin/ogen
-cgcns       = $(CGBUILDPREFIX)/cns/bin/cgcns
+cgcssi       = $(CGBUILDPREFIX)/cssi/bin/cgcssi
 beamGridDir = $(CG)/ins/runs/beamInAChannel
 
 
@@ -15,11 +15,11 @@ grids:
 
 # medium grid run
 shockBeam8:
-	$(cgcns) -noplot beamInAChannel -g=beamInAChannelGride8.order2.hdf -delta=10.0 -tf=2.0 -tp=.1 -show=beam8.show -go=go > beam8.out 
+	$(cgcssi) -noplot beamInAChannel -g=beamInAChannelGride8.order2.hdf -delta=10.0 -tf=2.0 -tp=.1 -show=beam8.show -go=go > beam8.out 
 
 # Fine grid run
 shockBeam32:
-	$(cgcns) -noplot beamInAChannel -g=beamInAChannelGride32.order2.hdf -delta=10.0 -tf=2.0 -tp=.1 -show=beam32.show -go=go > beam32.out 
+	$(cgcssi) -noplot beamInAChannel -g=beamInAChannelGride32.order2.hdf -delta=10.0 -tf=2.0 -tp=.1 -show=beam32.show -go=go > beam32.out 
 
 # # ------- two flat plates in 2D ------
 # #  Implicit time-stepping with sub-iterations for interface

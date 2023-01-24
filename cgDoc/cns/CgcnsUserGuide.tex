@@ -1,5 +1,5 @@
 %-----------------------------------------------------------------------
-% Cgcns : Compressible Navier Stokes Solver
+% Cgcssi : Compressible Navier Stokes Solver
 % 
 %           User Guide
 %
@@ -82,11 +82,11 @@
 
 \newcommand{\Overture}{{\bf Overture\ }}
 \newcommand{\insDocDir}{../ins}
-\newcommand{\cnsDocDir}{../cns}
+\newcommand{\cssiDocDir}{../cssi}
 
 % -------------  -------------------
-\newcommand{\Solver}{Cgcns}
-\newcommand{\solver}{cgcns}
+\newcommand{\Solver}{Cgcssi}
+\newcommand{\solver}{cgcssi}
 
 % *** See http://www.eng.cam.ac.uk/help/tpl/textprocessing/squeeze.html
 % By default, LaTeX doesn't like to fill more than 0.7 of a text page with tables and graphics, nor does it like too many figures per page. This behaviour can be changed by placing lines like the following before \begin{document}
@@ -121,7 +121,7 @@
 \vglue 5\baselineskip
 \begin{flushleft}
 {\Large
-{\bf Cgcns} User Guide: An Overture Solver for the Compressible Navier--Stokes Equations on Composite Overlapping Grids,\\
+{\bf Cgcssi} User Guide: An Overture Solver for the Compressible Navier--Stokes Equations on Composite Overlapping Grids,\\
 }
 \vspace{2\baselineskip}
 William D. Henshaw,\\
@@ -135,9 +135,9 @@ Troy, NY, USA, 12180.
 
 \noindent{\bf\large Abstract:}
 
-   Cgcns is a program that can be used to solve compressible fluid flow problems on overlapping
+   Cgcssi is a program that can be used to solve compressible fluid flow problems on overlapping
 grids. It is built upon the \Overture object-oriented framework. 
-Cgcns can be used to 
+Cgcssi can be used to 
 \begin{itemize}
   \item solve the compressible Navier--Stokes equations,
   \item solve the inviscid Euler equations with reactions, 
@@ -154,13 +154,13 @@ Cgcns can be used to
 \clearpage
 \section{Introduction}
 
-Cgcns is an compressible fluid flow solver for overlapping grids built upon
+Cgcssi is an compressible fluid flow solver for overlapping grids built upon
 the \Overture framework~\cite{Brown97},\cite{Henshaw96a},\cite{iscope97}.
 More information about
 {\bf Overture} can be found on the \Overture home page, {\tt http://www.llnl.gov/\-casc/\-Overture}.
 
 
-Cgcns can be used to 
+Cgcssi can be used to 
 \begin{itemize}
   \item solve the compressible Navier--Stokes equations,
   \item solve the inviscid Euler equations with reactions, 
@@ -168,14 +168,14 @@ Cgcns can be used to
   \item solve problems with adaptive mesh refinement.
 \end{itemize} 
 
-The Cgcns solver is found in the {\tt cns} directory in the {\bf cg} distribution and has
+The Cgcssi solver is found in the {\tt cssi} directory in the {\bf cg} distribution and has
 sub-directories
 \begin{description}
- \item[{\tt bin}] : contains the executable, cgcns. You may want to put this directory in your path.
+ \item[{\tt bin}] : contains the executable, cgcssi. You may want to put this directory in your path.
  \item[{\tt check}] : contains regression tests.
- \item[{\tt cmd}] : sample command files for running cgcns, see section (\ref{sec:demo}).
+ \item[{\tt cmd}] : sample command files for running cgcssi, see section (\ref{sec:demo}).
 %  \item[{\tt doc}] : dcoumentation.
- \item[{\tt lib}] : contains the Cgcns library, {\tt libCgcns.a}.
+ \item[{\tt lib}] : contains the Cgcssi library, {\tt libCgcssi.a}.
  \item[{\tt src}] : source files 
 \end{description}
 
@@ -183,21 +183,21 @@ sub-directories
 \noindent
 Other documents of interest that are available through the \Overture home page are
 \begin{itemize}
-\item The Cgcns Reference Guide~\cite{CgcnsReferenceManual} for detailed descriptions of the
+\item The Cgcssi Reference Guide~\cite{CgcssiReferenceManual} for detailed descriptions of the
       equations, algorithms and discretizations.
-\item The overlapping grid generator, {\tt Ogen}, \cite{OGEN}. Use this program to make grids for cgcns.
+\item The overlapping grid generator, {\tt Ogen}, \cite{OGEN}. Use this program to make grids for cgcssi.
 \item Mapping class documentation : {\ff mapping.tex}, \cite{MAPPINGS}. Many of the mappings that
    are used to create an overlapping grid are documented here. 
 \item Interactive plotting : {\ff PlotStuff.tex}, \cite{PLOTSTUFF}.
-\item {\tt Oges} overlapping grid equation solver, used by cgcns to solve implicit time stepping
+\item {\tt Oges} overlapping grid equation solver, used by cgcssi to solve implicit time stepping
     equations and the Poisson equation for the pressure, \cite{OGES}.
 \end{itemize}
 
 \subsection{Basic steps}\index{basic steps}
-Here are the basic steps to solve a problem with Cgcns.
+Here are the basic steps to solve a problem with Cgcssi.
 \begin{enumerate}
   \item Generate an overlapping grid with ogen. Make the grid with 2 ghost lines (this is the default).
-  \item Run cgcns (note lowercase 'c', found in the {\tt bin/cgcns} directory) 
+  \item Run cgcssi (note lowercase 'c', found in the {\tt bin/cgcssi} directory) 
         and choose the PDE you want to solve.
   \item Assign the boundary conditions and initial conditions.
   \item Choose the parameters for the PDE (viscosity, reaction rates, ...)
@@ -206,19 +206,19 @@ Here are the basic steps to solve a problem with Cgcns.
   \item When the code is finished you can look at the results (provided you saved a
      `show file') using {\tt plotStuff}.
 \end{enumerate}
-The commands that you enter to run cgcns can be saved in a \Index{command file} (by default
-they are saved in the file `cgcns.cmd'). This command file can be used to re-run
-the same problem by typing `cgcns file.cmd'. The command file can be edited to change parameters.
+The commands that you enter to run cgcssi can be saved in a \Index{command file} (by default
+they are saved in the file `cgcssi.cmd'). This command file can be used to re-run
+the same problem by typing `cgcssi file.cmd'. The command file can be edited to change parameters.
 
-To get started you can run one of the demo's that come with cgcns, these are 
+To get started you can run one of the demo's that come with cgcssi, these are 
 explained next in section~(\ref{sec:demo}).
 
-Papers that describe some of the results obtained with Cgcns include~\cite{pog2008,mog2006,reactamr2003b}. 
+Papers that describe some of the results obtained with Cgcssi include~\cite{pog2008,mog2006,reactamr2003b}. 
   
 \begin{figure}[hbt]
 \begin{center}
   \includegraphics[width=.95\linewidth]{\insDocDir/cginsScreen} \\
-  \caption{Snapshot of cgins (cgcns is similar) showing the run time dialog menu.}
+  \caption{Snapshot of cgins (cgcssi is similar) showing the run time dialog menu.}
   \end{center} 
   \label{fig:runTimeScreen}
 \end{figure}
@@ -232,7 +232,7 @@ Papers that describe some of the results obtained with Cgcns include~\cite{pog20
 
 \clearpage
 % ------------------------------------------------------------------------------------------------
-\section{Sample command files for running cgcns} \label{sec:demo}
+\section{Sample command files for running cgcssi} \label{sec:demo}
 
 Command files are supported throughout the Overture. They are files
 that contain lists of commands. These commands can initially be saved
@@ -241,19 +241,19 @@ can then be used to re-run the job. Command files can be edited and
 changed.
 
 In this section we present a number of command files that can be used
-to run cgcns. See the file {\tt cg/cns/cmd/Readme} for a description of
+to run cgcssi. See the file {\tt cg/cssi/cmd/Readme} for a description of
 the command files. 
 
 % ------------------------------------------------------------------------------------------------
 \subsection{Running a command file}
 
-Given a \Index{command file} for cgcns such as {\tt cylinder.cmd}, found in {\tt
-cmd/cylinder.cmd}, one can type `{\tt cgcns cylinder.cmd}' to run this command
-file . You can also just type `{\tt cgcns cylinder}, leaving off the {\tt
-.cmd} suffix. Typing `{\tt cgcns noplot cylinder}' will run without
+Given a \Index{command file} for cgcssi such as {\tt cylinder.cmd}, found in {\tt
+cmd/cylinder.cmd}, one can type `{\tt cgcssi cylinder.cmd}' to run this command
+file . You can also just type `{\tt cgcssi cylinder}, leaving off the {\tt
+.cmd} suffix. Typing `{\tt cgcssi noplot cylinder}' will run without
 interactive graphics (unless the command file turns on graphics). Note that here
 I assume that the {\tt bin} directory is in your path so that the {\tt
-cgcns} command is found when you type it's name. The Cgcns sample
+cgcssi} command is found when you type it's name. The Cgcssi sample
 command files will automatically look for an overlapping grid in the {\tt
 Overture/sampleGrids} directory, unless the grid is first found in the location
 specified in the command file.
@@ -269,8 +269,8 @@ Many of the command files such as the stirring-stick problem, {\tt stir.cmd},
 can take command line arguments.  For example, here
 are two command lines that run a problem with different grids and parameters:
 \begin{verbatim}
-  cgcns stir -g=stir.hdf -nu=.05 -tf=1. -tp=.025 
-  cgcns stir -g=stir2.hdf -nu=.01 -tf=1. -tp=.002 -rate=8.
+  cgcssi stir -g=stir.hdf -nu=.05 -tf=1. -tp=.025 
+  cgcssi stir -g=stir2.hdf -nu=.01 -tf=1. -tp=.002 -rate=8.
 \end{verbatim}
 See the comments at the top of {\tt stir.cmd} for further explanation and examples.
 
@@ -281,10 +281,10 @@ See the comments at the top of {\tt stir.cmd} for further explanation and exampl
 \clearpage
 \subsection{Compressible flow past two offset cylinders}\index{compressible flow!two bumps}
 
-This example demonstrates the method CNSCAD, solution of the compressible Navier-Stokes equations
+This example demonstrates the method CSSICAD, solution of the compressible Navier-Stokes equations
 using a conservative discretization with artificial diffusion.
 
-The command file {\tt cg/cns/twoBump.cmd} can be used with \Solver to compute the
+The command file {\tt cg/cssi/twoBump.cmd} can be used with \Solver to compute the
 two-dimensional flow of a shock traveling past two offset cylinders. 
 This example uses (a finer version) of the overlapping grid {\tt Overture/\-sampleGrids/\-twoBump.hdf}  generated
 using the command file {\tt Overture/\-sampleGrids/\-twoBump.cmd}.
@@ -299,7 +299,7 @@ are solving the inviscid Euler equations.
 \begin{tikzpicture}[scale=1]
   \useasboundingbox (0,.5) rectangle (10.,6.25);  % set the bounding box (so we have less surrounding white space)
 %
-  \draw ( 0.0,0.0) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{\cnsDocDir/fig/twoBump4}{\figWidth}};
+  \draw ( 0.0,0.0) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{\cssiDocDir/fig/twoBump4}{\figWidth}};
 %
  % \draw (current bounding box.south west) rectangle (current bounding box.north east);
 % grid:
@@ -317,7 +317,7 @@ are solving the inviscid Euler equations.
 % \begin{center}
 %   % \epsfig{file=\obFigures/ob.ins.cylinder.sl0.ps,width=.475\linewidth}  
 %   % \epsfig{file=\obFigures/ob.ins.cylinder.sl50.ps,width=.475\linewidth} 
-%   \includegraphics[width=.475\linewidth]{\cnsDocDir/fig/twoBump4}
+%   \includegraphics[width=.475\linewidth]{\cssiDocDir/fig/twoBump4}
 % \caption{Solution of the compressible Euler equations: an initially plane shock, traveling from left to right,
 %     hits two offset cylinders.}
 %   \end{center} 
@@ -336,7 +336,7 @@ are solving the inviscid Euler equations.
 % \clearpage
 % \subsection{Reactive-Euler equations of a detonation in an ellipse}\index{reactive-euler}\index{Godunov}
 % 
-% This example demonstrates the method CNSGD, solution of the compressible reactive Euler equations
+% This example demonstrates the method CSSIGD, solution of the compressible reactive Euler equations
 % using a conservative Godunov method (written by Don Schwendeman)
 % 
 % \begin{figure}[hb]
@@ -357,7 +357,7 @@ Figure~\ref{fig:airfoilCompressible} shows results from computing inviscid and v
 flow past an airfoil in a channel. The solution is shown at time $t=10$,  starting
 from an impulsive start. The Mach number of the incoming flow is $M=.8$. 
 For the viscous computation, the Reynold's number based on the chord length
-is around $10^5$. See {\tt OverBlown/\-cns/\-airfoil.cmd}
+is around $10^5$. See {\tt OverBlown/\-cssi/\-airfoil.cmd}
 
 Figure~\ref{fig:airfoilCompressibleAMR} shows results using adaptive mesh refinement.
 
@@ -368,7 +368,7 @@ Figure~\ref{fig:airfoilCompressibleAMR} shows results using adaptive mesh refine
 \clearpage
 \subsection{Solving the Euler Equations with AMR}\index{adaptive mesh refinement}
 
-This example demonstrates the use adaptive mesh refinement with \Solver using {\tt OverBlown/cns/cicShockg.cmd}.
+This example demonstrates the use adaptive mesh refinement with \Solver using {\tt OverBlown/cssi/cicShockg.cmd}.
 We solve the compressible Euler equations with a conservative Godunov method (written by Don Schwendeman).
 
 
@@ -411,7 +411,7 @@ We solve the compressible Euler equations with a conservative Godunov method (wr
 \index{adaptive mesh refinement}\index{detonation}
 
 In this example we solve the reactive Euler equations with AMR using
-{\tt cg/cns/circleDetonation.check.cmd}. The chemistry is defined by a simple one-step
+{\tt cg/cssi/circleDetonation.check.cmd}. The chemistry is defined by a simple one-step
 reaction. An initial temperature profile
 is generated using an option from the user defined initial conditions, file {\tt UserDefinedInitialConditions4.C}.
 A detonation forms at the hot spot, expands and reflects off the boundaries.
@@ -517,12 +517,12 @@ file and make make minor changes.
 
 
 % ----------------------------------------------------------------------------------------------------
-\subsection{Cgcns Setup menu}\label{sec:setupDialog}\index{setup dialog}\index{PDE!choices}
+\subsection{Cgcssi Setup menu}\label{sec:setupDialog}\index{setup dialog}\index{PDE!choices}
 
-The {\em  Cgcns Setup} dialog appears after {\tt cgcns} is run and a grid is chosen.
+The {\em  Cgcssi Setup} dialog appears after {\tt cgcssi} is run and a grid is chosen.
 At this point one specifies which PDE to solve.
 
-% See cg/cns/src/setupPde.C --
+% See cg/cssi/src/setupPde.C --
 %   aString pdeCommands[] =  {"compressible Navier Stokes (Jameson)",
 % 			    "compressible Navier Stokes (Godunov)",
 % 			    "compressible Navier Stokes (multi-component)",
@@ -636,7 +636,7 @@ At this point one specifies which PDE to solve.
 Here is a description of the {\em Compressible NS parameters Dialog} which defines
 options that affect the equations being solved.
 
-% See cns/src/CnsParameters.C
+% See cssi/src/CssiParameters.C
 % "exact Riemann solver","Roe Riemann solver","future Riemann solver","HLL Riemann solver",
 
 \noindent The {\bf Riemann Solver} options are
@@ -810,7 +810,7 @@ for predictor corrector methods:
 
 % =======================================================================================================
 
-\section{Hints for running cgcns}\index{hints for running}
+\section{Hints for running cgcssi}\index{hints for running}
 
 FINISH ME
 
@@ -821,11 +821,11 @@ FINISH ME
       see if it looks correct.
   \item The rule of thumb for choosing the viscosity $\nu$ is that if the velocities
     are order 1 and the domain is order 1 then $\nu > h_{\rm max}^2$, where 
-    $h_{\rm max}$ is the maximum grid spacing as reported by cgcns when it runs.
+    $h_{\rm max}$ is the maximum grid spacing as reported by cgcssi when it runs.
     This comes from the minimum scale result as discussed in section~(\ref{AD}).
   \item If you want to use as small a viscosity as possible then set $\nu=0$
     and use \Index{artificial viscosity} as discussed in sections~(\ref{sec:pdeOptions},\ref{AD}).
-  \item If cgcns blows up it could be the time step is not computed correctly. Reduce
+  \item If cgcssi blows up it could be the time step is not computed correctly. Reduce
    the cfl parameter (default is .9) to a value like .5 or .25 to see if this is the problem.
    There are known problems with the time step determination for implicit time stepping and
    a large viscosity (relative to the grid spacing).
@@ -852,10 +852,10 @@ FINISH ME
 
 \bogus{
 % -----------------------------------------------------------------------------------------------------
-\subsection{Using PETSc and cgcns}\index{PETSc}
+\subsection{Using PETSc and cgcssi}\index{PETSc}
 
   PETSc, the Portable Extensible Toolkit for Scientific computations\cite{petsc-manual},
-can be used in cgcns to solve implicit systems. 
+can be used in cgcssi to solve implicit systems. 
 
 To use PETSc you should 
 \begin{enumerate}

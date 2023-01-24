@@ -28,7 +28,7 @@ Changes:
    o 110713 - fixed a bug with AMR and moving grids. In rare cases, values on exposed points may
               not have been assigned properly. 
    o 110727 - fixed the moving grid generator so the vertex array is no longer built on Cartesian grids.
-              This will save memory for cgcns and cgins with moving grids.
+              This will save memory for cgcssi and cgins with moving grids.
    o 110731 - fixed a bug in the SweepMapping in the way it computes the normal to the sweep surface.
               If you have previously made a grid with the SweepMapping and it
               no longer works you may need to set the 'orientation' to be -1 to change the direction
@@ -39,7 +39,7 @@ Changes:
    o 110817 - there is now an option in the grid plotter to save the composite grid to a file. This
               grid can then, for example, be read back into ogen and changed or regenerated.
    o 110828 - it should now be possible to use a hyperbolic grid (or DataPointMapping) for parallel
-              computations with cgins or cgcns. Previously I recommended that these mappings be
+              computations with cgins or cgcssi. Previously I recommended that these mappings be
               converted to Nurbs. The Nurbs mapping currently will use more memory in parallel
               as all control points are duplicated on each processor. 
    o 110828 - fixed a bug in the parallel line smoother for Ogmg.

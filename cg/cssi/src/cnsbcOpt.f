@@ -1,3 +1,3 @@
-! This file automatically generated from cnsbcOpt.bf with bpp.
+! This file automatically generated from cssibcOpt.bf with bpp.
 
 c ===============================================================================================

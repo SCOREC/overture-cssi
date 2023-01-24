@@ -1,16 +1,16 @@
 *
-* CGCNS file: shock hitting a (static) beam
+* CGCSSI file: shock hitting a (static) beam
 * 
 * Usage:
-*    cgcns [-noplot] beam_in_channel_static_run.cmd -g=<grid> -tf=<final time> ...
+*    cgcssi [-noplot] beam_in_channel_static_run.cmd -g=<grid> -tf=<final time> ...
 *          -tp=<tPlot>  
 *
 * Examples:
-*     cgcns beam_in_channel_static_run.cmd -g="beam_in_channel_static_stepe2.hdf" -tf=1. -tp=.1
+*     cgcssi beam_in_channel_static_run.cmd -g="beam_in_channel_static_stepe2.hdf" -tf=1. -tp=.1
 *
 *
 * --- set default values for parameters ---
-$grid="../grid/beam_in_channel_statice2.hdf"; $show = " "; $backGround="square"; $cnsVariation="godunov"; 
+$grid="../grid/beam_in_channel_statice2.hdf"; $show = " "; $backGround="square"; $cssiVariation="godunov"; 
 $ratio=2;  $nrl=2;  # refinement ratio and number of refinement levels
 $tFinal=3.; $tPlot=.1; $cfl=1.; $debug=1; $tol=.2; $x0=.5; $dtMax=1.e10; $nbz=2; 
 $xStep="x=3e-2"; $go="halt"; 
@@ -18,11 +18,11 @@ $xStep="x=3e-2"; $go="halt";
 * ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"l=i"=> \$nrl,"r=i"=> \$ratio, "tf=f"=>\$tFinal,"debug=i"=> \$debug, \
             "tp=f"=>\$tPlot, "xStep=s"=>\$xStep, "bg=s"=>\$backGround,"show=s"=>\$show,"go=s"=>\$go,\
-            "cnsVariation=s"=>\$cnsVariation );
+            "cssiVariation=s"=>\$cssiVariation );
 * -------------------------------------------------------------------------------------------------
-if( $cnsVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
-if( $cnsVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
-if( $cnsVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
+if( $cssiVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
+if( $cssiVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
+if( $cssiVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }

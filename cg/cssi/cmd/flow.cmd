@@ -1,15 +1,15 @@
 *
-*  cgcns command file: shock moving in a domain
+*  cgcssi command file: shock moving in a domain
 *     Solve the Euler equations with Godunov's method and AMR
 * 
 * Usage:
-*    cgcns [-noplot] flow.cmd -g=<grid> -l=<levels> -r=<ratio> -tf=<final time> ...
+*    cgcssi [-noplot] flow.cmd -g=<grid> -l=<levels> -r=<ratio> -tf=<final time> ...
 *          -tp=<tPlot> -xs=<xstep> -show=<show file> 
 *
 * Examples:
-*  cgcns flow.cmd -g=lgridSmall2e.order2.hdf -l=2 -r=2 -tf=.35 -tp=.05 -xStep="x=-.25" -show="flow.show"
-*  mpirun -np 2 $cgcnsp noplot flow.cmd -g=lgridSmall2e.order2.hdf -l=2 -r=2 -tf=.35 -tp=.05 -xStep="x=-.25" -show="flow.show" >! flow.out &
-*  srun -N1 -n2 -ppdebug $cgcnsp flow.cmd -g=lgridSmall2e.order2.hdf -l=2 -r=2 -tf=.35 -tp=.05 -xStep="x=-.25"  
+*  cgcssi flow.cmd -g=lgridSmall2e.order2.hdf -l=2 -r=2 -tf=.35 -tp=.05 -xStep="x=-.25" -show="flow.show"
+*  mpirun -np 2 $cgcssip noplot flow.cmd -g=lgridSmall2e.order2.hdf -l=2 -r=2 -tf=.35 -tp=.05 -xStep="x=-.25" -show="flow.show" >! flow.out &
+*  srun -N1 -n2 -ppdebug $cgcssip flow.cmd -g=lgridSmall2e.order2.hdf -l=2 -r=2 -tf=.35 -tp=.05 -xStep="x=-.25"  
 * 
 * --- set default values for parameters ---
 $grid="lgridSmall2e.order2.hdf"; $show = " "; 

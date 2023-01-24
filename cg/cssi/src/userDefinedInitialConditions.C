@@ -1,4 +1,4 @@
-#include "Cgcns.h"
+#include "Cgcssi.h"
 #include "ShowFileReader.h"
 #include "DataPointMapping.h"
 #include "ShowFileReader.h"
@@ -76,7 +76,7 @@ initialConditionsFromAProfile(const aString & fileName,
                               GenericGraphicsInterface & gi,
                               real rpar[]  );
 
-int Cgcns::
+int Cgcssi::
 userDefinedInitialConditions(CompositeGrid & cg, realCompositeGridFunction & u )
 //==============================================================================================
 /// \brief
@@ -3609,7 +3609,7 @@ setupUserDefinedInitialConditions()
 
 //! This routine is called when DomainSolver is finished with the initial conditions and can 
 //!  be used to clean up memory.
-void Cgcns::
+void Cgcssi::
 userDefinedInitialConditionsCleanup()
 {
   if( parameters.dbase.get<int >("myid")==0 ) 

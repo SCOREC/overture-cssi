@@ -176,7 +176,7 @@ c
 #endMacro
 
 
-      subroutine cnsFarFieldBC(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
+      subroutine cssiFarFieldBC(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
           ipar,rpar, u, u2,  gv, gv2, gtt, mask, x,rsxy, bc, indexRange, exact, uKnown, ierr )         
 c========================================================================
 c
@@ -292,7 +292,7 @@ c.......local
       real fpr1,fpr2,fpr3,fpr4, fps1,fps2,fps3,fps4
       real qse,qsse,qxse,qyse
       real rse,rsse,rxse,ryse,rrte,uxre,vyre,divure,pxxe,pxye,pyye
-      real psse,pste,pe,pre,cnSmooth
+      real psse,pste,pe,pre,cssimooth
       integer it3, nitStage3
 
       integer it,nit,numberOfComponents,ncm1,kv(0:2)
@@ -382,7 +382,7 @@ c .............. end statement functions
 
 
       ierr=0
-      ! write(*,*) 'Inside cnsFarFieldBC'
+      ! write(*,*) 'Inside cssiFarFieldBC'
 
       rc                =ipar(0)
       uc                =ipar(1)
@@ -444,7 +444,7 @@ c .............. end statement functions
         ! *********************************************************************
 
         if( gridIsMoving.ne.0 )then
-          write(*,'("cnsFarFieldBC:ERROR: gridIsMoving not implemented yet for rectangular")')
+          write(*,'("cssiFarFieldBC:ERROR: gridIsMoving not implemented yet for rectangular")')
           ! '
           stop 6642
         end if
@@ -520,19 +520,19 @@ c .............. end statement functions
           ks2=2*is2
 
           if( gridIsMoving.eq.1 )then
-            write(*,'(" cnsFarField: --> moving grids")')
+            write(*,'(" cssiFarField: --> moving grids")')
             ! '
           endif
 
           if( debug.gt.1 ) then
-            write(*,'(" cnsFarField: side,axis=",2i2)') side,axis
+            write(*,'(" cssiFarField: side,axis=",2i2)') side,axis
           end if
           if( dt.lt.0. )then
-            write(*,'(" ***cnsFarField:WARNING: dt<0 for t=",e12.3)') t
+            write(*,'(" ***cssiFarField:WARNING: dt<0 for t=",e12.3)') t
             dt=0.
           else
             if( debug.gt.1 ) then
-              write(*,'(" ***cnsFarField:INFO: t,dt=",2(e12.3,1x))') t,dt
+              write(*,'(" ***cssiFarField:INFO: t,dt=",2(e12.3,1x))') t,dt
             end if
           end if
 
@@ -600,7 +600,7 @@ c .............. end statement functions
               c = sqrt(gamma*u(i1,i2,i3,tc))
               if( abs(un).ge.c )then
                 ! supersonic outflow -- extrap all variables.
-!      write(*,'("cnsFarField:side,axis,i1,i2,un,c --> supersonic outflow",4i3,2f7.3)')\
+!      write(*,'("cssiFarField:side,axis,i1,i2,un,c --> supersonic outflow",4i3,2f7.3)')\
 !              side,axis,i1,i2,un,c
                ! '
                 do m=0,ncm1
@@ -687,7 +687,7 @@ c .............. end statement functions
 
       else
 
-        write(*,'("cnsFarFieldBC2:ERROR:Unknown bcOption=",i5)') bcOption
+        write(*,'("cssiFarFieldBC2:ERROR:Unknown bcOption=",i5)') bcOption
         stop 17942
 
       end if

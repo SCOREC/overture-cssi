@@ -1,35 +1,35 @@
 *
-* cgcns command file for a shock hitting a sphere (axisymmetric)
+* cgcssi command file for a shock hitting a sphere (axisymmetric)
 * 
 * Usage: 
-*    cgcns [noplot] axisymmetricSphere -g=<name> -l=<levels> -r=[ratio] -tf=<tFinal> -tp=<tPlot> -x0=<num> -show=<name>
+*    cgcssi [noplot] axisymmetricSphere -g=<name> -l=<levels> -r=[ratio] -tf=<tFinal> -tp=<tPlot> -x0=<num> -show=<name>
 *
 * Examples:
 *
-*   cgcns noplot axisymmetricSphere -g=oneBump2e.order2.hdf -tf=.2 -tp=.1 -l=1 -show="oneBump.show"
+*   cgcssi noplot axisymmetricSphere -g=oneBump2e.order2.hdf -tf=.2 -tp=.1 -l=1 -show="oneBump.show"
 *  
 * Parallel Examples
 * 
-*  mpirun -np 1 $cgcnsp axisymmetricSphere -g=oneBump2e.order2.hdf -tp=.1 -show="oneBump.show"
+*  mpirun -np 1 $cgcssip axisymmetricSphere -g=oneBump2e.order2.hdf -tp=.1 -show="oneBump.show"
 * 
-*  srun -N1 -n4 -ppdebug $cgcnsp noplot axisymmetricSphere -g=oneBump2e.order2.hdf -l=2 -r=2 -tf=1.25 -tp=.25 -x0=-1. -show=oneBump2l2r2.show >! oneBump2l2r2.N1.n4.out &
+*  srun -N1 -n4 -ppdebug $cgcssip noplot axisymmetricSphere -g=oneBump2e.order2.hdf -l=2 -r=2 -tf=1.25 -tp=.25 -x0=-1. -show=oneBump2l2r2.show >! oneBump2l2r2.N1.n4.out &
 *
-*  srun -N1 -n8 -ppdebug $cgcnsp noplot axisymmetricSphere -g=oneBump2e.order2.hdf -l=2 -r=4 -tf=1.8 -tp=.1 -x0=-1.5 -show=oneBump2l2r4.show >! oneBump2l2r4.N1.n8.out &
+*  srun -N1 -n8 -ppdebug $cgcssip noplot axisymmetricSphere -g=oneBump2e.order2.hdf -l=2 -r=4 -tf=1.8 -tp=.1 -x0=-1.5 -show=oneBump2l2r4.show >! oneBump2l2r4.N1.n8.out &
 *
-* srun -N2 -n16 -ppdebug $cgcnsp noplot axisymmetricSphere -g=oneBump2e.order2.hdf -l=2 -r=4 -tf=1.8 -tp=.2 -x0=-1.5 -show=oneBump2l2r4.show > ! oneBump2l2r4.N2.n16.out & 
-* srun -N4 -n16 -ppdebug $cgcnsp noplot axisymmetricSphere -g=oneBump2e.order2.hdf -l=2 -r=4 -tf=1.8 -tp=.2 -x0=-1.5 -show=oneBump2l2r4.show > ! oneBump2l2r4.N4.n16.out & 
-* srun -N4 -n32 -ppdebug $cgcnsp noplot axisymmetricSphere -g=oneBump2e.order2.hdf -l=2 -r=4 -tf=1.8 -tp=.2 -x0=-1.5 -show=oneBump2l2r4.show > ! oneBump2l2r4.N4.n32.out & 
-* srun -N4 -n32 -ppdebug $cgcnsp noplot axisymmetricSphere -g=oneBump2e.order2.hdf -l=3 -r=4 -tf=1.8 -tp=.1 -x0=-1.5 -show=oneBump2l3r4.show > ! oneBump2l3r4.N4.n32.out & 
+* srun -N2 -n16 -ppdebug $cgcssip noplot axisymmetricSphere -g=oneBump2e.order2.hdf -l=2 -r=4 -tf=1.8 -tp=.2 -x0=-1.5 -show=oneBump2l2r4.show > ! oneBump2l2r4.N2.n16.out & 
+* srun -N4 -n16 -ppdebug $cgcssip noplot axisymmetricSphere -g=oneBump2e.order2.hdf -l=2 -r=4 -tf=1.8 -tp=.2 -x0=-1.5 -show=oneBump2l2r4.show > ! oneBump2l2r4.N4.n16.out & 
+* srun -N4 -n32 -ppdebug $cgcssip noplot axisymmetricSphere -g=oneBump2e.order2.hdf -l=2 -r=4 -tf=1.8 -tp=.2 -x0=-1.5 -show=oneBump2l2r4.show > ! oneBump2l2r4.N4.n32.out & 
+* srun -N4 -n32 -ppdebug $cgcssip noplot axisymmetricSphere -g=oneBump2e.order2.hdf -l=3 -r=4 -tf=1.8 -tp=.1 -x0=-1.5 -show=oneBump2l3r4.show > ! oneBump2l3r4.N4.n32.out & 
 *
-* srun -N4 -n8 -ppdebug $cgcnsp noplot axisymmetricSphere -g=oneBump2e.order2.hdf -l=2 -r=4 -tf=1.8 -tp=.1 -x0=-1.5 -show=oneBump2l2r4.show > ! oneBump2l2r4.N4.n8.out &
+* srun -N4 -n8 -ppdebug $cgcssip noplot axisymmetricSphere -g=oneBump2e.order2.hdf -l=2 -r=4 -tf=1.8 -tp=.1 -x0=-1.5 -show=oneBump2l2r4.show > ! oneBump2l2r4.N4.n8.out &
 *
-* srun -N1 -n2 -ppdebug $cgcnsp noplot -writeCollective axisymmetricSphere -g=oneBump2e.order2.hdf -l=2 -r=4 -tf=1.8 -tp=.2 -x0=-1.5 -show=oneBump2l2r4.show > ! oneBump2l2r4.N1.n2.out & 
+* srun -N1 -n2 -ppdebug $cgcssip noplot -writeCollective axisymmetricSphere -g=oneBump2e.order2.hdf -l=2 -r=4 -tf=1.8 -tp=.2 -x0=-1.5 -show=oneBump2l2r4.show > ! oneBump2l2r4.N1.n2.out & 
 * 
-* mpirun -np 2 -machinefile hostfile $cgcnsp noplot oneBumpRun
+* mpirun -np 2 -machinefile hostfile $cgcssip noplot oneBumpRun
 * 
-* srun -N1 -n4 -ppdebug $cgcnsp noplot axisymmetricSphere >! oneBump4l2r2.N1n4.out 
-* totalview srun -a -N1 -n4 -ppdebug $cgcnsp noplot axisymmetricSphere 
-* srun -N1 -n8 -ppdebug memcheck_all $cgcnsp noplot axisymmetricSphere 
+* srun -N1 -n4 -ppdebug $cgcssip noplot axisymmetricSphere >! oneBump4l2r2.N1n4.out 
+* totalview srun -a -N1 -n4 -ppdebug $cgcssip noplot axisymmetricSphere 
+* srun -N1 -n8 -ppdebug memcheck_all $cgcssip noplot axisymmetricSphere 
 *
 * --- set default values for parameters ---
 $show = " ";
@@ -47,7 +47,7 @@ GetOptions( "g=s"=>\$grid,"l=i"=> \$nrl,"r=i"=> \$ratio, "tf=f"=>\$tFinal, \
 *
 * $grid ="oneBump1e.order2.hdf"; $tFinal=1.4; $tPlot=.1; $x0=-1.; $amr=$amrOn; $ratio=4; $nrl=2;  $show = " ";
 * 
-* totalview srun -a -N2 -n16 -ppdebug $cgcnsp noplot axisymmetricSphere >! oneBump2l3r4.out &
+* totalview srun -a -N2 -n16 -ppdebug $cgcssip noplot axisymmetricSphere >! oneBump2l3r4.out &
 * $grid ="oneBump2e.order2.hdf"; $tFinal=1.2; $tPlot=.1; $x0=-1.; $amr=$amrOn; $ratio=4; $nrl=3;  $show = " ";
 * $grid ="oneBump2e.order2.hdf"; $tFinal=1.4; $tPlot=.1; $x0=-1.; $amr=$amrOn; $ratio=4; $nrl=2;  $show = " ";
 *
@@ -57,13 +57,13 @@ GetOptions( "g=s"=>\$grid,"l=i"=> \$nrl,"r=i"=> \$ratio, "tf=f"=>\$tFinal, \
 * $grid ="oneBump4e.order2.hdf"; $tFinal=1.8; $tPlot=.1; $x0=-1.5; $amr=$amrOn; $ratio=2; $nrl=2;  $show = "oneBump4l2r2.show";
 * $grid ="oneBump4e.order2.hdf"; $tFinal=1.8; $tPlot=.1; $x0=-1.5; $amr=$amrOn; $ratio=4; $nrl=2;  $show = " ";
 * $grid ="oneBump4e.order2.hdf"; $tFinal=1.8; $tPlot=.1; $x0=-1.; $amr=$amrOn; $ratio=4; $nrl=2;  $show = " ";
-* totalview srun -a -N1 -n8 -ppdebug $cgcnsp noplot axisymmetricSphere 
-*           srun -N2 -n16 -ppdebug $cgcnsp noplot axisymmetricSphere >! oneBump4l2r4.out &
+* totalview srun -a -N1 -n8 -ppdebug $cgcssip noplot axisymmetricSphere 
+*           srun -N2 -n16 -ppdebug $cgcssip noplot axisymmetricSphere >! oneBump4l2r4.out &
 * $grid ="oneBump4e.order2.hdf"; $tFinal=1.4; $tPlot=.1; $x0=-1.; $amr=$amrOn; $ratio=4; $nrl=2;  $show = " ";
 * $grid ="oneBump4e.order2.hdf"; $tFinal=1.4; $tPlot=.1; $x0=-1.; $amr=$amrOn; $ratio=2; $nrl=2;  $show = " ";
-*           srun -N2 -n16 -ppdebug $cgcnsp noplot axisymmetricSphere >! oneBump4l3r4.out &
+*           srun -N2 -n16 -ppdebug $cgcssip noplot axisymmetricSphere >! oneBump4l3r4.out &
 * $grid ="oneBump4e.order2.hdf"; $tFinal=1.8; $tPlot=.1; $x0=-1.5; $amr=$amrOn; $ratio=4; $nrl=3;  $show = " ";
-*    srun -N2 -n16 -ppdebug $cgcnsp noplot axisymmetricSphere >! oneBump4l2r4.out &
+*    srun -N2 -n16 -ppdebug $cgcssip noplot axisymmetricSphere >! oneBump4l2r4.out &
 * $grid ="oneBump4e.order2.hdf"; $tFinal=1.5; $tPlot=.5; $x0=-1.5; $amr=$amrOn; $ratio=4; $nrl=2;  $show = "oneBump4l2r4.show";
 *
 $grid

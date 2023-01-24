@@ -97,7 +97,7 @@
 % 
 % \begin{abstract}
 %    The {\tt MatrixMotion} C++ class can be used to define the motions of rigid bodies for use with the
-% Cg partial differentoal equation solvers such as Cgins for incompressible flow and Cgcns for compressible flow. 
+% Cg partial differentoal equation solvers such as Cgins for incompressible flow and Cgcssi for compressible flow. 
 % The MatrixMotion class allows one to rotate an object around an arbitray line in space 
 % or to translate along a line. These motions can be composed together and thus one could
 % have a rotation followed by a translation followed by another rotation. The MatrixMotion
@@ -113,7 +113,7 @@
 
 
    The {\tt MatrixMotion} C++ class can be used to define the motions of rigid bodies for use with the
-CG partial differential equation solvers such as Cgins for incompressible flow and Cgcns for compressible flow. 
+CG partial differential equation solvers such as Cgins for incompressible flow and Cgcssi for compressible flow. 
 The MatrixMotion class allows one to rotate an object around an arbitray line in space 
 or to translate along a line. These motions can be composed together and thus one could
 have a rotation followed by a translation followed by another rotation. The MatrixMotion
@@ -236,7 +236,7 @@ can be used to build and test rigid motions. One can
   \item Compose multiple MatrixMotion's to build more complicated motions.
   \item Plot the motions of the bodies over time.
   \item Check the time derivatives of the motions by finite differences. 
-  \item Evaluate the grid velocity and grid acceleration (as needed by {\tt Cgins} or {\tt Cgcns})
+  \item Evaluate the grid velocity and grid acceleration (as needed by {\tt Cgins} or {\tt Cgcssi})
         and check the accuracy of the velocity and acceleration by finite differencing the grid positions
         in time. 
 \end{itemize}

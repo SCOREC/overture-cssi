@@ -1,5 +1,5 @@
-#include "Cgcns.h"
-#include "CnsParameters.h"
+#include "Cgcssi.h"
+#include "CssiParameters.h"
 #include "Interface.h"  
 #include "ParallelUtility.h"
 
@@ -14,7 +14,7 @@
 ///                     chosen by bit-wise or of the different options
 /// \note: this function should be over-loaded.
 // ===================================================================================
-int Cgcns::
+int Cgcssi::
 getInterfaceDataOptions( GridFaceDescriptor & info, int & interfaceDataOptions ) const
 {
   int numberOfItems=0;
@@ -26,9 +26,9 @@ getInterfaceDataOptions( GridFaceDescriptor & info, int & interfaceDataOptions )
   if( grid<0 || grid>interfaceType.getBound(2) ||
       side<0 || side>1 || axis<0 || axis>interfaceType.getBound(1) )
   {
-    printP("Cgcns::getInterfaceDataOptions:ERROR: invalid values: (grid,side,axis)=(%i,%i,%i)\n",
+    printP("Cgcssi::getInterfaceDataOptions:ERROR: invalid values: (grid,side,axis)=(%i,%i,%i)\n",
 	   grid,side,axis);
-    OV_ABORT("Cgcns::getInterfaceDataOptions:ERROR");
+    OV_ABORT("Cgcssi::getInterfaceDataOptions:ERROR");
   }
   if( interfaceType(side,axis,grid)==Parameters::heatFluxInterface )
   {
@@ -39,7 +39,7 @@ getInterfaceDataOptions( GridFaceDescriptor & info, int & interfaceDataOptions )
   {
     const bool projectInterface = parameters.dbase.get<bool>("projectInterface");
     if( debug() & 2 )
-      printP("*** Cgcns:getInterfaceDataOptions: projectInterface = %i ***\n",projectInterface);
+      printP("*** Cgcssi:getInterfaceDataOptions: projectInterface = %i ***\n",projectInterface);
 
     if( !projectInterface )
     {
@@ -70,9 +70,9 @@ getInterfaceDataOptions( GridFaceDescriptor & info, int & interfaceDataOptions )
   }
   else
   {
-    printP("Cgcns::getInterfaceDataOptions:ERROR: interfaceType(grid=%i,side=%i,axis=%i)=%i\n",
+    printP("Cgcssi::getInterfaceDataOptions:ERROR: interfaceType(grid=%i,side=%i,axis=%i)=%i\n",
 	   grid,side,axis,interfaceType(side,axis,grid));
-    OV_ABORT("Cgcns::getInterfaceDataOptions:ERROR");
+    OV_ABORT("Cgcssi::getInterfaceDataOptions:ERROR");
   }
   
   return numberOfItems;
@@ -110,7 +110,7 @@ enum UserDefinedKnownSolutionEnum
 ///    new way to save a time-history when interfaceCommunicationMode==requestInterfaceDataWhenNeeded
 // ==========================================================================================================
 int
-Cgcns::
+Cgcssi::
 interfaceRightHandSide( InterfaceOptionsEnum option, 
                         int interfaceDataOptions,
                         GridFaceDescriptor & info, 
@@ -131,9 +131,9 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
   if( grid<0 || grid>=cg.numberOfComponentGrids() ||
       side<0 || side>1 || axis<0 || axis>=cg.numberOfDimensions() )
   {
-    printP("Cgcns::interfaceRightHandSide:ERROR: invalid values: (grid,side,axis)=(%i,%i,%i)\n",
+    printP("Cgcssi::interfaceRightHandSide:ERROR: invalid values: (grid,side,axis)=(%i,%i,%i)\n",
 	   grid,side,axis);
-    OV_ABORT("Cgcns::interfaceRightHandSide:ERROR");
+    OV_ABORT("Cgcssi::interfaceRightHandSide:ERROR");
   }
 
   MappedGrid & mg = cg[grid];
@@ -153,7 +153,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
     // ********* Heat flux interface **********
     // ****************************************
 
-    heatFluxInterfaceRightHandSide(Cgcns);
+    heatFluxInterfaceRightHandSide(Cgcssi);
 
   }
   else if( interfaceType(side,axis,grid)==Parameters::tractionInterface )
@@ -163,7 +163,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
     // *******************************************
 
     if( debug() & 2 )
-      printP("Cgcns::interfaceRHS: TRACTION: %s RHS for (grid,side,axis)=(%i,%i,%i) "
+      printP("Cgcssi::interfaceRHS: TRACTION: %s RHS for (grid,side,axis)=(%i,%i,%i) "
 	     " t=%9.3e gfIndex=%i (current=%i) gf[gfIndex].t=%9.3e\n",
 	     (option==0 ? "get" : "set"),grid,side,axis,t,gfIndex,current,gf[gfIndex].t);
 
@@ -192,7 +192,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
         // --- interface position is given ---
 	C=Range(numSaved,numSaved+numberOfDimensions-1);
 	if( debug() & 2 )
-	  printP("Cgcns::interfaceRHS: Set interface positions at t=%9.3e in bd components V=[%i,%i] from C=[%i,%i]\n",
+	  printP("Cgcssi::interfaceRHS: Set interface positions at t=%9.3e in bd components V=[%i,%i] from C=[%i,%i]\n",
 		 gf[gfIndex].t,V.getBase(),V.getBound(),C.getBase(),C.getBound());
 
 	bd(I1,I2,I3,V)=f(I1,I2,I3,C);  // set positions of interface -- fill into velocity components for now ***
@@ -222,7 +222,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
         // --- interface velocity is given ---
 	C=Range(numSaved,numSaved+numberOfDimensions-1);
         if( debug() & 4 )
-	  printP("Cgcns:interfaceRightHandSide: interface velocity provided t=%9.3e in C=[%i,%i]\n",t,C.getBase(),C.getBound());
+	  printP("Cgcssi:interfaceRightHandSide: interface velocity provided t=%9.3e in C=[%i,%i]\n",t,C.getBase(),C.getBound());
 
 
         // the interface velocity is currently not used.
@@ -236,7 +236,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
         // --- interface acceleration is given ---
 	C=Range(numSaved,numSaved+numberOfDimensions-1);
         if( debug() & 4 )
-	  printP("Cgcns:interfaceRightHandSide: interface acceleration provided t=%9.3e in C=[%i,%i]\n",t,C.getBase(),C.getBound());
+	  printP("Cgcssi:interfaceRightHandSide: interface acceleration provided t=%9.3e in C=[%i,%i]\n",t,C.getBase(),C.getBound());
 
 
         // the interface acceleration is currently not used.
@@ -249,7 +249,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
       {
         // --- interface traction is given ---
         if( debug() & 4 )
-	  printP("Cgcns:interfaceRightHandSide: interface traction provided t=%9.3e\n",t);
+	  printP("Cgcssi:interfaceRightHandSide: interface traction provided t=%9.3e\n",t);
 
 	C=Range(numSaved,numSaved+numberOfDimensions-1);
 
@@ -263,7 +263,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
       {
 	// save the time derivative of the traction:
         if( debug() & 4 )
-	  printP("Cgcns:interfaceRightHandSide: the tractionRate is provided at t=%9.3e\n",t);
+	  printP("Cgcssi:interfaceRightHandSide: the tractionRate is provided at t=%9.3e\n",t);
 
         C=Range(numSaved,numSaved+numberOfDimensions-1);
 
@@ -308,7 +308,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
       {
 	// -- return the position of the boundary --
 	if( debug() & 4 )
-	  printP("Cgcns:interfaceRightHandSide: Save the interface position.\n");
+	  printP("Cgcssi:interfaceRightHandSide: Save the interface position.\n");
 
 	Range Rx(0,numberOfDimensions-1);                // vertex components 
 	C=Range(numSaved,numSaved+numberOfDimensions-1); // save displacement in these components of f
@@ -325,7 +325,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
       {
 	// -- return the interface velocity --
 	if( debug() & 4 )
-	  printP("Cgcns:interfaceRightHandSide: Save the interface velocity.\n");
+	  printP("Cgcssi:interfaceRightHandSide: Save the interface velocity.\n");
 
 	C=Range(numSaved,numSaved+numberOfDimensions-1); // save displacement in these components of f
 
@@ -337,12 +337,12 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
       {
 	// -- return the acceleration of the boundary --
 	if( debug() & 4 )
-	  printP("Cgcns:interfaceRightHandSide: Save the interface acceleration.\n");
+	  printP("Cgcssi:interfaceRightHandSide: Save the interface acceleration.\n");
 
 	Range Rx(0,numberOfDimensions-1);                // vertex components 
 	C=Range(numSaved,numSaved+numberOfDimensions-1); // save displacement in these components of f
 
-	printP("Cgcns:interfaceRightHandSide: save acceleration - FINISH ME!\n");
+	printP("Cgcssi:interfaceRightHandSide: save acceleration - FINISH ME!\n");
 	
 	numSaved+=numberOfDimensions;
       }
@@ -365,12 +365,12 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
       Ct=Range(numSaved,numSaved+numberOfDimensions-1);  // save interface traction in these components
       
       if( debug() & 2 )
-        printP("Cgcns::interfaceRHS: Get normal force (traction) at t=%9.3e\n",gf[gfIndex].t);
+        printP("Cgcssi::interfaceRHS: Get normal force (traction) at t=%9.3e\n",gf[gfIndex].t);
 
       if( interfaceDataOptions & Parameters::tractionInterfaceData )
       {
 	if( debug() & 2 )
-	  printP("Cgcns:interfaceRightHandSide: Save the interface traction at t=%8.2e in components Ct=[%i,%i].\n",t,Ct.getBase(),Ct.getBound());
+	  printP("Cgcssi:interfaceRightHandSide: Save the interface traction at t=%8.2e in components Ct=[%i,%i].\n",t,Ct.getBase(),Ct.getBound());
 
 	// old: f(I1,I2,I3,V)=traction(I1,I2,I3,D);
 	f(I1,I2,I3,Ct)=traction(I1,I2,I3,D);
@@ -430,7 +430,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 	    }
 	    else
 	    {
-	      printP("Cgcns::interfaceRHS:WARNING: there are no previous history values to compute tractionRate.\n"
+	      printP("Cgcssi::interfaceRHS:WARNING: there are no previous history values to compute tractionRate.\n"
 		     "  The only history value is at time tp=%9.3e, but gf[gfIndex=%i].t=%9.3e\n",tp,gfIndex,t0);
               dt=0.; 
 	    }
@@ -451,7 +451,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
             real cex1 = dt==0. ? 1. : (t-tp)/dt;
 	    real cex2 = dt==0. ? 0. : (t0-t)/dt;
 	    if( debug() & 2 )
-	      printP("Cgcns::interfaceRHS: Extrapolate traction in time: t0=%9.3e, tp=%9.3e, cex1=%9.3e cex2=%9.3e\n",
+	      printP("Cgcssi::interfaceRHS: Extrapolate traction in time: t0=%9.3e, tp=%9.3e, cex1=%9.3e cex2=%9.3e\n",
 		     t0,tp,cex1,cex2);
 	    
 	    if( !(parameters.dbase.get<bool >("twilightZoneFlow") && dt==0.) ) 
@@ -465,7 +465,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
               // special case: TZ and no previous values:
               // do this for now: set to exact 
 
-              printP("Cgcns::interfaceRHS: **** Setting traction at t=%9.3e to exact for TZ ****\n",t);
+              printP("Cgcssi::interfaceRHS: **** Setting traction at t=%9.3e to exact for TZ ****\n",t);
 
               OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
               const bool isRectangular = false; // ** do this for now ** mg.isRectangular();
@@ -533,7 +533,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 	    {
 
 	      if( debug() & 2 )
-		printP("Cgcns::interfaceRHS: get d(traction)/dt (1st order): t=%9.3e, "
+		printP("Cgcssi::interfaceRHS: get d(traction)/dt (1st order): t=%9.3e, "
 		       "gfIndex=%i gf[gfIndex].t=%9.3e, prev=%i, tp=%9.3e\n",t,gfIndex,gf[gfIndex].t,prev,tp);
 
 	      f(I1,I2,I3,Ctr)= (f(I1,I2,I3,Ct) - f1(I1,I2,I3,Ct))/dt;
@@ -553,7 +553,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 	      real dt1= t1-t2;
 	      if( dt0<=0. || dt1<=0. )
 	      {
-		printP("Cgcns::interfaceRHS:ERROR: computing traction rate: t0=%9.3e, prev=%i, tp=%9.3e, "
+		printP("Cgcssi::interfaceRHS:ERROR: computing traction rate: t0=%9.3e, prev=%i, tp=%9.3e, "
                        "im2=%i, t2=%9.3e\n",t0,prev,tp,im2,t2);
 		OV_ABORT("error");
 	      }
@@ -573,7 +573,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
               f(I1,I2,I3,Ctr)= l0t*f0(I1,I2,I3,Ct) +l1t*f1(I1,I2,I3,Ct) + l2t*f2(I1,I2,I3,Ct);
 
 	      if( debug() & 2 )
-		printP("Cgcns::interfaceRHS: get d(traction)/dt (2nd order): t=%9.3e, (t0=%9.3e) "
+		printP("Cgcssi::interfaceRHS: get d(traction)/dt (2nd order): t=%9.3e, (t0=%9.3e) "
 		       "gfIndex=%i gf[gfIndex].t=%9.3e, prev=%i, tp=%9.3e, im2=%i t2=%9.3e, "
                        " l0t*dt0=%4.2f l1t*dt0=%4.2f l2t*dt0=%4.2f\n",
                        t,t0,gfIndex,gf[gfIndex].t,prev,t1,im2,t2,l0t*dt0,l1t*dt0,l2t*dt0);              
@@ -582,16 +582,16 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 	    
 	    if( debug() & 8 )
 	    {
-	      ::display(f1(I1,I2,I3,Ct),sPrintF("Cgcns::interfaceRHS: old traction at tp=%9.3e",tp),"%8.2e ");
-	      ::display(f(I1,I2,I3,Ct),sPrintF("Cgcns::interfaceRHS: new traction at t=%9.3e ",t),"%8.2e ");
-	      ::display(f(I1,I2,I3,Ctr),sPrintF("Cgcns::interfaceRHS: time derivative of the traction, t=%9.3e",t),"%8.2e ");
+	      ::display(f1(I1,I2,I3,Ct),sPrintF("Cgcssi::interfaceRHS: old traction at tp=%9.3e",tp),"%8.2e ");
+	      ::display(f(I1,I2,I3,Ct),sPrintF("Cgcssi::interfaceRHS: new traction at t=%9.3e ",t),"%8.2e ");
+	      ::display(f(I1,I2,I3,Ctr),sPrintF("Cgcssi::interfaceRHS: time derivative of the traction, t=%9.3e",t),"%8.2e ");
 	    }
 	  }
 	  
 	}
 	else
 	{
-	  printP("Cgcns::interfaceRightHandSide:traction: t=%9.3e There is NO time history. "
+	  printP("Cgcssi::interfaceRightHandSide:traction: t=%9.3e There is NO time history. "
                  "idh.current=%i, size=%i\n",t,idh.current,idh.interfaceDataList.size());
 
 	  if( interfaceDataOptions & Parameters::tractionRateInterfaceData )
@@ -613,7 +613,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 
       if( debug() & 8 )
       {
-	f(I1,I2,I3,Ct).display("Cgcns::interfaceRightHandSide: Here is the RHS (traction=normalForce)");
+	f(I1,I2,I3,Ct).display("Cgcssi::interfaceRightHandSide: Here is the RHS (traction=normalForce)");
       }
       
     }
@@ -681,14 +681,14 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 	  printP("interface:ERROR: mu>0 but TZ traction forcing does not include viscous terms. Finish me!\n");
 	}
 
-        // ::display(f(I1,I2,I3,Ct),"Cgcns::interface fluid traction before TZ fix");
+        // ::display(f(I1,I2,I3,Ct),"Cgcssi::interface fluid traction before TZ fix");
 	
 
         // The sign is correct here: normalForce = p*normal 
         for( int axis=0; axis<numberOfDimensions; axis++ )
   	  f(I1,I2,I3,Ct.getBase()+axis) -= pe(I1,I2,I3)*normal(I1,I2,I3,axis);
 
-        // ::display(f(I1,I2,I3,Ct),"Cgcns::interface fluid traction after TZ fix");
+        // ::display(f(I1,I2,I3,Ct),"Cgcssi::interface fluid traction after TZ fix");
 
 	if( interfaceDataOptions & Parameters::tractionRateInterfaceData )
 	{
@@ -716,7 +716,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
   }
   else
   {
-    printF("Cgcns::interfaceRightHandSide:unexpected interfaceType=%i\n",interfaceType(side,axis,grid));
+    printF("Cgcssi::interfaceRightHandSide:unexpected interfaceType=%i\n",interfaceType(side,axis,grid));
     OV_ABORT("error");
   }
   

@@ -10,10 +10,10 @@
     \begin{description}
       \item[time stepping method] : Not all schemes work for all PDEs. 
         \begin{description}
-          \item[forwardEuler] : For CNS Godunov
+          \item[forwardEuler] : For CSSI Godunov
           \item[adamsBashforth2] : For INS.
           \item[adamsPredictorCorrector2] : For INS.
-          \item[variableTimeStepAdamsPredictorCorrector] for CNS.
+          \item[variableTimeStepAdamsPredictorCorrector] for CSSI.
           \item[midpoint] : For INS.
           \item[implicit] : For INS. Treat the viscous terms implicitly. One may optinally specify that some
              grids are integrated explicitly and some implicitly (see {\tt choose grids for implicit}).
@@ -267,7 +267,7 @@
     \end{description}
   \end{description}
 
-\subsubsection{PDE parameters for CNS}\label{sec:cnsPdeParams}
+\subsubsection{PDE parameters for CSSI}\label{sec:cssiPdeParams}
  
 
  Here are the pde parameters that can be changed when solving the compressible Navier-Stokes equations.
@@ -345,7 +345,7 @@
     \end{description}
   \end{description}
 
-\subsubsection{PDE parameters for CNS}\label{sec:cnsPdeParams}
+\subsubsection{PDE parameters for CSSI}\label{sec:cssiPdeParams}
  
 
  Here are the pde parameters that can be changed when solving the compressible Navier-Stokes equations.

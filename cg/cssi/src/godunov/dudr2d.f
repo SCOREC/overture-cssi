@@ -2330,7 +2330,7 @@ c..bottom of main loop over lines
 c
 c add twilight zone stuff *JWB*
       ! *wdh* 2014/05/09 -- for moving grids eval TZ at xy(t+dt/2)
-      ! Note: tzdt is set in cns.C
+      ! Note: tzdt is set in cssi.C
       if( itz.eq.1 ) then
         do j2=n2a,n2b
           do j1=n1a,n1b

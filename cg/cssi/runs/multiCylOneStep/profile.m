@@ -12,7 +12,7 @@
 %      r0, u0, T0, p0
 %
 % For plotting and output,  near the end, the profile is reversed and travels from left to right since
-% this is how profiles usually move in cgcns.
+% this is how profiles usually move in cgcssi.
 %
 % This matlab program also uses:
 %    hugoniot.m, velocityCJ.m, volumeCJ.m, getComputedValues.m

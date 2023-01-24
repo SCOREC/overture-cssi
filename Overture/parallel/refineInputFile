@@ -38,7 +38,7 @@
 * from amrh with load-balancing:
 * bugp13.cmd
 *
-* bug from cgcns -np 8 
+* bug from cgcssi -np 8 
 * twoBumpAmrDebug.cmd
 *
 * bug from amrh on mcr -np 6

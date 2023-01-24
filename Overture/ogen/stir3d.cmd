@@ -44,7 +44,7 @@
 # Initial angle: 
 #     ogen -noplot stir3d -order=2 -blf=4 -interp=e -ml=2 -factor=8 -angle=54
 # 
-# rotated single stick: NOTE" blf=2 does not work so well with cgcns -- poor quality at corners
+# rotated single stick: NOTE" blf=2 does not work so well with cgcssi -- poor quality at corners
 #    ogen -noplot stir3d -xa=-1.5 -xb=1.5 -ya=-1.5 -yb=1.5 -order=2 -blf=4 -interp=e -tStretch=40. -numStir=1 -factor=2 -angle=45 -name=stirRotated45e2.order2.hdf
 #    ogen -noplot stir3d -xa=-1.5 -xb=1.5 -ya=-1.5 -yb=1.5 -order=2 -blf=4 -interp=e -tStretch=40. -numStir=1 -factor=2 -angle=90 -name=stirRotated90e2.order2.hdf
 #

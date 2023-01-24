@@ -1,8 +1,8 @@
-#include "Cgcns.h"
+#include "Cgcssi.h"
 #include "GenericGraphicsInterface.h"
 #include "MaterialProperties.h"
 #include "Chemkin.h"
-#include "CnsParameters.h"
+#include "CssiParameters.h"
 #include "EquationDomain.h"
 #include "SurfaceEquation.h"
 
@@ -19,7 +19,7 @@ int readRestartFile(GridFunction & cgf, Parameters & parameters,
 /// \param originalBoundaryCondition
 /// \author wdh.
 /////////////////////////////////////////////////////////////////////////////////////////////////
-int Cgcns::
+int Cgcssi::
 setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBoundaryCondition)
 {
   real cpu0 = getCPU();
@@ -35,7 +35,7 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
 
   GUIState setupDialog;
 
-  setupDialog.setWindowTitle("Cgcns Setup");
+  setupDialog.setWindowTitle("Cgcssi Setup");
   setupDialog.setExitCommand("continue", "continue");
 
   aString answer, turbulenceModel="";
@@ -86,7 +86,7 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
 			    "steady-state compressible Navier Stokes (newton)",
 			    //   "all speed Navier Stokes",
 			    ""     };
-  setupDialog.addOptionMenu("pde", pdeCommands, pdeCommands, (int)parameters.dbase.get<CnsParameters::PDE >("pde"));
+  setupDialog.addOptionMenu("pde", pdeCommands, pdeCommands, (int)parameters.dbase.get<CssiParameters::PDE >("pde"));
 
 //   aString pdeModelCommands[] = {"standard model",
 // 			        "Boussinesq model",
@@ -106,7 +106,7 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
                                   "ignition-pressure reaction rate",
 				  ""     };
       
-  setupDialog.addOptionMenu("reaction", reactionCommands, reactionCommands, (int)parameters.dbase.get<CnsParameters::ReactionTypeEnum >("reactionType"));
+  setupDialog.addOptionMenu("reaction", reactionCommands, reactionCommands, (int)parameters.dbase.get<CssiParameters::ReactionTypeEnum >("reactionType"));
 
 //   aString tmCommands[] =  { "noTurbulenceModel",
 // 			    "Baldwin-Lomax",
@@ -125,7 +125,7 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
                             "tait equation of state",
 			    ""     };
       
-  setupDialog.addOptionMenu("equation of state", eosCommands, eosCommands, (int)parameters.dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState"));
+  setupDialog.addOptionMenu("equation of state", eosCommands, eosCommands, (int)parameters.dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState"));
 
 
   aString mvCommands[] =  { "solve and move grids",
@@ -167,11 +167,11 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
 
   gi.pushGUI(setupDialog);
     
-  CnsParameters::PDE & pde = parameters.dbase.get<CnsParameters::PDE >("pde");
-  CnsParameters::GodunovVariation & conservativeGodunovMethod = 
-                          parameters.dbase.get<CnsParameters::GodunovVariation >("conservativeGodunovMethod");
-  CnsParameters::PDEVariation & pdeVariation = 
-                 parameters.dbase.get<CnsParameters::PDEVariation >("pdeVariation");
+  CssiParameters::PDE & pde = parameters.dbase.get<CssiParameters::PDE >("pde");
+  CssiParameters::GodunovVariation & conservativeGodunovMethod = 
+                          parameters.dbase.get<CssiParameters::GodunovVariation >("conservativeGodunovMethod");
+  CssiParameters::PDEVariation & pdeVariation = 
+                 parameters.dbase.get<CssiParameters::PDEVariation >("pdeVariation");
 
   Parameters::TimeSteppingMethod & timeSteppingMethod = 
     parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod");
@@ -251,7 +251,7 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
     else if( answer(0,25)=="compressible Navier Stokes" )
     {
       pdeChosen=true;
-      pde=CnsParameters::compressibleNavierStokes;
+      pde=CssiParameters::compressibleNavierStokes;
       parameters.pdeName = "compressibleNavierStokes";
       pdeName=answer;
 
@@ -260,7 +260,7 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
 
       if( answer=="compressible Navier Stokes (Jameson)" )
       {
-	pdeVariation=CnsParameters::conservativeWithArtificialDissipation;
+	pdeVariation=CssiParameters::conservativeWithArtificialDissipation;
       }
       else if( answer=="compressible Navier Stokes (Godunov)" )
       {
@@ -271,9 +271,9 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
 	}
 	else
 	{
-	  pdeVariation=CnsParameters::conservativeGodunov;
+	  pdeVariation=CssiParameters::conservativeGodunov;
 	  timeSteppingMethod=Parameters::forwardEuler;
-	  conservativeGodunovMethod=CnsParameters::fortranVersion;
+	  conservativeGodunovMethod=CssiParameters::fortranVersion;
 	}
       }
       else if( answer=="compressible Navier Stokes (multi-component)" )
@@ -285,9 +285,9 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
 	}
 	else
 	{
-	  pdeVariation=CnsParameters::conservativeGodunov;
+	  pdeVariation=CssiParameters::conservativeGodunov;
 	  timeSteppingMethod=Parameters::forwardEuler;
-	  conservativeGodunovMethod=CnsParameters::multiComponentVersion; // Jeff Banks' code
+	  conservativeGodunovMethod=CssiParameters::multiComponentVersion; // Jeff Banks' code
 	}
       }
       else if( answer=="compressible Navier Stokes (multi-fluid)" )
@@ -299,17 +299,17 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
 	}
 	else
 	{
-	  pdeVariation=CnsParameters::conservativeGodunov;
+	  pdeVariation=CssiParameters::conservativeGodunov;
 	  timeSteppingMethod=Parameters::forwardEuler;
 
-	  conservativeGodunovMethod=CnsParameters::multiFluidVersion; // Don's multifluid code
+	  conservativeGodunovMethod=CssiParameters::multiFluidVersion; // Don's multifluid code
 
 	  parameters.dbase.get<Parameters::InterpolationTypeEnum >("interpolationType")=Parameters::interpolatePrimitiveAndPressure;
 	  
 	}
       }
       else if( answer=="compressible Navier Stokes (non-conservative)" )
-	pdeVariation=CnsParameters::nonConservative;
+	pdeVariation=CssiParameters::nonConservative;
       else if ( answer=="compressible Navier Stokes (implicit)" )
 	{
 	  if( REAL_EPSILON != DBL_EPSILON )
@@ -319,7 +319,7 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
 	    }
 	  else
 	    {
-	      pdeVariation=CnsParameters::nonConservative;
+	      pdeVariation=CssiParameters::nonConservative;
 	      timeSteppingMethod = Parameters::implicit;
 	      parameters.dbase.get<real >("implicitFactor") = 1.;
 	      parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod")=Parameters::trapezoidal;
@@ -337,7 +337,7 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
     else if ( answer=="steady-state compressible Navier Stokes (newton)" )
       {
 	pdeChosen=true;
-	pde=CnsParameters::compressibleNavierStokes;
+	pde=CssiParameters::compressibleNavierStokes;
 	parameters.pdeName = "compressibleNavierStokes";
 
 	pdeName=answer;
@@ -351,7 +351,7 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
 	  }
 	else
 	  {
-	    pdeVariation=CnsParameters::nonConservative;
+	    pdeVariation=CssiParameters::nonConservative;
 	    timeSteppingMethod = Parameters::steadyStateNewton;
 	    parameters.dbase.get<real >("implicitFactor") = .1;
 	    parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod")=Parameters::trapezoidal;
@@ -367,17 +367,17 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
       // Choose the default value for the Gas  constant
       parameters.dbase.get<real >("Rg")=1.;  // Don expects Rg==1
 
-      pde=CnsParameters::compressibleMultiphase;
+      pde=CssiParameters::compressibleMultiphase;
       parameters.pdeName = "compressibleMultiphase";
 
       pdeName=answer;
-      pdeVariation=CnsParameters::conservativeGodunov;
+      pdeVariation=CssiParameters::conservativeGodunov;
       timeSteppingMethod=Parameters::forwardEuler;      
 
       if( answer=="compressible multiphase" )
-        conservativeGodunovMethod=CnsParameters::fortranVersion;
+        conservativeGodunovMethod=CssiParameters::fortranVersion;
       else
-        conservativeGodunovMethod=CnsParameters::multiFluidVersion;
+        conservativeGodunovMethod=CssiParameters::multiFluidVersion;
 
     }
 //     else if( answer=="all speed Navier Stokes" )
@@ -389,12 +389,12 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
     else if( answer=="one step" )
     {
       reactionName="one step";
-      parameters.dbase.get<CnsParameters::ReactionTypeEnum >("reactionType")=CnsParameters::oneStep;
+      parameters.dbase.get<CssiParameters::ReactionTypeEnum >("reactionType")=CssiParameters::oneStep;
     }
     else if( answer=="branching" )
     {
       reactionName="branching";
-      parameters.dbase.get<CnsParameters::ReactionTypeEnum >("reactionType")=CnsParameters::branching;
+      parameters.dbase.get<CssiParameters::ReactionTypeEnum >("reactionType")=CssiParameters::branching;
     }
     else if( answer=="passive scalar advection" )
     {
@@ -404,14 +404,14 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
     else if( answer=="one equation mixture fraction" )
     {
       reactionName="one equation mixture fraction"; // parameters.dbase.get<bool >("advectPassiveScalar") = TRUE;
-      parameters.dbase.get<CnsParameters::ReactionTypeEnum >("reactionType")=CnsParameters::oneEquationMixtureFraction;
+      parameters.dbase.get<CssiParameters::ReactionTypeEnum >("reactionType")=CssiParameters::oneEquationMixtureFraction;
 
       printF("One equation mixture fraction is ON. Only supported with all-speed Navier-Stokes.\n");
     }
     else if( answer=="two equation mixture fraction and extent of reaction" )
     {
       reactionName="two equation mixture fraction and extent of reaction";
-      parameters.dbase.get<CnsParameters::ReactionTypeEnum >("reactionType")=CnsParameters::twoEquationMixtureFractionAndExtentOfReaction;
+      parameters.dbase.get<CssiParameters::ReactionTypeEnum >("reactionType")=CssiParameters::twoEquationMixtureFractionAndExtentOfReaction;
 
       printF("Two equation mixture fraction and extent of reaction is ON. "
              "Only supported with all-speed Navier-Stokes.\n");
@@ -419,56 +419,56 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
     else if( answer=="ignition and growth" )
     {
       reactionName="ignition and growth";
-      parameters.dbase.get<CnsParameters::ReactionTypeEnum >("reactionType")=CnsParameters::ignitionAndGrowth;
+      parameters.dbase.get<CssiParameters::ReactionTypeEnum >("reactionType")=CssiParameters::ignitionAndGrowth;
     }
     else if( answer=="ignition and growth desensitization" )
     {
       reactionName="ignition and growth desensitization";
-      parameters.dbase.get<CnsParameters::ReactionTypeEnum >("reactionType")=CnsParameters::igDesensitization;
+      parameters.dbase.get<CssiParameters::ReactionTypeEnum >("reactionType")=CssiParameters::igDesensitization;
     }
     else if( answer=="specify CHEMKIN reaction" )
     {
       gi.inputString(reactionName,"Enter the name of a CHEMKIN reaction");
-      parameters.dbase.get<CnsParameters::ReactionTypeEnum >("reactionType")=CnsParameters::chemkinReaction;
+      parameters.dbase.get<CssiParameters::ReactionTypeEnum >("reactionType")=CssiParameters::chemkinReaction;
       printF("reaction =[%s]\n",(const char*)reactionName);
     }
     else if( answer=="one step pressure law" )
     {
       reactionName="one step";
-      parameters.dbase.get<CnsParameters::ReactionTypeEnum >("reactionType")=CnsParameters::oneStepPress;
+      parameters.dbase.get<CssiParameters::ReactionTypeEnum >("reactionType")=CssiParameters::oneStepPress;
     }
     else if( answer=="ignition-pressure reaction rate" )
     {
       reactionName="ignition-pressure reaction rate";
-      parameters.dbase.get<CnsParameters::ReactionTypeEnum >("reactionType")=CnsParameters::ignitionPressureReactionRate;
+      parameters.dbase.get<CssiParameters::ReactionTypeEnum >("reactionType")=CssiParameters::ignitionPressureReactionRate;
     }
 
     else if( answer=="ideal gas law" )
     {
-      parameters.dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState")=CnsParameters::idealGasEOS;
+      parameters.dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState")=CssiParameters::idealGasEOS;
     }
     else if( answer=="JWL equation of state" )
     {
-      parameters.dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState")=CnsParameters::jwlEOS;
+      parameters.dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState")=CssiParameters::jwlEOS;
     }
     else if( answer=="Mie-Gruneisen equation of state" )
     {
-      parameters.dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState")=CnsParameters::mieGruneisenEOS;
+      parameters.dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState")=CssiParameters::mieGruneisenEOS;
     }
     else if( answer=="user defined equation of state" )
     {
-      parameters.dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState")=CnsParameters::userDefinedEOS;
+      parameters.dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState")=CssiParameters::userDefinedEOS;
       // -- choose the user defined equation of state: 
       parameters.updateUserDefinedEOS(gi);
 
     }
     else if( answer=="stiffened gas equation of state" )
     {
-      parameters.dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState")=CnsParameters::stiffenedGasEOS;
+      parameters.dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState")=CssiParameters::stiffenedGasEOS;
     }
     else if( answer=="tait equation of state" )
     {
-      parameters.dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState")=CnsParameters::taitEOS;
+      parameters.dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState")=CssiParameters::taitEOS;
     }
     else if( setupDialog.getToggleValue(answer,"axisymmetric flow with swirl",parameters.dbase.get<bool >("axisymmetricWithSwirl")) )
     {
@@ -760,23 +760,23 @@ setupPde(aString & reactionName,bool restartChosen, IntegerArray & originalBound
   gi.popGUI();  // pop setup
 
   parameters.dbase.get<bool> ("recomputeDTEveryStep") = 
-    pdeVariation==CnsParameters::conservativeGodunov &&
+    pdeVariation==CssiParameters::conservativeGodunov &&
     conservativeGodunovMethod==0;
   parameters.dbase.get<bool> ("timeStepDataIsPrecomputed") =  
-    pdeVariation==CnsParameters::conservativeGodunov &&
+    pdeVariation==CssiParameters::conservativeGodunov &&
     conservativeGodunovMethod==0;
 
   return 0;
 }
 
-int Cgcns::
+int Cgcssi::
 setPlotTitle(const real &t, const real &dt)
 {
-  const CnsParameters::PDE & pde = parameters.dbase.get<CnsParameters::PDE >("pde");
-  const CnsParameters::GodunovVariation & conservativeGodunovMethod = 
-                          parameters.dbase.get<CnsParameters::GodunovVariation >("conservativeGodunovMethod");
-  const CnsParameters::PDEVariation & pdeVariation = 
-                 parameters.dbase.get<CnsParameters::PDEVariation >("pdeVariation");
+  const CssiParameters::PDE & pde = parameters.dbase.get<CssiParameters::PDE >("pde");
+  const CssiParameters::GodunovVariation & conservativeGodunovMethod = 
+                          parameters.dbase.get<CssiParameters::GodunovVariation >("conservativeGodunovMethod");
+  const CssiParameters::PDEVariation & pdeVariation = 
+                 parameters.dbase.get<CssiParameters::PDEVariation >("pdeVariation");
   const Parameters::TimeSteppingMethod & timeSteppingMethod = 
     parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod");
   const real mu = parameters.dbase.get<real >("mu");
@@ -784,17 +784,17 @@ setPlotTitle(const real &t, const real &dt)
 
   GraphicsParameters & psp = parameters.dbase.get<GraphicsParameters >("psp");
   aString buff;
-  if( pde==CnsParameters::compressibleNavierStokes )
+  if( pde==CssiParameters::compressibleNavierStokes )
   {
     aString title1,title2;
     title2="";
-    if( pdeVariation==CnsParameters::conservativeGodunov )
+    if( pdeVariation==CssiParameters::conservativeGodunov )
     {
       if( parameters.dbase.get<int >("numberOfSpecies")==0 )
       {
-	if( conservativeGodunovMethod==CnsParameters::multiComponentVersion )
+	if( conservativeGodunovMethod==CssiParameters::multiComponentVersion )
 	  title1=sPrintF(buff,"Multicomponent-Euler: t=%6.2e",t);
-	else if( conservativeGodunovMethod==CnsParameters::multiFluidVersion )
+	else if( conservativeGodunovMethod==CssiParameters::multiFluidVersion )
 	  title1=sPrintF(buff,"Multi-Fluid-Euler: t=%6.2e",t);
 	else if( mu>0 || kThermal>0 )
           title1=sPrintF(buff,"N-S mu=%7.1e k=%7.1e: t=%6.2e",mu,kThermal,t);
@@ -804,9 +804,9 @@ setPlotTitle(const real &t, const real &dt)
       }
       else 
       {
-	if( conservativeGodunovMethod==CnsParameters::multiComponentVersion )
+	if( conservativeGodunovMethod==CssiParameters::multiComponentVersion )
 	  title1=sPrintF(buff,"Multicomponent Reactive Euler: t=%6.2e",t);
-	else if( conservativeGodunovMethod==CnsParameters::multiFluidVersion )
+	else if( conservativeGodunovMethod==CssiParameters::multiFluidVersion )
 	  title1=sPrintF(buff,"Multi-Fluid Euler: t=%6.2e",t);
 	else
 	  title1=sPrintF(buff,"Reactive Euler (%s), t=%6.2e",(const char*)parameters.dbase.get<aString >("reactionName"),t);
@@ -837,10 +837,10 @@ setPlotTitle(const real &t, const real &dt)
     psp.set(GI_TOP_LABEL,title1);
     psp.set(GI_TOP_LABEL_SUB_1,title2);
   }
-  else if( pde==CnsParameters::compressibleMultiphase )
+  else if( pde==CssiParameters::compressibleMultiphase )
   {
     aString title1;
-    if( conservativeGodunovMethod==CnsParameters::multiFluidVersion )
+    if( conservativeGodunovMethod==CssiParameters::multiFluidVersion )
      title1=sPrintF(buff,"Compressible Multiphase (multi-fluid) : t=%6.2e",t);
     else
       title1=sPrintF(buff,"Compressible Multiphase: t=%6.2e",t);

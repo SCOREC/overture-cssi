@@ -1,10 +1,10 @@
 \newcommand{\Gos}{\Gc_{\rm os}}% grid for multi-cyl one step
 \subsection{Detonation hitting multiple rigid bodies}\label{sec:detMultiCyl}
 
-To run this example see {\tt cg/cns/runs/multiCylOneStep/Readme}.
+To run this example see {\tt cg/cssi/runs/multiCylOneStep/Readme}.
 
 A detonation moving from left to right impacts a collection of cylinders.
-The initial conditions for this computation are determined in the matlab script {\tt cg/cgcns/runs/multiCylOneStep/profile.m}.
+The initial conditions for this computation are determined in the matlab script {\tt cg/cgcssi/runs/multiCylOneStep/profile.m}.
 This script computes the steady ZND profile for a one-dimensional detonation for various equations of state.
 % The fluid
 % forces cause the cylinders to move. The cylinders are modeled as rigid bodies with a given mass density.
@@ -24,7 +24,7 @@ This script computes the steady ZND profile for a one-dimensional detonation for
 \begin{tikzpicture}[scale=1]
   \useasboundingbox (0,.7) rectangle (12.,7);  % set the bounding box (so we have less surrounding white space)
 %
- \draw ( 0, 0) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{\cnsDocDir/fig/multiCylOneStepColourSchlieren1p0}{\figWidth}};
+ \draw ( 0, 0) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{\cssiDocDir/fig/multiCylOneStepColourSchlieren1p0}{\figWidth}};
 %
 % grid:
 %   \draw[step=1cm,gray] (0,0) grid (12,7);

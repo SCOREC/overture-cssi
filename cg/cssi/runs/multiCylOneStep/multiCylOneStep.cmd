@@ -4,17 +4,17 @@
 # NOTE: initial conditions in the profile file oneStepIdealProfile.data come from the 
 #     matlab script $cg/runs/multiCylIOneStep/profile.m
 * 
-#    cgcns [-noplot] multiCylOneStep -g=<gridName> -amr=[0|1] -tf=<real> -tp=<real> -l=<int> -r=[2|4]
+#    cgcssi [-noplot] multiCylOneStep -g=<gridName> -amr=[0|1] -tf=<real> -tp=<real> -l=<int> -r=[2|4]
 #
 * Examples:
-*   cgcns multiCylOneStep -g=multiCylIG2Big -amr=1 -tp=.05 -go=halt
+*   cgcssi multiCylOneStep -g=multiCylIG2Big -amr=1 -tp=.05 -go=halt
 *
 *
 * 070709 :
 *     redo for David and the S&T brochure
-*     original from /home/henshaw.0/res/OverBlown/cns/reactMove
+*     original from /home/henshaw.0/res/OverBlown/cssi/reactMove
 *     /home/henshaw.0/Overture.v21n.d/bin/ogen noplot $ogen/multiCylIG.cmd 
-*     /home/henshaw.0/cg.v21n.d/cns/bin/cgcns noplot multiCylOneStep >! multiCylOneStep.out &
+*     /home/henshaw.0/cg.v21n.d/cssi/bin/cgcssi noplot multiCylOneStep >! multiCylOneStep.out &
 **************************************************************
 *
 $tFinal=1.; $tPlot=.1; $flushFrequency=1; $orderOfExtrap=2; $interpWidth=2; $restart=""; 

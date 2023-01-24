@@ -1,13 +1,13 @@
 #
-# cgcns: Heated cylinder in a gravitational field 
+# cgcssi: Heated cylinder in a gravitational field 
 #       
-#  cgcns [-noplot] heatedCyl -g=<name> -tf=<tFinal> -tp=<tPlot> -debug=<num> -model=[Jameson|Godunov]..,
+#  cgcssi [-noplot] heatedCyl -g=<name> -tf=<tFinal> -tp=<tPlot> -debug=<num> -model=[Jameson|Godunov]..,
 #                            -mu=<num> -Prandtl=<num> -bg=<backGround> -show=<name> 
 # 
 # Examples:
-#    cgcns heatedCyl -g="cice2.order2.hdf" -mu=.02 -tf=3. -tp=.5
-#    cgcns heatedCyl -g="cice4.order2.hdf" -mu=.01 -tf=10. -tp=.1 
-#    srun -N1 -n1 -ppdebug $cgcnsp heatedCyl -g="cice2.order2.hdf" -mu=.05 -tf=10. -tp=1. -ts=implicit -solver=best
+#    cgcssi heatedCyl -g="cice2.order2.hdf" -mu=.02 -tf=3. -tp=.5
+#    cgcssi heatedCyl -g="cice4.order2.hdf" -mu=.01 -tf=10. -tp=.1 
+#    srun -N1 -n1 -ppdebug $cgcssip heatedCyl -g="cice2.order2.hdf" -mu=.05 -tf=10. -tp=1. -ts=implicit -solver=best
 #   
 # --- set default values for parameters ---
 # 

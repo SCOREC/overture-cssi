@@ -29,7 +29,7 @@
   % - labels
   \draw (\xLabel,\yLabel) node[draw,fill=white,anchor=east,xshift=+1pt,yshift=-4pt] {\scriptsize $t=#2$};
   % -- colour bar
-  \draw (\xcb,\ycb) node[anchor=south west,xshift= +0pt,yshift=+0pt] {\trimfigcb{\cnsDocDir/fig/colourBarLines}{\cbHeight}};
+  \draw (\xcb,\ycb) node[anchor=south west,xshift= +0pt,yshift=+0pt] {\trimfigcb{\cssiDocDir/fig/colourBarLines}{\cbHeight}};
   \draw (\xcb,\ycb) node[anchor=south west,xshift= +8pt,yshift=+1pt] {\scriptsize $#3$};
   \draw (\xcb,\ycbTop) node[anchor=south west,xshift= +8pt,yshift=-6pt] {\scriptsize $#4$};
   \draw (\xcb,\ycbMid) node[anchor=      west,xshift=+10pt,yshift=2pt] {\small $p$};
@@ -43,13 +43,13 @@
 \begin{tikzpicture}[scale=1]
   \useasboundingbox (0,.7) rectangle (14.,19.7);  % set the bounding box (so we have less surrounding white space)
 %
-  \draw ( 0,13.4) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{\cnsDocDir/fig/\schlierenName4}{\figWidth}};
-  \draw ( 0, 6.7) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{\cnsDocDir/fig/\schlierenName6}{\figWidth}};
-  \draw ( 0, 0) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{\cnsDocDir/fig/\schlierenName10}{\figWidth}};
+  \draw ( 0,13.4) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{\cssiDocDir/fig/\schlierenName4}{\figWidth}};
+  \draw ( 0, 6.7) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{\cssiDocDir/fig/\schlierenName6}{\figWidth}};
+  \draw ( 0, 0) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{\cssiDocDir/fig/\schlierenName10}{\figWidth}};
 %
-  \timeFrame{\cnsDocDir/fig/\amrName4}{0.4}{.07}{4.3}{7}{13.4}
-  \timeFrame{\cnsDocDir/fig/\amrName6}{0.6}{.12}{6.1}{7}{6.7}
-  \timeFrame{\cnsDocDir/fig/\amrName10}{1.0}{.3}{4.6}{7}{0}
+  \timeFrame{\cssiDocDir/fig/\amrName4}{0.4}{.07}{4.3}{7}{13.4}
+  \timeFrame{\cssiDocDir/fig/\amrName6}{0.6}{.12}{6.1}{7}{6.7}
+  \timeFrame{\cssiDocDir/fig/\amrName10}{1.0}{.3}{4.6}{7}{0}
 %
 %- %
 %-   \draw ( 0,13.4) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{images/ellipseShock8l1r4Schlieren4}{\figWidth}};
@@ -77,5 +77,5 @@ This example shows the simulation of a shock hitting a rigid body in the shape o
 This example demonstrates the new time stepping scheme that has been developed
 to treat the motion of ``light'' rigid bodies~\cite{lrb2012}.
 
-The simulation used the command file {\tt cg/cns/rigidMotion.cmd}
+The simulation used the command file {\tt cg/cssi/rigidMotion.cmd}
 and the grid was made with the ogen script {\tt Overture/sampleGrids/ellipseArg.cmd}. 

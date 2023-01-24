@@ -1,9 +1,9 @@
 // ========================================================================================================
-/// \class CnsParameters
-/// \brief This class holds parameters for Cgcns.
+/// \class CssiParameters
+/// \brief This class holds parameters for Cgcssi.
 // ========================================================================================================
 
-#include "CnsParameters.h"
+#include "CssiParameters.h"
 #include "OGPolyFunction.h"
 #include "OGTrigFunction.h"
 #include "OGPulseFunction.h"
@@ -49,7 +49,7 @@ addPrefix(const aString label[], const aString & prefix, aString cmd[], const in
 
 
 //===================================================================================
-//\begin{>ParametersInclude.tex}{\subsection{Variables in CnsParameters}} 
+//\begin{>ParametersInclude.tex}{\subsection{Variables in CssiParameters}} 
 //\no function header:
 //
 // /int numberOfDimensions: number of spacial dimensions.
@@ -66,8 +66,8 @@ addPrefix(const aString label[], const aString & prefix, aString cmd[], const in
 // /int sc:   position of first species, species m is located at sc+m
 // /int kc, epsc: for k-epsilon model
 //
-// /real machNumber, reynoldsNumber, prandtlNumber: PDE parameters CNS and ASF
-// /real mu, kThermal, Rg, gamma, avr, anu: for CNS, ASF
+// /real machNumber, reynoldsNumber, prandtlNumber: PDE parameters CSSI and ASF
+// /real mu, kThermal, Rg, gamma, avr, anu: for CSSI, ASF
 // /real pressureLevel, nuRho: for ASF
 //
 // 
@@ -104,8 +104,8 @@ addPrefix(const aString label[], const aString & prefix, aString cmd[], const in
 
 
 //\begin{>>ParametersInclude.tex}{\subsection{Constructor}} 
-CnsParameters::
-CnsParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
+CssiParameters::
+CssiParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
 // ==================================================================================
 // /pde0: Indicated which PDE we are solving
 //
@@ -120,12 +120,12 @@ CnsParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
   
   if (!dbase.has_key("riemannSolver")) dbase.put<RiemannSolverEnum>("riemannSolver");
   if (!dbase.has_key("pdeVariation")) dbase.put<PDEVariation>("pdeVariation");
-  if (!dbase.has_key("conservativeGodunovMethod")) dbase.put<CnsParameters::GodunovVariation>("conservativeGodunovMethod");
+  if (!dbase.has_key("conservativeGodunovMethod")) dbase.put<CssiParameters::GodunovVariation>("conservativeGodunovMethod");
   if (!dbase.has_key("orderOfAccuracyForGodunovMethod")) dbase.put<int>("orderOfAccuracyForGodunovMethod");
   if (!dbase.has_key("godunovArtificialViscosity")) dbase.put<real>("godunovArtificialViscosity");
-  if (!dbase.has_key("equationOfState")) dbase.put<CnsParameters::EquationOfStateEnum>("equationOfState");
+  if (!dbase.has_key("equationOfState")) dbase.put<CssiParameters::EquationOfStateEnum>("equationOfState");
   if (!dbase.has_key("pde")) dbase.put<PDE>("pde");
-  if (!dbase.has_key("testProblem")) dbase.put<CnsParameters::TestProblems>("testProblem");
+  if (!dbase.has_key("testProblem")) dbase.put<CssiParameters::TestProblems>("testProblem");
   if (!dbase.has_key("strickwerdaCoeff")) dbase.put<real>("strickwerdaCoeff",1./6.);
   if (!dbase.has_key("thermalConductivity")) dbase.put<real>("thermalConductivity",1.);
 
@@ -145,12 +145,12 @@ CnsParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
   
 
   dbase.get<PDE>("pde")=compressibleNavierStokes;
-  dbase.get<CnsParameters::RiemannSolverEnum >("riemannSolver")=roeRiemannSolver;
-  dbase.get<CnsParameters::PDEVariation >("pdeVariation")=nonConservative;
-  dbase.get<CnsParameters::GodunovVariation >("conservativeGodunovMethod")=fortranVersion; 
+  dbase.get<CssiParameters::RiemannSolverEnum >("riemannSolver")=roeRiemannSolver;
+  dbase.get<CssiParameters::PDEVariation >("pdeVariation")=nonConservative;
+  dbase.get<CssiParameters::GodunovVariation >("conservativeGodunovMethod")=fortranVersion; 
   dbase.get<int >("orderOfAccuracyForGodunovMethod")=2;
   dbase.get<real >("godunovArtificialViscosity")=.5;  // for Don's Godunov Solver
-  dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState")=idealGasEOS;
+  dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState")=idealGasEOS;
 
   dbase.get<int >("scalarSystemForImplicitTimeStepping")=false;
 
@@ -176,13 +176,13 @@ CnsParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
 
 }
 
-CnsParameters::
-~CnsParameters()
+CssiParameters::
+~CssiParameters()
 {
 }
 
 
-int CnsParameters::
+int CssiParameters::
 setParameters(const int & numberOfDimensions0 /* =2 */ , 
               const aString & reactionName_ /* =nullString */ )
 // ==================================================================================================
@@ -191,9 +191,9 @@ setParameters(const int & numberOfDimensions0 /* =2 */ ,
 //      a Chemkin binary file. 
 // ==================================================================================================
 {
-  const CnsParameters::PDE & pde = dbase.get<CnsParameters::PDE >("pde");
+  const CssiParameters::PDE & pde = dbase.get<CssiParameters::PDE >("pde");
   const GodunovVariation & conservativeGodunovMethod = 
-                           dbase.get<CnsParameters::GodunovVariation >("conservativeGodunovMethod");
+                           dbase.get<CssiParameters::GodunovVariation >("conservativeGodunovMethod");
 
   int & numberOfComponents = dbase.get<int >("numberOfComponents");
   int & numberOfDimensions = dbase.get<int >("numberOfDimensions");
@@ -213,8 +213,8 @@ setParameters(const int & numberOfDimensions0 /* =2 */ ,
   int & numberOfExtraVariables = dbase.get<int >("numberOfExtraVariables");
   int & numberOfAdvectedScalars = dbase.get<int >("numberOfAdvectedScalars");
   
-  CnsParameters::EquationOfStateEnum & equationOfState = dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState");
-  const ReactionTypeEnum & reactionType = dbase.get<CnsParameters::ReactionTypeEnum >("reactionType");
+  CssiParameters::EquationOfStateEnum & equationOfState = dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState");
+  const ReactionTypeEnum & reactionType = dbase.get<CssiParameters::ReactionTypeEnum >("reactionType");
   
   aString* & componentName = dbase.get<aString* >("componentName");
   aString & reactionName = dbase.get<aString >("reactionName");
@@ -222,7 +222,7 @@ setParameters(const int & numberOfDimensions0 /* =2 */ ,
   Range & Ru = dbase.get<Range >("Ru");
 
   numberOfDimensions=numberOfDimensions0;
-  //   dbase.get<CnsParameters::PDE >("pde")=pde0;
+  //   dbase.get<CssiParameters::PDE >("pde")=pde0;
   rc= uc= vc= wc= pc= tc= sc= kc= epsc= sec=-1;
   int firstAdvectedScalar=-1;
   
@@ -458,7 +458,7 @@ setParameters(const int & numberOfDimensions0 /* =2 */ ,
       }
       else if( conservativeGodunovMethod!=multiComponentVersion )
       {
-	printF("CnsParameters:ERROR: unknown reaction=[%s]\n",(const char *) reactionName);
+	printF("CssiParameters:ERROR: unknown reaction=[%s]\n",(const char *) reactionName);
 	Overture::abort("error");
       }
    
@@ -581,7 +581,7 @@ setParameters(const int & numberOfDimensions0 /* =2 */ ,
   }
 
   default:
-    printF("CnsParameters::setParameters:ERROR: unknown type for pde! \n");
+    printF("CssiParameters::setParameters:ERROR: unknown type for pde! \n");
     Overture::abort("error");
   }
 
@@ -834,14 +834,14 @@ setParameters(const int & numberOfDimensions0 /* =2 */ ,
   realVector & unusedValue =  dbase.get<DataBase >("modelParameters").get<realVector>("unusedValue");
   unusedValue.resize( numberOfComponents,0.);
   
-  if(  pde==CnsParameters::compressibleNavierStokes )
+  if(  pde==CssiParameters::compressibleNavierStokes )
   {
     unusedValue[ rc]=1.;  // set unused points of rho to this value
     unusedValue[ tc]=.5;  // set unused points of T to this value
     for( int s=0; s< numberOfSpecies; s++ )
       unusedValue[ sc+s]=1.;  // Don S. wants lambda=1
   }
-  else if(  pde==CnsParameters::compressibleMultiphase )
+  else if(  pde==CssiParameters::compressibleMultiphase )
   {
     int rs=0, rg= numberOfDimensions+2;
     unusedValue[rs]=1.;  // set unused points of rho to this value
@@ -855,13 +855,13 @@ setParameters(const int & numberOfDimensions0 /* =2 */ ,
     unusedValue[as]=1.e-3;  // solid volume fraction
   }
   
-  if(  equationOfState==CnsParameters::jwlEOS )
+  if(  equationOfState==CssiParameters::jwlEOS )
   {
-    if( conservativeGodunovMethod!=CnsParameters::multiComponentVersion &&
-        conservativeGodunovMethod!=CnsParameters::multiFluidVersion )
+    if( conservativeGodunovMethod!=CssiParameters::multiComponentVersion &&
+        conservativeGodunovMethod!=CssiParameters::multiFluidVersion )
     {
       // 041130: specify default values for IG and jwlEOS
-      if(  reactionType != CnsParameters::igDesensitization )
+      if(  reactionType != CssiParameters::igDesensitization )
       {
 	assert(  numberOfSpecies>2 );          
 	assert(  componentName[ sc+1]=="a" );
@@ -884,7 +884,7 @@ setParameters(const int & numberOfDimensions0 /* =2 */ ,
     }
     else
     {
-      if(  reactionType != CnsParameters::igDesensitization )
+      if(  reactionType != CssiParameters::igDesensitization )
       {
 	assert(  numberOfSpecies>4 );
 	assert(  componentName[ sc+2]=="vi" );
@@ -913,7 +913,7 @@ setParameters(const int & numberOfDimensions0 /* =2 */ ,
 
   // For methods with wider stencils we need to interpolate more exposed points for moving grids
   if( ( pde==compressibleNavierStokes &&  
-        dbase.get<CnsParameters::PDEVariation >("pdeVariation")!=nonConservative) ||
+        dbase.get<CssiParameters::PDEVariation >("pdeVariation")!=nonConservative) ||
       ( pde==compressibleMultiphase )  )
   {
      dbase.get<int >("stencilWidthForExposedPoints")=5;
@@ -924,7 +924,7 @@ setParameters(const int & numberOfDimensions0 /* =2 */ ,
   }
   // ** warning: use[Fourth/Sixth]OrderArtificialDiffusion are probably not set here yet
   if( ( pde==compressibleNavierStokes &&  
-        dbase.get<CnsParameters::ImplicitMethod >("implicitMethod")==notImplicit) ||
+        dbase.get<CssiParameters::ImplicitMethod >("implicitMethod")==notImplicit) ||
       ( pde==compressibleMultiphase )  )
   {
      dbase.get<int >("extrapolateInterpolationNeighbours")=true;
@@ -943,8 +943,8 @@ setParameters(const int & numberOfDimensions0 /* =2 */ ,
 
 #if 0
    // kkc 070131 WHY IS THIS HERE?? DID I PUT IT HERE??  ARGGG!
-   if ( ( pde==CnsParameters::compressibleNavierStokes  || 
-	  pde==CnsParameters::compressibleMultiphase)
+   if ( ( pde==CssiParameters::compressibleNavierStokes  || 
+	  pde==CssiParameters::compressibleMultiphase)
 	&&        ( cgf.u.getInterpolant()->interpolationIsImplicit()))
      dbase.get<DataBase >("modelParameters").get<int>("fixupUnusedPointsFrequency") = 1;
 #endif
@@ -953,22 +953,22 @@ setParameters(const int & numberOfDimensions0 /* =2 */ ,
 }
 
 
-//\begin{>>CnsParametersInclude.tex}{\subsection{setTwilightZoneFunction}} 
-int CnsParameters::
+//\begin{>>CssiParametersInclude.tex}{\subsection{setTwilightZoneFunction}} 
+int CssiParameters::
 setTwilightZoneFunction(const TwilightZoneChoice & choice_,
                         const int & degreeSpace /* =2 */ , 
                         const int & degreeTime /* =1 */ )
 // =============================================================================================
 // /Description:
 //
-// /choice (input): CnsParameters::polynomial or CnsParameters::trigonometric
-//\end{CnsParametersInclude.tex}
+// /choice (input): CssiParameters::polynomial or CssiParameters::trigonometric
+//\end{CssiParametersInclude.tex}
 // =============================================================================================
 {
-  const CnsParameters::PDE & pde = dbase.get<CnsParameters::PDE >("pde");
+  const CssiParameters::PDE & pde = dbase.get<CssiParameters::PDE >("pde");
   assert(  pde==compressibleNavierStokes ||  pde==compressibleMultiphase );
   const GodunovVariation & conservativeGodunovMethod = 
-                           dbase.get<CnsParameters::GodunovVariation >("conservativeGodunovMethod");
+                           dbase.get<CssiParameters::GodunovVariation >("conservativeGodunovMethod");
 
   int & numberOfComponents = dbase.get<int >("numberOfComponents");
   int & numberOfDimensions = dbase.get<int >("numberOfDimensions");
@@ -990,7 +990,7 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
   //TODO: add TZ for passive scalar=passivec
   if( choice!=polynomial && choice!=trigonometric && choice!=pulse )
   {
-    printF("CnsParameters:: setTwilightZoneFunction: TwilightZoneChoice=%i not recognized\n"
+    printF("CssiParameters:: setTwilightZoneFunction: TwilightZoneChoice=%i not recognized\n"
            "  TwilightZoneChoice=trigonometric will be used instead\n",choice);
   }
 
@@ -1110,8 +1110,8 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
 	}
       }
 
-      if( conservativeGodunovMethod == CnsParameters::multiComponentVersion ||
-          conservativeGodunovMethod == CnsParameters::multiFluidVersion )
+      if( conservativeGodunovMethod == CssiParameters::multiComponentVersion ||
+          conservativeGodunovMethod == CssiParameters::multiFluidVersion )
       {
 	// Do stuff to multi component version
 	spatialCoefficientsForTZ(R5,R5,R5, rc)=0.;
@@ -1282,8 +1282,8 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
     fz =  numberOfDimensions>2 ?  omega[2] : 0.;
     ft =  omega[3];
 
-    if( conservativeGodunovMethod == CnsParameters::multiComponentVersion ||
-        conservativeGodunovMethod == CnsParameters::multiFluidVersion )
+    if( conservativeGodunovMethod == CssiParameters::multiComponentVersion ||
+        conservativeGodunovMethod == CssiParameters::multiFluidVersion )
     {
       if( numberOfSpecies>0 )
       {
@@ -1308,7 +1308,7 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
     // Optionally scale amplitudes: 
     const real & trigonometricTwilightZoneScaleFactor=
       dbase.get<real>("trigonometricTwilightZoneScaleFactor");  // scale factor for Trigonometric TZ
-    printF("*** CnsParameters:INFO: scaling trig TZ by the factor %9.3e\n",trigonometricTwilightZoneScaleFactor);
+    printF("*** CssiParameters:INFO: scaling trig TZ by the factor %9.3e\n",trigonometricTwilightZoneScaleFactor);
     amplitude *= trigonometricTwilightZoneScaleFactor;
     cc*=trigonometricTwilightZoneScaleFactor;
     
@@ -1339,7 +1339,7 @@ fillCompressibleDialogValues(DialogData & dialog,
 			     Parameters & parameters )
 // ======================================================================================================
 // /Description:
-//     Fill values into the Dialog for the CNS parameters.
+//     Fill values into the Dialog for the CSSI parameters.
 // ======================================================================================================
 {
 
@@ -1412,7 +1412,7 @@ buildCompressibleDialog(DialogData & dialog,
 
   aString rsLabel[] = {"exact Riemann solver","Roe Riemann solver","future Riemann solver","HLL Riemann solver",""}; //
   addPrefix(rsLabel,prefix,cmd,maxCommands);
-  dialog.addOptionMenu("Riemann Solver", cmd,rsLabel, parameters.dbase.get<CnsParameters::RiemannSolverEnum >("riemannSolver"));
+  dialog.addOptionMenu("Riemann Solver", cmd,rsLabel, parameters.dbase.get<CssiParameters::RiemannSolverEnum >("riemannSolver"));
 
   aString itLabel[] = {"default interpolation type",
                        "interpolate conservative variables",
@@ -1437,13 +1437,13 @@ buildCompressibleDialog(DialogData & dialog,
   textLabels[nt] = "gravity";  
   sPrintF(textStrings[nt], "%g,%g,%g",gravity[0],gravity[1],gravity[2]);  nt++; 
 
-  if( parameters.dbase.get<CnsParameters::PDEVariation >("pdeVariation")==CnsParameters::nonConservative )
+  if( parameters.dbase.get<CssiParameters::PDEVariation >("pdeVariation")==CssiParameters::nonConservative )
   {
     textLabels[nt] = "nuRho";  sPrintF(textStrings[nt], "%g",parameters.dbase.get<real >("nuRho"));  nt++; 
   }
 
   // For Jameson artificial viscosity:
-  if( parameters.dbase.get<CnsParameters::PDEVariation >("pdeVariation")==CnsParameters::conservativeWithArtificialDissipation ||
+  if( parameters.dbase.get<CssiParameters::PDEVariation >("pdeVariation")==CssiParameters::conservativeWithArtificialDissipation ||
       parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::implicit || parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::steadyStateNewton )
   {
     textLabels[nt] = "av2,av4";  sPrintF(textStrings[nt], "%g,%g",parameters.dbase.get<real >("av2"),parameters.dbase.get<real >("av4"));  nt++; 
@@ -1455,7 +1455,7 @@ buildCompressibleDialog(DialogData & dialog,
   sPrintF(textStrings[nt], "%i",parameters.dbase.get<int >("slipWallBoundaryConditionOption"));  nt++;
 
 
-  if( parameters.dbase.get<CnsParameters::PDEVariation >("pdeVariation")==CnsParameters::conservativeGodunov )
+  if( parameters.dbase.get<CssiParameters::PDEVariation >("pdeVariation")==CssiParameters::conservativeGodunov )
   {
     textLabels[nt] = "Godunov order of accuracy"; 
     sPrintF(textStrings[nt], "%i",parameters.dbase.get<int >("orderOfAccuracyForGodunovMethod")); nt++; 
@@ -1559,7 +1559,7 @@ buildCompressibleDialog(DialogData & dialog,
 
 
 
-int CnsParameters::
+int CssiParameters::
 setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
                  DialogData *interface /* =NULL */ )
 // =====================================================================================
@@ -1570,7 +1570,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
   int returnValue=0;
   int & numberOfDimensions = dbase.get<int >("numberOfDimensions");
 
-  // printF("\n &&&&&&&&&&&&&&& CnsParameters::setPdeParameters &&&&&&&&&&&&&\n");
+  // printF("\n &&&&&&&&&&&&&&& CssiParameters::setPdeParameters &&&&&&&&&&&&&\n");
 
   assert(  dbase.get<GenericGraphicsInterface* >("ps") !=NULL );
   GenericGraphicsInterface & gi = * dbase.get<GenericGraphicsInterface* >("ps");
@@ -1582,9 +1582,9 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
   if( executeCommand && command(0,prefix.length()-1)!=prefix && command!="build dialog" )
     return 1;
 
-  const CnsParameters::PDE & pde = dbase.get<CnsParameters::PDE >("pde");
+  const CssiParameters::PDE & pde = dbase.get<CssiParameters::PDE >("pde");
   GodunovVariation & conservativeGodunovMethod = 
-                           dbase.get<CnsParameters::GodunovVariation >("conservativeGodunovMethod");
+                           dbase.get<CssiParameters::GodunovVariation >("conservativeGodunovMethod");
 
   ArraySimpleFixed<real,3,1,1,1> & gravity =dbase.get<ArraySimpleFixed<real,3,1,1,1> >("gravity");
 
@@ -1594,9 +1594,9 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
 
 
   aString *pdeParametersMenu=NULL;
-  if(  pde==CnsParameters::compressibleNavierStokes )
+  if(  pde==CssiParameters::compressibleNavierStokes )
   {
-//\begin{>>setParametersInclude.tex}{\subsubsection{PDE parameters for CNS}\label{sec:cnsPdeParams}}
+//\begin{>>setParametersInclude.tex}{\subsubsection{PDE parameters for CSSI}\label{sec:cssiPdeParams}}
 //\no function header:
 //
 // Here are the pde parameters that can be changed when solving the compressible Navier-Stokes equations.
@@ -1666,7 +1666,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     pdeParametersMenu[n++]=  "reciprocal activation energy";
     pdeParametersMenu[n++]=  "rate constant";
     pdeParametersMenu[n++]="< ";
-    if(  pde==CnsParameters::compressibleNavierStokes )
+    if(  pde==CssiParameters::compressibleNavierStokes )
     {
       pdeParametersMenu[n++]=">algorithms";
       pdeParametersMenu[n++]=  "conservative with artificial dissipation";
@@ -1715,8 +1715,8 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
   {
     const int maxCommands=40;
     aString cmd[maxCommands];
-    if(  pde==CnsParameters::compressibleNavierStokes ||
-	 pde==CnsParameters::compressibleMultiphase ||
+    if(  pde==CssiParameters::compressibleNavierStokes ||
+	 pde==CssiParameters::compressibleMultiphase ||
              TRUE )
     {
       updatePDEparameters();  // update parameters such as ReynoldsNumber, MachNumber, ... to be consistent.
@@ -1735,8 +1735,8 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
       dialog.openDialog(0);   // open the dialog here so we can reset the parameter values below
 
     updatePDEparameters();
-    if(  pde==CnsParameters::compressibleNavierStokes ||
-         pde==CnsParameters::compressibleMultiphase )
+    if(  pde==CssiParameters::compressibleNavierStokes ||
+         pde==CssiParameters::compressibleMultiphase )
     {
       fillCompressibleDialogValues(dialog,*this );
     }
@@ -1752,8 +1752,8 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
   int len;
   for(int it=0; ; it++)
   {
-    if(  pde==CnsParameters::compressibleNavierStokes ||
-         pde==CnsParameters::compressibleMultiphase )
+    if(  pde==CssiParameters::compressibleNavierStokes ||
+         pde==CssiParameters::compressibleMultiphase )
     {
       updatePDEparameters();
       fillCompressibleDialogValues(dialog,*this );
@@ -1860,8 +1860,8 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     }
     else if( answer=="Mach number" )
     {
-      if(  pde==CnsParameters::compressibleNavierStokes &&
-           dbase.get<CnsParameters::PDEVariation >("pdeVariation")==CnsParameters::conservativeGodunov )
+      if(  pde==CssiParameters::compressibleNavierStokes &&
+           dbase.get<CssiParameters::PDEVariation >("pdeVariation")==CssiParameters::conservativeGodunov )
       {
         gi.inputString(answer,sPrintF(buff,"Enter the Mach number (default value=%e)", dbase.get<real >("machNumber")));
 	printF("Sorry: you should not change the Mach number for this option. Default is M=1/sqrt(gamma*Rg) \n");
@@ -2120,22 +2120,22 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     }
     else if( answer=="conservative with artificial dissipation" )
     {
-       dbase.get<CnsParameters::PDEVariation >("pdeVariation")=CnsParameters::conservativeWithArtificialDissipation;
+       dbase.get<CssiParameters::PDEVariation >("pdeVariation")=CssiParameters::conservativeWithArtificialDissipation;
     }
     else if( answer=="non-conservative" )
     {
-       dbase.get<CnsParameters::PDEVariation >("pdeVariation")=CnsParameters::nonConservative;
+       dbase.get<CssiParameters::PDEVariation >("pdeVariation")=CssiParameters::nonConservative;
     }
     else if( answer=="conservative Godunov" )
     {
-       dbase.get<CnsParameters::PDEVariation >("pdeVariation")=CnsParameters::conservativeGodunov;
+       dbase.get<CssiParameters::PDEVariation >("pdeVariation")=CssiParameters::conservativeGodunov;
        dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")=Parameters::forwardEuler;
       //  dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")=Parameters::midPoint;
        conservativeGodunovMethod=fortranVersion;
     }
     else if( answer=="new conservative Godunov" )
     {
-       dbase.get<CnsParameters::PDEVariation >("pdeVariation")=CnsParameters::conservativeGodunov;
+       dbase.get<CssiParameters::PDEVariation >("pdeVariation")=CssiParameters::conservativeGodunov;
        dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")=Parameters::forwardEuler;
        conservativeGodunovMethod=cppVersionI;
       printF("Use new conservative C++ Godunov\n");
@@ -2143,7 +2143,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     }
     else if( answer=="newer conservative Godunov" )
     {
-       dbase.get<CnsParameters::PDEVariation >("pdeVariation")=CnsParameters::conservativeGodunov;
+       dbase.get<CssiParameters::PDEVariation >("pdeVariation")=CssiParameters::conservativeGodunov;
        dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")=Parameters::forwardEuler;
        conservativeGodunovMethod=cppVersionII;
       printF("Use David's newer conservative Godunov\n");
@@ -2327,14 +2327,14 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
              answer=="future Riemann solver" ||
              answer=="HLL Riemann solver" )
     {
-      int rsChoice=(int) dbase.get<CnsParameters::RiemannSolverEnum >("riemannSolver");
+      int rsChoice=(int) dbase.get<CssiParameters::RiemannSolverEnum >("riemannSolver");
       if( answer=="exact Riemann solver" )
-         dbase.get<CnsParameters::RiemannSolverEnum >("riemannSolver")=exactRiemannSolver;
+         dbase.get<CssiParameters::RiemannSolverEnum >("riemannSolver")=exactRiemannSolver;
       else if( answer=="Roe Riemann solver" )
-         dbase.get<CnsParameters::RiemannSolverEnum >("riemannSolver")=roeRiemannSolver;
+         dbase.get<CssiParameters::RiemannSolverEnum >("riemannSolver")=roeRiemannSolver;
       else
       {
-         dbase.get<CnsParameters::RiemannSolverEnum >("riemannSolver")=hLLRiemannSolver;  // this value is 3 -- 
+         dbase.get<CssiParameters::RiemannSolverEnum >("riemannSolver")=hLLRiemannSolver;  // this value is 3 -- 
       }
    
       dialog.getOptionMenu("Riemann Solver").setCurrentChoice(rsChoice);
@@ -2508,7 +2508,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
 
 
 
-int CnsParameters::
+int CssiParameters::
 displayPdeParameters(FILE *file /* = stdout */ )
 // =====================================================================================
 // /Description:
@@ -2517,20 +2517,20 @@ displayPdeParameters(FILE *file /* = stdout */ )
 {
   const char *offOn[2] = { "off","on" };
 
-  if(   dbase.get<CnsParameters::PDE >("pde")==CnsParameters::compressibleNavierStokes )
+  if(   dbase.get<CssiParameters::PDE >("pde")==CssiParameters::compressibleNavierStokes )
   {
     fprintf(file,
 	    "PDE parameters: equation is `compressible Navier Stokes'.\n");
-    if(  dbase.get<CnsParameters::PDEVariation >("pdeVariation")==CnsParameters::conservativeWithArtificialDissipation )
+    if(  dbase.get<CssiParameters::PDEVariation >("pdeVariation")==CssiParameters::conservativeWithArtificialDissipation )
     {
       fprintf(file," Using conservative with artificial diffusion: av2=%7.3e, aw2=%7.3e, av4=%7.3e, aw4=%7.3e\n",
 	       dbase.get<real >("av2"), dbase.get<real >("aw2"), dbase.get<real >("av4"), dbase.get<real >("aw4"));
     }
-    else if(  dbase.get<CnsParameters::PDEVariation >("pdeVariation")==CnsParameters::conservativeGodunov )
+    else if(  dbase.get<CssiParameters::PDEVariation >("pdeVariation")==CssiParameters::conservativeGodunov )
     {
       fprintf(file," Using conservative Godunov method\n");
     }
-    else if(  dbase.get<CnsParameters::PDEVariation >("pdeVariation")==CnsParameters::nonConservative )
+    else if(  dbase.get<CssiParameters::PDEVariation >("pdeVariation")==CssiParameters::nonConservative )
     {
       fprintf(file," Using nonconservative method: nuRho = %7.3e, anu=%e\n", dbase.get<real >("nuRho"), dbase.get<real >("anu"));
     }
@@ -2640,7 +2640,7 @@ displayPdeParameters(FILE *file /* = stdout */ )
 
 
   }
-  else if(   dbase.get<CnsParameters::PDE >("pde")==CnsParameters::compressibleMultiphase )
+  else if(   dbase.get<CssiParameters::PDE >("pde")==CssiParameters::compressibleMultiphase )
   {
     fprintf(file,
 	    "PDE parameters: equation is `compressible multiphase'.\n");
@@ -2656,7 +2656,7 @@ displayPdeParameters(FILE *file /* = stdout */ )
 
 
 //\begin{>>OverBlownInclude.tex}{\subsection{updatePDEparameters}} 
-int CnsParameters::
+int CssiParameters::
 updatePDEparameters()
 //===================================================================================
 // /Description:
@@ -2667,7 +2667,7 @@ updatePDEparameters()
 //\end{OverBlownInclude.tex}  
 //===================================================================================
 {
-  if(  dbase.get<CnsParameters::PDE >("pde")==CnsParameters::compressibleNavierStokes )
+  if(  dbase.get<CssiParameters::PDE >("pde")==CssiParameters::compressibleNavierStokes )
   {
 
     const real infinity = 1./REAL_MIN;
@@ -2727,8 +2727,8 @@ updatePDEparameters()
 }
 
 
-//\begin{>>CnsParametersInclude.tex}{\subsection{updateShowFile}} 
-int CnsParameters::
+//\begin{>>CssiParametersInclude.tex}{\subsection{updateShowFile}} 
+int CssiParameters::
 saveParametersToShowFile()
 // =================================================================================================
 // /Description:
@@ -2736,7 +2736,7 @@ saveParametersToShowFile()
 //     These parameters can be used for a restart. They can also be used, for example,
 //     by the user defined derived functions (when viewing the show file with plotStuff).
 // 
-//\end{CnsParametersInclude.tex}  
+//\end{CssiParametersInclude.tex}  
 // =================================================================================================
 {
   assert(  dbase.get<Ogshow* >("show")!=NULL );
@@ -2753,11 +2753,11 @@ saveParametersToShowFile()
   int & sc = dbase.get<int >("sc");
   int & sec = dbase.get<int >("sec");
   int & epsc = dbase.get<int >("epsc");
-  const ReactionTypeEnum & reactionType = dbase.get<CnsParameters::ReactionTypeEnum >("reactionType");
+  const ReactionTypeEnum & reactionType = dbase.get<CssiParameters::ReactionTypeEnum >("reactionType");
 
   ListOfShowFileParameters & showFileParams = dbase.get<ListOfShowFileParameters>("showFileParams");
 
-  if(  dbase.get<CnsParameters::PDE >("pde")==compressibleNavierStokes )
+  if(  dbase.get<CssiParameters::PDE >("pde")==compressibleNavierStokes )
   {
     // save parameters
 
@@ -2783,15 +2783,15 @@ saveParametersToShowFile()
 
 
 
-    CnsParameters::EquationOfStateEnum & equationOfState = dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState");
+    CssiParameters::EquationOfStateEnum & equationOfState = dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState");
     
     aString eosName;
-    eosName=( equationOfState==CnsParameters::idealGasEOS ? "ideal gas" :
-	      equationOfState==CnsParameters::jwlEOS ? "JWL" : 
-              equationOfState==CnsParameters::mieGruneisenEOS ? "Mie-Gruneisen" : 
-              equationOfState==CnsParameters::userDefinedEOS ? "user defined" : 
-              equationOfState==CnsParameters::stiffenedGasEOS ? "stiffened gas" : 
-              equationOfState==CnsParameters::taitEOS ? "Tait" : 
+    eosName=( equationOfState==CssiParameters::idealGasEOS ? "ideal gas" :
+	      equationOfState==CssiParameters::jwlEOS ? "JWL" : 
+              equationOfState==CssiParameters::mieGruneisenEOS ? "Mie-Gruneisen" : 
+              equationOfState==CssiParameters::userDefinedEOS ? "user defined" : 
+              equationOfState==CssiParameters::stiffenedGasEOS ? "stiffened gas" : 
+              equationOfState==CssiParameters::taitEOS ? "Tait" : 
 	     "unknown");
  
     showFileParams.push_back(ShowFileParameter("equationOfState",eosName));
@@ -2833,7 +2833,7 @@ saveParametersToShowFile()
 
 
   }
-  else if(  dbase.get<CnsParameters::PDE >("pde")==CnsParameters::compressibleMultiphase )
+  else if(  dbase.get<CssiParameters::PDE >("pde")==CssiParameters::compressibleMultiphase )
   {
     // save parameters
 
@@ -2841,7 +2841,7 @@ saveParametersToShowFile()
   }
   else
   {
-    printF("CnsParameters:saveParametersToShowFile:ERROR: unknown pde ! \n");
+    printF("CssiParameters:saveParametersToShowFile:ERROR: unknown pde ! \n");
     Overture::abort("error");
   }
 
@@ -2870,7 +2870,7 @@ saveParametersToShowFile()
 
 
 //\begin{>>ParametersInclude.tex}{\subsubsection{getDerivedFunction}}
-int CnsParameters::
+int CssiParameters::
 getDerivedFunction( const aString & name, const realCompositeGridFunction & u,
                     realCompositeGridFunction & v, const int component, const real t, 
                     Parameters & parameters)
@@ -2897,7 +2897,7 @@ getDerivedFunction( const aString & name, const realCompositeGridFunction & u,
 }
 
 //\begin{>>CompositeGridFunctionInclude.tex}{\subsubsection{getDerivedFunction}}
-int CnsParameters::
+int CssiParameters::
 getDerivedFunction( const aString & name, const realMappedGridFunction & uIn, 
                     realMappedGridFunction & vIn, const int grid,
                     const int component, const real t, Parameters & parameters)
@@ -2925,7 +2925,7 @@ getDerivedFunction( const aString & name, const realMappedGridFunction & uIn,
   
   const EquationOfStateEnum equationOfState = parameters.dbase.get<EquationOfStateEnum >("equationOfState");
   const GodunovVariation & conservativeGodunovMethod = 
-                           dbase.get<CnsParameters::GodunovVariation >("conservativeGodunovMethod");
+                           dbase.get<CssiParameters::GodunovVariation >("conservativeGodunovMethod");
   
 
   #ifdef USE_PPP
@@ -2958,7 +2958,7 @@ getDerivedFunction( const aString & name, const realMappedGridFunction & uIn,
 	  // assume ideal gas law for now
 	  v(all,all,all,component)=Rg*u(all,all,all, rc)*u(all,all,all,tc);
 	}
-	else if( equationOfState==CnsParameters::mieGruneisenEOS )
+	else if( equationOfState==CssiParameters::mieGruneisenEOS )
 	{
           real alphaMG,betaMG,v0MG,kappaMG;
           ListOfShowFileParameters pdeParameters = parameters.dbase.get<ListOfShowFileParameters >("pdeParameters");
@@ -2976,7 +2976,7 @@ getDerivedFunction( const aString & name, const realMappedGridFunction & uIn,
           v(all,all,all,component)=(Rg*kappaMG)*u(all,all,all,rc)*u(all,all,all,tc)
 	    + (vv-1.)*( alphaMG + betaMG*(vv-1.) );
 	}
-        else if( equationOfState==CnsParameters::stiffenedGasEOS )
+        else if( equationOfState==CssiParameters::stiffenedGasEOS )
 	{
           //  p = (gammaStiff-1)* rho * e -  gammaStiff*pStiff
           // ! *ve* rho*e = (rho*T-gammaStiff*pStiff)/(gammaStiff-1)
@@ -2987,7 +2987,7 @@ getDerivedFunction( const aString & name, const realMappedGridFunction & uIn,
           // p = rho*T (T is defined as p/rho)
           v(all,all,all,component)=Rg*u(all,all,all, rc)*u(all,all,all,tc);
 	}
-	else if( equationOfState==CnsParameters::taitEOS )
+	else if( equationOfState==CssiParameters::taitEOS )
 	{
           Overture::abort("finish me");
 	}
@@ -3047,12 +3047,12 @@ getDerivedFunction( const aString & name, const realMappedGridFunction & uIn,
         if( equationOfState==idealGasEOS ||
             equationOfState==jwlEOS ||
             equationOfState==userDefinedEOS ||
-            equationOfState==CnsParameters::stiffenedGasEOS )
+            equationOfState==CssiParameters::stiffenedGasEOS )
 	{
 	  // assume ideal gas law for now  : T = p/(rho* dbase.get<real >("Rg"))
           v(all,all,all,component)=u(all,all,all,tc)/(Rg*u(all,all,all,rc));
 	}
-	else if( equationOfState==CnsParameters::mieGruneisenEOS )
+	else if( equationOfState==CssiParameters::mieGruneisenEOS )
 	{
           real alphaMG,betaMG,v0MG,kappaMG;
           ListOfShowFileParameters pdeParameters = parameters.dbase.get<ListOfShowFileParameters >("pdeParameters");
@@ -3071,7 +3071,7 @@ getDerivedFunction( const aString & name, const realMappedGridFunction & uIn,
           v(all,all,all,component)=( u(all,all,all,pc) - (vv-1.)*( alphaMG + betaMG*(vv-1.) ) )/
                     ((Rg*kappaMG)*u(all,all,all, rc));
 	}
-        else if( equationOfState==CnsParameters::taitEOS )
+        else if( equationOfState==CssiParameters::taitEOS )
 	{
           Overture::abort("ERROR: finish me!");
 	}
@@ -3100,19 +3100,19 @@ getDerivedFunction( const aString & name, const realMappedGridFunction & uIn,
 }
 
 int
-CnsParameters::
+CssiParameters::
 buildReactions()
 {
   Parameters::buildReactions();
   if(  dbase.get<aString >("reactionName")=="one step" )
   {
-    dbase.get<CnsParameters::PDEVariation >("pdeVariation")=conservativeGodunov;
+    dbase.get<CssiParameters::PDEVariation >("pdeVariation")=conservativeGodunov;
   }
   else if(  dbase.get<aString >("reactionName")=="branching" )
   {
-    dbase.get<CnsParameters::PDEVariation >("pdeVariation")=conservativeGodunov;
+    dbase.get<CssiParameters::PDEVariation >("pdeVariation")=conservativeGodunov;
   }
-  if(  dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState")==jwlEOS )
+  if(  dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState")==jwlEOS )
   {
     // alpha and beta
     dbase.get<int >("numberOfSpecies")+=2;
@@ -3121,18 +3121,18 @@ buildReactions()
 }
 
 int
-CnsParameters::
+CssiParameters::
 updateToMatchGrid(CompositeGrid & cg, IntegerArray & sharedBoundaryCondition )
 {
   Parameters::updateToMatchGrid(cg, sharedBoundaryCondition);
 
-  // !!! kkc fudge to make implicit cns code work with amr
+  // !!! kkc fudge to make implicit cssi code work with amr
   if (  dbase.get<PDE>("pde")==compressibleNavierStokes &&  dbase.get<Parameters::ImplicitMethod >("implicitMethod")!=notImplicit )
     dbase.get<IntegerArray >("gridIsImplicit") = 1;
 
   Range all;
   if( (  dbase.get<PDE>("pde")==compressibleNavierStokes &&  
-	 dbase.get<CnsParameters::PDEVariation >("pdeVariation")==conservativeGodunov &&  
+	 dbase.get<CssiParameters::PDEVariation >("pdeVariation")==conservativeGodunov &&  
 	 dbase.get<int >("numberOfSpecies")>0 ) ||
       dbase.get<PDE>("pde")==compressibleMultiphase )
   {
@@ -3150,7 +3150,7 @@ updateToMatchGrid(CompositeGrid & cg, IntegerArray & sharedBoundaryCondition )
 }
 
 bool
-CnsParameters::
+CssiParameters::
 useConservativeVariables(int grid /* =-1 */ ) const
 {
   Parameters *gridPDE= (Parameters*)this;
@@ -3166,15 +3166,15 @@ useConservativeVariables(int grid /* =-1 */ ) const
       gridPDE = equationDomain.getPDE();
     }
   
-  CnsParameters *gridCNSParams = dynamic_cast<CnsParameters*>(gridPDE);
-  return ( (gridCNSParams && gridCNSParams->dbase.get<PDE>("pde")==compressibleNavierStokes && 
-	    dbase.get<CnsParameters::PDEVariation >("pdeVariation")!=nonConservative)
-	   || (gridCNSParams && gridCNSParams->dbase.get<PDE>("pde")==compressibleMultiphase));
+  CssiParameters *gridCSSIParams = dynamic_cast<CssiParameters*>(gridPDE);
+  return ( (gridCSSIParams && gridCSSIParams->dbase.get<PDE>("pde")==compressibleNavierStokes && 
+	    dbase.get<CssiParameters::PDEVariation >("pdeVariation")!=nonConservative)
+	   || (gridCSSIParams && gridCSSIParams->dbase.get<PDE>("pde")==compressibleMultiphase));
 }
 
 
 int 
-CnsParameters::
+CssiParameters::
 numberOfGhostPointsNeeded() const  // number of ghost points needed by this method.
 {
   int numGhost = Parameters::numberOfGhostPointsNeeded();
@@ -3195,7 +3195,7 @@ numberOfGhostPointsNeeded() const  // number of ghost points needed by this meth
 
 
 int 
-CnsParameters::
+CssiParameters::
 get(const GenericDataBase & dir, const aString & name)
 {
   Parameters::get(dir,name);
@@ -3211,22 +3211,22 @@ get(const GenericDataBase & dir, const aString & name)
 }
  
 int 
-CnsParameters::
+CssiParameters::
 put(GenericDataBase & dir, const aString & name)
 {
   Parameters::put(dir,name);
   GenericDataBase & subDir = *dir.virtualConstructor();
   dir.find(subDir,name,"Parameters");
 
-  subDir.put((int) dbase.get<CnsParameters::PDE >("pde"),"pde");
-  subDir.put((int) dbase.get<CnsParameters::PDEVariation >("pdeVariation"),"pdeVariation"); 
-  subDir.put((int) dbase.get<CnsParameters::RiemannSolverEnum >("riemannSolver"),"riemannSolver"); 
-  subDir.put((int) dbase.get<CnsParameters::GodunovVariation >("conservativeGodunovMethod"),"conservativeGodunovMethod");
+  subDir.put((int) dbase.get<CssiParameters::PDE >("pde"),"pde");
+  subDir.put((int) dbase.get<CssiParameters::PDEVariation >("pdeVariation"),"pdeVariation"); 
+  subDir.put((int) dbase.get<CssiParameters::RiemannSolverEnum >("riemannSolver"),"riemannSolver"); 
+  subDir.put((int) dbase.get<CssiParameters::GodunovVariation >("conservativeGodunovMethod"),"conservativeGodunovMethod");
 
   return 0;
 }   
 
-int CnsParameters::
+int CssiParameters::
 assignParameterValues(const aString & label, RealArray & values,
                       const int & numRead, aString *c, real val[],
                       char *extraName1 /* = 0 */, const int & extraValue1Location /* = 0 */, 
@@ -3258,7 +3258,7 @@ assignParameterValues(const aString & label, RealArray & values,
   int & numberOfDimensions = dbase.get<int >("numberOfDimensions");
 
   const GodunovVariation & conservativeGodunovMethod = 
-                           dbase.get<CnsParameters::GodunovVariation >("conservativeGodunovMethod");
+                           dbase.get<CssiParameters::GodunovVariation >("conservativeGodunovMethod");
   aString name;
   int i,n;
   real energy=-1.;
@@ -3325,7 +3325,7 @@ assignParameterValues(const aString & label, RealArray & values,
     if(  numberOfDimensions>2 )
       uSq+=SQR(values( dbase.get<int >("wc")));
 
-    if( dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState")==idealGasEOS &&  
+    if( dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState")==idealGasEOS &&  
         conservativeGodunovMethod!=multiComponentVersion && conservativeGodunovMethod!=multiFluidVersion)
     {
 
@@ -3353,7 +3353,7 @@ assignParameterValues(const aString & label, RealArray & values,
 }
 
 // *wdh* 100808 -- this function was merged back into the base class version
-//* int CnsParameters::
+//* int CssiParameters::
 //* setTwilightZoneParameters(const aString & command /* = nullString */,
 //* 			  DialogData *interface /* =NULL */ )
 //* // =====================================================================================
@@ -3730,7 +3730,7 @@ assignParameterValues(const aString & label, RealArray & values,
 //*   return returnValue;
 //* }
 
-//* realMappedGridFunction& CnsParameters::
+//* realMappedGridFunction& CssiParameters::
 //* getKnownSolution(real t, int grid, const Index & I1, const Index &I2, const Index &I3, bool initialCall /* =false */  )
 //* // ========================================================================================
 //* // /Description:
@@ -3764,14 +3764,14 @@ assignParameterValues(const aString & label, RealArray & values,
 //*   }
 //*   else
 //*   {
-//*     printF("CnsParameters::getKnownSolution:ERROR: unknown knownSolution=%i\n", dbase.get<Parameters::KnownSolutionsEnum >("knownSolution"));
+//*     printF("CssiParameters::getKnownSolution:ERROR: unknown knownSolution=%i\n", dbase.get<Parameters::KnownSolutionsEnum >("knownSolution"));
 //*     Overture::abort("ERROR");
 //*   }
 //* 
 //*   return uKnown[grid];
 //* }
 
-int CnsParameters::
+int CssiParameters::
 getComponents( IntegerArray &component )
 //==================================================================================
 // /Description:
@@ -3799,8 +3799,8 @@ getComponents( IntegerArray &component )
 }
 
 
-//\begin{>>CnsParametersInclude.tex}{\subsection{setDefaultDataForBoundaryConditions}} 
-int CnsParameters::
+//\begin{>>CssiParametersInclude.tex}{\subsection{setDefaultDataForBoundaryConditions}} 
+int CssiParameters::
 setDefaultDataForABoundaryCondition(const int & side,
 				    const int & axis,
 				    const int & grid,
@@ -3808,22 +3808,22 @@ setDefaultDataForABoundaryCondition(const int & side,
 // ============================================================================================
 // /Description:
 //    Assign the default values for the data required by the boundary conditions.
-//\end{CnsParametersInclude.tex}  
+//\end{CssiParametersInclude.tex}  
 // ============================================================================================
 {
   Range all;
   switch (cg[grid].boundaryCondition()(side,axis)) 
   {
     //kkc 080708 this case is not used and causes an error because the enum shares the number with Parameters::  
-  case CnsParameters::inflowWithVelocityGiven:
-  case CnsParameters::subSonicInflow:
+  case CssiParameters::inflowWithVelocityGiven:
+  case CssiParameters::subSonicInflow:
     // data is set n.u = ...
     dbase.get<RealArray>("bcData")(all,side,axis,grid)=0.;
     break;
-  case CnsParameters::outflow:
-  case CnsParameters::subSonicOutflow:
-  case CnsParameters::convectiveOutflow:
-  case CnsParameters::tractionFree:
+  case CssiParameters::outflow:
+  case CssiParameters::subSonicOutflow:
+  case CssiParameters::convectiveOutflow:
+  case CssiParameters::tractionFree:
    //  data is a*p+b*p.n = c
     dbase.get<RealArray>("bcData")(0,side,axis,grid)=1.;
     dbase.get<RealArray>("bcData")(1,side,axis,grid)=1.;
@@ -3835,15 +3835,15 @@ setDefaultDataForABoundaryCondition(const int & side,
 }
 
 bool
-CnsParameters::isMixedBC(int bc) 
+CssiParameters::isMixedBC(int bc) 
 { 
   Parameters::TimeSteppingMethod &timeSteppingMethod = dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod");
   bool isImp = timeSteppingMethod==Parameters::implicit || timeSteppingMethod==Parameters::steadyStateNewton ;
 
-  return  (bc==CnsParameters::outflow ||       
-    bc==CnsParameters::subSonicOutflow || 
-    bc==CnsParameters::convectiveOutflow ||
-    bc==CnsParameters::tractionFree) && !isImp; 
+  return  (bc==CssiParameters::outflow ||       
+    bc==CssiParameters::subSonicOutflow || 
+    bc==CssiParameters::convectiveOutflow ||
+    bc==CssiParameters::tractionFree) && !isImp; 
 }
 
 
@@ -3857,7 +3857,7 @@ CnsParameters::isMixedBC(int bc)
 /// \param rpar (input) : real parameters. The current time is t=rpar[0]
 /// \param includeViscosity (input) : if true include viscous stress terms in the force.
 // ===================================================================================================================
-int CnsParameters::
+int CssiParameters::
 getNormalForce( realCompositeGridFunction & u, realSerialArray & normalForce, int *ipar, real *rpar,
 		bool includeViscosity /* = true */ )
 {
@@ -3924,7 +3924,7 @@ getNormalForce( realCompositeGridFunction & u, realSerialArray & normalForce, in
       dbase.get<ListOfShowFileParameters >("pdeParameters").getParameter("alphaMG",gammaStiff);
       dbase.get<ListOfShowFileParameters >("pdeParameters").getParameter("betaMG",pStiff);
       
-      printF("CnsParameters::getNormalForce:prim:stiffenedGasEOS:INFO: gammaStiff=%9.3e, pStiff=%9.3e\n",
+      printF("CssiParameters::getNormalForce:prim:stiffenedGasEOS:INFO: gammaStiff=%9.3e, pStiff=%9.3e\n",
              gammaStiff,pStiff);
 
       // p = rho*T (since T is defined as p/rho, even for a stiffened gas)
@@ -3934,7 +3934,7 @@ getNormalForce( realCompositeGridFunction & u, realSerialArray & normalForce, in
     }
     else
     {
-      printF("CnsParameters::getNormalForce:ERROR: equationOfState=%i not implemeneted yet!\n",(int)equationOfState);
+      printF("CssiParameters::getNormalForce:ERROR: equationOfState=%i not implemeneted yet!\n",(int)equationOfState);
     }
     
   }
@@ -3968,7 +3968,7 @@ getNormalForce( realCompositeGridFunction & u, realSerialArray & normalForce, in
       dbase.get<ListOfShowFileParameters >("pdeParameters").getParameter("alphaMG",gammaStiff);
       dbase.get<ListOfShowFileParameters >("pdeParameters").getParameter("betaMG",pStiff);
 
-      printF("CnsParameters::getNormalForce:cons:stiffenedGasEOS:INFO: gammaStiff=%9.3e, pStiff=%9.3e\n",
+      printF("CssiParameters::getNormalForce:cons:stiffenedGasEOS:INFO: gammaStiff=%9.3e, pStiff=%9.3e\n",
              gammaStiff,pStiff);
       
       //  p = (gammaStiff-1)* rho * e -  gammaStiff*pStiff
@@ -3996,7 +3996,7 @@ getNormalForce( realCompositeGridFunction & u, realSerialArray & normalForce, in
     }
     else
     {
-      printF("CnsParameters::getNormalForce:ERROR: equationOfState=%i not implemeneted yet!\n",(int)equationOfState);
+      printF("CssiParameters::getNormalForce:ERROR: equationOfState=%i not implemeneted yet!\n",(int)equationOfState);
     }
 
     

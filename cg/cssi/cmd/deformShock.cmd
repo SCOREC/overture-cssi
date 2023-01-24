@@ -1,9 +1,9 @@
 *
-* cgcns example: test a shock that moves through a deforming grid
+* cgcssi example: test a shock that moves through a deforming grid
 *
 * Usage:
 *   
-*  cgcns [-noplot] deformShock -g=<name> -tz=<poly/trig/none> -degreex=<> -degreet=<> -tf=<tFinal> -tp=<tPlot> ...
+*  cgcssi [-noplot] deformShock -g=<name> -tz=<poly/trig/none> -degreex=<> -degreet=<> -tf=<tFinal> -tp=<tPlot> ...
 *        -bc=<a|d|r> -model=<Jameson/Godunov> -debug=<num> -bg=<backGround> -uInflow=<> -mu=<> ...
 *        -motion=[oscillate|scale|translate] -go=[run/halt/og]
 * 
@@ -14,23 +14,23 @@
 * 
 * Examples: [note: shock speed is 2]
 * 
-*  cgcns deformShock -g=square10 -tf=2. -tp=.05 -motion=translate -go=halt 
-*  cgcns deformShock -g=square128 -tf=.5 -tp=.05 -motion=oscillate -go=halt 
-*  cgcns deformShock -g=square64 -tf=.5 -tp=.05 -motion=translate -go=halt 
+*  cgcssi deformShock -g=square10 -tf=2. -tp=.05 -motion=translate -go=halt 
+*  cgcssi deformShock -g=square128 -tf=.5 -tp=.05 -motion=oscillate -go=halt 
+*  cgcssi deformShock -g=square64 -tf=.5 -tp=.05 -motion=translate -go=halt 
 * 
-*  cgcns deformShock -g=square5  -tf=.5 -tp=.001 -motion=scale -go=halt -debug=15
-*  cgcns deformShock -g=square64  -tf=.5 -tp=.1 -motion=scale -go=halt 
+*  cgcssi deformShock -g=square5  -tf=.5 -tp=.001 -motion=scale -go=halt -debug=15
+*  cgcssi deformShock -g=square64  -tf=.5 -tp=.1 -motion=scale -go=halt 
 *
-*  cgcns deformShock -g=rsis2e -bg="outer-square" -dg="inner-square" -xStep="x=-.5" -sx=1. -sy=.5 -tf=.5 -tp=.1 -motion=scale -go=halt 
-*  cgcns deformShock -g=rsis8e -bg="outer-square" -dg="inner-square" -xStep="x=-.5" -sx=1. -sy=.5 -tf=.5 -tp=.1 -motion=scale -go=halt 
+*  cgcssi deformShock -g=rsis2e -bg="outer-square" -dg="inner-square" -xStep="x=-.5" -sx=1. -sy=.5 -tf=.5 -tp=.1 -motion=scale -go=halt 
+*  cgcssi deformShock -g=rsis8e -bg="outer-square" -dg="inner-square" -xStep="x=-.5" -sx=1. -sy=.5 -tf=.5 -tp=.1 -motion=scale -go=halt 
 * 
-*  cgcns deformShock -g=solidDiskDeformi2 -bg="outerSquare" -dg="outerInterface" -xStep="x=-1." -sx=.25 -sy=.5  -tf=1.2 -tp=.2 -motion=scale -go=halt 
-*  cgcns deformShock -g=solidDiskDeformi4 -bg="outerSquare" -dg="outerInterface" -xStep="x=-1." -sx=.25 -sy=.5  -tf=1.2 -tp=.2 -motion=scale -go=halt 
-*  cgcns deformShock -g=solidDiskDeformi8 -bg="outerSquare" -dg="outerInterface" -xStep="x=-1." -sx=.25 -sy=.5  -tf=1.2 -tp=.2 -motion=scale -go=halt 
+*  cgcssi deformShock -g=solidDiskDeformi2 -bg="outerSquare" -dg="outerInterface" -xStep="x=-1." -sx=.25 -sy=.5  -tf=1.2 -tp=.2 -motion=scale -go=halt 
+*  cgcssi deformShock -g=solidDiskDeformi4 -bg="outerSquare" -dg="outerInterface" -xStep="x=-1." -sx=.25 -sy=.5  -tf=1.2 -tp=.2 -motion=scale -go=halt 
+*  cgcssi deformShock -g=solidDiskDeformi8 -bg="outerSquare" -dg="outerInterface" -xStep="x=-1." -sx=.25 -sy=.5  -tf=1.2 -tp=.2 -motion=scale -go=halt 
 * 
 * --- TZ
-*  cgcns deformShock -g=square10 -tf=2. -tp=.05 -tz=poly -motion=translate -go=halt 
-*  cgcns deformShock -g=solidDiskDeformi2 -bg="outerSquare" -dg="outerInterface" -xStep="x=-1." -sx=.25 -sy=.5  -tf=1. -tp=.1 -motion=scale -tz=poly -go=halt
+*  cgcssi deformShock -g=square10 -tf=2. -tp=.05 -tz=poly -motion=translate -go=halt 
+*  cgcssi deformShock -g=solidDiskDeformi2 -bg="outerSquare" -dg="outerInterface" -xStep="x=-1." -sx=.25 -sy=.5  -tf=1. -tp=.1 -motion=scale -tz=poly -go=halt
 * 
 * --- set default values for parameters ---
 * 

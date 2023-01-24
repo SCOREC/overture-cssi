@@ -84,7 +84,7 @@ c  loops(u(i1-m*(is1),i2-m*(is2),i3-m*(is3),c)=u(i1+m*(is1),i2+m*(is2),i3+m*(is3
 
 
 
-      subroutine cnsSymmetryBoundaryCorners( nd, 
+      subroutine cssiSymmetryBoundaryCorners( nd, 
      & ndu1a,ndu1b,ndu2a,ndu2b,ndu3a,ndu3b,ndu4a,ndu4b,
      & ndm1a,ndm1b,ndm2a,ndm2b,ndm3a,ndm3b,
      & u,mask, ca,cb, useWhereMask, indexRange, dimension, 

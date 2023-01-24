@@ -1,20 +1,20 @@
 #
-#  cgcns command file: blast wave around obstacles.
+#  cgcssi command file: blast wave around obstacles.
 #     Solve the Euler equations with Godunov's method and AMR
 # 
 # Usage:
-#    cgcns [-noplot] blast.cmd -g=<grid> -amr=[0|1] -l=<levels> -r=<ratio> -tf=<final time> ...
+#    cgcssi [-noplot] blast.cmd -g=<grid> -amr=[0|1] -l=<levels> -r=<ratio> -tf=<final time> ...
 #          -tp=<tPlot> -numBubbles=<i> -rad=<f f ...> -x0=<f f ...> -y0=<f f ...> -z0=<f f ...> -show=<show file> 
 #
 # Examples:
-#   cgcns blast.cmd -g=shapese2.order2.hdf -rad=.15 -x0=.2 -y0=.5 -amr=0 -tf=1. -tp=.05 
-#   cgcns blast.cmd -g=shapese2.order2.hdf -rad=.15 -x0=.2 -y0=.5 -amr=0 -tf=1. -tp=.05 -cnsVariation=jameson
-#   cgcns blast.cmd -g=shapese4.order2.hdf -rad=.15 -x0=.2 -y0=.5 -amr=1 -l=2 -r=2 -tf=1. -tp=.05 
+#   cgcssi blast.cmd -g=shapese2.order2.hdf -rad=.15 -x0=.2 -y0=.5 -amr=0 -tf=1. -tp=.05 
+#   cgcssi blast.cmd -g=shapese2.order2.hdf -rad=.15 -x0=.2 -y0=.5 -amr=0 -tf=1. -tp=.05 -cssiVariation=jameson
+#   cgcssi blast.cmd -g=shapese4.order2.hdf -rad=.15 -x0=.2 -y0=.5 -amr=1 -l=2 -r=2 -tf=1. -tp=.05 
 # 
-#   cgcns blast.cmd -g=building3.hdf -rad=.25 -x0=.0 -y0=1.75 -z0=1. -amr=0 -l=2 -r=2 -tf=1. -tp=.05 -show="blast.show"
+#   cgcssi blast.cmd -g=building3.hdf -rad=.25 -x0=.0 -y0=1.75 -z0=1. -amr=0 -l=2 -r=2 -tf=1. -tp=.05 -show="blast.show"
 #
 # --- set default values for parameters ---
-$grid="shapes.hdf"; $show = " "; $backGround="square"; $cnsVariation="godunov"; 
+$grid="shapes.hdf"; $show = " "; $backGround="square"; $cssiVariation="godunov"; 
 $ratio=2;  $nrl=2;  # refinement ratio and number of refinement levels
 $tFinal=1.; $tPlot=.1; $cfl=.9; $debug=1; $tol=.2;  $dtMax=1.e10; $nbz=2; 
 $xStep="x=-1.5"; $go="halt"; $flushFrequency=5; 
@@ -26,14 +26,14 @@ $numBubbles=1;
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"amr=i"=>\$amr,"l=i"=>\$nrl,"r=i"=>\$ratio,"tf=f"=>\$tFinal,"debug=i"=>\$debug, \
             "tp=f"=>\$tPlot, "xStep=s"=>\$xStep, "bg=s"=>\$backGround,"show=s"=>\$show,"go=s"=>\$go,\
-            "cnsVariation=s"=>\$cnsVariation,\
+            "cssiVariation=s"=>\$cssiVariation,\
             "tol=f"=>\$tol,"flushFrequency=i"=>\$flushFrequency,"cfl=f"=>\$cfl,"numBubbles=i"=>\$numBubbles,\
             "rad=f{1,}"=>\@rad,"x0=f{1,}"=>\@x0,"y0=f{1,}"=>\@y0,"z0=f{1,}"=>\@z0 );
 # -------------------------------------------------------------------------------------------------
 if( $amr eq "0" ){ $amr="turn off adaptive grids"; }else{ $amr="turn on adaptive grids"; }
-if( $cnsVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
-if( $cnsVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
-if( $cnsVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
+if( $cssiVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
+if( $cssiVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
+if( $cssiVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }

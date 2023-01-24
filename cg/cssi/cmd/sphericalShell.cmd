@@ -1,15 +1,15 @@
 *
-*  cgcns command file: flow in a spherical shell
+*  cgcssi command file: flow in a spherical shell
 *     Solve the Euler equations with Godunov's method and AMR
 * 
 * Usage:
-*    cgcns [-noplot] sphericalShell.cmd -g=<grid> -l=<levels> -r=<ratio> -tf=<final time> ...
+*    cgcssi [-noplot] sphericalShell.cmd -g=<grid> -l=<levels> -r=<ratio> -tf=<final time> ...
 *          -tp=<tPlot> -xs=<xstep> -show=<show file> 
 *
 * Examples:
 #
-*     cgcns sphericalShell.cmd -g=sphericalShelle2.order2 -amr=0 -tf=1. -tp=.01 -xs="x=-.85"
-*     cgcns sphericalShell.cmd -g=sphericalShelle2.order2 -amr=1 -l=2 -r=2 -tf=1. -tp=.01 -xs="x=-.85"
+*     cgcssi sphericalShell.cmd -g=sphericalShelle2.order2 -amr=0 -tf=1. -tp=.01 -xs="x=-.85"
+*     cgcssi sphericalShell.cmd -g=sphericalShelle2.order2 -amr=1 -l=2 -r=2 -tf=1. -tp=.01 -xs="x=-.85"
 #
 *
 * --- set default values for parameters ---

@@ -5,7 +5,7 @@ $cfl=.75;
 $mu=0.; $kThermal=0.; $Prandtl=.72; $kappa=1.;
 $tFinal=5.; $tPlot=.5; 
 *
-* Left and right states are from cg/cns/doc/shock.maple
+* Left and right states are from cg/cssi/doc/shock.maple
 *
 *
 *=======case: ( -Ec fix made )

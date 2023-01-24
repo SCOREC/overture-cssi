@@ -1,5 +1,5 @@
-#include "Cgcns.h"
-#include "CnsParameters.h"
+#include "Cgcssi.h"
+#include "CssiParameters.h"
 #include "GenericGraphicsInterface.h"
 #include "ParallelUtility.h"
 #include "ExternalBoundaryData.h"
@@ -69,7 +69,7 @@ for(i1=I1Base; i1<=I1Bound; i1++)
 /// \param side,axis,grid (input): assign boundary conditions for this face.
 ///
 // =========================================================================================
-int CnsParameters::
+int CssiParameters::
 chooseUserDefinedBoundaryValues(int side, int axis, int grid, CompositeGrid & cg)
 {
   Parameters & parameters = *this;
@@ -707,7 +707,7 @@ chooseUserDefinedBoundaryValues(int side, int axis, int grid, CompositeGrid & cg
 ///   first time derivative of the forcing.
 ///
 // =========================================================================================
-int Cgcns::
+int Cgcssi::
 userDefinedBoundaryValues(const real & t, 
                           GridFunction & gf0,
 			  const int & grid,

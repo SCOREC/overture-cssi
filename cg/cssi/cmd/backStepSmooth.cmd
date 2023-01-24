@@ -1,6 +1,6 @@
 ***********************************************************************
 * 
-*  cgcns command file: 
+*  cgcssi command file: 
 *        Viscous compressible flow over a backward facing step
 * 
 ***********************************************************************

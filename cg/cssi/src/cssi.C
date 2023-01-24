@@ -1,5 +1,5 @@
-#include "Cgcns.h"
-#include "CnsParameters.h"
+#include "Cgcssi.h"
+#include "CssiParameters.h"
 #include "MappedGridOperators.h"
 #include "ParallelUtility.h"
 #include "ParallelGridUtility.h"
@@ -7,7 +7,7 @@
 
 // ------------------------------------------------------------------------------------
 // Compressible Navier Stokes
-//     - compute du/dt for explicit CNS approximations
+//     - compute du/dt for explicit CSSI approximations
 // 
 // ------------------------------------------------------------------------------------
 
@@ -40,9 +40,9 @@ for(i1=I1Base; i1<=I1Bound; i1++)
 #define UYZ(c) uyz(I1,I2,I3,c)
 #define UZZ(c) uzz(I1,I2,I3,c)
 
-#define CNSDU23 EXTERN_C_NAME(cnsdu23)
-#define CNSDU22 EXTERN_C_NAME(cnsdu22)
-#define CNSDU22A EXTERN_C_NAME(cnsdu22a)
+#define CSSIDU23 EXTERN_C_NAME(cssidu23)
+#define CSSIDU22 EXTERN_C_NAME(cssidu22)
+#define CSSIDU22A EXTERN_C_NAME(cssidu22a)
 #define DUDR2D EXTERN_C_NAME(dudr2d)
 #define DUDR2DOLD EXTERN_C_NAME(dudr2dc)
 #define DUDR3D EXTERN_C_NAME(dudr3d)
@@ -51,9 +51,9 @@ for(i1=I1Base; i1<=I1Bound; i1++)
 #define DUDR EXTERN_C_NAME(dudr)
 #define DUDRC EXTERN_C_NAME(dudrc)
 #define DUDR2DMOVING EXTERN_C_NAME(dudr2dmoving)
-#define cnsdts EXTERN_C_NAME(cnsdts)
+#define cssidts EXTERN_C_NAME(cssidts)
 #define TZCOMMON EXTERN_C_NAME(tzcommon)
-#define ICNSRHS EXTERN_C_NAME(icnsrhs)
+#define ICSSIRHS EXTERN_C_NAME(icssirhs)
 #define AVJST2D EXTERN_C_NAME(avjst2d)
 #define CMFDU EXTERN_C_NAME(cmfdu)
 
@@ -68,21 +68,21 @@ extern "C"
   /*void dudr2comp (const real *u, real *ut, const real *rx, const real *det,
     real *rp, int *ip, double *workspace, const void *OGFunc,
     const void *mg, const real *vert);*/
-  void CNSDU22 (const real & t, const int & nd, 
+  void CSSIDU22 (const real & t, const int & nd, 
                 const int & ndra, const int & ndrb, const int & ndsa, const int & ndsb, 
                 const int & nrsab, const int & mrsab, const int & kr, const real & u, const real & xy, 
                 const real & a, const real & aj, real & ut, real & v, 
                 const int & nda, const int & ndb, real & w, real & aa, real & tmp,
                 const int & ipu, const real & rpu, const int & moving, const real & gv);
 
-  void CNSDU22A (const real & t, const int & nd,  const int &nc,
+  void CSSIDU22A (const real & t, const int & nd,  const int &nc,
 		 const int & ndra, const int & ndrb, const int & ndsa, const int & ndsb, 
 		 const int & nrsab, const int & mrsab, const int & kr, const real & u, const real & xy, 
 		 const real & a, const real & aj, real & ut, real & v, 
 		 const int & nda, const int & ndb, real & w, real & aa, real & tmp,
 		 const int & ipu, const real & rpu, const int & moving, const real & gv);
 
-  void CNSDU23 (const real & t, const int & nd, 
+  void CSSIDU23 (const real & t, const int & nd, 
                 const int & ndra, const int & ndrb, const int & ndsa, const int & ndsb, 
                 const int & ndta, const int & ndtb,
                 const int & nrsab, const int & mrsab, const int & kr, const real & u, const real & xy, 
@@ -179,7 +179,7 @@ extern "C"
               const int & nrwk, real & rwk, const int & niwk, int & iwk, const int & idebug, const DataBase *pdb,
               int & ier);
 
- void cnsdts(const int&nd,
+ void cssidts(const int&nd,
       const int&n1a,const int&n1b,const int&n2a,const int&n2b,const int&n3a,const int&n3b,
       const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
       const int&nd4a,const int&nd4b,
@@ -187,7 +187,7 @@ extern "C"
       const real & dw, const real & p, const real & dp, const real & dtVar,
       const int&bc, const int&ipar, const real&rpar, const int&ierr );
 
-  void ICNSRHS(const int *igdim, const int *igint, 
+  void ICSSIRHS(const int *igdim, const int *igint, 
 	       const real *vertex, 
 	       const real *rx,
 	       const real * det,
@@ -232,7 +232,7 @@ static bool first[10] = { 1,1,1,1,1,1,1,1,1,1 };
 /// \param pGridVelocity2 (input) : for moving grids only, supply the grid velocity at time t+dt for moving grids.
 /// \author wdh.
 //=================================================================================================
-int Cgcns::
+int Cgcssi::
 getUt(const realMappedGridFunction & v,
       const realMappedGridFunction & gridVelocity_, 
       realMappedGridFunction & dvdt, 
@@ -257,10 +257,10 @@ getUt(const realMappedGridFunction & v,
   const int & myid = parameters.dbase.get<int >("myid");
   const real & dt = parameters.dbase.get<real >("dt");
 
-  const CnsParameters::PDE & pde = parameters.dbase.get<CnsParameters::PDE >("pde");
-  const CnsParameters::PDEVariation & pdeVariation = parameters.dbase.get<CnsParameters::PDEVariation >("pdeVariation");
-  const CnsParameters::GodunovVariation & conservativeGodunovMethod = 
-                           parameters.dbase.get<CnsParameters::GodunovVariation >("conservativeGodunovMethod");
+  const CssiParameters::PDE & pde = parameters.dbase.get<CssiParameters::PDE >("pde");
+  const CssiParameters::PDEVariation & pdeVariation = parameters.dbase.get<CssiParameters::PDEVariation >("pdeVariation");
+  const CssiParameters::GodunovVariation & conservativeGodunovMethod = 
+                           parameters.dbase.get<CssiParameters::GodunovVariation >("conservativeGodunovMethod");
   
   FILE * debugFile = parameters.dbase.get<FILE* >("debugFile");
   FILE * pDebugFile = parameters.dbase.get<FILE* >("pDebugFile");
@@ -282,11 +282,11 @@ getUt(const realMappedGridFunction & v,
 //        minRho=min(v(I1,I2,I3,0));
 //        maxRho=max(v(I1,I2,I3,0));
 //      }
-//      printf("cns:start: grid=%i t=%9.3e min(rho)=%8.2e max(rho)=%8.2e (count=%i)\n",grid,t,minRho,maxRho,count);
+//      printf("cssi:start: grid=%i t=%9.3e min(rho)=%8.2e max(rho)=%8.2e (count=%i)\n",grid,t,minRho,maxRho,count);
 //    }
 
   if( debug() & 4 ) 
-    printf(">>> Cgcns::getUt: grid=%i level=%i numberOfStepsTaken=%i\n",grid,level,numberOfStepsTaken);
+    printf(">>> Cgcssi::getUt: grid=%i level=%i numberOfStepsTaken=%i\n",grid,level,numberOfStepsTaken);
 
   // extrap interp neighbours here (since fixup unused points will overwrite them)
   if( false )
@@ -295,25 +295,25 @@ getUt(const realMappedGridFunction & v,
     realMappedGridFunction & vv = (realMappedGridFunction &) v;
 
     BoundaryConditionParameters extrapParams;
-    if( pdeVariation==CnsParameters::conservativeGodunov )
+    if( pdeVariation==CssiParameters::conservativeGodunov )
       extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForSecondGhostLine"); // 2; 
 
     vv.applyBoundaryCondition(C,BCTypes::extrapolateInterpolationNeighbours,BCTypes::allBoundaries,0.,t,
 			      extrapParams,grid);
   }
   
-  if( pdeVariation==CnsParameters::conservativeGodunov && conservativeGodunovMethod==1 )
+  if( pdeVariation==CssiParameters::conservativeGodunov && conservativeGodunovMethod==1 )
   {
     Overture::abort("Don's C++ version of Godunov is nolonger supported");
 //      printf("Use new godunov\n");
-//      getUtCNSGodunov(v,gridVelocity_,dvdt,iparam,rparam,dvdtImplicit);
+//      getUtCSSIGodunov(v,gridVelocity_,dvdt,iparam,rparam,dvdtImplicit);
 //      return 0;
   }
-  else if( pdeVariation==CnsParameters::conservativeGodunov && conservativeGodunovMethod==2 )
+  else if( pdeVariation==CssiParameters::conservativeGodunov && conservativeGodunovMethod==2 )
   {
     Overture::abort("David's version of Godunov is nolonger supported");
 //      printf("Use David's Godunov\n");
-//      getUtGodunovCNS(v,gridVelocity_,dvdt,iparam,rparam,dvdtImplicit);
+//      getUtGodunovCSSI(v,gridVelocity_,dvdt,iparam,rparam,dvdtImplicit);
 //      return 0;
   }
   
@@ -332,7 +332,7 @@ getUt(const realMappedGridFunction & v,
 
 
   if( debug() & 8 )
-    printP("Cgcns::getUt: pde = %i \n",pde);
+    printP("Cgcssi::getUt: pde = %i \n",pde);
   
   const realArray & u = v;
   const realArray & gridVelocity = gridVelocity_;
@@ -379,7 +379,7 @@ getUt(const realMappedGridFunction & v,
   if(  mu < 0. || kThermal < 0. || Rg <= 0.
       || gamma <= 0. || nuRho < 0. || avr < 0. )
   {
-    printF("Cgcns:getUt dudt: Invalid parameter...\n"
+    printF("Cgcssi:getUt dudt: Invalid parameter...\n"
            " numberOfComponents=%3i, mu=%e, kThermal=%e, Rg=%e, \n"
 	   " gamma=%e, nuRho=%e, avr=%e, numberOfSpecies=%i ",numberOfComponents,
              mu,kThermal,Rg,gamma,nuRho,avr,parameters.dbase.get<int >("numberOfSpecies"));
@@ -403,8 +403,8 @@ getUt(const realMappedGridFunction & v,
 
   if( debug() & 8 )
   {
-    fPrintF(debugFile,"*************** getUtCNS: t=%e, grid=%i\n",t,grid);
-    fprintf(pDebugFile,"*************** getUtCNS: t=%e, grid=%i\n",t,grid);
+    fPrintF(debugFile,"*************** getUtCSSI: t=%e, grid=%i\n",t,grid);
+    fprintf(pDebugFile,"*************** getUtCSSI: t=%e, grid=%i\n",t,grid);
   }
   
 
@@ -454,14 +454,14 @@ getUt(const realMappedGridFunction & v,
 //   int gridMin=ParallelUtility::getMinValue(grid);
 //   if( gridMax!=gridMin )
 //   {
-//     printf(" Cgcns:getUt:ERROR: values for grid are not the same on all proc's! myid=%i, grid=%i\n",myid,grid);
+//     printf(" Cgcssi:getUt:ERROR: values for grid are not the same on all proc's! myid=%i, grid=%i\n",myid,grid);
 //     OV_ABORT("fatal");
 //   }
   
 
   if( gridHasPointsOnThisProcessor && pmask==NULL )
   {
-    printf("Cgcns:getUt:ERROR: pmask==NULL! This should not happen.\n");
+    printf("Cgcssi:getUt:ERROR: pmask==NULL! This should not happen.\n");
     printf(" myid=%i grid=%i, isRectangular=%i, uLocal=[%i,%i][%i,%i]\n",
            myid,grid,(int)isRectangular,
            uLocal.getBase(0),uLocal.getBound(0),
@@ -494,8 +494,8 @@ getUt(const realMappedGridFunction & v,
   if( debug() & 4  )
   {
     // dvdt=-1.;
-    fPrintF(debugFile,"Cgcns:getUt: ****BEFORE DUDR*** t=%e dt=%e, grid=%i \n",t,dt,grid);
-    fprintf(pDebugFile,"Cgcns:getUt: ****BEFORE DUDR*** t=%e dt=%e, grid=%i, d=[%i,%i][%i,%i][%i,%i] \n",t,dt,grid,
+    fPrintF(debugFile,"Cgcssi:getUt: ****BEFORE DUDR*** t=%e dt=%e, grid=%i \n",t,dt,grid);
+    fprintf(pDebugFile,"Cgcssi:getUt: ****BEFORE DUDR*** t=%e dt=%e, grid=%i, d=[%i,%i][%i,%i][%i,%i] \n",t,dt,grid,
 	   d(0,0),d(1,0),d(0,1),d(1,1),d(0,2),d(1,2));
     printf(" ****BEFORE DUDR*** t=%e dt=%e, grid=%i, d=[%i,%i][%i,%i][%i,%i] \n",t,dt,grid,
 	   d(0,0),d(1,0),d(0,1),d(1,1),d(0,2),d(1,2));
@@ -505,31 +505,31 @@ getUt(const realMappedGridFunction & v,
     fPrintF(debugFile," diff(dt)=%8.2e\n",dtMax-dtMin);
     
    
-    //::display(uLocal,sPrintF("Cgcns:getUt: Before v.updateGhostBoundaries() t=%e",t),pDebugFile,"%20.14e "); 
+    //::display(uLocal,sPrintF("Cgcssi:getUt: Before v.updateGhostBoundaries() t=%e",t),pDebugFile,"%20.14e "); 
     //v.updateGhostBoundaries(); // ****************************************************************************************************
-    //::display(uLocal,sPrintF("Cgcns:getUt: After v.updateGhostBoundaries() t=%e",t),pDebugFile,"%20.14e "); 
+    //::display(uLocal,sPrintF("Cgcssi:getUt: After v.updateGhostBoundaries() t=%e",t),pDebugFile,"%20.14e "); 
 
     
-    ::display(v,sPrintF("Cgcns:getUt: Solution at start t=%e",t),debugFile,"%20.14e ");
-    // ::display(utLocal,sPrintF("Cgcns:getUt: utLocal at start t=%e",t),pDebugFile,"%20.14e ");  
+    ::display(v,sPrintF("Cgcssi:getUt: Solution at start t=%e",t),debugFile,"%20.14e ");
+    // ::display(utLocal,sPrintF("Cgcssi:getUt: utLocal at start t=%e",t),pDebugFile,"%20.14e ");  
 
     outputSolution( v, t );
 
     if( debug() & 16 )
     {
       realSerialArray vLocal; getLocalArrayWithGhostBoundaries(v,vLocal);
-      display(vLocal,sPrintF("Cgcns:getUt: Solution at start t=%e",t),pDebugFile,"%8.2e ");
+      display(vLocal,sPrintF("Cgcssi:getUt: Solution at start t=%e",t),pDebugFile,"%8.2e ");
     }
 
     if( gridIsMoving )
     {
-      display(gridVelocity,sPrintF("Cgcns:getUt: **** gridVelocity before dudr *** t=%e dt=%e, grid=%i",t,dt,grid),
+      display(gridVelocity,sPrintF("Cgcssi:getUt: **** gridVelocity before dudr *** t=%e dt=%e, grid=%i",t,dt,grid),
 	      debugFile,"%12.9f ");
 
       if( gridVelocity.dimension(0)!=Range(d(0,0),d(1,0)) )
       {
-	fPrintF(debugFile,"cns:ERROR: gridVelocity.dimension(0)!=Range(d(0,0),d(1,0)\n");
-	printf("cns:ERROR: gridVelocity.dimension(0)!=Range(d(0,0),d(1,0))  [%i,%i]!=[%i,%i]\n",
+	fPrintF(debugFile,"cssi:ERROR: gridVelocity.dimension(0)!=Range(d(0,0),d(1,0)\n");
+	printf("cssi:ERROR: gridVelocity.dimension(0)!=Range(d(0,0),d(1,0))  [%i,%i]!=[%i,%i]\n",
              gridVelocity.getBase(0),gridVelocity.getBound(0),d(0,0),d(1,0));
         Overture::abort("error");
       }
@@ -537,7 +537,7 @@ getUt(const realMappedGridFunction & v,
     }
   }
 
-  if( pde==CnsParameters::compressibleMultiphase )
+  if( pde==CssiParameters::compressibleMultiphase )
   {
     // *********************************************************************************************
     // *************************Compressible Multiphase*********************************************
@@ -596,21 +596,21 @@ getUt(const realMappedGridFunction & v,
 
     ListOfShowFileParameters & pdeParameters = parameters.dbase.get<ListOfShowFileParameters >("pdeParameters");
 
-    ipu(0)=parameters.dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState");
+    ipu(0)=parameters.dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState");
     ipu(1)=parameters.dbase.get<Parameters::ReactionTypeEnum >("reactionType");
     ipu(2)=(int)gridIsMoving;
     ipu(3)=0;  // non-Cartesian is default
     ipu(4)=parameters.dbase.get<int >("orderOfAccuracyForGodunovMethod");  // order of accuracy is 2
-    ipu(5)=(int)parameters.dbase.get<CnsParameters::RiemannSolverEnum >("riemannSolver"); // method of computing numerical flux (0 is the only choice)
+    ipu(5)=(int)parameters.dbase.get<CssiParameters::RiemannSolverEnum >("riemannSolver"); // method of computing numerical flux (0 is the only choice)
     ipu(6)=grid;
     ipu(7)=level;
     ipu(8)=numberOfStepsTaken;
 
-//    printf("cns:order of accuracy=%i\n",parameters.dbase.get<int >("orderOfAccuracyForGodunovMethod"));
+//    printf("cssi:order of accuracy=%i\n",parameters.dbase.get<int >("orderOfAccuracyForGodunovMethod"));
 
     ipu(9)=0;  // will return as max number source sub-cycles
 
-    if( conservativeGodunovMethod == CnsParameters::multiFluidVersion )
+    if( conservativeGodunovMethod == CssiParameters::multiFluidVersion )
       ipu(13)=1; // multi-fluid 
      else
       ipu(13)=0;
@@ -680,7 +680,7 @@ getUt(const realMappedGridFunction & v,
 
         if( parameters.isAxisymmetric() )
         {
-          printF("Cgcns:getUt:Error : axisymmetric flow not supported by multiphase pde option\n");
+          printF("Cgcssi:getUt:Error : axisymmetric flow not supported by multiphase pde option\n");
           Overture::abort("error");
         }
         else
@@ -725,7 +725,7 @@ getUt(const realMappedGridFunction & v,
 
 	  if( (debug() & 4) && gridIsMoving )
 	  {
-	    display(gridVelocity2,sPrintF("Cgcns:getUt: **** gridVelocity2 before dudr *** t=%e dt=%e, grid=%i",t,dt,grid),
+	    display(gridVelocity2,sPrintF("Cgcssi:getUt: **** gridVelocity2 before dudr *** t=%e dt=%e, grid=%i",t,dt,grid),
 		    debugFile,"%6.2f ");
       
 	  }
@@ -749,7 +749,7 @@ getUt(const realMappedGridFunction & v,
 		 nrwk,*rwk.getDataPointer(),niwk,*iwk.getDataPointer(),idebug,pdb,ierr);
 	  
 	}
-        // ::display(utLocal,sPrintF("Cgcns:getUt: utLocal at CMPDU t=%e",t),pDebugFile,"%20.14e ");  
+        // ::display(utLocal,sPrintF("Cgcssi:getUt: utLocal at CMPDU t=%e",t),pDebugFile,"%20.14e ");  
 	
       }
       else // curvilinear version
@@ -816,7 +816,7 @@ getUt(const realMappedGridFunction & v,
     }
     else
     {
-       printF("Cgcns:getUt:ERROR: 3D not supported by multiphase pde option\n");
+       printF("Cgcssi:getUt:ERROR: 3D not supported by multiphase pde option\n");
       Overture::abort("error");
     }
 
@@ -833,7 +833,7 @@ getUt(const realMappedGridFunction & v,
 
     if( level<0 || level>10 ) // sanity check
     {
-      printf("ERROR: getUtCNS: grid=%i : Invalid value for level=%i\n",grid,level);
+      printf("ERROR: getUtCSSI: grid=%i : Invalid value for level=%i\n",grid,level);
       Overture::abort();
     }
     if( statistics.getLength(0)<=level )
@@ -880,16 +880,16 @@ getUt(const realMappedGridFunction & v,
 
     if( debug() & 4 )
     {
-      display(uLocal,sPrintF("Cgcns::getUt: uLocal after CMPDU t=%9.3e",t),pDebugFile,"%11.8f ");    
-      fprintf(pDebugFile,"\n******** Cgcns::getUt:utLocal after CMPDU t=%9.3e dt=%14.8e ********\n",t,dt);
-      display(utLocal,"Cgcns::getUt: utLocal after CMPDU",pDebugFile,"%11.5e ");    
+      display(uLocal,sPrintF("Cgcssi::getUt: uLocal after CMPDU t=%9.3e",t),pDebugFile,"%11.8f ");    
+      fprintf(pDebugFile,"\n******** Cgcssi::getUt:utLocal after CMPDU t=%9.3e dt=%14.8e ********\n",t,dt);
+      display(utLocal,"Cgcssi::getUt: utLocal after CMPDU",pDebugFile,"%11.5e ");    
     }
 
 
   }
-  else if( pde==CnsParameters::compressibleNavierStokes &&
-           pdeVariation==CnsParameters::conservativeGodunov &&
-           conservativeGodunovMethod==CnsParameters::multiFluidVersion  )
+  else if( pde==CssiParameters::compressibleNavierStokes &&
+           pdeVariation==CssiParameters::conservativeGodunov &&
+           conservativeGodunovMethod==CssiParameters::multiFluidVersion  )
   {
     // *********************************************************************************************
     // ************************* Multi-Fluid Godunov************************************************
@@ -945,17 +945,17 @@ getUt(const realMappedGridFunction & v,
 
     ListOfShowFileParameters & pdeParameters = parameters.dbase.get<ListOfShowFileParameters >("pdeParameters");
 
-    ipu(0)=parameters.dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState");
+    ipu(0)=parameters.dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState");
     ipu(1)=parameters.dbase.get<Parameters::ReactionTypeEnum >("reactionType");
     ipu(2)=(int)gridIsMoving;
     ipu(3)=0;  // non-Cartesian is default
     ipu(4)=parameters.dbase.get<int >("orderOfAccuracyForGodunovMethod");  // order of accuracy is 2
-    ipu(5)=(int)parameters.dbase.get<CnsParameters::RiemannSolverEnum >("riemannSolver"); // method of computing numerical flux (0 is the only choice)
+    ipu(5)=(int)parameters.dbase.get<CssiParameters::RiemannSolverEnum >("riemannSolver"); // method of computing numerical flux (0 is the only choice)
     ipu(6)=grid;
     ipu(7)=level;
     ipu(8)=numberOfStepsTaken;
 
-    //    printf("cns:order of accuracy=%i\n",parameters.dbase.get<int >("orderOfAccuracyForGodunovMethod"));
+    //    printf("cssi:order of accuracy=%i\n",parameters.dbase.get<int >("orderOfAccuracyForGodunovMethod"));
 
     ipu(9)=0;  // will return as max number source sub-cycles
 
@@ -1033,7 +1033,7 @@ getUt(const realMappedGridFunction & v,
             if( bcLocal(0,1)==Parameters::axisymmetric || 
                 bcLocal(1,1)==Parameters::axisymmetric )
             {
-              printF("Cgcns:getUt:ERROR  : boundaries along different directions cannot both be axisymmetric\n");
+              printF("Cgcssi:getUt:ERROR  : boundaries along different directions cannot both be axisymmetric\n");
               Overture::abort("error");
             }
             else
@@ -1099,7 +1099,7 @@ getUt(const realMappedGridFunction & v,
 
 	  if( (debug() & 4) && gridIsMoving )
 	  {
-	    display(gridVelocity2,sPrintF("Cgcns:getUt: **** gridVelocity2 before dudr *** t=%e dt=%e, grid=%i",t,dt,grid),
+	    display(gridVelocity2,sPrintF("Cgcssi:getUt: **** gridVelocity2 before dudr *** t=%e dt=%e, grid=%i",t,dt,grid),
 		    debugFile,"%6.2f ");
       
 	  }
@@ -1189,7 +1189,7 @@ getUt(const realMappedGridFunction & v,
     }
     else
     {
-      printF("Cgcns:getUt:ERROR: 3D not supported by multifluid pde option\n");
+      printF("Cgcssi:getUt:ERROR: 3D not supported by multifluid pde option\n");
       OV_ABORT("error");
     }
 
@@ -1202,7 +1202,7 @@ getUt(const realMappedGridFunction & v,
 
     if( level<0 || level>10 ) // sanity check
     {
-      printf("ERROR: getUtCNS: grid=%i : Invalid value for level=%i\n",grid,level);
+      printf("ERROR: getUtCSSI: grid=%i : Invalid value for level=%i\n",grid,level);
       OV_ABORT("error");
     }
     if( statistics.getLength(0)<=level )
@@ -1249,17 +1249,17 @@ getUt(const realMappedGridFunction & v,
 
     if( debug() & 4 )
     {
-      display(uLocal,sPrintF("Cgcns::getUt: uLocal after CMFDU t=%9.3e",t),pDebugFile,"%11.8f ");    
-      fprintf(pDebugFile,"\n******** Cgcns::getUt:utLocal after CMFDU t=%9.3e dt=%14.8e ********\n",t,dt);
-      display(utLocal,"Cgcns::getUt: utLocal after CMFDU",pDebugFile,"%11.5e ");    
+      display(uLocal,sPrintF("Cgcssi::getUt: uLocal after CMFDU t=%9.3e",t),pDebugFile,"%11.8f ");    
+      fprintf(pDebugFile,"\n******** Cgcssi::getUt:utLocal after CMFDU t=%9.3e dt=%14.8e ********\n",t,dt);
+      display(utLocal,"Cgcssi::getUt: utLocal after CMFDU",pDebugFile,"%11.5e ");    
     }
 
 
 
 
   }
-  else if( pde==CnsParameters::compressibleNavierStokes &&
-           pdeVariation==CnsParameters::conservativeGodunov  )
+  else if( pde==CssiParameters::compressibleNavierStokes &&
+           pdeVariation==CssiParameters::conservativeGodunov  )
   {
     // *********************************************************************************************
     // *************************Conservative Godunov************************************************
@@ -1324,12 +1324,12 @@ getUt(const realMappedGridFunction & v,
 
     ListOfShowFileParameters & pdeParameters = parameters.dbase.get<ListOfShowFileParameters >("pdeParameters");
 
-    ipu(0)=(int)parameters.dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState");
+    ipu(0)=(int)parameters.dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState");
     ipu(1)=(int)parameters.dbase.get<Parameters::ReactionTypeEnum >("reactionType");
     ipu(2)=(int)gridIsMoving;
     ipu(3)=0;  // non-Cartesian is default
     ipu(4)=parameters.dbase.get<int >("orderOfAccuracyForGodunovMethod");  // order of accuracy is 2 
-    ipu(5)=(int)parameters.dbase.get<CnsParameters::RiemannSolverEnum >("riemannSolver"); // method of computing numerical flux is 1 (Roe's approximate Riemann solver)
+    ipu(5)=(int)parameters.dbase.get<CssiParameters::RiemannSolverEnum >("riemannSolver"); // method of computing numerical flux is 1 (Roe's approximate Riemann solver)
     ipu(6)=grid;
     ipu(7)=level;
     ipu(8)=numberOfStepsTaken;
@@ -1351,7 +1351,7 @@ getUt(const realMappedGridFunction & v,
     rpu(83)=parameters.dbase.get<real >("betaK"),
     rpu(84)=parameters.dbase.get<real >("rT0");
 
-    if( conservativeGodunovMethod==CnsParameters::multiComponentVersion )
+    if( conservativeGodunovMethod==CssiParameters::multiComponentVersion )
     {
       bool foundSlope, foundFix;
       bool foundDon;
@@ -1397,7 +1397,7 @@ getUt(const realMappedGridFunction & v,
 
 	  if( !fdg1 || !fdg2 || !fdg3 || !fdg4 || !fdc1 || !fdc2 || !fdc3 || !fdc4 )
 	  {
-	    printF("Cgcns:getUt:Error (cns): \n");
+	    printF("Cgcssi:getUt:Error (cssi): \n");
 	    printF("must define gamma1 through gamma4 and cv1 through cv4 in command file.\n");
 	    printF("This is a fatal error!!!!! ... quiting\n");
             Overture::abort("error");
@@ -1406,7 +1406,7 @@ getUt(const realMappedGridFunction & v,
 	else
 	{
 	  // This option indicates we use Don's code with multicomponent stuff
-	  if( parameters.dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState")!=CnsParameters::jwlEOS )
+	  if( parameters.dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState")!=CssiParameters::jwlEOS )
 	  {
 	    // Ideal gas EOS
 	    bool foundgi, foundgr, foundcvi, foundcvr;
@@ -1421,7 +1421,7 @@ getUt(const realMappedGridFunction & v,
 	      printF( "Using Don's multicomponent code.\n" );
 	      if ( !foundgi || !foundgr )
 	      {
-		printF("Error (cns): \n");
+		printF("Error (cssi): \n");
 		printF("must define gammai, gammar in command file.\n");
 		printF("This is a fatal error!!!!! ... quiting\n");
                 Overture::abort("error");
@@ -1482,7 +1482,7 @@ getUt(const realMappedGridFunction & v,
 	  printf( "Using Jeff's multicomponent code.\n" );
 	  if ( !foundg1 || !foundg2 || !foundcv1 || !foundcv2 || !foundpi1 || !foundpi2 )
 	  {
-	    printF("Cgcns:getUt:ERROR: \n");
+	    printF("Cgcssi:getUt:ERROR: \n");
 	    printF("must define gamma1, gamma2, cv1, cv2, pi1, pi2 in command file.\n");
 	    printF("This is a fatal error!!!!! ... quiting\n");
             Overture::abort("error");
@@ -1495,7 +1495,7 @@ getUt(const realMappedGridFunction & v,
       {
 	if ( !foundSlope || !foundFix )
 	{
-	  printF("Cgcns:getUt:ERROR: \n");
+	  printF("Cgcssi:getUt:ERROR: \n");
 	  printF("must define slope, and fix in command file.\n");
 	  printF("This is a fatal error!!!!! ... quiting\n");
           Overture::abort("error");
@@ -1512,8 +1512,8 @@ getUt(const realMappedGridFunction & v,
       rpu(49) = 1.0; // acm default ... should not make a difference but for completeness
     }
 /* ------
-   if( parameters.dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState")==CnsParameters::jwlEOS && 
-   conservativeGodunovMethod!=CnsParameters::multiComponentVersion )
+   if( parameters.dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState")==CssiParameters::jwlEOS && 
+   conservativeGodunovMethod!=CssiParameters::multiComponentVersion )
    {
    bool fdomeg1, fdajwl11, fdajwl21, fdrjwl11, fdrjwl21;
    bool fdomeg2, fdajwl12, fdajwl22, fdrjwl12, fdrjwl22;
@@ -1540,17 +1540,17 @@ getUt(const realMappedGridFunction & v,
    {
    if( !fdomeg1 || !fdajwl11 || !fdajwl21 || !fdrjwl11 || !fdrjwl21 )
    {
-   printf("Error (cns) : undefined solid JWL EOS parameter(s)\n");
+   printf("Error (cssi) : undefined solid JWL EOS parameter(s)\n");
    exit(0);
    }
    if( !fdomeg2 || !fdajwl12 || !fdajwl22 || !fdrjwl12 || !fdrjwl22 )
    {
-   printf("Error (cns) : undefined gas JWL EOS parameter(s)\n");
+   printf("Error (cssi) : undefined gas JWL EOS parameter(s)\n");
    exit(0);
    }
    if( !fdvs0 || !fdvg0 || !fdcgcs || !fdheat )
    {
-   printf("Error (cns) : undefined equil. or heat EOS parameter(s)\n");
+   printf("Error (cssi) : undefined equil. or heat EOS parameter(s)\n");
    exit(0);
    }
    }
@@ -1560,7 +1560,7 @@ getUt(const realMappedGridFunction & v,
     if( parameters.dbase.get<Parameters::ReactionTypeEnum >("reactionType")==Parameters::oneStep || 
         parameters.dbase.get<Parameters::ReactionTypeEnum >("reactionType")==Parameters::oneStepPress )
     {
-      if( conservativeGodunovMethod==CnsParameters::multiComponentVersion )
+      if( conservativeGodunovMethod==CssiParameters::multiComponentVersion )
       {
 	if( ipu(20) )
 	{
@@ -1598,7 +1598,7 @@ getUt(const realMappedGridFunction & v,
       else
 	rpu(12)=0.;
       
-//        printf(" cns: heat,acti,rate= %8.2e %8.2e %8.2e \n",parameters.dbase.get<real >("heatRelease"),
+//        printf(" cssi: heat,acti,rate= %8.2e %8.2e %8.2e \n",parameters.dbase.get<real >("heatRelease"),
 //               parameters.dbase.get<real >("reciprocalActivationEnergy"), parameters.dbase.get<real >("rateConstant"));
       
     }
@@ -1641,12 +1641,12 @@ getUt(const realMappedGridFunction & v,
 	{
         if( !fdra || !fdeb || !fdex || !fdec || !fded || !fdey || !fdee || !fdeg || !fdez )
         {
-	printf("Error (cns) : undefined IG rate parameter(s)\n");
+	printf("Error (cssi) : undefined IG rate parameter(s)\n");
 	exit(0);
         }
         if( !fdal0 || !fdal1 || !fdal2 || !fdai || !fdag1 || !fdag2 || !fdpref || !fdtref )
         {
-	printf("Error (cns) : undefined IG amplitude or cut-off parameter(s)\n");
+	printf("Error (cssi) : undefined IG amplitude or cut-off parameter(s)\n");
 	exit(0);
         }
 	}
@@ -1893,7 +1893,7 @@ getUt(const realMappedGridFunction & v,
 	      maxDiff= max(maxDiff, max(fabs(utLocal(I1,I2,I3,c)-utSave(I1,I2,I3,c))));
 	  }
 	  
-	  printf(" getUtCNS: grid=%i, t=%e, maxDiff=%9.3e\n",grid,t,maxDiff);
+	  printf(" getUtCSSI: grid=%i, t=%e, maxDiff=%9.3e\n",grid,t,maxDiff);
 	}
       }
       else
@@ -2034,7 +2034,7 @@ getUt(const realMappedGridFunction & v,
 	      maxDiff= max(maxDiff, max(fabs(utLocal(I1,I2,I3,c)-utSave(I1,I2,I3,c))));
 	  }
 	      
-	  printf(" getUtCNS: grid=%i, t=%e, maxDiff=%9.3e\n",grid,t,maxDiff);
+	  printf(" getUtCSSI: grid=%i, t=%e, maxDiff=%9.3e\n",grid,t,maxDiff);
 	}
       }
 
@@ -2042,7 +2042,7 @@ getUt(const realMappedGridFunction & v,
     else
     {  // ******************** 2D ***********************
 
-      if( conservativeGodunovMethod==CnsParameters::multiComponentVersion &&
+      if( conservativeGodunovMethod==CssiParameters::multiComponentVersion &&
 	  !ipu(17) )
       {
 	// call dudr2comp from here
@@ -2209,7 +2209,7 @@ getUt(const realMappedGridFunction & v,
 	    if( bcLocal(0,1)==Parameters::axisymmetric || 
                 bcLocal(1,1)==Parameters::axisymmetric )
 	    {
-	      printF("Cgcns:getUt:ERROR  : boundaries along different directions cannot both be axisymmetric\n");
+	      printF("Cgcssi:getUt:ERROR  : boundaries along different directions cannot both be axisymmetric\n");
 	      Overture::abort("error");
 	    }
 	    else
@@ -2359,7 +2359,7 @@ getUt(const realMappedGridFunction & v,
                   maxDiff= max(maxDiff, max(fabs(utLocal(I1,I2,I3,c)-utSave(I1,I2,I3,c))));
 	      }
 	      
-	      printf(" getUtCNS: grid=%i, t=%e, maxDiff=%9.3e\n",grid,t,maxDiff);
+	      printf(" getUtCSSI: grid=%i, t=%e, maxDiff=%9.3e\n",grid,t,maxDiff);
 	    }
 	  }
 
@@ -2410,7 +2410,7 @@ getUt(const realMappedGridFunction & v,
 
 	    if( (debug() & 4) && gridIsMoving )
 	    {
-	      display(gridVelocity2,sPrintF("Cgcns:getUt: **** gridVelocity2 before dudr *** t=%e dt=%e, grid=%i",t,dt,grid),
+	      display(gridVelocity2,sPrintF("Cgcssi:getUt: **** gridVelocity2 before dudr *** t=%e dt=%e, grid=%i",t,dt,grid),
 		      debugFile,"%6.2f ");
       
 	    }
@@ -2468,7 +2468,7 @@ getUt(const realMappedGridFunction & v,
 
 	      // debug check ***
 	      fprintf(pDebugFile,
-		      ">>cns:fullGrid reLambda=%9.3e, imLambda=%9.3e for "
+		      ">>cssi:fullGrid reLambda=%9.3e, imLambda=%9.3e for "
 		      "grid=%i local dimension: nr=[%i,%i][%i,%i][%i,%i] myid=%i\n",
 		      realPartOfTimeSteppingEigenvalue,imaginaryPartOfTimeSteppingEigenvalue,grid,
 		      nr(0,0),nr(1,0),nr(0,1),nr(1,1),nr(0,2),nr(1,2),myid);
@@ -2509,7 +2509,7 @@ getUt(const realMappedGridFunction & v,
 		imaginaryPartOfTimeSteppingEigenvalue=rpu(1);
 
 		fprintf(pDebugFile,
-			"--->cns:halfGrid reLambda=%9.3e, imLambda=%9.3e for "
+			"--->cssi:halfGrid reLambda=%9.3e, imLambda=%9.3e for "
 			"grid=%i local dimension: nr=[%i,%i][%i,%i][%i,%i] myid=%i\n",
 			realPartOfTimeSteppingEigenvalue,imaginaryPartOfTimeSteppingEigenvalue,grid,
 			nr(0,0),nr(1,0),nr(0,1),nr(1,1),nr(0,2),nr(1,2),myid);
@@ -2560,7 +2560,7 @@ getUt(const realMappedGridFunction & v,
 		maxDiff= max(maxDiff, max(fabs(utLocal(I1,I2,I3,c)-utSave(I1,I2,I3,c))));
 	    }
 	      
-	    printf(" getUtCNS: grid=%i, t=%e, maxDiff=%9.3e\n",grid,t,maxDiff);
+	    printf(" getUtCSSI: grid=%i, t=%e, maxDiff=%9.3e\n",grid,t,maxDiff);
 	  }
 	  
 	}
@@ -2577,7 +2577,7 @@ getUt(const realMappedGridFunction & v,
     if( false )
     {
       fprintf(pDebugFile,
-	      "**cns: reLambda=%9.3e, imLambda=%9.3e for "
+	      "**cssi: reLambda=%9.3e, imLambda=%9.3e for "
 	      "grid=%i local dimension: nr=[%i,%i][%i,%i][%i,%i] myid=%i\n",
 	      realPartOfTimeSteppingEigenvalue,imaginaryPartOfTimeSteppingEigenvalue,grid,
               nr(0,0),nr(1,0),nr(0,1),nr(1,1),nr(0,2),nr(1,2),myid);
@@ -2588,7 +2588,7 @@ getUt(const realMappedGridFunction & v,
 
     if( level<0 || level>10 ) // sanity check
     {
-      printf("ERROR: getUtCNS: grid=%i : Invalid value for level=%i\n",grid,level);
+      printf("ERROR: getUtCSSI: grid=%i : Invalid value for level=%i\n",grid,level);
       Overture::abort();
     }
     if( statistics.getLength(0)<=level )
@@ -2620,12 +2620,12 @@ getUt(const realMappedGridFunction & v,
     if( debug() & 4 )
     {
       // display(uLocal,sPrintF("uLocal for dudr (Godunov) t=%9.3e",t),pDebugFile,"%11.5e ");    
-      display(uLocal,sPrintF("Cgcns::getUt: uLocal for dudr (Godunov) t=%9.3e",t),pDebugFile,"%11.8f ");    
+      display(uLocal,sPrintF("Cgcssi::getUt: uLocal for dudr (Godunov) t=%9.3e",t),pDebugFile,"%11.8f ");    
 
       // display(maskLocal,"maskLocal after dudr (Godunov)",pDebugFile,"%i ");    
 
-      fprintf(pDebugFile,"\n******** Cgcns::getUt:utLocal after dudr (Godunov) t=%9.3e dt=%14.8e ********\n",t,dt);
-      display(utLocal,"Cgcns::getUt: utLocal after dudr (Godunov)",pDebugFile,"%11.5e ");    
+      fprintf(pDebugFile,"\n******** Cgcssi::getUt:utLocal after dudr (Godunov) t=%9.3e dt=%14.8e ********\n",t,dt);
+      display(utLocal,"Cgcssi::getUt: utLocal after dudr (Godunov)",pDebugFile,"%11.5e ");    
     }
 
     if( debug() & 64 )
@@ -2637,8 +2637,8 @@ getUt(const realMappedGridFunction & v,
     }
 
     }
-    else if( pde==CnsParameters::compressibleNavierStokes &&
-	     pdeVariation==CnsParameters::conservativeWithArtificialDissipation &&
+    else if( pde==CssiParameters::compressibleNavierStokes &&
+	     pdeVariation==CssiParameters::conservativeWithArtificialDissipation &&
 	     parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")!=Parameters::implicit )
     {
       // ****************************************************************************************
@@ -2734,7 +2734,7 @@ getUt(const realMappedGridFunction & v,
 	  real detMinAbs=min(abs(det(I1,I2,I3)));
 
 	  if( myid==0 )
-    	  printf(" **** cns: first time through for grid=%i extra=%i : min(det)=%e, max(det)=%e, min(abs(det))=%e \n",grid,extra,
+    	  printf(" **** cssi: first time through for grid=%i extra=%i : min(det)=%e, max(det)=%e, min(abs(det))=%e \n",grid,extra,
             detMin,detMax,detMinAbs);
       }
 
@@ -2780,7 +2780,7 @@ getUt(const realMappedGridFunction & v,
       realArray & rx = mg.inverseCenterDerivative();
       realArray & det = mg.centerJacobian();
       // if( signForDet<0 )
-      //  det*=-1.;  // *** fix this pass signForDet into cnsdu22
+      //  det*=-1.;  // *** fix this pass signForDet into cssidu22
       Range all;
       for( axis=0; axis<mg.numberOfDimensions(); axis++ )
 	for( int dir=0; dir<mg.numberOfDimensions(); dir++ )
@@ -2807,7 +2807,7 @@ getUt(const realMappedGridFunction & v,
 
     if( mg.numberOfDimensions()==2 )
     {
-      // display(u,"u before CNSDU22");
+      // display(u,"u before CSSIDU22");
       
       if( parameters.dbase.get<bool >("twilightZoneFlow") && debug() & 4 )
       {
@@ -2830,9 +2830,9 @@ getUt(const realMappedGridFunction & v,
       }
       if( debug() & 4 )
       {
-	display(u,sPrintF("cns: u before cnsdu22, processor=%i t=%8.2e",
+	display(u,sPrintF("cssi: u before cssidu22, processor=%i t=%8.2e",
 			  Communication_Manager::My_Process_Number,t),debugFile,"%8.2e ");
-	display(uLocal,sPrintF("cns: uLocal before cnsdu22, processor=%i t=%8.2e",
+	display(uLocal,sPrintF("cssi: uLocal before cssidu22, processor=%i t=%8.2e",
 			       Communication_Manager::My_Process_Number,t),pDebugFile,"%8.2e ");
       }
 
@@ -2851,7 +2851,7 @@ getUt(const realMappedGridFunction & v,
 	  if( bcLocal(0,1)==Parameters::axisymmetric || 
 	      bcLocal(1,1)==Parameters::axisymmetric )
 	  {
-	    printF("Cgcns:getUt:ERROR : boundaries along different directions cannot both be axisymmetric\n");
+	    printF("Cgcssi:getUt:ERROR : boundaries along different directions cannot both be axisymmetric\n");
 	    Overture::abort("error");
 	  }
 	  else
@@ -2877,7 +2877,7 @@ getUt(const realMappedGridFunction & v,
 	}
         if( gridHasPointsOnThisProcessor )
 	{
-	  CNSDU22A (t,mg.numberOfDimensions(),parameters.dbase.get<int >("numberOfComponents"),
+	  CSSIDU22A (t,mg.numberOfDimensions(),parameters.dbase.get<int >("numberOfComponents"),
 		    d(0,0),d(1,0),d(0,1),d(1,1),nrsab(0,0),mrsab(0,0),
 		    *pmask,
 		    *uLocal.getDataPointer(),
@@ -2901,7 +2901,7 @@ getUt(const realMappedGridFunction & v,
       {
 	if( gridHasPointsOnThisProcessor )
 	{
-	  CNSDU22 (t,mg.numberOfDimensions(),
+	  CSSIDU22 (t,mg.numberOfDimensions(),
 		   d(0,0),d(1,0),d(0,1),d(1,1),nrsab(0,0),mrsab(0,0),
 		   *pmask,
 		   *uLocal.getDataPointer(),
@@ -2923,22 +2923,22 @@ getUt(const realMappedGridFunction & v,
 
       if( debug() & 64  )
       {
-        display(ut,"ut after CNSDU22",debugFile,"%6.1e ");    
+        display(ut,"ut after CSSIDU22",debugFile,"%6.1e ");    
       }
       if( debug() & 4 )
       {
         
-	// display(rx,sPrintF("rx (local) for CNSDU22 t=%9.3e grid=%i",t,grid),
+	// display(rx,sPrintF("rx (local) for CSSIDU22 t=%9.3e grid=%i",t,grid),
         //      pDebugFile,"%10.7f ");    
-	// display(det,sPrintF("det (local) for CNSDU22 t=%9.3e grid=%i",t,grid),
+	// display(det,sPrintF("det (local) for CSSIDU22 t=%9.3e grid=%i",t,grid),
         //   pDebugFile,"%10.7f ");    
-        display(ipu,sPrintF("ipu for CNSDU22 t=%9.3e grid=%i",t,grid),pDebugFile,"%i ");
-        display(rpu,sPrintF("rpu for CNSDU22 t=%9.3e grid=%i",t,grid),pDebugFile,"%10.7f ");
-	display(uLocal,sPrintF("uLocal for CNSDU22 t=%9.3e grid=%i",t,grid),
+        display(ipu,sPrintF("ipu for CSSIDU22 t=%9.3e grid=%i",t,grid),pDebugFile,"%i ");
+        display(rpu,sPrintF("rpu for CSSIDU22 t=%9.3e grid=%i",t,grid),pDebugFile,"%10.7f ");
+	display(uLocal,sPrintF("uLocal for CSSIDU22 t=%9.3e grid=%i",t,grid),
                 pDebugFile,"%10.7f ");    
-	fprintf(pDebugFile,"\n**** utLocal after CNSDU22 (Jameson) t=%9.3e grid=%i ****\n",
+	fprintf(pDebugFile,"\n**** utLocal after CSSIDU22 (Jameson) t=%9.3e grid=%i ****\n",
                 t,grid);
-        display(utLocal,sPrintF("utLocal after CNSDU22, t=%9.3e grid=%i",t,grid),
+        display(utLocal,sPrintF("utLocal after CSSIDU22, t=%9.3e grid=%i",t,grid),
                 pDebugFile,"%10.7f ");    
       }
     }
@@ -2946,7 +2946,7 @@ getUt(const realMappedGridFunction & v,
     {
       if( gridHasPointsOnThisProcessor )
       {
-	CNSDU23 (t,mg.numberOfDimensions(),
+	CSSIDU23 (t,mg.numberOfDimensions(),
 		 d(0,0),d(1,0),d(0,1),d(1,1),d(0,2),d(1,2),nrsab(0,0),mrsab(0,0),
 		 *pmask,
 		 *uLocal.getDataPointer(),
@@ -2969,9 +2969,9 @@ getUt(const realMappedGridFunction & v,
       {
         ut.updateGhostBoundaries();
 	// Communication_Manager::Sync();
-        fPrintF(debugFile,"\n******** ut after CNSDU23 (Jameson) START t=%9.3e ********\n",t);
-        ::display(ut,"ut after CNSDU23",debugFile,"%6.4f ");    
-  	fPrintF(debugFile,"\n******** ut after CNSDU23 (Jameson) END t=%9.3e ********\n",t);
+        fPrintF(debugFile,"\n******** ut after CSSIDU23 (Jameson) START t=%9.3e ********\n",t);
+        ::display(ut,"ut after CSSIDU23",debugFile,"%6.4f ");    
+  	fPrintF(debugFile,"\n******** ut after CSSIDU23 (Jameson) END t=%9.3e ********\n",t);
       }
 
     }
@@ -2980,7 +2980,7 @@ getUt(const realMappedGridFunction & v,
       throw "error";
     }
   }
-  else if ( pde==CnsParameters::compressibleNavierStokes && 
+  else if ( pde==CssiParameters::compressibleNavierStokes && 
 	    (parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::implicit || parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::steadyStateNewton) )
     {
         const real theta = parameters.dbase.get<real >("implicitFactor");
@@ -3047,7 +3047,7 @@ getUt(const realMappedGridFunction & v,
 	// // now actually build the RHS
 	if( gridHasPointsOnThisProcessor )
 	{
-	  ICNSRHS(d.getDataPointer(),nr.getDataPointer(),vertex.getDataPointer(), rx.getDataPointer(), 
+	  ICSSIRHS(d.getDataPointer(),nr.getDataPointer(),vertex.getDataPointer(), rx.getDataPointer(), 
 		  det.getDataPointer(), pmask,// grid info
 		  iparam.ptr(),rparam.ptr(), // solver paramters
 		  u.getDataPointer(), // state to linearize about
@@ -3056,7 +3056,7 @@ getUt(const realMappedGridFunction & v,
 
 #if 1
 	if ( false && (av2>REAL_EPSILON || av4 > REAL_EPSILON) ) {
-	// // now add the dissipation using cnsdu's JST routine
+	// // now add the dissipation using cssidu's JST routine
 	Index I1,I2,I3;
 	getIndex(d,I1,I2,I3);
 
@@ -3104,7 +3104,7 @@ getUt(const realMappedGridFunction & v,
 	    if( bcLocal(0,1)==Parameters::axisymmetric || 
 		bcLocal(1,1)==Parameters::axisymmetric )
 	      {
-		printF("Cgcns:getUt:ERROR : boundaries along different directions cannot both be axisymmetric\n");
+		printF("Cgcssi:getUt:ERROR : boundaries along different directions cannot both be axisymmetric\n");
 	        Overture::abort("error");
 	      }
 	    else
@@ -3399,8 +3399,8 @@ getUt(const realMappedGridFunction & v,
   {
     if( gravity[axis]!=0. )
     {
-      if( pdeVariation==CnsParameters::conservativeWithArtificialDissipation ||
-          pdeVariation==CnsParameters::conservativeGodunov )
+      if( pdeVariation==CssiParameters::conservativeWithArtificialDissipation ||
+          pdeVariation==CssiParameters::conservativeGodunov )
         ut(I1,I2,I3,uc+axis)+= gravity[axis]*u(I1,I2,I3,rc);   // conservative: add rho*g
       else
 	{
@@ -3416,7 +3416,7 @@ getUt(const realMappedGridFunction & v,
       realArray &ff = (*parameters.dbase.get<realCompositeGridFunction* >("forcingFunction"))[grid];
       ut(I1,I2,I3,rc) += ff(I1,I2,I3,rc);
       
-      if ( pdeVariation==CnsParameters::nonConservative )
+      if ( pdeVariation==CssiParameters::nonConservative )
 	{
 	  for ( int vv=uc; vv<=max(vc,wc); vv++ )
 	    {// interpret the forcing as a drag coefficient??? 
@@ -3513,7 +3513,7 @@ getUt(const realMappedGridFunction & v,
 /// \param rparam (input) : real parameters
 /// \param dvdtImplicit (input/output) : add the implicit body forcing here.
 // ===================================================================================================================
-void Cgcns::
+void Cgcssi::
 addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u,  int iparam[], real rparam[],
 	   realMappedGridFunction & dvdtImplicit /* = Overture::nullRealMappedGridFunction() */,
            realMappedGridFunction *referenceFrameVelocity /* =NULL */ )
@@ -3528,15 +3528,15 @@ addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u,  int
 
   FILE * debugFile = parameters.dbase.get<FILE* >("debugFile");
   FILE * pDebugFile = parameters.dbase.get<FILE* >("pDebugFile");
-  const CnsParameters::PDE & pde = parameters.dbase.get<CnsParameters::PDE>("pde");
-  const CnsParameters::PDEVariation & pdeVariation = parameters.dbase.get<CnsParameters::PDEVariation >("pdeVariation");  const CnsParameters::GodunovVariation & conservativeGodunovMethod = 
-                           parameters.dbase.get<CnsParameters::GodunovVariation >("conservativeGodunovMethod");
+  const CssiParameters::PDE & pde = parameters.dbase.get<CssiParameters::PDE>("pde");
+  const CssiParameters::PDEVariation & pdeVariation = parameters.dbase.get<CssiParameters::PDEVariation >("pdeVariation");  const CssiParameters::GodunovVariation & conservativeGodunovMethod = 
+                           parameters.dbase.get<CssiParameters::GodunovVariation >("conservativeGodunovMethod");
 
 
-  if( pde==CnsParameters::compressibleMultiphase )
+  if( pde==CssiParameters::compressibleMultiphase )
   {
     if( debug() & 2 )
-      printF(">>> addForcingCNS: Do nothing for compressibleMultiphase <<<<\n");
+      printF(">>> addForcingCSSI: Do nothing for compressibleMultiphase <<<<\n");
 
     parameters.dbase.get<RealArray>("timing")(parameters.dbase.get<int>("timeForForcing"))+=getCPU()-cpu0;
     return;
@@ -3552,7 +3552,7 @@ addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u,  int
 
   if( debug() & 8 )
   {
-    fprintf(pDebugFile," ====== addForcingCNS t=%9.3e TZ=%i pdeVariation=%i ===== \n",t0,
+    fprintf(pDebugFile," ====== addForcingCSSI t=%9.3e TZ=%i pdeVariation=%i ===== \n",t0,
 	    (int)parameters.dbase.get<bool >("twilightZoneFlow"),(int)pdeVariation);
   }
   
@@ -3568,7 +3568,7 @@ addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u,  int
 
     // The body forcing will have already been computed.
     if( false )
-      printF("Cgcns::addForcing:turnOnBodyForcing=%i\n",(int) parameters.dbase.get<bool >("turnOnBodyForcing"));
+      printF("Cgcssi::addForcing:turnOnBodyForcing=%i\n",(int) parameters.dbase.get<bool >("turnOnBodyForcing"));
 
 
     assert( parameters.dbase.get<realCompositeGridFunction* >("bodyForce")!=NULL );
@@ -3588,7 +3588,7 @@ addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u,  int
     const Range & Rt = parameters.dbase.get<Range >("Rt");       // time dependent components
 
     if( false )
-      printF("cns:getForcing: grid=%i, utLocal=[%i,%i][%i,%i], bodyForceLocal=[%i,%i][%i,%i]\n",grid,
+      printF("cssi:getForcing: grid=%i, utLocal=[%i,%i][%i,%i], bodyForceLocal=[%i,%i][%i,%i]\n",grid,
 	     utLocal.getBase(0),utLocal.getBound(0),
 	     utLocal.getBase(1),utLocal.getBound(1),
 	     bodyForceLocal.getBase(0),bodyForceLocal.getBound(0),
@@ -3600,9 +3600,9 @@ addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u,  int
 
   // *wdh* 2013/08/31 -- put this after assigning the bodyForce
   if( !parameters.dbase.get<bool >("twilightZoneFlow") || 
-      conservativeGodunovMethod==CnsParameters::multiComponentVersion ||
-      (pde==CnsParameters::compressibleNavierStokes &&
-       pdeVariation==CnsParameters::conservativeGodunov) )
+      conservativeGodunovMethod==CssiParameters::multiComponentVersion ||
+      (pde==CssiParameters::compressibleNavierStokes &&
+       pdeVariation==CssiParameters::conservativeGodunov) )
   {
     parameters.dbase.get<RealArray>("timing")(parameters.dbase.get<int>("timeForForcing"))+=getCPU()-cpu0;
     return;
@@ -3647,7 +3647,7 @@ addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u,  int
   if( debug() & 8 )
   {
     if( parameters.gridIsMoving(grid) )
-      display(xLocal,sPrintF("cns:addForcing:moving-grid: xLocal adding TZ forcing, grid=%i t=%9.4e",grid,t),pDebugFile,"%12.8f ");
+      display(xLocal,sPrintF("cssi:addForcing:moving-grid: xLocal adding TZ forcing, grid=%i t=%9.4e",grid,t),pDebugFile,"%12.8f ");
   }
 
   bool useOpt=true;
@@ -3679,7 +3679,7 @@ addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u,  int
 
     if( numberOfDimensions==1 )
     {
-      assert( pdeVariation!=CnsParameters::conservativeWithArtificialDissipation );
+      assert( pdeVariation!=CssiParameters::conservativeWithArtificialDissipation );
 
       // this is new:
       realSerialArray r0(I1,I2,I3),r0t(I1,I2,I3),r0x(I1,I2,I3),r0xx(I1,I2,I3);
@@ -3740,7 +3740,7 @@ addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u,  int
       e.gd( t0y ,xLocal,numberOfDimensions,isRectangular,0,0,1,0,I1,I2,I3,tc,t);
 
 	  
-      if( pdeVariation==CnsParameters::conservativeWithArtificialDissipation )
+      if( pdeVariation==CssiParameters::conservativeWithArtificialDissipation )
       {
 	// conservative form (but TZ flow is primitive variables)
 
@@ -3900,7 +3900,7 @@ addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u,  int
       e.gd( t0z ,xLocal,numberOfDimensions,isRectangular,0,0,0,1,I1,I2,I3,tc,t);
 
 	  
-      if( pdeVariation==CnsParameters::conservativeWithArtificialDissipation )
+      if( pdeVariation==CssiParameters::conservativeWithArtificialDissipation )
       {
 	// conservative form (but TZ flow is primitive variables)
 
@@ -4115,7 +4115,7 @@ addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u,  int
       const realArray & t0yy= e.yy(mg,I1,I2,I3,tc,t);
 
 
-      if( pdeVariation==CnsParameters::conservativeWithArtificialDissipation )
+      if( pdeVariation==CssiParameters::conservativeWithArtificialDissipation )
       {
 	// conservative form (but TZ flow is primitive variables)
 
@@ -4191,7 +4191,7 @@ addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u,  int
     }
     else if( mg.numberOfDimensions()==3 )
     {
-      if( pdeVariation==CnsParameters::conservativeWithArtificialDissipation )
+      if( pdeVariation==CssiParameters::conservativeWithArtificialDissipation )
       {
 	// conservative form (but TZ flow is primitive variables)
 
@@ -4396,7 +4396,7 @@ addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u,  int
     }
     else
     {
-      printF("Cgcns::addForcing:ERROR: unknown dimension\n");
+      printF("Cgcssi::addForcing:ERROR: unknown dimension\n");
       OV_ABORT("error");
     }
 
@@ -4416,7 +4416,7 @@ addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u,  int
 /// \param imLambda (output) : imaginary part of the time-stepping eigenvalue.
 /// \param grid (input) : grid number.
 // ===================================================================================================================
-void Cgcns::
+void Cgcssi::
 getTimeSteppingEigenvalue(MappedGrid & mg,
 			  realMappedGridFunction & u0, 
 			  realMappedGridFunction & gridVelocity,  
@@ -4429,7 +4429,7 @@ getTimeSteppingEigenvalue(MappedGrid & mg,
   real & realPartOfTimeSteppingEigenvalue      = realPartOfEigenvalue[grid];
   real & imaginaryPartOfTimeSteppingEigenvalue = imaginaryPartOfEigenvalue[grid];
 
-  const CnsParameters::PDE & pde = parameters.dbase.get<CnsParameters::PDE>("pde");
+  const CssiParameters::PDE & pde = parameters.dbase.get<CssiParameters::PDE>("pde");
   const int & myid = parameters.dbase.get<int >("myid");
 
   FILE * debugFile = parameters.dbase.get<FILE* >("debugFile");
@@ -4437,7 +4437,7 @@ getTimeSteppingEigenvalue(MappedGrid & mg,
 
   if( debug() & 8 )
   {
-    printF(" >>>>>>> Cgcns::getTimeSteppingEigenvalue <<<<<\n"
+    printF(" >>>>>>> Cgcssi::getTimeSteppingEigenvalue <<<<<\n"
            "   START: grid=%i, imaginaryPartOfTimeSteppingEigenvalue=%8.2e \n",
 	   grid,imaginaryPartOfTimeSteppingEigenvalue);
   }
@@ -4453,7 +4453,7 @@ getTimeSteppingEigenvalue(MappedGrid & mg,
       {
         const IntegerArray & gid = mg.gridIndexRange();
 	fPrintF(pDebugFile,
-               "**getTimeSteppingEigenvalueCNS: precomputed: reLambda=%9.3e, imLambda=%9.3e for "
+               "**getTimeSteppingEigenvalueCSSI: precomputed: reLambda=%9.3e, imLambda=%9.3e for "
                "grid=%i [%i,%i][%i,%i][%i,%i] myid=%i\n",
 	       reLambda,imLambda,grid,gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),myid);
       }
@@ -4462,13 +4462,13 @@ getTimeSteppingEigenvalue(MappedGrid & mg,
     return;
   }
    
-  if( pde==CnsParameters::compressibleMultiphase )
+  if( pde==CssiParameters::compressibleMultiphase )
   {
     reLambda=10.;
     imLambda=10.;
     
     if( debug() & 2 )
-      printF(">>> getTimeSteppingEigenvalueCNS: Do nothing for compressibleMultiphase <<<<\n");
+      printF(">>> getTimeSteppingEigenvalueCSSI: Do nothing for compressibleMultiphase <<<<\n");
     return;
   }
 
@@ -4667,7 +4667,7 @@ getTimeSteppingEigenvalue(MappedGrid & mg,
     int ierr=0;
     
 
-    cnsdts(mg.numberOfDimensions(),
+    cssidts(mg.numberOfDimensions(),
 	   I1.getBase(),I1.getBound(),
 	   I2.getBase(),I2.getBound(),
 	   I3.getBase(),I3.getBound(),
@@ -4684,7 +4684,7 @@ getTimeSteppingEigenvalue(MappedGrid & mg,
     // *wdh* 060714  reLambda=Parameters::getMaxValue(reLambda);   // max value over all processors
     // *wdh* 060714  imLambda=Parameters::getMaxValue(imLambda);   // max value over all processors
 
-    if( debug() & 4 ) printf("From cnsdts: NEW: (reLambda,imLambda)=(%9.3e,%9.3e)\n",reLambda,imLambda);
+    if( debug() & 4 ) printf("From cssidts: NEW: (reLambda,imLambda)=(%9.3e,%9.3e)\n",reLambda,imLambda);
     
     return;
 

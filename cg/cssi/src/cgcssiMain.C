@@ -1,10 +1,9 @@
-#include "Cgcns.h"
+#include "Cgcssi.h"
 #include "PlotStuff.h"
 #include "Ogshow.h"
 #include "ParallelUtility.h"
 #include "display.h"
 
-#include "Cgcns.h"
 #include "CgSolverUtil.h"
 
 int 
@@ -56,13 +55,13 @@ main(int argc, char *argv[])
       else if( commandFileName=="" )
       {
         commandFileName=line;    
-        printF("cgcns: reading commands from file [%s]\n",(const char*)commandFileName);
+        printF("cgcssi: reading commands from file [%s]\n",(const char*)commandFileName);
       }
       
     }
   }
   else
-    printF("Usage: `cgcns [options][file.cmd]' \n"
+    printF("Usage: `cgcssi [options][file.cmd]' \n"
             "     options:                            \n" 
             "          noplot:   run without graphics \n" 
             "          nopause: do not pause \n" 
@@ -72,14 +71,14 @@ main(int argc, char *argv[])
             "     file.cmd: read this command file \n");
 
 
-  GenericGraphicsInterface & ps = *Overture::getGraphicsInterface("cgcns",false,argc,argv);
+  GenericGraphicsInterface & ps = *Overture::getGraphicsInterface("cgcssi",false,argc,argv);
 
-  // By default start saving the command file called "cgcns.cmd"
-  aString logFile="cgcns.cmd";
+  // By default start saving the command file called "cgcssi.cmd"
+  aString logFile="cgcssi.cmd";
   ps.saveCommandFile(logFile);
   printF("User commands are being saved in the file `%s'\n",(const char *)logFile);
 
-  ps.appendToTheDefaultPrompt("cgcns>");
+  ps.appendToTheDefaultPrompt("cgcssi>");
 
   // read from a command file if given
   if( commandFileName!="" )
@@ -99,41 +98,17 @@ main(int argc, char *argv[])
   Interpolant & interpolant = *new Interpolant(cg); interpolant.incrementReferenceCount();
   interpolant.setImplicitInterpolationMethod(Interpolant::iterateToInterpolate);
 
-
-  // cout << "cgcns: numberOfGrids = " << cg.numberOfGrids() << endl;
-  // cout << "cgcns: numberOfComponentGrids = " << cg.numberOfComponentGrids() << endl;
-
-  // cout << "cgcns: nameOfShowFile = " << nameOfShowFile << endl;
-  
-   Ogshow *show=NULL;
-//  ** old way:
-//   ps.inputString(nameOfShowFile,"Enter the name of the (new) show file (enter `none' for none):");
-//   if( nameOfShowFile=="none" )
-//     nameOfShowFile="";
-//   if( nameOfShowFile!="" )
-//     show = new Ogshow( nameOfShowFile,".",false );
-  
-
-  // CgSolver solver(cg,&ps,show,plotOption);
-  // CgSolver & solver = *new CgSolver(cg,&ps,show,plotOption);
-
-  Cgcns & solver = *new Cgcns(cg,&ps,show,plotOption);
-
-//   pDomainSolver = new Cgcns(solver.parameters,solver.u,solver.parameters.dbase.get<real >("tInitial"));
-//   pDomainSolver->updateToMatchGrid(cg);
+  Ogshow *show=NULL;
+  Cgcssi & solver = *new Cgcssi(cg,&ps,show,plotOption);
 
   solver.setNameOfGridFile(nameOfGridFile);
 
   solver.setParametersInteractively();
 
-//   assert( solver.compositeGridSolver!=NULL && solver.compositeGridSolver[0]!=NULL );
-//   pDomainSolver = solver.compositeGridSolver[0]; // do this for now
-
   solver.solve();
   solver.printStatistics();
 
   ps.unAppendTheDefaultPrompt();
-//  delete show;
 
   if( reportMemory )
     Diagnostic_Manager::report();
@@ -146,15 +121,12 @@ main(int argc, char *argv[])
     printf(" +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
   }
 
-
-//  delete pDomainSolver;
-
   delete &solver;  // do this so we shutdown PETSc (if used).
 
-  printF("cgcnsMain: interpolant.getReferenceCount=%i\n",interpolant.getReferenceCount());
+  printF("cgcssiMain: interpolant.getReferenceCount=%i\n",interpolant.getReferenceCount());
   if( interpolant.decrementReferenceCount()==0 )
   {
-    printF("cgcnsMain: delete Interpolant\n");
+    printF("cgcssiMain: delete Interpolant\n");
     delete &interpolant;
   }
   Overture::finish();

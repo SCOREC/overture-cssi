@@ -1,25 +1,25 @@
-#include "Cgcns.h"
+#include "Cgcssi.h"
 #include "CompositeGridOperators.h"
 #include "Ogshow.h"
 #include "Ogen.h"
 #include "Ogmg.h"
 #include "Insbc4WorkSpace.h"
 #include "App.h"
-#include "CnsParameters.h"
+#include "CssiParameters.h"
 #include "GridStatistics.h"
 
 
 
 // ===================================================================================================================
-/// \brief Perform initialization steps for Cgcns; build geometry arrays etc.
+/// \brief Perform initialization steps for Cgcssi; build geometry arrays etc.
 // ===================================================================================================================
-int Cgcns::
+int Cgcssi::
 setupGridFunctions()
 {
   assert( current==0 );
   GridFunction & solution = gf[current];
   CompositeGrid & cg = *solution.u.getCompositeGrid();
-  if( parameters.dbase.get<CnsParameters::PDEVariation >("pdeVariation")==CnsParameters::conservativeWithArtificialDissipation )
+  if( parameters.dbase.get<CssiParameters::PDEVariation >("pdeVariation")==CssiParameters::conservativeWithArtificialDissipation )
     {
       cg.update(MappedGrid::THEinverseVertexDerivative | MappedGrid::THEinverseCenterDerivative | 
                 MappedGrid::THEcenterJacobian |
@@ -51,7 +51,7 @@ setupGridFunctions()
       buildImplicitSolvers(cg); // This will build the array of implicit solvers
     }
 
-  if (parameters.dbase.get<CnsParameters::PDEVariation >("pdeVariation")==CnsParameters::conservativeGodunov )
+  if (parameters.dbase.get<CssiParameters::PDEVariation >("pdeVariation")==CssiParameters::conservativeGodunov )
     parameters.dbase.put<bool>("amrNeedsTimeStepInfo",true);
   
   // --- check for negative volumes : this is usually bad news --- *wdh* 2013/09/26
@@ -60,13 +60,13 @@ setupGridFunctions()
   int numberOfNegativeVolumes= GridStatistics::checkForNegativeVolumes( cg,numberOfGhost,stdout ); 
   if( numberOfNegativeVolumes>0 )
   {
-    printF("Cgcns::FATAL Error: this grid has negative volumes (maybe only in ghost points).\n"
+    printF("Cgcssi::FATAL Error: this grid has negative volumes (maybe only in ghost points).\n"
            "  This will normally cause severe or subtle errors. Please remake the grid.\n");
     OV_ABORT("ERROR");
   }
   else
   {
-    printF("Cgcns:: No negative volumes were found\n.");
+    printF("Cgcssi:: No negative volumes were found\n.");
   }
 
   return DomainSolver::setupGridFunctions();
@@ -76,14 +76,14 @@ setupGridFunctions()
 // ===================================================================================================================
 /// \brief Initialize the solution, project velocity if required.
 // ===================================================================================================================
-int Cgcns::
+int Cgcssi::
 initializeSolution()
 {
 
   DomainSolver::initializeSolution();
 
   // *wdh* added 030916
-  if( parameters.dbase.get<CnsParameters::PDEVariation >("pdeVariation")==CnsParameters::conservativeGodunov )
+  if( parameters.dbase.get<CssiParameters::PDEVariation >("pdeVariation")==CssiParameters::conservativeGodunov )
   {
     // For the Godunov Method we first call getUt so that the eigenvalues needed to determine
     // the time step are computed.

@@ -42,7 +42,7 @@ set sampleGrids = $Overture/sampleGrids
 setenv CGE $CGBUILDPREFIX
 alias cgad  ${CGE}/ad/bin/cgad
 alias cgasf ${CGE}/asf/bin/cgasf
-alias cgcns ${CGE}/cns/bin/cgcns
+alias cgcssi ${CGE}/cssi/bin/cgcssi
 alias cgins ${CGE}/ins/bin/cgins
 alias cgmx  ${CGE}/mx/bin/cgmx 
 alias cgmp  ${CGE}/mp/bin/cgmp 
@@ -50,7 +50,7 @@ alias cgsm  ${CGE}/sm/bin/cgsm
 
 set ad = ${CG}/ad
 set asf = ${CG}/asf
-set cns = ${CG}/cns
+set cssi = ${CG}/cssi
 set ins = ${CG}/ins
 set mx = ${CG}/mx
 set mp = ${CG}/mp

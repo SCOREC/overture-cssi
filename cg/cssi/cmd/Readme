@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------------------
-The cns/cmd directory holds command files for running examples of cgcns
+The cssi/cmd directory holds command files for running examples of cgcssi
 
-Type "../bin/cgcns file.cmd" to run the command file named "file.cmd"
+Type "../bin/cgcssi file.cmd" to run the command file named "file.cmd"
 
-For parallel examples set the shell variable:  set cgcnsp = ${CGBUILDPREFIX}/mp/bin/cgcns
+For parallel examples set the shell variable:  set cgcssip = ${CGBUILDPREFIX}/mp/bin/cgcssi
 
-More examples can be found in cg/cns/runs. 
+More examples can be found in cg/cssi/runs. 
 
 ------------------------------------------------------------------------------------------
 

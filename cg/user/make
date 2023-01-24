@@ -2,9 +2,9 @@ include ../common/make
 
 # include additions to the version common/make
 
-INCLUDES := -I./src -I$(CG)/ins/src -I$(CG)/cns/src -I$(CG)/cns/src/godunov -I$(CG)/ad/src $(INCLUDES)
+INCLUDES := -I./src -I$(CG)/ins/src -I$(CG)/cssi/src -I$(CG)/cssi/src/godunov -I$(CG)/ad/src $(INCLUDES)
 
-CNSLIBS := $(OV_RPATH)$(CGBUILDPREFIX)cns/lib -L$(CGBUILDPREFIX)cns/lib -lCgcns \
+CSSILIBS := $(OV_RPATH)$(CGBUILDPREFIX)cssi/lib -L$(CGBUILDPREFIX)cssi/lib -lCgcssi \
            $(OV_RPATH)$(CGBUILDPREFIX)common/lib -L$(CGBUILDPREFIX)/common/lib -lCgCommon \
            $(LIBS)
 

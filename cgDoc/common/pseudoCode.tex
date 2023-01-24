@@ -437,13 +437,13 @@ DeformingBodyMotion::\FUNC{correct}( t1, t2, GridFunction \& cgf1,GridFunction \
 
 
 % The {\tt DomainSolver::interfaceRightHandSide} function is used to get or set interface values.
-% Each DomainSolver (cgad, cgcns, cgins, cgsm,...) has a version of this routine. The generic
+% Each DomainSolver (cgad, cgcssi, cgins, cgsm,...) has a version of this routine. The generic
 % version appears in cg/common/src/interfaceBoundaryConditions.C. 
 
 
-% Here is {\tt Cgcns::interfaceRightHandSide} (cg/cns/src/interface.bC)
+% Here is {\tt Cgcssi::interfaceRightHandSide} (cg/cssi/src/interface.bC)
 % \begin{flushleft}\tt\small
-% Cgcns::\FUNC{interfaceRightHandSide}( InterfaceOptionsEnum option, int interfaceDataOptions,  \\
+% Cgcssi::\FUNC{interfaceRightHandSide}( InterfaceOptionsEnum option, int interfaceDataOptions,  \\
 %  \qquad\quad       GridFaceDescriptor \& info, GridFaceDescriptor \& gfd, int gfIndex, real t ) \\
 % \{  \\
 % \ia  RealArray \& bd = parameters.getBoundaryData(side,axis,grid,mg); \COM{Interface data on this domain.}\\

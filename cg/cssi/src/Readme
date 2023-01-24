@@ -1,11 +1,11 @@
-This directory contains a brief description of the source files for cgcns
+This directory contains a brief description of the source files for cgcssi
 
 
 Notes:
 
 
-Cgcns.C : 
-  - Cgcns(CompositeGrid & cg_, ... )
+Cgcssi.C : 
+  - Cgcssi(CompositeGrid & cg_, ... )
 
   - writeParameterSummary( FILE * file ) : writes header comments
 

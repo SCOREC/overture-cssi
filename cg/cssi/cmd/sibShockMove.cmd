@@ -1,5 +1,5 @@
 ***************************************************************
-*  sibShockMove.cmd -- cgcns example --
+*  sibShockMove.cmd -- cgcssi example --
 * 
 *     Shocking hitting a moving sphere
 * 

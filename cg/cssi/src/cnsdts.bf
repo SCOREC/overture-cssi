@@ -317,14 +317,14 @@ c Return nuT and it's first derivatives for KE
 c ============== from inspf.bf ***
 #beginMacro getEddyViscosityAndFirstDerivatives(SOLVER,DIM)
 
- #If #SOLVER == "CNSSPAL"
+ #If #SOLVER == "CSSISPAL"
    setupSpalartAllmaras(DIM)
- #Elif #SOLVER == "CNSBL"
+ #Elif #SOLVER == "CSSIBL"
    getBaldwinLomaxEddyViscosityAndFirstDerivatives(DIM)
- #Elif #SOLVER == "CNSKE"
+ #Elif #SOLVER == "CSSIKE"
    getKEpsilonViscosityAndFirstDerivatives(DIM)
  #Else
-   write(*,'("cnsdts:ERROR: unknown solver= SOLVER ")')
+   write(*,'("cssidts:ERROR: unknown solver= SOLVER ")')
    stop 987 
  #End
 
@@ -332,7 +332,7 @@ c ============== from inspf.bf ***
 
 c====================================================================================
 c
-c SOLVER: CNS, CNSSPAL, CNSBL, CNSKE
+c SOLVER: CSSI, CSSISPAL, CSSIBL, CSSIKE
 c METHOD: GLOBAL, LOCAL  (GLOBAL=fixed time step, LOCAL=local-time stepping -> compute dtVar)
 c OPTION: EXPLICIT, IMPLICIT
 c ADTYPE: AD2, AD4, AD24 --- NOT USED NOW
@@ -399,7 +399,7 @@ end if
 c ...............................................
 beginLoopsWithMask(n1a,n1b,n2a,n2b,n3a,n3b)
 
-#If #SOLVER == "CNSSPAL" || #SOLVER == "CNSBL" || #SOLVER == "CNSKE" 
+#If #SOLVER == "CSSISPAL" || #SOLVER == "CSSIBL" || #SOLVER == "CSSIKE" 
   getEddyViscosityAndFirstDerivatives(SOLVER,DIM)
 #End
 
@@ -415,13 +415,13 @@ beginLoopsWithMask(n1a,n1b,n2a,n2b,n3a,n3b)
             +sqrt( cSq*( 1./dx(0)**2 +1./dx(1)**2 +1./dx(2)**2 ) )
   #End
 
-  #If #SOLVER == "CNSSPAL" 
+  #If #SOLVER == "CSSISPAL" 
     #If #DIM == "2"
       imPart= imPart+ cr*(1.+cb2)*sigmai*(abs(NuTx)/dx(0)+abs(nuTy)/dx(1) )
     #Else
       imPart= imPart+ cr*(1.+cb2)*sigmai*( abs(NuTx)/dx(0)+abs(nuTy)/dx(1)+abs(nuTz)/dx(2) )
     #End
-  #Elif #SOLVER == "CNSBL" || #SOLVER == "CNSKE"
+  #Elif #SOLVER == "CSSIBL" || #SOLVER == "CSSIKE"
     ! check this 
     #If #DIM == "2"
       imPart= imPart+ cr*( abs(NuTx)/dx(0)+abs(nuTy)/dx(1) )
@@ -431,7 +431,7 @@ beginLoopsWithMask(n1a,n1b,n2a,n2b,n3a,n3b)
   #End
 
   #If #OPTION == "EXPLICIT"
-   #If #SOLVER == "CNS" 
+   #If #SOLVER == "CSSI" 
     #If #DIM == "2"
       rePart= crr*(mukt/U(rc))*( 1./dx(0)**2 + 1./dx(1)**2 )
     #Else
@@ -449,11 +449,11 @@ beginLoopsWithMask(n1a,n1b,n2a,n2b,n3a,n3b)
       stop 77542
     #End
 
-   #Elif #SOLVER == "CNSSPAL" || #SOLVER == "CNSBL" || #SOLVER == "CNSKE" 
+   #Elif #SOLVER == "CSSISPAL" || #SOLVER == "CSSIBL" || #SOLVER == "CSSIKE" 
      ! "
-     #If #SOLVER == "CNSSPAL"
+     #If #SOLVER == "CSSISPAL"
        nuMax= max( nu+nuT, sigmai*(nu+n0) )
-     #Elif #SOLVER == "CNSKE" 
+     #Elif #SOLVER == "CSSIKE" 
        nuMax= max( nu+nuT, nu+sigmaKI*nuT, nu+sigmaEpsI*nuT )
      #Else
        nuMax= nu+nuT
@@ -473,7 +473,7 @@ beginLoopsWithMask(n1a,n1b,n2a,n2b,n3a,n3b)
 
   #Elif  #OPTION == "IMPLICIT"
     rePart=0.
-    #If #SOLVER == "CNSSPAL" 
+    #If #SOLVER == "CSSISPAL" 
       ! we need to add this for the steady state solver
       ! rePart=rePart+ max(0., cb1*s - cw1*fw*n0/dd**2)
       ! rePart=rePart+ max(0., cb1*s - .5*cw1*fw*n0/dd**2)
@@ -520,7 +520,7 @@ beginLoopsWithMask(n1a,n1b,n2a,n2b,n3a,n3b)
     a3   = UU(uc)*tx(i1,i2,i3)+UU(vc)*ty(i1,i2,i3)+UU(wc)*tz(i1,i2,i3)
   #End
 
-  #If #SOLVER == "CNSSPAL" 
+  #If #SOLVER == "CSSISPAL" 
     #If #DIM == "2"
       a1=a1 - (1.+cb2)*sigmai*(nuTx*rx(i1,i2,i3)+nuTy*ry(i1,i2,i3))
       a2=a2 - (1.+cb2)*sigmai*(nuTx*sx(i1,i2,i3)+nuTy*sy(i1,i2,i3))
@@ -529,7 +529,7 @@ beginLoopsWithMask(n1a,n1b,n2a,n2b,n3a,n3b)
       a2=a2 - (1.+cb2)*sigmai*(nuTx*sx(i1,i2,i3)+nuTy*sy(i1,i2,i3)+nuTz*sz(i1,i2,i3))
       a3=a3 - (1.+cb2)*sigmai*(nuTx*tx(i1,i2,i3)+nuTy*ty(i1,i2,i3)+nuTz*tz(i1,i2,i3))
     #End
-  #Elif #SOLVER == "CNSBL" || #SOLVER == "CNSKE"
+  #Elif #SOLVER == "CSSIBL" || #SOLVER == "CSSIKE"
     ! check this 
     #If #DIM == "2"
       a1=a1 - (nuTx*rx(i1,i2,i3)+nuTy*ry(i1,i2,i3))
@@ -542,7 +542,7 @@ beginLoopsWithMask(n1a,n1b,n2a,n2b,n3a,n3b)
   #End
 
   #If #OPTION == "EXPLICIT"
-   #If #SOLVER == "CNS" 
+   #If #SOLVER == "CSSI" 
     ! constant nu case
     #If #DIM == "2"
       a1=a1 -nu*( RXX() + RYY() )
@@ -585,11 +585,11 @@ beginLoopsWithMask(n1a,n1b,n2a,n2b,n3a,n3b)
                 )
 
     #End
-   #Elif #SOLVER == "CNSSPAL" || #SOLVER == "CNSBL" || #SOLVER == "CNSKE" 
+   #Elif #SOLVER == "CSSISPAL" || #SOLVER == "CSSIBL" || #SOLVER == "CSSIKE" 
      ! "
-     #If #SOLVER == "CNSSPAL"
+     #If #SOLVER == "CSSISPAL"
        nuMax= max( nu+nuT, sigmai*(nu+n0) )
-     #Elif #SOLVER == "CNSKE" 
+     #Elif #SOLVER == "CSSIKE" 
        nuMax= max( nu+nuT, nu+sigmaKI*nuT, nu+sigmaEpsI*nuT )
      #Else
        nuMax= nu+nuT
@@ -629,7 +629,7 @@ beginLoopsWithMask(n1a,n1b,n2a,n2b,n3a,n3b)
   #Elif  #OPTION == "IMPLICIT"
 
     rePart=0.
-    #If #SOLVER == "CNSSPAL" 
+    #If #SOLVER == "CSSISPAL" 
       ! rePart=rePart+ max(0., cb1*s - .5*cw1*fw*n0/dd**2)
       ! add a factor of 2
       ! rePart=rePart+ 2.*cb1*s
@@ -696,19 +696,19 @@ beginLoopsWithMask(n1a,n1b,n2a,n2b,n3a,n3b)
 #If #OPTION == "EXPLICIT"
   if( use2ndOrderAD.eq.1 )then 
     #If #DIM == "2"
-      #If #SOLVER == "CNSSPAL"
-        adCNS = 8.*( ad21 + cd22*( abs(UX(uc))+abs(UX(vc))+abs(UY(uc))+abs(UY(vc)) ) )
+      #If #SOLVER == "CSSISPAL"
+        adCSSI = 8.*( ad21 + cd22*( abs(UX(uc))+abs(UX(vc))+abs(UY(uc))+abs(UY(vc)) ) )
         adSPAL= 8.*( ad21n + cd22n*( abs(UX(nc))+abs(UY(nc)) ) )
-        rePart=rePart + max( adCNS, adSPAL )
+        rePart=rePart + max( adCSSI, adSPAL )
       #Else
         rePart=rePart + 8.*( ad21 + cd22*( abs(UX(uc))+abs(UX(vc))+abs(UY(uc))+abs(UY(vc)) ) )
       #End
     #Else
-      #If #SOLVER == "CNSSPAL"
-        adCNS = 12.*( ad21 + cd22*( \
+      #If #SOLVER == "CSSISPAL"
+        adCSSI = 12.*( ad21 + cd22*( \
          abs(UX(uc))+abs(UX(vc))+abs(UX(wc))+abs(UY(uc))+abs(UY(vc))+abs(UY(wc))+abs(UZ(uc))+abs(UZ(vc))+abs(UZ(wc))) )
         adSPAL = 12.*( ad21n + cd22n*( abs(UX(nc))+abs(UY(nc))+abs(UZ(nc)) ) )
-        rePart=rePart + max( adCNS, adSPAL )
+        rePart=rePart + max( adCSSI, adSPAL )
       #Else
         rePart=rePart + 12.*( ad21 + cd22*( \
          abs(UX(uc))+abs(UX(vc))+abs(UX(wc))+abs(UY(uc))+abs(UY(vc))+abs(UY(wc))+abs(UZ(uc))+abs(UZ(vc))+abs(UZ(wc))) )
@@ -759,7 +759,7 @@ c ==============================================================================
  else
   ! No axis-symmetric versions yet
   ! kkc 051115 there is now !
-  #If #SOLVER == "CNS"
+  #If #SOLVER == "CSSI"
     if( gridType.eq.rectangular )then
       getTimeSteppingEigenvalues(SOLVER,METHOD,OPTION,ADTYPE,ORDER,DIM,rectangular,axisymmetric)
     else if(  gridType.eq.curvilinear )then
@@ -865,12 +865,12 @@ c   nu*(  v.xx + v.yy + (1/y) v.y - v/y^2 )
 c ============================================================================================================
 c  Define the subroutine that compute the time stepping eigenvalues for a given solver
 c ============================================================================================================
-#beginMacro CNSDTS(SOLVER,NAME)
+#beginMacro CSSIDTS(SOLVER,NAME)
  subroutine NAME(nd, n1a,n1b,n2a,n2b,n3a,n3b, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
      mask,xy, rsxy,  u,uu, gv,dw, p, dp, dtVar, bc, ipar, rpar, ierr )
 c======================================================================
 c
-c    Determine the time step for the CNS equations.
+c    Determine the time step for the CSSI equations.
 c    ---------------------------------------------
 c
 c nd : number of space dimensions
@@ -910,7 +910,7 @@ c======================================================================
  real dxi,dyi,dzi,dri,dsi,dti,dr2i,ds2i,dt2i
  real ad21,ad22,ad41,ad42,cd22,cd42,adc
  real ad21n,ad22n,ad41n,ad42n,cd22n,cd42n
- real adCNS,adSPAL
+ real adCSSI,adSPAL
  real scaleFactor,factor,cDt,cdv,cr,crr
  integer i1a,i2a,i3a
  real yy,yEps,xa,ya,za
@@ -1132,29 +1132,29 @@ c Include "selfAdjointArtificialDiffusion.h"
 
  mukt = max(4./3.*mu,(gamma-1.)*kThermal)
 
-c write(*,'("cnsdts: gridType,gridIsImplicit,implicitMethod,implicitOption,useLocalTimeStepping=",10i3)') gridType,gridIsImplicit,implicitMethod,implicitOption,useLocalTimeStepping
+c write(*,'("cssidts: gridType,gridIsImplicit,implicitMethod,implicitOption,useLocalTimeStepping=",10i3)') gridType,gridIsImplicit,implicitMethod,implicitOption,useLocalTimeStepping
 
-c write(*,'("cnsdts: n1a,n1b,n2a,n2b,n3a,n3b=",6i4)') n1a,n1b,n2a,n2b,n3a,n3b
-c write(*,'("cnsdts: av2,aw2,av4,aw4,mu,kThermal=",10f6.3)') av2,aw2,av4,aw4,mu,kThermal
+c write(*,'("cssidts: n1a,n1b,n2a,n2b,n3a,n3b=",6i4)') n1a,n1b,n2a,n2b,n3a,n3b
+c write(*,'("cssidts: av2,aw2,av4,aw4,mu,kThermal=",10f6.3)') av2,aw2,av4,aw4,mu,kThermal
 
  if( orderOfAccuracy.ne.2 .and. orderOfAccuracy.ne.4 )then
-   write(*,'("cnsdts:ERROR orderOfAccuracy=",i6)') orderOfAccuracy
+   write(*,'("cssidts:ERROR orderOfAccuracy=",i6)') orderOfAccuracy
    stop 1
  end if
  if( gridType.ne.rectangular .and. gridType.ne.curvilinear )then
-   write(*,'("cnsdts:ERROR gridType=",i6)') gridType
+   write(*,'("cssidts:ERROR gridType=",i6)') gridType
    stop 2
  end if
  if( uc.lt.0 .or. vc.lt.0 .or. (nd.eq.3 .and. wc.lt.0) )then
-   write(*,'("cnsdts:ERROR uc,vc,ws=",3i6)') uc,vc,wc
+   write(*,'("cssidts:ERROR uc,vc,ws=",3i6)') uc,vc,wc
    stop 4
  end if
  if( turbulenceModel.eq.kEpsilon .and. (kc.lt.uc+nd .or. kc.gt.1000) )then
-   write(*,'("cnsdts:ERROR in kc: nd,uc,vc,wc,kc=",2i6)') nd,uc,vc,wc,kc
+   write(*,'("cssidts:ERROR in kc: nd,uc,vc,wc,kc=",2i6)') nd,uc,vc,wc,kc
    stop 5
  end if
  if( nd.ne.2 .and. nd.ne.3 )then
-   write(*,'("cnsdts:ERROR nd=",i6)') nd
+   write(*,'("cssidts:ERROR nd=",i6)') nd
    stop 1
  end if
 
@@ -1178,10 +1178,10 @@ c write(*,'("cnsdts: av2,aw2,av4,aw4,mu,kThermal=",10f6.3)') av2,aw2,av4,aw4,mu,
       cv1e3, cd0, cr0)
  else if( turbulenceModel.eq.kEpsilon )then
 
-  ! write(*,'(" cnsdts: k-epsilon: nc,kc,ec=",3i3)') nc,kc,ec
+  ! write(*,'(" cssidts: k-epsilon: nc,kc,ec=",3i3)') nc,kc,ec
 
    call getKEpsilonParameters( cMu,cEps1,cEps2,sigmaEpsI,sigmaKI )
-   !  write(*,'(" cnsdts: cMu,cEps1,cEps2,sigmaEpsI,sigmaKI=",5f8.3)') cMu,cEps1,cEps2,sigmaEpsI,sigmaKI
+   !  write(*,'(" cssidts: cMu,cEps1,cEps2,sigmaEpsI,sigmaKI=",5f8.3)') cMu,cEps1,cEps2,sigmaEpsI,sigmaKI
 
  else if( turbulenceModel.ne.noTurbulenceModel )then
    stop 88
@@ -1196,15 +1196,15 @@ c write(*,'("cnsdts: av2,aw2,av4,aw4,mu,kThermal=",10f6.3)') av2,aw2,av4,aw4,mu,
 
  !     correction factors for divergence damping term
  !     this is an over estimate ****
-ckkc 070921 no div damping in cns if( cdv.eq.0. )then
-ckkc 070921 no div damping in cns    scaleFactor=0.
-ckkc 070921 no div damping in cns  else
-ckkc 070921 no div damping in cns    scaleFactor = 1.
-ckkc 070921 no div damping in cns    if( isAxisymmetric.eq.1 )then
-ckkc 070921 no div damping in cns      scaleFactor=2.
-ckkc 070921 no div damping in cns    end if
-ckkc 070921 no div damping in cns  end if
-ckkc 070921 no div damping in cns  factor=1.5*scaleFactor
+ckkc 070921 no div damping in cssi if( cdv.eq.0. )then
+ckkc 070921 no div damping in cssi    scaleFactor=0.
+ckkc 070921 no div damping in cssi  else
+ckkc 070921 no div damping in cssi    scaleFactor = 1.
+ckkc 070921 no div damping in cssi    if( isAxisymmetric.eq.1 )then
+ckkc 070921 no div damping in cssi      scaleFactor=2.
+ckkc 070921 no div damping in cssi    end if
+ckkc 070921 no div damping in cssi  end if
+ckkc 070921 no div damping in cssi  factor=1.5*scaleFactor
 
 
  if( gridIsMoving.ne.0 )then
@@ -1236,7 +1236,7 @@ ckkc 070921 no div damping in cns  factor=1.5*scaleFactor
  getTimeSteppingEigenvaluesByMethod(SOLVER) 
 
  if( useLocalTimeStepping.eq.1 )then
-   write(*,'(" cnsdts: local dt, grid=",i3," dtVar (min,max)=(",e10.2,",",e10.2,")")') \
+   write(*,'(" cssidts: local dt, grid=",i3," dtVar (min,max)=(",e10.2,",",e10.2,")")') \
     grid,dtVarMin,dtVarMax
    ! '
  end if
@@ -1250,11 +1250,11 @@ ckkc 070921 no div damping in cns  factor=1.5*scaleFactor
 #endMacro
 
 
-      subroutine cnsdts(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
+      subroutine cssidts(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
         mask,xy,rsxy,  u,uu, gv,dw, p, dp, dtVar, bc, ipar, rpar, ierr )
 c======================================================================
 c
-c    Determine the time step for the CNS equations.
+c    Determine the time step for the CSSI equations.
 c    ---------------------------------------------
 c
 c nd : number of space dimensions
@@ -1296,7 +1296,7 @@ c     ---- local variables -----
 c     --- end statement functions
 
       ierr=0
-      ! write(*,'("Inside cnsdts: gridType=",i2)') gridType
+      ! write(*,'("Inside cssidts: gridType=",i2)') gridType
 
 
       turbulenceModel    =ipar(19)
@@ -1308,22 +1308,22 @@ c     *****************************************************
 
       if( turbulenceModel.eq.noTurbulenceModel )then
 
-        call cnsdtsCNS(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
+        call cssidtsCSSI(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
           mask,xy,rsxy,  u,uu, gv,dw, p, dp, dtVar, bc, ipar, rpar, ierr )
 
       else if( turbulenceModel.eq.spalartAllmaras )then
 
-c       call cnsdtsSPAL(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
+c       call cssidtsSPAL(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
 c         mask,xy,rsxy,  u,uu, gv,dw, p, dp, dtVar, bc, ipar, rpar, ierr )
 
       else if( turbulenceModel.eq.baldwinLomax )then
 
-c       call cnsdtsBL(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
+c       call cssidtsBL(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
 c         mask,xy,rsxy,  u,uu, gv,dw, p, dp, dtVar, bc, ipar, rpar, ierr )
 
       else if( turbulenceModel.eq.kEpsilon )then
 
-c       call cnsdtsKE(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
+c       call cssidtsKE(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
 c         mask,xy,rsxy,  u,uu, gv,dw, p, dp, dtVar, bc, ipar, rpar, ierr )
 
       else 
@@ -1337,13 +1337,13 @@ c         mask,xy,rsxy,  u,uu, gv,dw, p, dp, dtVar, bc, ipar, rpar, ierr )
 
 #beginMacro buildFile(SOLVER,NAME)
 #beginFile src/NAME.f
- CNSDTS(SOLVER,NAME)
+ CSSIDTS(SOLVER,NAME)
 #endFile
 #endMacro
 
 
-      buildFile(CNS,cnsdtsCNS)
-c     buildFile(CNSSPAL,cnsdtsSPAL)
-c     buildFile(CNSBL,cnsdtsBL)
-c     buildFile(CNSKE,cnsdtsKE)
+      buildFile(CSSI,cssidtsCSSI)
+c     buildFile(CSSISPAL,cssidtsSPAL)
+c     buildFile(CSSIBL,cssidtsBL)
+c     buildFile(CSSIKE,cssidtsKE)
       

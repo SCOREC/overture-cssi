@@ -1,7 +1,7 @@
 #================================================================================
-# cgcns example: shock hitting a collection of cylinders of random size
+# cgcssi example: shock hitting a collection of cylinders of random size
 #
-# Usage:  cgcns multiCylRandomMove -g=<gridName> -tp=<real> -tf=<real> -show=<name> -restart=<name> -l=<int> -r=<int>
+# Usage:  cgcssi multiCylRandomMove -g=<gridName> -tp=<real> -tf=<real> -show=<name> -restart=<name> -l=<int> -r=<int>
 #
 # -l = number of refinement levels (1=none)
 # -r = refinement ratio (2 or 4)
@@ -15,16 +15,16 @@
 #   ogen -noplot multiCylRandomGrid -factor=8 -name=multiCylRandom8.order2.hdf
 #
 # -- Runs: 
-#  cgcns -noplot multiCylRandomMove -g=multiCylRandom2.order2.hdf -tf=4. -tp=.05 -show="multiCylRandom2.show" -go=og
-#  cgcns -noplot multiCylRandomMove -g=multiCylRandom4.order2.hdf -tf=4. -tp=.05 -show="multiCylRandom4.show" -go=og
+#  cgcssi -noplot multiCylRandomMove -g=multiCylRandom2.order2.hdf -tf=4. -tp=.05 -show="multiCylRandom2.show" -go=og
+#  cgcssi -noplot multiCylRandomMove -g=multiCylRandom4.order2.hdf -tf=4. -tp=.05 -show="multiCylRandom4.show" -go=og
 #
 # -- Restart:
-#  cgcns -noplot multiCylRandomMove -g=multiCylRandom2.order2.hdf -tf=4. -tp=.05 -restart="multiCylRandom2.show" -go=og
+#  cgcssi -noplot multiCylRandomMove -g=multiCylRandom2.order2.hdf -tf=4. -tp=.05 -restart="multiCylRandom2.show" -go=og
 #
 #=============================================================
 #
 * --- set default values for parameters ---
-$grid="multiCylRandom4.order2.hdf"; $show = " "; $backGround="square"; $cnsVariation="godunov"; 
+$grid="multiCylRandom4.order2.hdf"; $show = " "; $backGround="square"; $cssiVariation="godunov"; 
 $ratio=2;  $nrl=2;  # refinement ratio and number of refinement levels
 $tFinal=2.; $tPlot=.1; $cfl=1.; $debug=1; $tol=.05; $x0=.5; $dtMax=1.e10; $nbz=2; 
 $xStep="x=-1.5"; $go="halt"; $restart=""; 
@@ -32,11 +32,11 @@ $xStep="x=-1.5"; $go="halt"; $restart="";
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"l=i"=> \$nrl,"r=i"=> \$ratio, "tf=f"=>\$tFinal,"debug=i"=> \$debug, \
             "tp=f"=>\$tPlot, "xStep=s"=>\$xStep, "bg=s"=>\$backGround,"show=s"=>\$show,"go=s"=>\$go,\
-            "cnsVariation=s"=>\$cnsVariation,"restart=s"=>\$restart,"tol=f"=>\$tol );
+            "cssiVariation=s"=>\$cssiVariation,"restart=s"=>\$restart,"tol=f"=>\$tol );
 # -------------------------------------------------------------------------------------------------
-if( $cnsVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
-if( $cnsVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
-if( $cnsVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
+if( $cssiVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
+if( $cssiVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
+if( $cssiVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }

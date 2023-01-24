@@ -1,26 +1,26 @@
 #==============================================================
-# cgcns example: cylinder falling under gravity.
+# cgcssi example: cylinder falling under gravity.
 #
-# Usage:  cgcns dropCyl -g=<> -rbScheme=[leapFrogTrapezoidal|implicitRungeKutta] -rbOrder=[1|2|3|4]
+# Usage:  cgcssi dropCyl -g=<> -rbScheme=[leapFrogTrapezoidal|implicitRungeKutta] -rbOrder=[1|2|3|4]
 #
 # Examples:
-#     cgcns dropCyl -g=cice2.order2 -mass=5.  [Ok drop falls
-#     cgcns dropCyl -g=cice2.order2 -mass=1.  [OK oscillates up and down
-#     cgcns dropCyl -g=cice2.order2 -mass=.1  [OK drop rises
-#     cgcns dropCyl -g=cice2.order2 -mass=.01 [OK 
-#     cgcns dropCyl -g=cice2.order2 -mass=.001 [BAD
+#     cgcssi dropCyl -g=cice2.order2 -mass=5.  [Ok drop falls
+#     cgcssi dropCyl -g=cice2.order2 -mass=1.  [OK oscillates up and down
+#     cgcssi dropCyl -g=cice2.order2 -mass=.1  [OK drop rises
+#     cgcssi dropCyl -g=cice2.order2 -mass=.01 [OK 
+#     cgcssi dropCyl -g=cice2.order2 -mass=.001 [BAD
 #    
 #  DIRK: 
-#     cgcns dropCyl -g=cice2.order2 -mass=1. -rbScheme=implicitRungeKutta -rbOrder=2
+#     cgcssi dropCyl -g=cice2.order2 -mass=1. -rbScheme=implicitRungeKutta -rbOrder=2
 #
-#     cgcns dropCyl -g=cice2.order2 -mass=.005 -tp=.01 -debug=3 -show="dropCyl.show"
-#     cgcns -noplot dropCyl -g=cice2.order2 -mass=.002 -tp=.01 -tf=.05 -debug=3 -show="dropCyl2.show" -go=go
+#     cgcssi dropCyl -g=cice2.order2 -mass=.005 -tp=.01 -debug=3 -show="dropCyl.show"
+#     cgcssi -noplot dropCyl -g=cice2.order2 -mass=.002 -tp=.01 -tf=.05 -debug=3 -show="dropCyl2.show" -go=go
 #
 #=============================================================
 #
 # --- set default values for parameters ---
 # 
-$cnsVariation="godunov"; $ts="fe"; $newts=0; $show=" ";
+$cssiVariation="godunov"; $ts="fe"; $newts=0; $show=" ";
 $grid="cic.hdf"; $backGround="backGround"; $bcn="slipWall"; $uInflow=.1; $bcOption=4;
 $mg="square"; $mt="shift"; $vg0=0.; $vg1=0.; $vg2=0.; $fullGridGenFreq=10;
 $tFinal=10.; $tPlot=.1; $cfl=.9; $mu=.0; $Prandtl=.72; $thermalExpansivity=.1; 
@@ -38,7 +38,7 @@ $bfx =0.;  $bfy=0.; # body force
 # 
 #
 # ----------------------------- get command line arguments ---------------------------------------
-GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet, "cnsVariation=s"=>\$cnsVariation,\
+GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet, "cssiVariation=s"=>\$cssiVariation,\
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug, \
  "nu=f"=>\$nu,"cfl=f"=>\$cfl, "bg=s"=>\$backGround, "go=s"=>\$go,"fullGridGenFreq=i"=>\$fullGridGenFreq,\
  "noplot=s"=>\$noplot,"dtMax=f"=>\$dtMax,"bcn=s"=>\$bcn,"vg0=f"=>\$vg0,"vg1=f"=>\$vg1,"vg2=f"=>\$vg2,\
@@ -53,9 +53,9 @@ if( $tz eq "none" ){ $tz="turn off twilight zone"; }
 if( $tz eq "poly" ){ $tz="turn on twilight zone\n turn on polynomial"; $cdv=0.; }
 if( $tz eq "trig" ){ $tz="turn on twilight zone\n turn on trigonometric"; $cdv=0.; }
 if( $order eq "2" ){ $order = "second order accurate"; }else{ $order = "fourth order accurate"; }
-if( $cnsVariation eq "godunov" ){ $cnsVariation="compressible Navier Stokes (Godunov)"; $ts="fe"; }
-if( $cnsVariation eq "jameson" ){ $cnsVariation="compressible Navier Stokes (Jameson)"; }  
-if( $cnsVariation eq "nonconservative" ){ $cnsVariation="compressible Navier Stokes (non-conservative)"; } 
+if( $cssiVariation eq "godunov" ){ $cssiVariation="compressible Navier Stokes (Godunov)"; $ts="fe"; }
+if( $cssiVariation eq "jameson" ){ $cssiVariation="compressible Navier Stokes (Jameson)"; }  
+if( $cssiVariation eq "nonconservative" ){ $cssiVariation="compressible Navier Stokes (non-conservative)"; } 
 if( $ts eq "fe" ){ $ts="forward Euler"; }
 if( $ts eq "be" ){ $ts="backward Euler"; }
 if( $ts eq "im" ){ $ts="implicit"; }
@@ -68,7 +68,7 @@ if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
 #
 # specify the overlapping grid to use:
 $grid
-  $cnsVariation
+  $cssiVariation
   done
 # -- time stepping method:
   $ts

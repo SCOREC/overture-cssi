@@ -1,13 +1,13 @@
 #==============================================================
-# Cgcns: shock hitting a flexible beam
+# Cgcssi: shock hitting a flexible beam
 #
 # Examples:
-#     cgcns beamInAChannel -g=beamInAChanellGride2.order2
+#     cgcssi beamInAChannel -g=beamInAChanellGride2.order2
 #=============================================================
 #
 # --- set default values for parameters ---
 # 
-$cnsVariation="godunov"; $ts="pc"; $show=" ";
+$cssiVariation="godunov"; $ts="pc"; $show=" ";
 $grid="beamInAChanellGride2.order2.hdf"; $bcn="slipWall"; $uInflow=.1; 
 $fullGridGenFreq=10;
 $tFinal=1.; $tPlot=.05; $cfl=.9; $mu=.0; $Prandtl=.72; $thermalExpansivity=.1; 
@@ -19,7 +19,7 @@ $addedMass=0; $ampProjectVelocity=0;  $delta=100.; $E=10.; $bdebug=0;
 # 
 #
 # ----------------------------- get command line arguments ---------------------------------------
-GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet, "cnsVariation=s"=>\$cnsVariation,\
+GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet, "cssiVariation=s"=>\$cssiVariation,\
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug, \
  "nu=f"=>\$nu,"cfl=f"=>\$cfl, "go=s"=>\$go,"fullGridGenFreq=i"=>\$fullGridGenFreq,\
  "noplot=s"=>\$noplot,"dtMax=f"=>\$dtMax,"bcn=s"=>\$bcn,\
@@ -33,9 +33,9 @@ if( $tz eq "none" ){ $tz="turn off twilight zone"; }
 if( $tz eq "poly" ){ $tz="turn on twilight zone\n turn on polynomial"; $cdv=0.; }
 if( $tz eq "trig" ){ $tz="turn on twilight zone\n turn on trigonometric"; $cdv=0.; }
 if( $order eq "2" ){ $order = "second order accurate"; }else{ $order = "fourth order accurate"; }
-if( $cnsVariation eq "godunov" ){ $cnsVariation="compressible Navier Stokes (Godunov)"; $ts="fe"; }
-if( $cnsVariation eq "jameson" ){ $cnsVariation="compressible Navier Stokes (Jameson)"; }  
-if( $cnsVariation eq "nonconservative" ){ $cnsVariation="compressible Navier Stokes (non-conservative)"; } 
+if( $cssiVariation eq "godunov" ){ $cssiVariation="compressible Navier Stokes (Godunov)"; $ts="fe"; }
+if( $cssiVariation eq "jameson" ){ $cssiVariation="compressible Navier Stokes (Jameson)"; }  
+if( $cssiVariation eq "nonconservative" ){ $cssiVariation="compressible Navier Stokes (non-conservative)"; } 
 if( $ts eq "fe" ){ $ts="forward Euler"; }
 if( $ts eq "be" ){ $ts="backward Euler"; }
 if( $ts eq "im" ){ $ts="implicit"; }
@@ -47,7 +47,7 @@ if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
 #
 # specify the overlapping grid to use:
 $grid
-  $cnsVariation
+  $cssiVariation
   done
 # -- time stepping method:
   $ts

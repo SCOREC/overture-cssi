@@ -1,14 +1,14 @@
 #**************************************************************
 #  Forced piston problem
 #
-#  cgcns -noplot plug -g=plug8.hdf -tp=.5 -tf=1. -go=go
+#  cgcssi -noplot plug -g=plug8.hdf -tp=.5 -tf=1. -go=go
 #    determineErrors: t=1.000e+00, maxNorm errors: [rho,u,v,T]=[3.74e-03,2.67e-03,0.00e+00,7.63e-04]
 #    determineErrors: t=1.000e+00, l1-norm errors: [rho,u,v,T]=[1.52e-04,1.10e-04,0.00e+00,3.10e-05]
-#  cgcns -noplot plug -g=plug16.hdf -tf=.5 -go=go
+#  cgcssi -noplot plug -g=plug16.hdf -tf=.5 -go=go
 #    determineErrors: t=1.000e+00, maxNorm errors: [rho,u,v,T]=[2.40e-03,1.72e-03,0.00e+00,4.91e-04]
 #    determineErrors: t=1.000e+00, l1-norm errors: [rho,u,v,T]=[6.20e-05,4.48e-05,0.00e+00,1.27e-05]
 # 
-#  cgcns plug -g=nonPlug8.hdf -tp=.01 -tf=1. -go=halt
+#  cgcssi plug -g=nonPlug8.hdf -tp=.01 -tf=1. -go=halt
 # 
 #     Use 'plotStuff createPlug.cmd' to generate plug4.m, plug4Solution.m, etc. 
 #     for $ob/doc/pistonCompare.m
@@ -35,15 +35,15 @@ $rbScheme="implicitRungeKutta"; $rbOrder=2; $addedMass=0;
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"l=i"=> \$nrl,"r=i"=> \$ratio, "tf=f"=>\$tFinal,"debug=i"=> \$debug, \
             "tp=f"=>\$tPlot, "xStep=s"=>\$xStep, "bg=s"=>\$backGround,"show=s"=>\$show,"go=s"=>\$go,\
-            "cnsVariation=s"=>\$cnsVariation,"bcOption=i"=> \$bcOption, "rho0=f"=>\$rho0,"p0=f"=>\$p0,\
+            "cssiVariation=s"=>\$cssiVariation,"bcOption=i"=> \$bcOption, "rho0=f"=>\$rho0,"p0=f"=>\$p0,\
             "gridToMove=s"=>\$gridToMove,"pp=f"=>\$pp,"en=s"=>\$en,"mass=f"=>\$mass,"bf=f"=>\$bf,\
             "newts=i"=>\$newts, "projectRigidBody=i"=>\$projectRigidBody,\
             "bfx0=f"=>\$bfx0,"bfx1=f"=>\$bfx1,"bfx2=f"=>\$bfx2,"bfx3=f"=>\$bfx3,"rtole=f"=>\$rtol,"atole=f"=>\$atole,\
             "rbScheme=s"=>\$rbScheme,"rbOrder=i"=>\$rbOrder,"addedMass=i"=>\$addedMass );
 # -------------------------------------------------------------------------------------------------
-if( $cnsVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
-if( $cnsVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
-if( $cnsVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
+if( $cssiVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
+if( $cssiVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
+if( $cssiVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }

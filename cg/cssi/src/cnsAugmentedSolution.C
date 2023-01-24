@@ -1,9 +1,9 @@
-#include "Cgcns.h"
+#include "Cgcssi.h"
 #include "CompositeGridOperators.h"
 #include "ParallelUtility.h"
 #include "App.h"
 #include "GenericGraphicsInterface.h"
-#include "CnsParameters.h"
+#include "CssiParameters.h"
 
 
 // ===================================================================================================================
@@ -16,7 +16,7 @@
 /// 
 // *wdh* 100610 -- cleaned up the treatment of plotting extra variables ---
 // ==================================================================================================================
-realCompositeGridFunction & Cgcns::
+realCompositeGridFunction & Cgcssi::
 getAugmentedSolution( GridFunction & gf0, realCompositeGridFunction & v )
 {
   checkArrayIDs(sPrintF("getAugmentedSolution: start") ); 
@@ -29,7 +29,7 @@ getAugmentedSolution( GridFunction & gf0, realCompositeGridFunction & v )
   realCompositeGridFunction & u = gf0.u;
 
   const int numberOfComponents = parameters.dbase.get<int >("numberOfComponents");
-  const CnsParameters::PDE & pde = parameters.dbase.get<CnsParameters::PDE >("pde");
+  const CssiParameters::PDE & pde = parameters.dbase.get<CssiParameters::PDE >("pde");
   const Parameters::TimeSteppingMethod & timeSteppingMethod = 
                          parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod");
 
@@ -51,11 +51,11 @@ getAugmentedSolution( GridFunction & gf0, realCompositeGridFunction & v )
   {
     // real run: 
   
-    if( pde==CnsParameters::compressibleNavierStokes )
+    if( pde==CssiParameters::compressibleNavierStokes )
     {
       numberOfAugmentedComponents +=1; // plot the pressure too
     }
-    else if( pde==CnsParameters::compressibleMultiphase )
+    else if( pde==CssiParameters::compressibleMultiphase )
     {
       numberOfAugmentedComponents += 2; // plot two pressures
     }
@@ -64,7 +64,7 @@ getAugmentedSolution( GridFunction & gf0, realCompositeGridFunction & v )
       OV_ABORT("error");
     }
 
-    if( parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution")!=CnsParameters::noKnownSolution )
+    if( parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution")!=CssiParameters::noKnownSolution )
     {
       // For a known (non-TZ) solution we plot errors and true solution
       numberOfAugmentedComponents += numberOfComponents*2;
@@ -181,18 +181,18 @@ getAugmentedSolution( GridFunction & gf0, realCompositeGridFunction & v )
       parameters.getDerivedFunction("pressure",u[grid],v[grid],grid,offset,gf0.t,parameters);
     }
     
-    if( pde==CnsParameters::compressibleNavierStokes )
+    if( pde==CssiParameters::compressibleNavierStokes )
     {
       v.setName("p",offset); offset++;
     }
-    else if( pde==CnsParameters::compressibleMultiphase )
+    else if( pde==CssiParameters::compressibleMultiphase )
     { // there are two pressures added in this case
       v.setName("ps",offset); offset++;  
       v.setName("pg",offset); offset++;
     }
 
     // --- fill in the a known solution and errors ---
-    if( parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution")!=CnsParameters::noKnownSolution )
+    if( parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution")!=CssiParameters::noKnownSolution )
     {
       realCompositeGridFunction & uKnown = parameters.getKnownSolution( cg, gf0.t );
 

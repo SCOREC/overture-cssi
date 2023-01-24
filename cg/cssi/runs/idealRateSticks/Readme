@@ -12,13 +12,13 @@ Generate the grid:
 Strong confinement case: (this fine grid computation takes about 12 hours to run)
 
    1. Run:
-      cgcns -noplot runStrongStick.cmd >! strongShock.out 
+      cgcssi -noplot runStrongStick.cmd >! strongShock.out 
    2. Plot results:
       plotStuff strongStick320.show
 
 Weak confinement case: (this fine grid computation takes about 12 hours to run)
 
    1. Run:
-     cgcns -noplot runWeakStick.cmd >! runWeakStick.out
+     cgcssi -noplot runWeakStick.cmd >! runWeakStick.out
    2. Plot results:
      plotStuff weakStick320.show

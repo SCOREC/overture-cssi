@@ -1,46 +1,46 @@
 #
-#  cgcns command file: compute errors for flow in the twilight zone
+#  cgcssi command file: compute errors for flow in the twilight zone
 # 
 # Usage:
-#    cgcns [-noplot] tz.cmd -g=<grid> -tf=<final time> -tp=<tPlot> -tz=[poly|trig] -degreex=<> -degreet=<> ...
-#           -cnsVariation=<> -show=<show file> -axisym=[0|1] -bc[1234]=[noSlip|slip|d|outflow|inflow|axisym] ...
+#    cgcssi [-noplot] tz.cmd -g=<grid> -tf=<final time> -tp=<tPlot> -tz=[poly|trig] -degreex=<> -degreet=<> ...
+#           -cssiVariation=<> -show=<show file> -axisym=[0|1] -bc[1234]=[noSlip|slip|d|outflow|inflow|axisym] ...
 #           -move=[off|shift|oscillate|rotate]  -go=[go|halt|og]
-#    -cnsVariation : jameson, godunov, nonconservative
+#    -cssiVariation : jameson, godunov, nonconservative
 #    -axisym : 1=axisymmetric flow 
 #    -bc1=[noSlip|slip|d|outflow|inflow|axisym] : set boundaries with bc=1 to a given BC.
 # 
 # Examples:
-#     cgcns tz.cmd -g=square20 -tf=1. -tp=.1 
-#     cgcns tz.cmd -g=cice2.hdf -tf=1. -tp=.1 
-#     cgcns tz.cmd -g=box20 -tf=1. -tp=.1 
+#     cgcssi tz.cmd -g=square20 -tf=1. -tp=.1 
+#     cgcssi tz.cmd -g=cice2.hdf -tf=1. -tp=.1 
+#     cgcssi tz.cmd -g=box20 -tf=1. -tp=.1 
 # -- check slip wall BC's 
-#    cgcns -noplot tz.cmd -g=square20.order2 -tf=.2 -tp=.1 -bc1=slip -bc3=slip -go=go 
+#    cgcssi -noplot tz.cmd -g=square20.order2 -tf=.2 -tp=.1 -bc1=slip -bc3=slip -go=go 
 #       -> 0.200 8.91e-04 3.55e-04 2.99e-04 2.67e-03 6.19e+00 1.42e-03 8.79e-01 (      18,      18)
-#    cgcns -noplot tz.cmd -g=square40.order2 -tf=.2 -tp=.1 -bc1=slip -bc3=slip -go=go 
+#    cgcssi -noplot tz.cmd -g=square40.order2 -tf=.2 -tp=.1 -bc1=slip -bc3=slip -go=go 
 #        -> 0.200 3.52e-04 1.14e-04 9.56e-05 1.38e-03 6.19e+00 1.38e-03 4.27e+00 (      19,      19)
-#    cgcns -noplot tz.cmd -g=nonSquare20.order2  -tf=.2 -tp=.1 -bc1=slip -bc3=slip -go=go
+#    cgcssi -noplot tz.cmd -g=nonSquare20.order2  -tf=.2 -tp=.1 -bc1=slip -bc3=slip -go=go
 #        -> 0.200 8.91e-04 3.55e-04 2.99e-04 2.67e-03 6.19e+00 1.42e-03 8.94e-01 (      18,      18) 
-#    cgcns -noplot tz.cmd -g=nonSquare40.order2  -tf=.2 -tp=.1 -bc1=slip -bc3=slip -go=go
+#    cgcssi -noplot tz.cmd -g=nonSquare40.order2  -tf=.2 -tp=.1 -bc1=slip -bc3=slip -go=go
 #        -> 0.200 3.52e-04 1.14e-04 9.56e-05 1.38e-03 6.19e+00 1.38e-03 3.99e+00 (      18,      18)
-#    cgcns -noplot tz.cmd -g=box20.order2  -tf=.1 -tp=.05 -bc1=slip -bc3=slip -bc5=slip -go=go
+#    cgcssi -noplot tz.cmd -g=box20.order2  -tf=.1 -tp=.05 -bc1=slip -bc3=slip -bc5=slip -go=go
 #        -> Max errors:  1.215e-03  &  4.518e-04  &  5.603e-04  &  5.017e-04  &  4.330e-03  &
-#    cgcns -noplot tz.cmd -g=box40.order2  -tf=.1 -tp=.05 -bc1=slip -bc3=slip -bc5=slip -go=go
+#    cgcssi -noplot tz.cmd -g=box40.order2  -tf=.1 -tp=.05 -bc1=slip -bc3=slip -bc5=slip -go=go
 #        -> Max errors:  5.110e-04  &  2.146e-04  &  1.762e-04  &  1.463e-04  &  2.487e-03  &
 #
 # -- nononservative:
-#     cgcns tz.cmd -g=square10 -cnsVariation=nonconservative -tf=1. -tp=.1 -degreex=2 -degreet=2 [exact]
+#     cgcssi tz.cmd -g=square10 -cssiVariation=nonconservative -tf=1. -tp=.1 -degreex=2 -degreet=2 [exact]
 # -- axisymmetric: TROUBLE: need to fix interior TZ forcing for Godunov
-#    cgcns -noplot tz.cmd -g=axiSquare2.order2 -tf=.2 -tp=.1 -axisym=1 -bc3=axisym -go=go
+#    cgcssi -noplot tz.cmd -g=axiSquare2.order2 -tf=.2 -tp=.1 -axisym=1 -bc3=axisym -go=go
 #     -- square off axis: 
-#    cgcns tz.cmd -g=axiSquare2a.order2 -tf=1. -tp=.001 -axisym=1 
-#    cgcns tz.cmd -g=axiSquare8a.order2 -tf=1. -tp=.001 -axisym=1 
+#    cgcssi tz.cmd -g=axiSquare2a.order2 -tf=1. -tp=.001 -axisym=1 
+#    cgcssi tz.cmd -g=axiSquare8a.order2 -tf=1. -tp=.001 -axisym=1 
 #
 # -- Moving:
-#    cgcns tz.cmd -g=nonSquare32.order2 -bcOption=4 -tp=.1 -tf=.5 -tz=trig -bc1=slip -slopeLimiter=0 -reduceInterpWidth=2 -ad=0. -move=shift -go=halt
-#    cgcns tz.cmd -g=nonPlug8 -bcOption=4 -tp=.1 -tf=.5 -tz=trig -bc1=slip -slopeLimiter=0 -reduceInterpWidth=2 -ad=0. -move=shift -gridToMove=plug -go=halt
+#    cgcssi tz.cmd -g=nonSquare32.order2 -bcOption=4 -tp=.1 -tf=.5 -tz=trig -bc1=slip -slopeLimiter=0 -reduceInterpWidth=2 -ad=0. -move=shift -go=halt
+#    cgcssi tz.cmd -g=nonPlug8 -bcOption=4 -tp=.1 -tf=.5 -tz=trig -bc1=slip -slopeLimiter=0 -reduceInterpWidth=2 -ad=0. -move=shift -gridToMove=plug -go=halt
 # 
 # --- set default values for parameters ---
-$grid="square20.hdf"; $show = " "; $backGround="square"; $noplot=""; $cnsVariation="godunov"; 
+$grid="square20.hdf"; $show = " "; $backGround="square"; $noplot=""; $cssiVariation="godunov"; 
 $tFinal=1.; $tPlot=.1; $cfl=.9; $debug=1; $tol=.2; $x0=.5; $dtMax=1.e10; $nbz=2; $ad=0.; 
 $axisym=0; $bc1=""; $bc2=""; $bc3=""; $bc4="";  $bc5="";  $bc6=""; 
 $tz = "poly"; $degreex=2; $degreet=2; $fx=1.; $fy=1.; $fz=1.; $ft=1.;
@@ -55,7 +55,7 @@ $orderOfExtrapForOutflow=3; $orderOfExtrapForGhost2=3; $orderOfExtrapForInterpNe
 GetOptions( "g=s"=>\$grid,"l=i"=> \$nrl,"r=i"=> \$ratio, "tf=f"=>\$tFinal,"debug=i"=> \$debug, \
             "tp=f"=>\$tPlot, "bg=s"=>\$backGround,"show=s"=>\$show,"noplot=s"=>\$noplot,"tz=s"=>\$tz,\
             "degreex=i"=>\$degreex, "degreet=i"=>\$degreet,"fx=f"=>\$fx,"fy=f"=>\$fy,"fz=f"=>\$fz,"ft=f"=>\$ft,\
-            "cnsVariation=s"=>\$cnsVariation,"go=s"=>\$go,"axisym=i"=>\$axisym,"bcOption=i"=>\$bcOption,\
+            "cssiVariation=s"=>\$cssiVariation,"go=s"=>\$go,"axisym=i"=>\$axisym,"bcOption=i"=>\$bcOption,\
             "bc1=s"=>\$bc1,"bc2=s"=>\$bc2,"bc3=s"=>\$bc3,"bc4=s"=>\$bc4,"bc5=s"=>\$bc5,"bc6=s"=>\$bc6,\
             "reduceInterpWidth=i"=> \$reduceInterpWidth,"slopeLimiter=i"=>\$slopeLimiter,"ad=f"=>\$ad,\
             "move=s"=>\$move,"vShiftx=f"=>\$vShiftx,"gridToMove=s"=>\$gridToMove );
@@ -64,9 +64,9 @@ if( $tz eq "poly" ){ $tz="turn on polynomial"; }else{ $tz="turn on trigonometric
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
-if( $cnsVariation eq "godunov" ){ $cnsVariation="compressible Navier Stokes (Godunov)"; }
-if( $cnsVariation eq "jameson" ){ $cnsVariation="compressible Navier Stokes (Jameson)"; }  
-if( $cnsVariation eq "nonconservative" ){ $cnsVariation="compressible Navier Stokes (non-conservative)"; }  
+if( $cssiVariation eq "godunov" ){ $cssiVariation="compressible Navier Stokes (Godunov)"; }
+if( $cssiVariation eq "jameson" ){ $cssiVariation="compressible Navier Stokes (Jameson)"; }  
+if( $cssiVariation eq "nonconservative" ){ $cssiVariation="compressible Navier Stokes (non-conservative)"; }  
 # -- set faces with bc=1 : 
 if( $bc1 eq "noSlip" ){ $bc1="bcNumber1=noSlipWall"; }\
  elsif( $bc1 eq "slip" ){ $bc1="bcNumber1=slipWall"; }\
@@ -119,7 +119,7 @@ if( $bc6 eq "noSlip" ){ $bc6="bcNumber6=noSlipWall"; }\
 # Here is the overlapping grid to use:
 $grid 
 #
-  $cnsVariation
+  $cssiVariation
 #    compressible Navier Stokes (Godunov)  
 #*  compressible Navier Stokes (Jameson)
   define integer parameter SlopeLimiter $slopeLimiter

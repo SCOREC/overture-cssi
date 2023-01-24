@@ -1,7 +1,7 @@
 #==============================================================
-# cgcns example: a moving cylinder in a channel (specified motion)
+# cgcssi example: a moving cylinder in a channel (specified motion)
 # Usage:
-#   cgcns cicMove -g=<grid-name> -amr=[0|1]  -l=<> -ratio=<> -simulateMotion=[0|1|2]  -memoryCheck=[0|1] ...
+#   cgcssi cicMove -g=<grid-name> -amr=[0|1]  -l=<> -ratio=<> -simulateMotion=[0|1|2]  -memoryCheck=[0|1] ...
 #         -move=[shift|oscillate|rotate|off]  -freq=<> -xShift=<val>
 #
 # -simulateMotion : 
@@ -11,26 +11,26 @@
 # -freq: for -move=rotate, this is the number of rotations per sec.
 #
 # Examples:
-#     cgcns cicMove -g=cice2.order2
+#     cgcssi cicMove -g=cice2.order2
 #    
 # Parallel: ** something funny with the parallel version of Ogen when iw=2 **fix me**
-#   srun -N1 -n2 -ppdebug $cgcnsp cicMove -g=cic2e -fullGridGenFreq=1
-#   totalview srun -a -N1 -n2 -ppdebug $cgcnsp cicMove -g=cic2e -fullGridGenFreq=1
-#   mpirun -np 1 $cgcnsp cicMove -g=cic2e -fullGridGenFreq=1
-#   mpirun -np 1 $cgcnsp cicMove -g=cice1.order2 -fullGridGenFreq=1
-#   mpirun -np 1 $cgcnsp cicMove -g=cice2.order2 -fullGridGenFreq=1
-#   srun -N1 -n2 -ppdebug $cgcnsp cicMove -g=cice2.order2 -fullGridGenFreq=1 -interpWidth=3
-#   srun -N1 -n4 -ppdebug $cgcnsp cicMove -g=cice4.order2 -fullGridGenFreq=1 -interpWidth=3
+#   srun -N1 -n2 -ppdebug $cgcssip cicMove -g=cic2e -fullGridGenFreq=1
+#   totalview srun -a -N1 -n2 -ppdebug $cgcssip cicMove -g=cic2e -fullGridGenFreq=1
+#   mpirun -np 1 $cgcssip cicMove -g=cic2e -fullGridGenFreq=1
+#   mpirun -np 1 $cgcssip cicMove -g=cice1.order2 -fullGridGenFreq=1
+#   mpirun -np 1 $cgcssip cicMove -g=cice2.order2 -fullGridGenFreq=1
+#   srun -N1 -n2 -ppdebug $cgcssip cicMove -g=cice2.order2 -fullGridGenFreq=1 -interpWidth=3
+#   srun -N1 -n4 -ppdebug $cgcssip cicMove -g=cice4.order2 -fullGridGenFreq=1 -interpWidth=3
 # amr:
-#   mpirun -np 1 $cgcnsp cicMove -g=cice2.order2 -fullGridGenFreq=1 -amr=1 -interpWidth=3
-#   srun -N1 -n2 -ppdebug $cgcnsp cicMove -g=cice2.order2 -fullGridGenFreq=1 -amr=1 -interpWidth=3
-#   srun -N1 -n2 -ppdebug -memcheck_all $cgcnsp noplot cicMove -g=cice2.order2 -fullGridGenFreq=1 -amr=1 -tf=.5 -go=go
-#   totalview srun -a -N1 -n2 -ppdebug $cgcnsp cicMove -g=cice2.order2 -fullGridGenFreq=1 -amr=1 -tf=.5 
+#   mpirun -np 1 $cgcssip cicMove -g=cice2.order2 -fullGridGenFreq=1 -amr=1 -interpWidth=3
+#   srun -N1 -n2 -ppdebug $cgcssip cicMove -g=cice2.order2 -fullGridGenFreq=1 -amr=1 -interpWidth=3
+#   srun -N1 -n2 -ppdebug -memcheck_all $cgcssip noplot cicMove -g=cice2.order2 -fullGridGenFreq=1 -amr=1 -tf=.5 -go=go
+#   totalview srun -a -N1 -n2 -ppdebug $cgcssip cicMove -g=cice2.order2 -fullGridGenFreq=1 -amr=1 -tf=.5 
 #=============================================================
 #
 # --- set default values for parameters ---
 # 
-$cnsVariation="godunov"; $ts="pc"; $show=" ";
+$cssiVariation="godunov"; $ts="pc"; $show=" ";
 $grid="cic.hdf"; $backGround="backGround"; $bcn="slipWall"; $uInflow=.0; $checkForWallHeating=0; 
 $mg="square"; $mt="shift"; $vg0=0.; $vg1=0.; $vg2=0.; $fullGridGenFreq=10; $simulateMotion=0;
 $tFinal=1.; $tPlot=.1; $cfl=.9; $mu=.0; $Prandtl=.72; $thermalExpansivity=.1; 
@@ -44,7 +44,7 @@ $pi = 4.*atan2(1.,1.);
 #
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet, \
- "cnsVariation=s"=>\$cnsVariation,"memoryCheck=i"=>\$memoryCheck,"move=s"=>\$move,\
+ "cssiVariation=s"=>\$cssiVariation,"memoryCheck=i"=>\$memoryCheck,"move=s"=>\$move,\
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug, \
  "nu=f"=>\$nu,"cfl=f"=>\$cfl, "bg=s"=>\$backGround, "go=s"=>\$go,"fullGridGenFreq=i"=>\$fullGridGenFreq,\
  "noplot=s"=>\$noplot,"dtMax=f"=>\$dtMax,"bcn=s"=>\$bcn,"vg0=f"=>\$vg0,"vg1=f"=>\$vg1,"vg2=f"=>\$vg2,\
@@ -60,9 +60,9 @@ if( $tz eq "none" ){ $tz="turn off twilight zone"; }
 if( $tz eq "poly" ){ $tz="turn on twilight zone\n turn on polynomial"; $cdv=0.; }
 if( $tz eq "trig" ){ $tz="turn on twilight zone\n turn on trigonometric"; $cdv=0.; }
 if( $order eq "2" ){ $order = "second order accurate"; }else{ $order = "fourth order accurate"; }
-if( $cnsVariation eq "godunov" ){ $cnsVariation="compressible Navier Stokes (Godunov)"; $ts="fe"; }
-if( $cnsVariation eq "jameson" ){ $cnsVariation="compressible Navier Stokes (Jameson)"; }  
-if( $cnsVariation eq "nonconservative" ){ $cnsVariation="compressible Navier Stokes (non-conservative)"; } 
+if( $cssiVariation eq "godunov" ){ $cssiVariation="compressible Navier Stokes (Godunov)"; $ts="fe"; }
+if( $cssiVariation eq "jameson" ){ $cssiVariation="compressible Navier Stokes (Jameson)"; }  
+if( $cssiVariation eq "nonconservative" ){ $cssiVariation="compressible Navier Stokes (non-conservative)"; } 
 if( $ts eq "fe" ){ $ts="forward Euler"; }
 if( $ts eq "be" ){ $ts="backward Euler"; }
 if( $ts eq "im" ){ $ts="implicit"; }
@@ -75,7 +75,7 @@ if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
 #
 # specify the overlapping grid to use:
 $grid
-  $cnsVariation
+  $cssiVariation
   $simulateMotion
   done
 if( $memoryCheck ne 0 ){ $cmd="turn on memory checking"; }else{ $cmd="#"; }

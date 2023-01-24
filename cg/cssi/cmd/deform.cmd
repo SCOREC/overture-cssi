@@ -1,9 +1,9 @@
 *
-* cgcns example: test deforming grids (e.g. flow past a deforming disk)
+* cgcssi example: test deforming grids (e.g. flow past a deforming disk)
 *
 * Usage:
 *   
-*  cgcns [-noplot] deform -g=<name> -tz=<poly/trig/none> -degreex=<> -degreet=<> -tf=<tFinal> -tp=<tPlot> ...
+*  cgcssi [-noplot] deform -g=<name> -tz=<poly/trig/none> -degreex=<> -degreet=<> -tf=<tFinal> -tp=<tPlot> ...
 *        -bc=<a|d|r> -model=<Jameson/Godunov> -debug=<num> -bg=<backGround> -uInflow=<> -mu=<> -go=[run/halt/og]
 * 
 *  -go : run, halt, og=open graphics
@@ -13,33 +13,33 @@
 * 
 * Examples: (see ogen scripts: circleDeform.cmd)
 * 
-*  cgcns deform -g=circleDeform -dg=ice -tf=2. -tp=.05 -go=halt 
+*  cgcssi deform -g=circleDeform -dg=ice -tf=2. -tp=.05 -go=halt 
 * 
 * -- deforming ellipse: 
-*  cgcns deform -g=diskDeformoutere1.hdf -bg=outerSquare -dg=outerInterface -dt="ellipse deform" -da=2. -tf=2. -tp=.02 -go=halt 
+*  cgcssi deform -g=diskDeformoutere1.hdf -bg=outerSquare -dg=outerInterface -dt="ellipse deform" -da=2. -tf=2. -tp=.02 -go=halt 
 *   -- shock hitting a deforming ellipse with AMR on 
-*  cgcns deform -g=diskDeformOuterBige1 -bg=outerSquare -dg=outerInterface -dt="ellipse deform" -da=2. -tf=2. -tp=.05 -go=halt 
+*  cgcssi deform -g=diskDeformOuterBige1 -bg=outerSquare -dg=outerInterface -dt="ellipse deform" -da=2. -tf=2. -tp=.05 -go=halt 
 * 
 * -- deforming circle with 2 grids on each side of the interface
-* cgcns deform -g=diskDeformSplitoutere2 -bg=outerSquare -dg="outerInterface1\n outerInterface2" -dt="ellipse deform" -da=2. -tf=2. -tp=.02 -go=halt
+* cgcssi deform -g=diskDeformSplitoutere2 -bg=outerSquare -dg="outerInterface1\n outerInterface2" -dt="ellipse deform" -da=2. -tf=2. -tp=.02 -go=halt
 * 
 * -- deforming SPHERE
-* cgcns deform -g=sibDeforme2.order2 -bg=box -dg="share=100" -dt="sphere deform" -da=1. -tf=2. -tp=.1 -go=halt
+* cgcssi deform -g=sibDeforme2.order2 -bg=box -dg="share=100" -dt="sphere deform" -da=1. -tf=2. -tp=.1 -go=halt
 * 
-* cgcns noplot deform -g=sibDeforme4.order2 -bg=box -dg="share=100" -dt="sphere deform" -da=1. -tf=6. -tp=.02 -df=.5 -go=go -show=sibDeform.show
+* cgcssi noplot deform -g=sibDeforme4.order2 -bg=box -dg="share=100" -dt="sphere deform" -da=1. -tf=6. -tp=.02 -df=.5 -go=go -show=sibDeform.show
 * 
 * -- advect
-*  cgcns deform -g=diskDeformoutere1 -bcn=slipWall -bg=outerSquare -dg=outerInterface -dt="advect body" -tf=2. -tp=.02 -go=halt
+*  cgcssi deform -g=diskDeformoutere1 -bcn=slipWall -bg=outerSquare -dg=outerInterface -dt="advect body" -tf=2. -tp=.02 -go=halt
 * 
 * -- elasticShell -- simple spring model 
-*  cgcns deform -g=diskDeformoutere1 -bg=outerSquare -dg=outerInterface -dt="elastic shell" -tf=20. -tp=.1 -go=halt
+*  cgcssi deform -g=diskDeformoutere1 -bg=outerSquare -dg=outerInterface -dt="elastic shell" -tf=20. -tp=.1 -go=halt
 * 
 * -- userDeformingSurface 
 *    (make the grid using Overture/sampleGrids/diskDeform.cmd, ogen noplot diskDeform -case=outer -factor=1 -interp=e)
-*  cgcns deform -g=diskDeformoutere1 -bcn=slipWall -bg=outerSquare -dg=outerInterface -dt="user defined deforming surface" -tf=5. -tp=.2 -go=halt
+*  cgcssi deform -g=diskDeformoutere1 -bcn=slipWall -bg=outerSquare -dg=outerInterface -dt="user defined deforming surface" -tf=5. -tp=.2 -go=halt
 * 
 * -- moving plane interface --
-* cgcns deform -g=planeInterfacenp2.hdf -bg=none -dg=interface -dt="advect body" -tf=2. -tp=.001 -go=halt 
+* cgcssi deform -g=planeInterfacenp2.hdf -bg=none -dg=interface -dt="advect body" -tf=2. -tp=.001 -go=halt 
 *
 * --- set default values for parameters ---
 * 

@@ -5,11 +5,11 @@
 # setenv CGBUILDPREFIX /some/other/dir will put the obj/lib/bin in /some/other/dir/{common,cgad...}/{lib,obj,dep,bin}
 #
 
-all : libCommon cgad cgcns cgins cgasf cgsm cgmp unitTests cgmx message
+all : libCommon cgcssi unitTests message
 
 everything: all 
 
-message : cgad cgcns cgins cgasf cgsm cgmp unitTests cgmx
+message : cgcssi unitTests 
 	@echo "CG:INFO: type \"make check-quiet\" or \"make -j8 check-quiet\" or \"make check\" to run regression tests"	
 
 libCommon:

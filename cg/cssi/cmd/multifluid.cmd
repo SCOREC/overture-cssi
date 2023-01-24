@@ -2,7 +2,7 @@
 # 
 # Test of the multifluid solver -- shock hitting a bubble
 #  
-#  cgcns multifluid
+#  cgcssi multifluid
 # 
 $tFinal=.3; $tPlot=.05; $show=" "; $radius=.2;  $x0=.5;  $y0=.5; $xShock=.2; $debug=0; 
 $ratio=4; $buffer=2; $errTol=.05;  $efficiency=.7;

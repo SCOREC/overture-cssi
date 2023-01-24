@@ -310,7 +310,7 @@ takeTimeStepPC( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
   const Parameters::ImplicitMethod & implicitMethod = 
                 parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod");
 
-  parameters.dbase.get<real >("dt")=dt0; // *wdh* 101106 this is the dt used in getUt (cns)
+  parameters.dbase.get<real >("dt")=dt0; // *wdh* 101106 this is the dt used in getUt (cssi)
 
   const int orderOfPredictorCorrector = parameters.dbase.get<int >("orderOfPredictorCorrector");
 

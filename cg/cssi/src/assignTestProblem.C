@@ -1,9 +1,9 @@
-#include "Cgcns.h"
+#include "Cgcssi.h"
 #include "GridFunction.h"
 #include "Chemkin.h"
-#include "CnsParameters.h"
+#include "CssiParameters.h"
 
-void Cgcns::
+void Cgcssi::
 assignTestProblem( GridFunction & cgf )
 // ======================================================================================
 //   Assign values corresponding to a given testProblem
@@ -40,7 +40,7 @@ assignTestProblem( GridFunction & cgf )
 //       cout << "assignTestProblem::ERROR: the bomb problem is for allSpeedNavierStokes \n";
 //       throw "error";
 //   }
-  if( parameters.dbase.get<CnsParameters::TestProblems >("testProblem")==CnsParameters::laminarFlame )
+  if( parameters.dbase.get<CssiParameters::TestProblems >("testProblem")==CssiParameters::laminarFlame )
   {
     // hydrogen-Oxygen-Nitrogen laminar flame
     // 71 1200 1    !num. of points in x, num. of time steps, adapt mesh; 0-no, 1-yes
@@ -177,7 +177,7 @@ assignTestProblem( GridFunction & cgf )
       {
 	for( int side=Start; side<=End; side++ )
 	{
-	  if( cg[grid].boundaryCondition()(side,axis)==CnsParameters::subSonicInflow )
+	  if( cg[grid].boundaryCondition()(side,axis)==CssiParameters::subSonicInflow )
 	  {
 	    parameters.dbase.get<RealArray>("bcData")(rc,side,axis,grid)=u[0](i1,i2,i3,rc);
 	    parameters.dbase.get<RealArray>("bcData")(tc,side,axis,grid)=u[0](i1,i2,i3,tc);
@@ -185,7 +185,7 @@ assignTestProblem( GridFunction & cgf )
 	    for( s=sc; s<sc+numberOfSpecies; s++ )
 	      parameters.dbase.get<RealArray>("bcData")(s,side,axis,grid)=u[0](i1,i2,i3,s);
 	  }
-	  else if( cg[grid].boundaryCondition()(side,axis)==CnsParameters::subSonicOutflow )
+	  else if( cg[grid].boundaryCondition()(side,axis)==CssiParameters::subSonicOutflow )
 	  {
 	    parameters.dbase.get<RealArray>("bcData")(2,side,axis,grid)=0.; // (0)*(ppp/p0);   // set p at outflow
 	  }
@@ -207,6 +207,6 @@ assignTestProblem( GridFunction & cgf )
   }
   else
   {
-    cout << "assignTestProblem::unknown testProblem = " << parameters.dbase.get<CnsParameters::TestProblems >("testProblem") << endl;
+    cout << "assignTestProblem::unknown testProblem = " << parameters.dbase.get<CssiParameters::TestProblems >("testProblem") << endl;
   }
 }

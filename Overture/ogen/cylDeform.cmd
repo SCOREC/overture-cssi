@@ -1,6 +1,6 @@
 *
 * Create the initial grid for a deforming cylinder
-* Use this grid with the cg/cns/cmd circleDeform.cmd 
+* Use this grid with the cg/cssi/cmd circleDeform.cmd 
 *
 * Usage:
 *         ogen [noplot] cylDeform [options]

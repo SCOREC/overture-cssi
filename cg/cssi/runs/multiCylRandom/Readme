@@ -1,7 +1,7 @@
 This simulation can be run with 
 
 ogen -noplot ${Overture}/sampleGrids/multiCylRandomGrid -factor=4 -name=multiCylRandom4.order2.hdf 
-cgcns multiCylRandomMove -g=multiCylRandom2.order2.hdf -tf=1. -tp=.05 -show="multiCylRandom2.show" -go=halt
+cgcssi multiCylRandomMove -g=multiCylRandom2.order2.hdf -tf=1. -tp=.05 -show="multiCylRandom2.show" -go=halt
 
 Results can be plotted with
   plotStuff plotMultiCylRandom -show=multiCylRandom2.show

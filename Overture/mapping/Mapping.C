@@ -1603,7 +1603,7 @@ getGridSerial(MappingParameters & params /* =Overture::nullMappingParameters() *
     int axis;
     for( axis=axis1; axis<domainDimension; axis++ )
     {
-      // *wdh* 2012/03/01 - this fix made for AMR grids which can have a non-zero base (c.f. cgcns wing2d.cmd in parallel + amr)
+      // *wdh* 2012/03/01 - this fix made for AMR grids which can have a non-zero base (c.f. cgcssi wing2d.cmd in parallel + amr)
       // dimension(End,axis)= getGridDimensions(axis)-1;
       dimension(Start,axis)=gridIndexRange(0,axis);
       dimension(End  ,axis)=gridIndexRange(0,axis) + getGridDimensions(axis)-1;

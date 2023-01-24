@@ -1,5 +1,5 @@
 *
-* cgcns command file for testing the compressible multiphase multi-fluid code
+* cgcssi command file for testing the compressible multiphase multi-fluid code
 *
 * some definitions
 $show = " ";
@@ -12,7 +12,7 @@ $gridName ="qcic.hdf";
 * $gridName ="square10.hdf"; $x0=.5; 
 * $gridName ="square5.hdf"; $x0=.5; $debug=63; 
 *
-* Start cgcns commands
+* Start cgcssi commands
 *
 $gridName
 *

@@ -1,29 +1,29 @@
 *
-*  cgcns command file: shock hitting a cylinder
+*  cgcssi command file: shock hitting a cylinder
 *     Solve the Euler equations with Godunov's method and AMR
 * 
 * Usage:
-*    cgcns [-noplot] cicShockg.cmd -g=<grid> -l=<levels> -r=<ratio> -tf=<final time> ...
+*    cgcssi [-noplot] cicShockg.cmd -g=<grid> -l=<levels> -r=<ratio> -tf=<final time> ...
 *          -tp=<tPlot> -xs=<xstep> -show=<show file> 
 *
 * Examples:
-*     cgcns cicShockg.cmd -g=cice2.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -xStep="x=-1.5" -show="cicShockg.show"
-*     cgcns cicShockg.cmd -g=cice2.order2.hdf -l=3 -r=2 -tf=1. -tp=.1 -xStep="x=-1.5"
-*     cgcns cicShockg.cmd -g=cice3.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -xStep="x=-1.5"
+*     cgcssi cicShockg.cmd -g=cice2.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -xStep="x=-1.5" -show="cicShockg.show"
+*     cgcssi cicShockg.cmd -g=cice2.order2.hdf -l=3 -r=2 -tf=1. -tp=.1 -xStep="x=-1.5"
+*     cgcssi cicShockg.cmd -g=cice3.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -xStep="x=-1.5"
 * 
 * -- Jameson:
-*     cgcns cicShockg.cmd -g=cice2.hdf -l=2 -r=2 -tf=1. -tp=.1 -xStep="x=-1.5" -cnsVariation="jameson"
+*     cgcssi cicShockg.cmd -g=cice2.hdf -l=2 -r=2 -tf=1. -tp=.1 -xStep="x=-1.5" -cssiVariation="jameson"
 *    
 * -- parallel: 
-*     mpirun -np 2 $cgcnsp cicShockg.cmd -g=cice2.order2 -l=2 -r=2 -tf=.2 -tp=.1 -xStep="x=-1.5" -show="cicShockg.show"
-*     mpirun -np 2 $cgcnsp cicShockg.cmd -g=cice2.order2 -l=1 -r=2 -tf=.2 -tp=.1 -xStep="x=-1.5"
+*     mpirun -np 2 $cgcssip cicShockg.cmd -g=cice2.order2 -l=2 -r=2 -tf=.2 -tp=.1 -xStep="x=-1.5" -show="cicShockg.show"
+*     mpirun -np 2 $cgcssip cicShockg.cmd -g=cice2.order2 -l=1 -r=2 -tf=.2 -tp=.1 -xStep="x=-1.5"
 * 
-*   mpirun -np 2 $cgcnsp noplot cicShockg.cmd -g=cicmp.hdf -l=3 -r=2 -tf=.02 -tp=.01 -xStep="x=0." -bg=channel
+*   mpirun -np 2 $cgcssip noplot cicShockg.cmd -g=cicmp.hdf -l=3 -r=2 -tf=.02 -tp=.01 -xStep="x=0." -bg=channel
 *
-*   srun -N1 -n2 -ppdebug $cgcnsp noplot cicShockg.cmd -g=cice2.hdf -l=2 -r=2 -tf=.2 -tp=.05 -xStep="x=-1.5" -show="cicShockg.show"
+*   srun -N1 -n2 -ppdebug $cgcssip noplot cicShockg.cmd -g=cice2.hdf -l=2 -r=2 -tf=.2 -tp=.05 -xStep="x=-1.5" -show="cicShockg.show"
 *
 * --- set default values for parameters ---
-$grid="cice2.order2.hdf"; $show = " "; $backGround="square"; $cnsVariation="godunov"; 
+$grid="cice2.order2.hdf"; $show = " "; $backGround="square"; $cssiVariation="godunov"; 
 $ratio=2;  $nrl=2;  # refinement ratio and number of refinement levels
 $tFinal=1.; $tPlot=.1; $cfl=1.; $debug=1; $tol=.2; $x0=.5; $dtMax=1.e10; $nbz=2; 
 $xStep="x=-1.5"; $go="halt"; 
@@ -31,11 +31,11 @@ $xStep="x=-1.5"; $go="halt";
 * ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"l=i"=> \$nrl,"r=i"=> \$ratio, "tf=f"=>\$tFinal,"debug=i"=> \$debug, \
             "tp=f"=>\$tPlot, "xStep=s"=>\$xStep, "bg=s"=>\$backGround,"show=s"=>\$show,"go=s"=>\$go,\
-            "cnsVariation=s"=>\$cnsVariation );
+            "cssiVariation=s"=>\$cssiVariation );
 * -------------------------------------------------------------------------------------------------
-if( $cnsVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
-if( $cnsVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
-if( $cnsVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
+if( $cssiVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
+if( $cssiVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
+if( $cssiVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }

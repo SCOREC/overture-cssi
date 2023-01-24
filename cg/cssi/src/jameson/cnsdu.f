@@ -1,9 +1,9 @@
-      subroutine cnsdu22 (t,nd,ndra,ndrb,ndsa,ndsb,nrsab,
+      subroutine cssidu22 (t,nd,ndra,ndrb,ndsa,ndsb,nrsab,
      &                    mrsab,mask,u,xy,rx,aj,ut,v,
      &                    nda,ndb,w,aa,tmp,
      &                    ipu,rpu,moving,gv )
 c==================================================================
-c     Calculates du/dt on conponent grid for CGCNS
+c     Calculates du/dt on conponent grid for CGCSSI
 c               (idmeth=2, 2 dimensions)
 c
 c Note: the parameter akappa = (thermal diffusivity)/(gas constant)
@@ -32,11 +32,11 @@ c==================================================================
 c...............local
       integer grid
 c
-c**      include 'cgcns2.h'
+c**      include 'cgcssi2.h'
       logical d
-c**      include 'cgcns.h'
+c**      include 'cgcssi.h'
 c*** plotting:
-c**      include 'cnspl.h'
+c**      include 'cssipl.h'
 c...start statement functions
       d(i)=mod(idebug/2**i,2).eq.1
 c
@@ -59,12 +59,12 @@ c     end do
 c     pause
 c
       idebug=0
-      ! write(*,'(" ***** entering cnsdu22 t=",f6.3," *****")') t
+      ! write(*,'(" ***** entering cssidu22 t=",f6.3," *****")') t
       ! write(*,'("u=(",(8f5.2,1x))') u
 
 c     ...extract parameters
       grid  =ipu( 1)
-      ! write(*,*) "cnsdu22: ipu=",(ipu(i),i=1,10)
+      ! write(*,*) "cssidu22: ipu=",(ipu(i),i=1,10)
 
       amu   =rpu( 1)
       akappa=rpu( 2)
@@ -138,7 +138,7 @@ c*wdh            icount=icount+1
             if( mask(i1,i2).ne.0 )then
               icount=icount+1
               if( icount.lt.10 )then
-                write(*,'("cnsdu22: Small density: grid=",i4," u(",'//
+                write(*,'("cssidu22: Small density: grid=",i4," u(",'//
      &            'i4,",",i4,") =",e10.2)') grid,i1,i2,u(i1,i2,ir)
               end if
               u(i1,i2,ir)=1.e-8
@@ -149,7 +149,7 @@ c*wdh            icount=icount+1
         end do
       end do
       if (icount.gt.0) then
-        write(6,*)'cnsdu22: Small density detected, icount =',icount
+        write(6,*)'cssidu22: Small density detected, icount =',icount
         ! write(*,*) u
       end if
 c
@@ -447,7 +447,7 @@ c*** fix this?
                 write(*,9000) i1,i2,csq,u(i1,i2,ir),v(i1,i2,4),
      &            u(i1,i2,ie),v(i1,i2,1),v(i1,i2,2),u(i1,i2,2),
      &            u(i1,i2,3),gv(i1,i2,1),gv(i1,i2,2)
- 9000           format('cnsdu22: csq<0, mask>0 i1=',i3,' i2=',i3,
+ 9000           format('cssidu22: csq<0, mask>0 i1=',i3,' i2=',i3,
      &           ' csq=',e8.2,' rho=',f5.2,' p=',f6.2,' e=',f6.2,
      &           ' (u,v)=',2f5.2,' (m1,m2)=',2f5.2,' gv=',2f5.2)
                 write(*,9020) grid,t,dt,ndra,ndrb,ndsa,ndsb,mrsab(1,1),
@@ -462,7 +462,7 @@ c$$$             if( mask(i1,i2).gt.0 )then
 c$$$                write(*,9010) i1,i2,csq,u(i1,i2,ir),v(i1,i2,4),
 c$$$     &            u(i1,i2,ie),v(i1,i2,1),v(i1,i2,2),u(i1,i2,2),
 c$$$     &            u(i1,i2,3),gv(i1,i2,1),gv(i1,i2,2)
-c$$$ 9010           format('CNSDT: csq>0, mask>0 i1+=',i3,' i2=',i3,
+c$$$ 9010           format('CSSIDT: csq>0, mask>0 i1+=',i3,' i2=',i3,
 c$$$     &           ' csq=',e8.2,' rho=',f5.2,' p=',f6.2,' e=',f6.2,
 c$$$     &           ' (u,v)=',2f5.2,' (m1,m2)=',2f5.2,' gv=',2f5.2)
 c$$$              end if
@@ -495,7 +495,7 @@ c*wdh            end if
      &                -3.0*(w(i1+1,4)-w(i1,4))-w(i1-1,4))
             end do
 ckkc MASS FLUX FIX XXX
-c060504 uncomment these lines if activating the cnsNoSlipWallBC for CNS Jameson
+c060504 uncomment these lines if activating the cssiNoSlipWallBC for CSSI Jameson
 c            w(mrsab(1,1)-1,1) = -w(mrsab(1,1),1)
 c            w(mrsab(1,2),1) = -w(mrsab(1,2)-1,1)
 
@@ -572,7 +572,7 @@ c*wdh            end if
      &              -3.0*(w(i2+1,4)-w(i2,4))-w(i2-1,4))
             end do
 ckkc MASS FLUX FIX XXX
-c060504 uncomment these lines if activating the cnsNoSlipWallBC for CNS Jameson
+c060504 uncomment these lines if activating the cssiNoSlipWallBC for CSSI Jameson
 c            w(mrsab(2,1)-1,1) = -w(mrsab(2,1),1)
 c            w(mrsab(2,2),1) = -w(mrsab(2,2)-1,1)
 
@@ -598,16 +598,16 @@ c 246     format(2(1x,i3),4(1x,1pe9.2))
 c     pause
 c
 c add forcing to ut
-c**      call cnsfn22 (t,nd,ndra,ndrb,ndsa,ndsb,mrsab,mask,ut,xy)
+c**      call cssifn22 (t,nd,ndra,ndrb,ndsa,ndsb,mrsab,mask,ut,xy)
 c
       return
       end
 
-      subroutine cnsdu23 (t,nd,ndra,ndrb,ndsa,ndsb,ndta,ndtb,nrsab,
+      subroutine cssidu23 (t,nd,ndra,ndrb,ndsa,ndsb,ndta,ndtb,nrsab,
      &                    mrsab,mask,u,xy,rx,aj,ut,v,nda,ndb,w,aa,tmp,
      &                    ipu,rpu,moving,gv)
 c==================================================================
-c     Calculates du/dt on conponent grid for CGCNS
+c     Calculates du/dt on conponent grid for CGCSSI
 c               (idmeth=2, 3 dimensions)
 c
 c Note: the parameter akappa = (thermal diffusivity)/(gas constant)
@@ -735,7 +735,7 @@ c             write(6,*)i1,i2,i3,u(i1,i2,i3,1)
         end do
       end do
       if (icount.gt.0) then
-        write(6,*)'cnsdu23: Zero density detected, icount =',icount
+        write(6,*)'cssidu23: Zero density detected, icount =',icount
       end if
 c
 c calculate velocities, pressure and temperature
@@ -1217,7 +1217,7 @@ c*** fix this?
               if( csq.lt.0. )then
                 if( mask(i1,i2,i3).gt.0 )then
                   write(*,
-     &             '('' CNSDU: csq<0 mask>0 i1,i2,i3,csq=''3i5,e10.2)')
+     &             '('' CSSIDU: csq<0 mask>0 i1,i2,i3,csq=''3i5,e10.2)')
      &              i1,i2,i3,csq
                 end if
                 c=0.
@@ -1292,7 +1292,7 @@ c..Bill: same comment as above
               if( csq.lt.0. )then
                 if( mask(i1,i2,i3).gt.0 )then
                   write(*,
-     &             '('' CNSDU: csq<0 mask>0 i1,i2,i3,csq=''3i5,e10.2)')
+     &             '('' CSSIDU: csq<0 mask>0 i1,i2,i3,csq=''3i5,e10.2)')
      &              i1,i2,i3,csq
                 end if
                 c=0.
@@ -1361,7 +1361,7 @@ c..Bill: same comment as above
               if( csq.lt.0. )then
                 if( mask(i1,i2,i3).gt.0 )then
                   write(*,
-     &             '('' CNSDU: csq<0 mask>0 i1,i2,i3,csq=''3i5,e10.2)')
+     &             '('' CSSIDU: csq<0 mask>0 i1,i2,i3,csq=''3i5,e10.2)')
      &              i1,i2,i3,csq
                 end if
                 c=0.
@@ -1415,26 +1415,26 @@ c divide by the Jacobian
       end do
 c
 c add forcing to ut
-**      call cnsfn23 (t,nd,ndra,ndrb,ndsa,ndsb,ndta,ndtb,
+**      call cssifn23 (t,nd,ndra,ndrb,ndsa,ndsb,ndta,ndtb,
 **     &             mrsab,mask,ut,xy)
 c
       return
       end
 
 
-      subroutine cnsdu22a (t,nd,nc,
+      subroutine cssidu22a (t,nd,nc,
      &                     ndra,ndrb,ndsa,ndsb,nrsab,
      &                     mrsab,mask,u,xy,rx,aj,ut,v,
      &                     nda,ndb,w,aa,tmp,
      &                     ipu,rpu,moving,gv )
 c==================================================================
-c     Calculates du/dt on conponent grid for CGCNS
+c     Calculates du/dt on conponent grid for CGCSSI
 c               (idmeth=2, 2 dimensions, axisymmetric with swirl)
 c
-c kkc 051115 : Initial version adapted from cnsdu22 
+c kkc 051115 : Initial version adapted from cssidu22 
 
 c
-c Notes from cnsdu22:
+c Notes from cssidu22:
 c Note: the parameter akappa = (thermal diffusivity)/(gas constant)
 c
 c gv : grid velocity for a moving grid problem
@@ -1493,10 +1493,10 @@ c     LOCAL
 c...............local
 ckkc      integer grid
 c
-c**      include 'cgcns2.h'
-c**      include 'cgcns.h'
+c**      include 'cgcssi2.h'
+c**      include 'cgcssi.h'
 c*** plotting:
-c**      include 'cnspl.h'
+c**      include 'cssipl.h'
 c     STATEMENT FUNCTIONS
       logical d
       real ue
@@ -1525,7 +1525,7 @@ c
       addaxiterms=.true.
       axiv = addaxiterms .and. .true.
       axic = addaxiterms .and. .true.
-      ! write(*,'(" ***** entering cnsdu22 t=",f6.3," *****")') t
+      ! write(*,'(" ***** entering cssidu22 t=",f6.3," *****")') t
       ! write(*,'("u=(",(8f5.2,1x))') u
 
 c     ...extract parameters
@@ -1534,7 +1534,7 @@ c     ...extract parameters
       irad0= ipu(12) ! axis index for side=0
       irad1= ipu(13) ! axis index for side=1
 
-c      write(*,*) "cnsdu22a: ipu=",(ipu(i),i=1,13)
+c      write(*,*) "cssidu22a: ipu=",(ipu(i),i=1,13)
 c      print *,"irad = ",irad,", irad0 = ",irad0,", irad1= ",irad1
 c      print *,"mrsab1 = ",mrsab(1,1),mrsab(1,2)
 c      print *,"mrsab2 = ",mrsab(2,1),mrsab(2,2)
@@ -1626,7 +1626,7 @@ c*wdh            icount=icount+1
             if( mask(i1,i2).ne.0 )then
               icount=icount+1
               if( icount.lt.10 )then
-                write(*,'("cnsdu22a: Small density: grid=",i4," u(",'//
+                write(*,'("cssidu22a: Small density: grid=",i4," u(",'//
      &            'i4,",",i4,") =",e10.2)') grid,i1,i2,u(i1,i2,ir)
               end if
               u(i1,i2,ir)=1.e-8
@@ -1637,7 +1637,7 @@ c*wdh            icount=icount+1
         end do
       end do
       if (icount.gt.0) then
-        write(6,*)'cnsdu22a: Small density detected, icount =',icount
+        write(6,*)'cssidu22a: Small density detected, icount =',icount
         ! write(*,*) u
       end if
 c
@@ -1657,7 +1657,7 @@ c..pressure and temperature*Rg
              if ( mask(i1,i2).ne.0 ) then
                 icount = icount+1
                 if ( icount.lt.30) then
-           write (*,'("cnsdu22a: Small temperature: grid=",i4," u(",'//
+           write (*,'("cssidu22a: Small temperature: grid=",i4," u(",'//
      &            'i4,",",i4,") = ",e10.2)') grid,i1,i2,v(i1,i2,ivt)
                 endif
              endif
@@ -2450,7 +2450,7 @@ c 246     format(2(1x,i3),4(1x,1pe9.2))
 c     pause
 c
 c add forcing to ut
-c**      call cnsfn22 (t,nd,ndra,ndrb,ndsa,ndsb,mrsab,mask,ut,xy)
+c**      call cssifn22 (t,nd,ndra,ndrb,ndsa,ndsb,mrsab,mask,ut,xy)
 c
       return
       end
@@ -2460,10 +2460,10 @@ c
      &                 ut)
 c=============================================================================
 c
-c     avo2d : calculates the original artifical viscosity used in cnsdu22 and cnsdu22a
+c     avo2d : calculates the original artifical viscosity used in cssidu22 and cssidu22a
 c     kkc 051213 : Initial version 
 c
-c     XXX this only works for cnsdu22a right now since the number of components is hard-coded
+c     XXX this only works for cssidu22a right now since the number of components is hard-coded
 c
 c=============================================================================
 c     anonymous uiuc aae prof, circa 1994: 
@@ -2504,7 +2504,7 @@ c extrapolation formula
      &                               +u(i1-3*is1,i2-3*is2,j)
 
 
-c     The following code was cut and pasted from cnsdu22/cnsdu22a
+c     The following code was cut and pasted from cssidu22/cssidu22a
       grid = ipu( 1)
 
       gamma =rpu( 3)
@@ -2581,7 +2581,7 @@ c*** fix this?
                 write(*,9000) i1,i2,csq,u(i1,i2,ir),v(i1,i2,4),
      &            u(i1,i2,ie),v(i1,i2,1),v(i1,i2,2),u(i1,i2,2),
      &            u(i1,i2,3)
- 9000           format('cnsdu22: csq<0, mask>0 i1=',i3,' i2=',i3,
+ 9000           format('cssidu22: csq<0, mask>0 i1=',i3,' i2=',i3,
      &           ' csq=',e8.2,' rho=',f5.2,' p=',f6.2,' e=',f6.2,
      &           ' (u,v)=',2f5.2,' (m1,m2)=',2f5.2)
                 write(*,9020) grid,t,dt,ndra,ndrb,ndsa,ndsb,mrsab(1,1),
@@ -2596,7 +2596,7 @@ c$$$             if( mask(i1,i2).gt.0 )then
 c$$$                write(*,9010) i1,i2,csq,u(i1,i2,ir),v(i1,i2,4),
 c$$$     &            u(i1,i2,ie),v(i1,i2,1),v(i1,i2,2),u(i1,i2,2),
 c$$$     &            u(i1,i2,3),gv(i1,i2,1),gv(i1,i2,2)
-c$$$ 9010           format('CNSDT: csq>0, mask>0 i1+=',i3,' i2=',i3,
+c$$$ 9010           format('CSSIDT: csq>0, mask>0 i1+=',i3,' i2=',i3,
 c$$$     &           ' csq=',e8.2,' rho=',f5.2,' p=',f6.2,' e=',f6.2,
 c$$$     &           ' (u,v)=',2f5.2,' (m1,m2)=',2f5.2,' gv=',2f5.2)
 c$$$              end if
@@ -2769,11 +2769,11 @@ c               viscous calculations in the late 80s (and sits in some AIAA pape
 c            - the solution values in the ghost boundaries are used as set by the BCs, no
 c              extrapolation is done as in avo2d 
 c            
-c            - 060308 this subroutine could be called from a primitive variable CNS code with both
+c            - 060308 this subroutine could be called from a primitive variable CSSI code with both
 c              u and v as in primitive variable form.  The dissipation would then be applied to 
 c              rho, u, v, w and T (or e).
 c
-c     XXX this only works for cnsdu22a right now since the number of components is hard-coded
+c     XXX this only works for cssidu22a right now since the number of components is hard-coded
 c
 c=============================================================================
 c     anonymous uiuc aae prof, circa 1994: 
@@ -2834,7 +2834,7 @@ c     STATEMENT FUNCTIONS
      &              max(abs(v(i1,i2+1,ivp)+2d0*v(i1,i2,ivp)+
      &                      v(i1,i2-1,ivp)),eps))
 
-c     The following code was cut and pasted from cnsdu22/cnsdu22a
+c     The following code was cut and pasted from cssidu22/cssidu22a
       grid = ipu( 1)
       irad = ipu(11) ! the coord. direction for the radius
       irad0= ipu(12) ! axis index for side=0

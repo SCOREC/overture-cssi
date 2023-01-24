@@ -1,4 +1,4 @@
-#Include "icnscfMacros.h"
+#Include "icssicfMacros.h"
 
 #beginMacro PIVOTTRICK(NEQ,TEQ,CFORRHS)
       #If #CFORRHS == "COEFF"
@@ -44,23 +44,23 @@ c                tang .dot. { F, G }^T gets put into teq
     #End
 #endMacro
 
-      subroutine icnswallbc(nd,nd1a,nd1b,nd2a,nd2b,nd3a,
+      subroutine icssiwallbc(nd,nd1a,nd1b,nd2a,nd2b,nd3a,
      &     nd3b,nd4a,nd4b,coeff,rhs,u,x,aj,rsxy,iprm,rprm,
      &     indexRange,bc, ubvd, bd, bt, nbv, nubv, cfrhs)
 c
-c     slip ,no-slip, and specified mass flux wall boundary conditions for icns
+c     slip ,no-slip, and specified mass flux wall boundary conditions for icssi
 c
 c
 c     070927 kkc : Initial Version
 c
 c     This subroutine applies the various wall boundary condition to the coefficient matrix
-c     and the right hand side vector for the implicit CNS method.
+c     and the right hand side vector for the implicit CSSI method.
 c
 c     Notes:
 c          i) we set the velocity to that specified by the boundary values
 c         ii) There are several ways to impose the flux condition.  Right now we assume
 c             that viscous fluxes, f^a, satisfy f^a_{i-1/2} = -f^a_{i+1/2} when the real/artificial
-c             viscosity is computed. XXX NOTE THIS IS A CONDITION ON icns.
+c             viscosity is computed. XXX NOTE THIS IS A CONDITION ON icssi.
 c        iii) For the normal component, we have the condition
 c             \rho_{i-1}( a_{11}u + a_{12}v )_{i-1} ) +
 c                  2\rho_{i}( a_{11}u + a_{12}v )_{i}  + \rho_{i+1}( a_{11}u + a_{12}v )_{i+1} ) = 4 f.
@@ -86,7 +86,7 @@ c                 THIS ROUTINE RELIES ON THE DEFAULT NUMBERING PROVIDED BY THE S
 c                 this means that the boundary condition operators for the coeff array should NEVER
 c                 be called for the density and velocity components on the boundary and first ghost lines
 c                 (because those reset the equation number array)
-c       viii) this subroutine consolidates the code in inflowOutflowCoeff.bf and cnsNoSlipWallBC.bf
+c       viii) this subroutine consolidates the code in inflowOutflowCoeff.bf and cssiNoSlipWallBC.bf
 
       implicit none
       
@@ -152,13 +152,13 @@ c      integer m1,m2,m3,icf
       double precision exo1,exo2,exo3
       double precision rx,xyz
       double precision jac
-      include 'icnssfdec.h'
+      include 'icssisfdec.h'
 c     1-based indexed arrays
       rx(i1,i2,i3,e,c) = rsxy(i1,i2,i3,e-1,c-1)
       xyz(i1,i2,i3,c) = x(i1,i2,i3,c-1)
 
       jac(i1,i2,i3) = aj(i1,i2,i3)
-      include 'icnssf.h'
+      include 'icssisf.h'
 
       exo1(i1,i2,i3,is1,is2,is3,c) = max( u(i1+is1,i2+is2,i3+is3,c),
      &                                u(i1+2*is1,i2+2*is2,i3+2*is3,c) )

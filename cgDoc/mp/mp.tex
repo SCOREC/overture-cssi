@@ -185,13 +185,13 @@ This document is currently under development.
 % CgMp is primarily a driver program that calls different CG (Composite Grid) solvers: (see Figure~\ref{fig:CgMpBlockDiagram}),
 % \begin{description}
 %    \item[\quad CgAd:] solves for heat transfer in solids.
-%    \item[\quad CgCns:] solves compressible flow (reacting, multi-fluid, multi-phase). 
+%    \item[\quad CgCssi:] solves compressible flow (reacting, multi-fluid, multi-phase). 
 %    \item[\quad Cgins:] solves for incompressible flow and heat transfer. 
 %    \item[\quad CgSm:] solves the equations of linear and nonlinear elasticity for the deformation solids.
 % \end{description}
 % CgMp also coordinates the transfer of information between different domain solvers (e.g. the temperature and 
 % fluxes at the interface between two heat conducting materials.)
-% CgMp can join any number of domain solvers. There can be multiple instances of CgAd/CgCns/CgIns/CgSm solvers, for example, 
+% CgMp can join any number of domain solvers. There can be multiple instances of CgAd/CgCssi/CgIns/CgSm solvers, for example, 
 % for different types of fluid and solids.
 
 % \input tex/OvertureBlockDiagram

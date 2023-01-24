@@ -1,5 +1,5 @@
 * 
-* OverBlown command file for box in a gravitational field, implicit CNS 
+* OverBlown command file for box in a gravitational field, implicit CSSI 
 * 
 square20
 $grid="square";

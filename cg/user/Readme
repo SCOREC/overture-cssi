@@ -1,4 +1,4 @@
-This directory can be used for building a user altered version of cgcns, or
+This directory can be used for building a user altered version of cgcssi, or
 cgins, ... . You can, for example, make changes to some of the files and put the
 changes in this user directory so the originials are not altered.
 
@@ -10,12 +10,12 @@ Steps:
    (2) Edit the file user/src/files and add userDefinedInitialConditions.C to the appropriate
        list. 
    (3) Edit and make changes to cg/user/src/userDefinedInitialConditions.C 
-   (4) Type "make cgcns" to build cgcns with the new version of userDefinedInitialConditions.C
+   (4) Type "make cgcssi" to build cgcssi with the new version of userDefinedInitialConditions.C
 
    You make want to make an alias such as :
-      alias mycgcns "/home/dilbert/cg/user/bin/cgcns" 
+      alias mycgcssi "/home/dilbert/cg/user/bin/cgcssi" 
 
 
 NOTES:
-   (1) If you want to make a change to a main program such as cgcns.C, then copy this file
+   (1) If you want to make a change to a main program such as cgcssi.C, then copy this file
        to the cg/user/src directory. There is no need to add this file-name to cg/user/src/files.

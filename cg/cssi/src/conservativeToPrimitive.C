@@ -1,4 +1,4 @@
-#include "CnsParameters.h"
+#include "CssiParameters.h"
 #include "GridFunction.h"
 #include "ParallelUtility.h"
 
@@ -29,8 +29,8 @@ extern "C"
 
 }
 
-//\begin{>>CnsParametersInclude.tex}{\subsection{primitiveToConservative}} 
-int CnsParameters::
+//\begin{>>CssiParametersInclude.tex}{\subsection{primitiveToConservative}} 
+int CssiParameters::
 primitiveToConservative(GridFunction & gf,
                         int gridToConvert  /* =-1 */, 
                         int fixupUnsedPoints /* =false */)
@@ -42,7 +42,7 @@ primitiveToConservative(GridFunction & gf,
 //
 // /gridToConvert (input) : by default (grid==-1) convert all grids, otherwise convert this grid.
 // /fixUnsedPoints (input) : if true fixup unused points
-//\end{CnsParametersInclude.tex}  
+//\end{CssiParametersInclude.tex}  
 // =========================================================================================
 {
   GridFunction::Forms & form = gf.form;
@@ -56,10 +56,10 @@ primitiveToConservative(GridFunction & gf,
   form=GridFunction::conservativeVariables;
   Range G = gridToConvert==-1 ? Range(0,cg.numberOfGrids()-1) : Range(gridToConvert,gridToConvert);
 
-  const PDE & pde = dbase.get<CnsParameters::PDE >("pde");
+  const PDE & pde = dbase.get<CssiParameters::PDE >("pde");
   const GodunovVariation & conservativeGodunovMethod = 
-                           dbase.get<CnsParameters::GodunovVariation >("conservativeGodunovMethod");
-  const PDEVariation & pdeVariation = dbase.get<CnsParameters::PDEVariation >("pdeVariation");
+                           dbase.get<CssiParameters::GodunovVariation >("conservativeGodunovMethod");
+  const PDEVariation & pdeVariation = dbase.get<CssiParameters::PDEVariation >("pdeVariation");
   
   // Look for the pointer to the user defined EOS:
   if( dbase.has_key("userDefinedEquationOfStateDataPointer") )
@@ -103,8 +103,8 @@ primitiveToConservative(GridFunction & gf,
       rpar[3]= dbase.get<real >("absorbedEnergy");
       
       ipar[0]= pdeVariation; 
-      ipar[1]= dbase.get<CnsParameters::ReactionTypeEnum >("reactionType"); 
-      ipar[2]= dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState");
+      ipar[1]= dbase.get<CssiParameters::ReactionTypeEnum >("reactionType"); 
+      ipar[2]= dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState");
       ipar[3]= conservativeGodunovMethod;
       ipar[4]= pde;
 
@@ -142,7 +142,7 @@ primitiveToConservative(GridFunction & gf,
 
 	    if( !fdg1 || !fdg2 || !fdg3 || !fdg4 || !fdc1 || !fdc2 || !fdc3 || !fdc4 )
 	    {
-	      printF("CnsParameters::primitiveToConservative:ERROR: \n");
+	      printF("CssiParameters::primitiveToConservative:ERROR: \n");
 	      printF("must define gamma1 through gamma4 and cv1 through cv4 in command file.\n");
 	      printF("This is a fatal error!!!!! ... quiting\n");
 	      Overture::abort("error");
@@ -151,7 +151,7 @@ primitiveToConservative(GridFunction & gf,
 	  else
 	  {
 	    // We are using Don's code with multicomponent stuff
-	    if(  dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState") != jwlEOS )
+	    if(  dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState") != jwlEOS )
 	    {
 	      bool foundgi, foundgr, foundcvi, foundcvr;
 	      foundgi= dbase.get<ListOfShowFileParameters >("pdeParameters").getParameter("gammai",rpar[40]);
@@ -160,7 +160,7 @@ primitiveToConservative(GridFunction & gf,
 	      foundcvr= dbase.get<ListOfShowFileParameters >("pdeParameters").getParameter("cvr",rpar[43]);
 	      if ( !foundgi || !foundgr )
 	      {
-		printF("CnsParameters::primitiveToConservative:ERROR: \n");
+		printF("CssiParameters::primitiveToConservative:ERROR: \n");
 		printF("must define gammai, gammar in command file.\n");
 		printF("This is a fatal error!!!!! ... quiting\n");
 		Overture::abort("error");
@@ -200,7 +200,7 @@ primitiveToConservative(GridFunction & gf,
 
 	  if ( !foundg1 || !foundg2 || !foundcv1 || !foundcv2 || !foundpi1 || !foundpi2 ) 
 	  {
-	    printF("CnsParameters::primitiveToConservative:ERROR:\n");
+	    printF("CssiParameters::primitiveToConservative:ERROR:\n");
 	    printF("Must define gamma1, gamma2, cv1, cv2, pi1, and pi2 in command file\n");
 	    printF("Can't continue ---- Aborting\n");
 	    Overture::abort("error");
@@ -328,8 +328,8 @@ primitiveToConservative(GridFunction & gf,
   return 0;
 }
 
-//\begin{>>CnsParametersInclude.tex}{\subsection{conservativeToPrimitive}} 
-int CnsParameters::
+//\begin{>>CssiParametersInclude.tex}{\subsection{conservativeToPrimitive}} 
+int CssiParameters::
 conservativeToPrimitive(GridFunction & gf,
                         int gridToConvert  /* =-1 */, 
                         int fixupUnsedPoints /* =false */ )
@@ -342,7 +342,7 @@ conservativeToPrimitive(GridFunction & gf,
 // /gridToConvert (input) : by default (grid==-1) convert all grids, otherwise convert this grid.
 // /fixUnsedPoints (input) : if true fixup unused points
 //
-//\end{CnsParametersInclude.tex}  
+//\end{CssiParametersInclude.tex}  
 // =========================================================================================
 {
   GridFunction::Forms & form = gf.form;
@@ -356,10 +356,10 @@ conservativeToPrimitive(GridFunction & gf,
   Range G = gridToConvert==-1 ? Range(0,cg.numberOfGrids()-1) : Range(gridToConvert,gridToConvert);
 
   const real epsRho=1./pow(REAL_MAX,.125); // 1.e-10; // =1./pow(REAL_MAX,.125); // =pow(REAL_MIN,.25); // SQRT(REAL_MIN);
-  const PDE & pde = dbase.get<CnsParameters::PDE >("pde");
+  const PDE & pde = dbase.get<CssiParameters::PDE >("pde");
   const GodunovVariation & conservativeGodunovMethod = 
-                           dbase.get<CnsParameters::GodunovVariation >("conservativeGodunovMethod");
-  const PDEVariation & pdeVariation = dbase.get<CnsParameters::PDEVariation >("pdeVariation");
+                           dbase.get<CssiParameters::GodunovVariation >("conservativeGodunovMethod");
+  const PDEVariation & pdeVariation = dbase.get<CssiParameters::PDEVariation >("pdeVariation");
   
   // Look for the pointer to the user defined EOS:
   if( dbase.has_key("userDefinedEquationOfStateDataPointer") )
@@ -397,8 +397,8 @@ conservativeToPrimitive(GridFunction & gf,
       rpar[3]= dbase.get<real >("absorbedEnergy");
 
       ipar[0]= pdeVariation; 
-      ipar[1]= dbase.get<CnsParameters::ReactionTypeEnum >("reactionType"); 
-      ipar[2]= dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState");
+      ipar[1]= dbase.get<CssiParameters::ReactionTypeEnum >("reactionType"); 
+      ipar[2]= dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState");
       ipar[3]= conservativeGodunovMethod;
       ipar[4]= pde;
 
@@ -435,7 +435,7 @@ conservativeToPrimitive(GridFunction & gf,
 
 	    if( !fdg1 || !fdg2 || !fdg3 || !fdg4 || !fdc1 || !fdc2 || !fdc3 || !fdc4 )
 	    {
-	      printF("CnsParameters::primitiveToConservative:ERROR: \n");
+	      printF("CssiParameters::primitiveToConservative:ERROR: \n");
 	      printF("must define gamma1 through gamma4 and cv1 through cv4 in command file.\n");
 	      printF("This is a fatal error!!!!! ... quiting\n");
 	      Overture::abort("error");
@@ -444,7 +444,7 @@ conservativeToPrimitive(GridFunction & gf,
 	  else
 	  {
 	    // We are using Don's code with multicomponent stuff
-	    if(  dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState") != jwlEOS )
+	    if(  dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState") != jwlEOS )
 	    {
 	      bool foundgi, foundgr, foundcvi, foundcvr;
 	      foundgi= dbase.get<ListOfShowFileParameters >("pdeParameters").getParameter("gammai",rpar[40]);
@@ -453,7 +453,7 @@ conservativeToPrimitive(GridFunction & gf,
 	      foundcvr= dbase.get<ListOfShowFileParameters >("pdeParameters").getParameter("cvr",rpar[43]);
 	      if ( !foundgi || !foundgr )
 	      {
-		printF("CnsParameters::primitiveToConservative:ERROR: \n");
+		printF("CssiParameters::primitiveToConservative:ERROR: \n");
 		printF("must define gammai, gammar in command file.\n");
 		printF("This is a fatal error!!!!! ... quiting\n");
 		Overture::abort("error");
@@ -493,7 +493,7 @@ conservativeToPrimitive(GridFunction & gf,
 
 	  if ( !foundg1 || !foundg2 || !foundcv1 || !foundcv2 || !foundpi1 || !foundpi2 ) 
 	  {
-	    printF("CnsParameters::primitiveToConservative:ERROR: \n");
+	    printF("CssiParameters::primitiveToConservative:ERROR: \n");
 	    printF("Must define gamma1, gamma2, cv1, cv2, pi1, and pi2 in command file\n");
 	    printF("Can't continue ---- Aborting\n");
 	    Overture::abort("error");

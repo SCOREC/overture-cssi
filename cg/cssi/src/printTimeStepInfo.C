@@ -1,7 +1,7 @@
-#include "Cgcns.h"
+#include "Cgcssi.h"
 #include "ParallelUtility.h"
 #include "App.h"
-#include "CnsParameters.h"
+#include "CssiParameters.h"
 
 // ===================================================================================================================
 /// \brief Print time-step information about the current solution in a nicely formatted way.
@@ -11,7 +11,7 @@
 /// \param cpuTime (input) : current cpu time.
 /// 
 // ==================================================================================================================
-void Cgcns::
+void Cgcssi::
 printTimeStepInfo( const int & step, const real & t, const real & cpuTime )
 {
   const int & numberOfComponents = parameters.dbase.get<int >("numberOfComponents");
@@ -57,7 +57,7 @@ printTimeStepInfo( const int & step, const real & t, const real & cpuTime )
   if( parameters.dbase.get<int >("myid")!=0 ) return; // only print on processor 0
 
   aString blanks="                            ";
-  if( parameters.dbase.get<bool >("twilightZoneFlow") || parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution")!=CnsParameters::noKnownSolution )
+  if( parameters.dbase.get<bool >("twilightZoneFlow") || parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution")!=CssiParameters::noKnownSolution )
   {
     // ****************************************************************
     // *********** twilightzone flow or knownSolution *****************
@@ -167,8 +167,8 @@ printTimeStepInfo( const int & step, const real & t, const real & cpuTime )
 //  		(const char*)parameters.dbase.get<aString* >("componentName")[n],
 //  		uMin(n),uMax(n));
 
-      if( parameters.dbase.get<CnsParameters::PDE >("pde")==CnsParameters::compressibleNavierStokes &&
-	  parameters.dbase.get<CnsParameters::PDEVariation >("pdeVariation")==CnsParameters::conservativeGodunov )
+      if( parameters.dbase.get<CssiParameters::PDE >("pde")==CssiParameters::compressibleNavierStokes &&
+	  parameters.dbase.get<CssiParameters::PDEVariation >("pdeVariation")==CssiParameters::conservativeGodunov )
       {
 	if(parameters.dbase.get<RealArray >("statistics").getLength(0)>0 )
 	{
@@ -192,7 +192,7 @@ printTimeStepInfo( const int & step, const real & t, const real & cpuTime )
       
       }
 
-      if( parameters.dbase.get<CnsParameters::PDE >("pde")==CnsParameters::compressibleMultiphase )
+      if( parameters.dbase.get<CssiParameters::PDE >("pde")==CssiParameters::compressibleMultiphase )
       {
 	if(parameters.dbase.get<RealArray >("statistics").getLength(0)>0 )
 	{

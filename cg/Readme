@@ -2,14 +2,7 @@ This is the main directory for the cg solvers.
 
 
   common : files common to different solvers
-  ins    : incompressible flow solver
-  cns    : compressible flow solver
-  ad     : advection-diffusion (and heat equation) solver
-  mp     : multiphysics solver (which uses the other solvers)
-  mx     : solver for Maxwell's equations
-  sm     : solid mechanics solver 
-
-To build the incompressible flow solver, for example, goto the ins directory and type make.
+  cssi   : Astronomical plasma solver
 
 
 
@@ -28,8 +21,8 @@ following environment variables:
 
 To compile all cg modules type:
     make
-To only compile a single module, e.g. cgcns, go to that directory and type make:
-   cd cgcns
+To only compile a single module, e.g. cgcssi, go to that directory and type make:
+   cd cgcssi
    make
 
 

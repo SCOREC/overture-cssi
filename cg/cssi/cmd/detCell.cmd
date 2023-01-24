@@ -5,8 +5,8 @@
 * To run without graphics use:
 *      cg noplot detCell
 * Sample parallel commands:
-*   mpirun -np 2 $cgcnsp noplot -readCollective -writeCollective detCell
-*   mpirun -np 2 $cgcnsp noplot -writeCollective detCell
+*   mpirun -np 2 $cgcssip noplot -readCollective -writeCollective detCell
+*   mpirun -np 2 $cgcssip noplot -writeCollective detCell
 *  
 * Notes:
 *  (1) You will need to generate the grid detChannel.hdf using ogen 

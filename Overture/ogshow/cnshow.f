@@ -1,12 +1,12 @@
 
 
-      subroutine cnshow( id,rd,nd,ng,pu,t,dt )
+      subroutine cssihow( id,rd,nd,ng,pu,t,dt )
 c===================================================================
-c         CNSHOW: Save results in the SHOW file
+c         CSSIHOW: Save results in the SHOW file
 c         ------  -----------------------------
 c
 c PURPOSE-
-c   This routine is called by CGCNS at specified intervals to
+c   This routine is called by CGCSSI at specified intervals to
 c   save solutions in the show file
 c
 c   The number of components saved in the show file is nvshow
@@ -37,8 +37,8 @@ c===================================================================
       integer pu(ng),id(*)
       real rd(*),t,dt
 
-      include 'cgcns2.h'
-      include 'cgcns.h'
+      include 'cgcssi2.h'
+      include 'cgcssi.h'
 
 c...local
       parameter( nvpd=25,nlined=10 )
@@ -54,7 +54,7 @@ c       ---debug option idebug=2**5
 c       ---to determine artificial viscosity parameters plot the
 c          solution to the shock tube problem
         k=1
-        call cnsplt( ndrs(1,1,k),ndrs(1,2,k),ndrs(2,1,k),ndrs(2,2,k),
+        call cssiplt( ndrs(1,1,k),ndrs(1,2,k),ndrs(2,1,k),ndrs(2,2,k),
      &  rd(pu(k)),rd(id(qxy+k-1)),t )
       end if
 
@@ -83,14 +83,14 @@ c       ---name solution component names for show file
 c          First get all possible names as defined by the user,
 c          including all possible combinations such as pressure,
 c          vorticity, mach number etc
-        call cnsudef( 5,nd,t,dt, nvpd,nc,uvnp,ierr )
+        call cssiudef( 5,nd,t,dt, nvpd,nc,uvnp,ierr )
 
-        uvns(1)='u.cgcns'  ! name of the vector grid function
+        uvns(1)='u.cgcssi'  ! name of the vector grid function
         do n=1,nvshow
           if( ivshow(n).ge.1 .and. ivshow(n).le.nc )then
             uvns(n+1)=uvnp(ivshow(n))
           else
-            write(*,'('' CNSHOW: error, invalid ivshow='',i8)')
+            write(*,'('' CSSIHOW: error, invalid ivshow='',i8)')
      &          ivshow(n)
           end if
         end do
@@ -126,13 +126,13 @@ c       ---create a composite grid vector function on the show file
 c       --set pointers to uvns--
         call cgaptr(id,cgshow,uvns,nvshow+1,' ',ierr )
         if( ierr.ne.0 )then
-          write(*,*) 'CNSPRT: ERROR return from CGAPTR, ierr=',ierr
+          write(*,*) 'CSSIPRT: ERROR return from CGAPTR, ierr=',ierr
           stop
         end if
       end if
 
 c     ...assign show file solution from current solution
-      call cnshow2( id,rd,nd,ng,pu,id(quvns),quvns )
+      call cssihow2( id,rd,nd,ng,pu,id(quvns),quvns )
 
 c     ...now release the grid function to the file
       call cgvrl( id,rd,cgshow,uvns,nvshow )
@@ -141,7 +141,7 @@ c     ===save comments for this solution in a string variable
 c        named header000001, or header000002, ...
 
 c     ---Get User defined title strings
-      call cnsudef( 4,nd,t,dt, nlined,nc,line,ierr )
+      call cssiudef( 4,nd,t,dt, nlined,nc,line,ierr )
       nl=nc
 
       dim(1)=2

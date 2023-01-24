@@ -1,4 +1,4 @@
-! This file automatically generated from cnsNoSlipBC.bf with bpp.
+! This file automatically generated from cssiNoSlipBC.bf with bpp.
 c ***********************************************************************
 c
 c          Routines for applying a no-slip wall BC
@@ -30,7 +30,7 @@ c To include derivatives of rx use OPTION=RX
 
 
 
-      subroutine cnsNoSlipBC(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,
+      subroutine cssiNoSlipBC(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,
      & nd4b,ipar,rpar, u, gv, gtt, mask, x,rsxy, bc, indexRange, 
      & exact, uKnown, ierr )
 c========================================================================
@@ -780,7 +780,7 @@ c .............. end statement functions
 
 
       ierr=0
-      ! write(*,*) 'Inside cnsSlipWallBC'
+      ! write(*,*) 'Inside cssiSlipWallBC'
 
       rc                =ipar(0)
       uc                =ipar(1)
@@ -822,7 +822,7 @@ c .............. end statement functions
       kThermal          =rpar(15)
       Rg                =rpar(16)
 
-c      write(*,'(" **** cnsNoSlipBC: mu,kThermal,Rg=",3e9.2," gravity=",3f6.1)') c          mu,kThermal,Rg,gravity(0),gravity(1),gravity(2)
+c      write(*,'(" **** cssiNoSlipBC: mu,kThermal,Rg=",3e9.2," gravity=",3f6.1)') c          mu,kThermal,Rg,gravity(0),gravity(1),gravity(2)
 c      ! ' 
 
       gm1=gamma-1.
@@ -846,7 +846,7 @@ c      ! '
         ! *********************************************************************
 
         if( gridIsMoving.ne.0 )then
-          write(*,'("cnsNoSlipBC:ERROR: gridIsMoving not implemented 
+          write(*,'("cssiNoSlipBC:ERROR: gridIsMoving not implemented 
      & yet for rectangular")')
           ! '
           stop 6642
@@ -1040,7 +1040,7 @@ c     write(*,'(" noSlip: i=(",i2,",",i2,") r0,T0,p0,alpha=",4f7.2," r(ghost)=",
         ! *********************************************************************
 
         if( gridIsMoving.ne.0 )then
-          write(*,'("cnsNoSlipBC:ERROR: gridIsMoving not implemented 
+          write(*,'("cssiNoSlipBC:ERROR: gridIsMoving not implemented 
      & yet for rectangular")')
           ! '
           stop 6643

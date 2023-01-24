@@ -1,6 +1,6 @@
 cg.v25
 
- o 2011/06/19 - added simulate grid motion to cgcns.
+ o 2011/06/19 - added simulate grid motion to cgcssi.
  o 2011/08/18 - the calling sequence to userDefinedBoundary values has been changed.
  o 2011/08/18 - new body forcing options ... finish me ...
  o 2011/10/29 - some new variable material properties capabilities have been added:

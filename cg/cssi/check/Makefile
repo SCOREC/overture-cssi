@@ -4,13 +4,13 @@
 common = ../../common
 check: buildGrids
 	ln -sf $(common)/src/check.p .
-	./check.p -solver=cgcns
+	./check.p -solver=cgcssi
 check-quiet: buildGrids
 	ln -sf $(common)/src/check.p .
-	./check.p -solver=cgcns -verbose=0
+	./check.p -solver=cgcssi -verbose=0
 
-cgcns:
-	@cd ..;      $(MAKE) -$(MAKEFLAGS) cgcns
+cgcssi:
+	@cd ..;      $(MAKE) -$(MAKEFLAGS) cgcssi
 
 # build grids that are used by the regression tests (and not already in Overture/sampleGrids)
 buildGrids: sicFixede2.order2.hdf multifluidChannelGrid.hdf

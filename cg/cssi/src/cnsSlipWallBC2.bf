@@ -10,7 +10,7 @@ c
 #beginMacro getIntParameter(name)
  ok=getInt(pdb,'name',name) 
  if( ok.eq.0 )then
-   write(*,'("*** cnsSlipWallBC2:ERROR: unable to find name")') 
+   write(*,'("*** cssiSlipWallBC2:ERROR: unable to find name")') 
    stop 1122
  end if
 #endMacro
@@ -21,7 +21,7 @@ c
 #beginMacro getRealParameter(name)
  ok=getReal(pdb,'name',name) 
  if( ok.eq.0 )then
-   write(*,'("*** cnsSlipWallBC2:ERROR: unable to find name")') 
+   write(*,'("*** cssiSlipWallBC2:ERROR: unable to find name")') 
    stop 1133
  end if
 #endMacro
@@ -717,7 +717,7 @@ c ==============================================================================
   #End
 #endMacro
 
-      subroutine cnsSlipWallBC2(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
+      subroutine cssiSlipWallBC2(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
           ipar,rpar, u, u2,  gv, gv2, gtt, mask, x,rsxy, bc, indexRange, interfaceType, exact, uKnown, pdb, ierr )         
 c========================================================================
 c
@@ -846,7 +846,7 @@ c.......local
       real fpr1,fpr2,fpr3,fpr4, fps1,fps2,fps3,fps4
       real qse,qsse,qxse,qyse
       real rse,rsse,rxse,ryse,rrte,uxre,vyre,divure,pxxe,pxye,pyye
-      real psse,pste,pe,pre,cnSmooth
+      real psse,pste,pe,pre,cssimooth
       integer it3, nitStage3
       real du0,du1,du2,du3,alpha,cdl,uEps, du,uNorm,dus, pEps,omega,pNorm
 
@@ -943,7 +943,7 @@ c .............. end statement functions
 
 
       ierr=0
-      ! write(*,*) 'Inside cnsSlipWallBC'
+      ! write(*,*) 'Inside cssiSlipWallBC'
 
 
 
@@ -987,7 +987,7 @@ c .............. end statement functions
       uac = uc+radialAxis-1 ! axial velocity
 
       if( debug.gt.2 ) then
-        write(*,'("cnsSlipWallBC2: t=",e10.2," grid=",i3)') t,grid
+        write(*,'("cssiSlipWallBC2: t=",e10.2," grid=",i3)') t,grid
       end if
 
       ! coefficient of the artificial diffusion:
@@ -999,12 +999,12 @@ c .............. end statement functions
 
       ! numberOfComponents=4
       if( numberOfComponents.gt.20 )then
-        write(*,'("cnsSlipWallBC2:ERROR numberOfComponents is greater than expected")')
+        write(*,'("cssiSlipWallBC2:ERROR numberOfComponents is greater than expected")')
         ! '
         stop 6734
       end if
       if( rc.ne.0 )then
-        write(*,'("cnsSlipWallBC2:ERROR expecting rc=0")')
+        write(*,'("cssiSlipWallBC2:ERROR expecting rc=0")')
         ! '
         stop 6735
       end if
@@ -1169,11 +1169,11 @@ c .............. end statement functions
 
         if( t.le.dt .and. debug.gt.1 )then
          if( gridIsMoving.eq.0 )then
-           write(*,'(" cnsSlipWall: rectangular non-moving grids: grid=",i3)') grid
+           write(*,'(" cssiSlipWall: rectangular non-moving grids: grid=",i3)') grid
            ! '
          else 
            ! *** NOTE: normally a moving grid will not be rectangular anymore (since it may rotate for e.g.)
-           write(*,'(" cnsSlipWall: rectangular MOVING grids: grid=",i3)') grid
+           write(*,'(" cssiSlipWall: rectangular MOVING grids: grid=",i3)') grid
            ! '
          endif
         end if
@@ -1439,7 +1439,7 @@ c .............. end statement functions
      
 
         if( t.le.dt .and. gridIsMoving.eq.1 )then
-          write(*,'(" cnsSlipWall: *NEW* slipWallDerivative used with curvilinear moving grids")')
+          write(*,'(" cssiSlipWall: *NEW* slipWallDerivative used with curvilinear moving grids")')
           ! '
         endif
 
@@ -1451,7 +1451,7 @@ c .............. end statement functions
         if( bc(side,axis).eq.slipWall )then
  
          if( t.gt.0 .and. applyInterfaceBoundaryConditions.eq.0 .and. interfaceType(side,axis).eq.tractionInterface )then
-          write(*,'(" cnsSlipWall: SKIP BC for (side,axis)=(",2i2,") interfaceType=",i3)') side,axis,interfaceType(side,axis)
+          write(*,'(" cssiSlipWall: SKIP BC for (side,axis)=(",2i2,") interfaceType=",i3)') side,axis,interfaceType(side,axis)
          else
 
           nr(0,axis)=indexRange(side,axis)   ! set nr to point to this side
@@ -1479,7 +1479,7 @@ c .............. end statement functions
 
 
           if( debug.gt.1 ) then
-            write(*,'(" cnsSlipWall: *NEW* slipWallDerivative used, t=",e10.2)') t
+            write(*,'(" cssiSlipWall: *NEW* slipWallDerivative used, t=",e10.2)') t
           end if
 
           ! ad2=5.
@@ -1813,7 +1813,7 @@ c .............. end statement functions
                 pn = pn + rho*( an1*(fv(1)-ute-rxU*ure) + an2*(fv(2)-vte-rxU*vre) )
               end if
 
-              ! write(*,'(" cnsSlipWall: slipWallDerivative set TZ for pn")')
+              ! write(*,'(" cssiSlipWall: slipWallDerivative set TZ for pn")')
 
             end if
 
@@ -2205,13 +2205,13 @@ c$$$            end if
         if( .true. )then
           
           ! *wdh* 2012/03/30
-          write(*,'("cnsSlipwallBC2: ERROR: THIS OPTION IS OUTDATED I THINK!")')
+          write(*,'("cssiSlipwallBC2: ERROR: THIS OPTION IS OUTDATED I THINK!")')
           stop 6634
         end if
 
         ! check the bounds on pra(ii) and psa(ii)
         if( nd1a.gt.ndMax .or. nd2a.gt.ndMax )then
-          write(*,'("cnsSlipwallBC2: ERROR: dimension ndMax exceeded")')
+          write(*,'("cssiSlipwallBC2: ERROR: dimension ndMax exceeded")')
           stop 111
         end if
 
@@ -2246,19 +2246,19 @@ c$$$            end if
            ! ******************************************************************
 
            if( gridIsMoving.eq.1 )then
-             write(*,'(" cnsSlipWall: *NEW* slipWallDerivative used with moving grids")')
+             write(*,'(" cssiSlipWall: *NEW* slipWallDerivative used with moving grids")')
              ! '
            endif
 
            if( debug.gt.1 ) then
-             write(*,'(" cnsSlipWall: *NEW* slipWallDerivative used")')
+             write(*,'(" cssiSlipWall: *NEW* slipWallDerivative used")')
            end if
            if( dt.lt.0. )then
-             write(*,'(" ***cnsSlipWall:WARNING: dt<0 for t=",e12.3)') t
+             write(*,'(" ***cssiSlipWall:WARNING: dt<0 for t=",e12.3)') t
              dt=0.
            else
              if( debug.gt.1 ) then
-               write(*,'(" ***cnsSlipWall:INFO: t,dt=",2(e12.3,1x))') t,dt
+               write(*,'(" ***cssiSlipWall:INFO: t,dt=",2(e12.3,1x))') t,dt
              end if
            end if
 
@@ -2275,9 +2275,9 @@ c$$$            end if
            dtEps=drEps
            dsEps=drEps
 
-           ! cnSmooth: for adding add smoothing in the normal direction for ghost points
-           ! if cnSmooth==1 --> D+D-u = 0 : choose cnSmooth=c*h^2 I think
-           cnSmooth=0. ! 1. ! 1.*dr(axis) 
+           ! cssimooth: for adding add smoothing in the normal direction for ghost points
+           ! if cssimooth==1 --> D+D-u = 0 : choose cssimooth=c*h^2 I think
+           cssimooth=0. ! 1. ! 1.*dr(axis) 
 
 
            getGhostByTaylor=.true.
@@ -2526,9 +2526,9 @@ c Use a lower order approximation if the solution is not monotone
        	      u(j1,j2,j3,tc)=u(k1,k2,k3,tc) -2.*h*(qr1 + diss(u2,tc))
  
                ! add smoothing in the normal direction
-               ! if cnSmooth==1 --> D+D-u = 0 : choose cnSmooth=c*h^2 I think
+               ! if cssimooth==1 --> D+D-u = 0 : choose cssimooth=c*h^2 I think
                ! do m=0,ncm1
-               !   u(j1,j2,j3,m)=(1.-cnSmooth)*u(j1,j2,j3,m)+cnSmooth*(2.*u(i1,i2,i3,m)-u(k1,k2,k3,m))
+               !   u(j1,j2,j3,m)=(1.-cssimooth)*u(j1,j2,j3,m)+cssimooth*(2.*u(i1,i2,i3,m)-u(k1,k2,k3,m))
                ! end do
  
              end do
@@ -3185,7 +3185,7 @@ c$$$             ysi= rxi/ajac
 
              ! ======== STAGE III normal smoothing step
              ! add smoothing in the normal direction
-             ! if cnSmooth==1 --> D+D-u = 0 : choose cnSmooth=c*h^2 I think
+             ! if cssimooth==1 --> D+D-u = 0 : choose cssimooth=c*h^2 I think
              do mm=1,2
                j1=i1-is1*mm
                j2=i2-is2*mm
@@ -3195,7 +3195,7 @@ c$$$             ysi= rxi/ajac
                k3=i3+is3*mm
                do m=0,ncm1
                ! do m=0,2  ! smooth r,u,v
-                 u(j1,j2,j3,m)=(1.-cnSmooth)*u(j1,j2,j3,m)+cnSmooth*(2.*u(i1,i2,i3,m)-u(k1,k2,k3,m))
+                 u(j1,j2,j3,m)=(1.-cssimooth)*u(j1,j2,j3,m)+cssimooth*(2.*u(i1,i2,i3,m)-u(k1,k2,k3,m))
                end do
 
              end do
@@ -3336,7 +3336,7 @@ c$$$             ysi= rxi/ajac
 
       else
 
-        write(*,'("cnsSlipWallBC2:ERROR:Unknown bcOption=",i5)') bcOption
+        write(*,'("cssiSlipWallBC2:ERROR:Unknown bcOption=",i5)') bcOption
         stop 17942
 
       end if

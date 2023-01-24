@@ -1,7 +1,7 @@
 #
 # Test of the multifluid solver -- Riemann problem (example from Section 4.2 of the cavity collapse paper)
 #
-#   cgcns [-noplot] multifluidChannel -tf=<f> -tp=<f> -amr=[0|1] -ratio=[2|4] -show=<s> -go=[halt|go|og]
+#   cgcssi [-noplot] multifluidChannel -tf=<f> -tp=<f> -amr=[0|1] -ratio=[2|4] -show=<s> -go=[halt|go|og]
 #
 #
 $tFinal=.06; $tPlot=.004; $show=" "; $debug=0; $ratio=4; $buffer=2; $errTol=.0025; $efficiency=.7;

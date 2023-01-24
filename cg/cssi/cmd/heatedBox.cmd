@@ -1,12 +1,12 @@
 #
-# cgcns: Heated box in a gravitational field 
+# cgcssi: Heated box in a gravitational field 
 #       
-#  cgcns [-noplot] heatedBox -g=<name> -tf=<tFinal> -tp=<tPlot> -debug=<num> -model=[Jameson|Godunov]..,
+#  cgcssi [-noplot] heatedBox -g=<name> -tf=<tFinal> -tp=<tPlot> -debug=<num> -model=[Jameson|Godunov]..,
 #                            -mu=<num> -Prandtl=<num> -bg=<backGround> -show=<name> 
 # 
 # Examples:
-#    cgcns heatedBox -g=square64.order2.hdf -mu=.02 -tf=3. -tp=.1 -go=halt
-#    cgcns heatedBox -g=square128.order2.hdf -mu=.01 -tf=10. -tp=.1 -go=halt
+#    cgcssi heatedBox -g=square64.order2.hdf -mu=.02 -tf=3. -tp=.1 -go=halt
+#    cgcssi heatedBox -g=square128.order2.hdf -mu=.01 -tf=10. -tp=.1 -go=halt
 #   
 # --- set default values for parameters ---
 # 
@@ -93,15 +93,15 @@ $go
 
 
 #
-#  cgcns command file: heated box (or square)
+#  cgcssi command file: heated box (or square)
 # 
 # Usage:
-#    cgcns [-noplot] heatedBox.cmd -g=<grid> -tf=<final time> -tp=<tPlot> -show=<show file>  ...
+#    cgcssi [-noplot] heatedBox.cmd -g=<grid> -tf=<final time> -tp=<tPlot> -show=<show file>  ...
 #                                  -method=[jameson|godunov]
 #
 # Examples:
-#   cgcns heatedBox -g=square128.order2 -tf=10. -tp=.1 -go=halt
-#   cgcns heatedBox -g=box2.order2    -tf=1. -tp=.05 -go=halt
+#   cgcssi heatedBox -g=square128.order2 -tf=10. -tp=.1 -go=halt
+#   cgcssi heatedBox -g=box2.order2    -tf=1. -tp=.05 -go=halt
 # 
 # --- set default values for parameters ---
 $grid="square20.order2.hdf"; $show = " "; $method="jameson"; 
@@ -303,15 +303,15 @@ $grid
 
 
 #
-#  cgcns command file: heated box (or square)
+#  cgcssi command file: heated box (or square)
 # 
 # Usage:
-#    cgcns [-noplot] heatedBox.cmd -g=<grid> -tf=<final time> -tp=<tPlot> -show=<show file>  ...
+#    cgcssi [-noplot] heatedBox.cmd -g=<grid> -tf=<final time> -tp=<tPlot> -show=<show file>  ...
 #                                  -method=[jameson|godunov]
 #
 # Examples:
-#   cgcns heatedBox -g=square20.order2 -tf=10. -tp=.1 -go=halt
-#   cgcns heatedBox -g=box2.order2    -tf=1. -tp=.05 -go=halt
+#   cgcssi heatedBox -g=square20.order2 -tf=10. -tp=.1 -go=halt
+#   cgcssi heatedBox -g=box2.order2    -tf=1. -tp=.05 -go=halt
 # 
 # --- set default values for parameters ---
 $grid="square20.order2.hdf"; $show = " "; $method="jameson"; 
@@ -429,15 +429,15 @@ $grid
 
 
 #
-#  cgcns command file: heated box (or square)
+#  cgcssi command file: heated box (or square)
 # 
 # Usage:
-#    cgcns [-noplot] heatedBox.cmd -g=<grid> -tf=<final time> -tp=<tPlot> -show=<show file>  ...
+#    cgcssi [-noplot] heatedBox.cmd -g=<grid> -tf=<final time> -tp=<tPlot> -show=<show file>  ...
 #                                  -method=[jameson|godunov]
 #
 # Examples:
-#   cgcns heatedBox -g=square20.order2 -tf=1. -tp=.05 -go=halt
-#   cgcns heatedBox -g=box4.order2    -tf=1. -tp=.05 -go=halt
+#   cgcssi heatedBox -g=square20.order2 -tf=1. -tp=.05 -go=halt
+#   cgcssi heatedBox -g=box4.order2    -tf=1. -tp=.05 -go=halt
 # 
 # --- set default values for parameters ---
 $grid="square20.order2.hdf"; $show = " "; $method="jameson"; 

@@ -1,10 +1,10 @@
 ***************************************************************
-*  sibMove.cmd -- cgcns example --
+*  sibMove.cmd -- cgcssi example --
 * 
 *     A moving sphere
 * 
 * Examples:
-*    cgcns sibMove
+*    cgcssi sibMove
 *
 *  You may have to make the grid used below (sampleGrids/sibArg.cmd)
 **************************************************************

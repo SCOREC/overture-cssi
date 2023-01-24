@@ -1,5 +1,5 @@
 *
-* cgcns command file for various parallel test cases.
+* cgcssi command file for various parallel test cases.
 *
 *  To compare results from different processors:
 *        1. Set $debug=3 (optionally set $format to the output format)
@@ -7,13 +7,13 @@
 *        3. Run with -np 2 --> results in the output file obNP2.debug     
 *        4. Compare obNP1.debug to obNP2.debug
 *
-* mpirun -np 2 $cgcnsp -noplot p.cmd  >! twoBump2l2r4.out &
-* mpirun -np 2 $cgcnsp -noplot p.cmd  >! twoBump4l3r2.out &
-* mpirun-wdh -np 2 $cgcnsp -noplot p.cmd  >! twoBump2l2r4.out &
+* mpirun -np 2 $cgcssip -noplot p.cmd  >! twoBump2l2r4.out &
+* mpirun -np 2 $cgcssip -noplot p.cmd  >! twoBump4l3r2.out &
+* mpirun-wdh -np 2 $cgcssip -noplot p.cmd  >! twoBump2l2r4.out &
 * 
-* totalview srun -a -N8 -n8 -ppdebug $cgcnsp -noplot p.cmd 
+* totalview srun -a -N8 -n8 -ppdebug $cgcssip -noplot p.cmd 
 * use valgrind: 
-* srun -ppdebug -N8 -n8 memcheck_all $cgcnsp -noplot p.cmd
+* srun -ppdebug -N8 -n8 memcheck_all $cgcssip -noplot p.cmd
 * 
 $show = " ";  $format="%18.12e"; 
 $cfl=1.; $debug=1; $tol=.05; $ratio=2; $x0=.5; $nrl=2; $dtMax=1.e10; $nbz=2; 

@@ -77,8 +77,8 @@ class DomainSolver; // forward declaration
 // /int sc:   position of first species, species m is located at sc+m
 // /int kc, epsc: for k-epsilon model
 //
-// /real machNumber, reynoldsNumber, prandtlNumber: PDE parameters CNS and ASF
-// /real mu, kThermal, Rg, gamma, avr, anu: for CNS, ASF
+// /real machNumber, reynoldsNumber, prandtlNumber: PDE parameters CSSI and ASF
+// /real mu, kThermal, Rg, gamma, avr, anu: for CSSI, ASF
 // /real pressureLevel, nuRho: for ASF
 //
 // 
@@ -174,7 +174,7 @@ Parameters(const int & numberOfDimensions0) : pdeName("unknown"), numberOfBCName
   if (!dbase.has_key("nameOfGridFile")) dbase.put<aString>("nameOfGridFile","");
 
 
-  // these next should go in CnsParameters:
+  // these next should go in CssiParameters:
 
   /// \li <b> reciprocalActivationEnergyB (real) </b> : parameter for the ignition and growth model.
   if (!dbase.has_key("reciprocalActivationEnergyB")) dbase.put<real>("reciprocalActivationEnergyB");
@@ -994,7 +994,7 @@ Parameters(const int & numberOfDimensions0) : pdeName("unknown"), numberOfBCName
   
   dbase.get<real >("nuPassiveScalar")=.0;
   
-  // for conservative CNS with artificial viscosity:
+  // for conservative CSSI with artificial viscosity:
   dbase.get<real >("artVisc")=.0001;
   dbase.get<real >("av2")=.25;
   dbase.get<real >("aw2")=.008333; 
@@ -1299,7 +1299,7 @@ Parameters::
       delete probeList[i];
   }
 
-  // moved from ~CnsParameters *wdh* 100808
+  // moved from ~CssiParameters *wdh* 100808
   if ( dbase.get<realCompositeGridFunction* >("pKnownSolution") )
     delete  dbase.get<realCompositeGridFunction* >("pKnownSolution");
 

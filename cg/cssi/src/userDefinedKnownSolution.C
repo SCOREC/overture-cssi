@@ -1,4 +1,4 @@
-#include "CnsParameters.h"
+#include "CssiParameters.h"
 #include "FlowSolutions.h"
 #include "GenericGraphicsInterface.h"
 #include "FluidPiston.h"
@@ -24,7 +24,7 @@ for(i3=I3Base; i3<=I3Bound; i3++) \
 for(i2=I2Base; i2<=I2Bound; i2++) \
 for(i1=I1Base; i1<=I1Bound; i1++)
 
-int CnsParameters::
+int CssiParameters::
 getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua, 
 			    const Index & I1, const Index &I2, const Index &I3, 
                             int numberOfTimeDerivatives /* = 0 */ )
@@ -578,7 +578,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 
 
 //\begin{>>MovingGridsSolverInclude.tex}{\subsection{updateUserDefinedMotion}} 
-int CnsParameters::
+int CssiParameters::
 updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg)
 // ==========================================================================================
 // /Description: 

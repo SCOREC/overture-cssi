@@ -57,13 +57,13 @@ create mappings
 #   Make the roundedCylinder buildings
 #************************************************************************
 #
-include $ENV{'CG'}/cns/runs/blast/buildRoundedCylinder.h
+include $ENV{'CG'}/cssi/runs/blast/buildRoundedCylinder.h
 #
 #************************************************************************
 #   Make the poly-building - using a smoothedPolygon as the cross-section
 #************************************************************************
 #
-include $ENV{'CG'}/cns/runs/blast/buildPolyBuilding.h
+include $ENV{'CG'}/cssi/runs/blast/buildPolyBuilding.h
 #
 #**************************************************************************
 #   Now take the basic building and scale/shift it to create new buildings
@@ -229,7 +229,7 @@ include $ENV{'CG'}/cns/runs/blast/buildPolyBuilding.h
 #
 # ==================================================================
 #   ** build the tower **
-include $ENV{'CG'}/cns/runs/blast/buildTower.h
+include $ENV{'CG'}/cssi/runs/blast/buildTower.h
 #
 #
 # Now shift and scale the tower 

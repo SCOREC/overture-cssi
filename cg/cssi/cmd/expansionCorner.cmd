@@ -1,6 +1,6 @@
 #
 #  Supersonic flow around an expanding corner:
-#   cgcns expansionCorner -g=[grid] -rho0=<> -u0=<> -p0=<> -cgrid=<> -slipWallBCOption=[0..4] -slopeLimiter=[0|1]
+#   cgcssi expansionCorner -g=[grid] -rho0=<> -u0=<> -p0=<> -cgrid=<> -slipWallBCOption=[0..4] -slopeLimiter=[0|1]
 #
 #  -cgrid : curved wall belongs to this grid 
 #  -slopeLimiter : Godunov slope limiter, 1=on, 0=off
@@ -9,21 +9,21 @@
 #      2=slipWallTaylor
 #      3=slipWallCharacteristic
 #
-#  cgcns expansionCorner -g=expansionCorner2.hdf -tp=.1 -tf=1. 
-#  cgcns expansionCorner -g=expansionCorner1.hdf -tp=.1 -tf=1. -slipWallBCOption=0  [0,1,2, 
-#  cgcns expansionCorner -g=expansionCorner1.hdf -tp=.1 -tf=1. -slipWallBCOption=1 [slipwall slipWallPressureEntropySymmetry OK
-#  cgcns expansionCorner -g=expansionCorner1.hdf -tp=.1 -tf=1. -slipWallBCOption=2 [slipwall taylor OK
-#  cgcns expansionCorner -g=expansionCorner1.hdf -tp=.1 -tf=1. -slipWallBCOption=3 [slipWallCharacteristic : trouble - why?
+#  cgcssi expansionCorner -g=expansionCorner2.hdf -tp=.1 -tf=1. 
+#  cgcssi expansionCorner -g=expansionCorner1.hdf -tp=.1 -tf=1. -slipWallBCOption=0  [0,1,2, 
+#  cgcssi expansionCorner -g=expansionCorner1.hdf -tp=.1 -tf=1. -slipWallBCOption=1 [slipwall slipWallPressureEntropySymmetry OK
+#  cgcssi expansionCorner -g=expansionCorner1.hdf -tp=.1 -tf=1. -slipWallBCOption=2 [slipwall taylor OK
+#  cgcssi expansionCorner -g=expansionCorner1.hdf -tp=.1 -tf=1. -slipWallBCOption=3 [slipWallCharacteristic : trouble - why?
 #
 # Deforming diffuser flow: r=1.4, u=2., T=0.71428571428571 (=1./1.4)
-#  cgcns expansionCorner.cmd -g=deformingDiffuserFluidFixedGrid8.order2 -slipWallBCOption=4 -tp=.05 -tf=.5 -cgrid=2 -go=halt
-#  cgcns expansionCorner.cmd -g=deformingDiffuserFluidFixedGrid16.order2 -slipWallBCOption=4 -tp=.05 -tf=.5 -cgrid=2 -go=halt
+#  cgcssi expansionCorner.cmd -g=deformingDiffuserFluidFixedGrid8.order2 -slipWallBCOption=4 -tp=.05 -tf=.5 -cgrid=2 -go=halt
+#  cgcssi expansionCorner.cmd -g=deformingDiffuserFluidFixedGrid16.order2 -slipWallBCOption=4 -tp=.05 -tf=.5 -cgrid=2 -go=halt
 #
-#  cgcns expansionCorner -g=/home/schwend/cg/mp/cmd/Diffuser/deformingDiffuserFluidGrid4.order2 -tp=.1 -tf=1. -cgrid=1 -rho0=1.4 -u0=2. -T0=0.71428571428571
+#  cgcssi expansionCorner -g=/home/schwend/cg/mp/cmd/Diffuser/deformingDiffuserFluidGrid4.order2 -tp=.1 -tf=1. -cgrid=1 -rho0=1.4 -u0=2. -T0=0.71428571428571
 # 
 #
 # --- set default values for parameters ---
-$grid="expansionCorner2.hdf"; $show = " "; $backGround="square"; $cnsVariation="godunov"; 
+$grid="expansionCorner2.hdf"; $show = " "; $backGround="square"; $cssiVariation="godunov"; 
 $tFinal=1.; $tPlot=.1; $cfl=.9; $debug=1; $tol=.2;  $dtMax=1.e10;
 $cgrid=0; # grid for curved wall
 $slopeLimiter=1;  # 1=use slope limiter, 0=do not 
@@ -37,13 +37,13 @@ $slipWallBCOption=0;
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"amr=i"=>\$amr,"l=i"=>\$nrl,"r=i"=>\$ratio,"tf=f"=>\$tFinal,"debug=i"=>\$debug,"ad=f"=>\$ad, \
             "tp=f"=>\$tPlot, "bg=s"=>\$backGround,"show=s"=>\$show,"go=s"=>\$go,"slipWallBCOption=i"=>\$slipWallBCOption,\
-            "cnsVariation=s"=>\$cnsVariation,"cgrid=i"=>\$cgrid,"rho0=f"=>\$rho0,"u0=f"=>\$u0,"T0=f"=>\$T0,\
+            "cssiVariation=s"=>\$cssiVariation,"cgrid=i"=>\$cgrid,"rho0=f"=>\$rho0,"u0=f"=>\$u0,"T0=f"=>\$T0,\
             "slopeLimiter=i"=>\$slopeLimiter );
 # -------------------------------------------------------------------------------------------------
 if( $amr eq "0" ){ $amr="turn off adaptive grids"; }else{ $amr="turn on adaptive grids"; }
-if( $cnsVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
-if( $cnsVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
-if( $cnsVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
+if( $cssiVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
+if( $cssiVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
+if( $cssiVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }

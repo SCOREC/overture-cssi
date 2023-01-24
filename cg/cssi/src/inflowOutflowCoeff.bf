@@ -1,4 +1,4 @@
-#Include "icnscfMacros.h"
+#Include "icssicfMacros.h"
 
  
       subroutine inoutflowcoeff(nd,nd1a,nd1b,nd2a,nd2b,nd3a,
@@ -69,10 +69,10 @@ c      integer m1,m2,m3,icf
       real exo1,exo2,exo3
       real rx,xyz
 
-      include 'icnssfdec.h'
+      include 'icssisfdec.h'
       rx(i1,i2,i3,e,c) = rsxy(i1,i2,i3,e-1,c-1)
       xyz(i1,i2,i3,c) = x(i1,i2,i3,c)
-      include 'icnssf.h'
+      include 'icssisf.h'
 
       exo1(i1,i2,i3,is1,is2,is3,c) =  u(i1+is1,i2+is2,i3+is3,c)
 c     &                                u(i1+2*is1,i2+2*is2,i3+2*is3,c) )
@@ -91,7 +91,7 @@ c     setup the macro variables
       occ=0
       oce=0
 
-c      print *,"inside icns inflow/outflow"
+c      print *,"inside icssi inflow/outflow"
       ndim = iprm(0)
       ncmp = iprm(1)
       rc   = iprm(2)
@@ -1059,10 +1059,10 @@ c      integer m1,m2,m3,icf
       real exo1,exo2,exo3
       real rx,xyz
 
-      include 'icnssfdec.h'
+      include 'icssisfdec.h'
       rx(i1,i2,i3,e,c) = rsxy(i1,i2,i3,e-1,c-1)
       xyz(i1,i2,i3,c) = x(i1,i2,i3,c)
-      include 'icnssf.h'
+      include 'icssisf.h'
 
       exo1(i1,i2,i3,is1,is2,is3,c) =  u(i1+is1,i2+is2,i3+is3,c)
 c     &                                u(i1+2*is1,i2+2*is2,i3+2*is3,c) )
@@ -1081,7 +1081,7 @@ c     setup the macro variables
       occ=0
       oce=0
 
-c      print *,"inside icns inflow/outflow"
+c      print *,"inside icssi inflow/outflow"
       ndim = iprm(0)
       ncmp = iprm(1)
       rc   = iprm(2)

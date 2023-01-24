@@ -62,10 +62,10 @@ assignInterfaceBoundaryConditions.C
 {
 \small
 \begin{verbatim}
-cns/src/interface.bC
-  Cgcns::getInterfaceDataOptions( info, interfaceDataOptions ) 
+cssi/src/interface.bC
+  Cgcssi::getInterfaceDataOptions( info, interfaceDataOptions ) 
 
-  Cgcns::interfaceRightHandSide( option, interfaceDataOptions, info, gfd, gfIndex, t )
+  Cgcssi::interfaceRightHandSide( option, interfaceDataOptions, info, gfd, gfIndex, t )
     if( option==setInterfaceRightHandSide )
       bd(I1,I2,I3,V)=f(..)
     if( option==getInterfaceRightHandSide )

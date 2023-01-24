@@ -1,6 +1,6 @@
 #
-# cgcns: command file for a shock-tube
-#   cgcns [-noplot] shockTubeg.cmd -g=<gridName> -amr=[0|1] -r=[2|4] -l=[1|2|3...] -tf=<f> -tp=<f> ...
+# cgcssi: command file for a shock-tube
+#   cgcssi [-noplot] shockTubeg.cmd -g=<gridName> -amr=[0|1] -r=[2|4] -l=[1|2|3...] -tf=<f> -tp=<f> ...
 #              -bf=[none|gaussian]
 #
 #  -l= number of refinement levels
@@ -8,14 +8,14 @@
 #  -bf= body forcing  
 #
 # Examples:
-#    cgcns shockTubeg.cmd -g=square40.order2 -bg=square -l=3 -r=2 -tf=2. -tp=.02
+#    cgcssi shockTubeg.cmd -g=square40.order2 -bg=square -l=3 -r=2 -tf=2. -tp=.02
 #
 #  -- test body forcing:
-#    cgcns shockTubeg.cmd -g=square40.order2 -bg=square -l=3 -r=2 -tf=2. -tp=.02 -bf=1
+#    cgcssi shockTubeg.cmd -g=square40.order2 -bg=square -l=3 -r=2 -tf=2. -tp=.02 -bf=1
 #
 # -- defaults:
 $tFinal=1.; $tPlot=.05; $xStep="x=.25"; $show=" "; 
-$cnsVariation="godunov"; 
+$cssiVariation="godunov"; 
 $grid="square40.order2.hdf";
 $show = " ";  $format="%18.12e";  $debug=0; 
 $nrl=2;  $ratio=2; $errTol=.1;  $nbz=2; $numberOfSmooths=1; 
@@ -24,12 +24,12 @@ $x0=.25; $y0=.5; $z0=0.; $amp=10.; $beta=200.; # for body forcing
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"amr=i"=>\$amr,"l=i"=>\$nrl,"r=i"=>\$ratio,"tf=f"=>\$tFinal,"debug=i"=>\$debug, \
             "tp=f"=>\$tPlot, "xStep=s"=>\$xStep, "show=s"=>\$show,"bf=s"=>\$bf,"go=s"=>\$go,\
-            "cnsVariation=s"=>\$cnsVariation,"rad=f"=>\$rad,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0 );
+            "cssiVariation=s"=>\$cssiVariation,"rad=f"=>\$rad,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0 );
 # -------------------------------------------------------------------------------------------------
 if( $amr eq "0" ){ $amr="turn off adaptive grids"; }else{ $amr="turn on adaptive grids"; }
-if( $cnsVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
-if( $cnsVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
-if( $cnsVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
+if( $cssiVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
+if( $cssiVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
+if( $cssiVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }

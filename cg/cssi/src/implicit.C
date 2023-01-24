@@ -1,5 +1,5 @@
-#include "Cgcns.h"
-#include "CnsParameters.h"
+#include "Cgcssi.h"
+#include "CssiParameters.h"
 #include "MappedGridOperators.h"
 #include "ParallelUtility.h"
 #include "ParallelGridUtility.h"
@@ -9,12 +9,12 @@
 #include "Oges.h"
 #include "App.h"
 
-#define ICNSCF EXTERN_C_NAME(icnscf)
-#define CNSNOSLIPWALLBCCOEFF EXTERN_C_NAME(cnsnoslipwallbccoeff)
+#define ICSSICF EXTERN_C_NAME(icssicf)
+#define CSSINOSLIPWALLBCCOEFF EXTERN_C_NAME(cssinoslipwallbccoeff)
 #define INOUTFLOWCOEFF EXTERN_C_NAME(inoutflowcoeff)
-#define ICNSWALLBCCOEFF EXTERN_C_NAME(icnswallbc)
+#define ICSSIWALLBCCOEFF EXTERN_C_NAME(icssiwallbc)
 extern "C" {
-  void ICNSCF(const int *igdim, const int *igint, 
+  void ICSSICF(const int *igdim, const int *igint, 
 	      const real *vertex, 
 	      const real *rx,
 	      const real * det,
@@ -24,7 +24,7 @@ extern "C" {
 	      const real *uL, 
 	      real *coeff); // output: the coefficients
 
-  void CNSNOSLIPWALLBCCOEFF(const int&nd,const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,
+  void CSSINOSLIPWALLBCCOEFF(const int&nd,const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,
 			    const int&nd3a,const int&nd3b,const int&nd4a,const int&nd4b,
 			    const real*coeff, const real *rhs,
 			    const real*ul, const real*x, const real *aj, const real*rsxy,
@@ -36,7 +36,7 @@ extern "C" {
 		      const int*ipar, const real*rpar, const int*indexRange, const int*bc, const real*bd, const int*bt, int&nbd, const int&cfrhs);
 
 
-  void ICNSWALLBCCOEFF(const int&nd,const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,
+  void ICSSIWALLBCCOEFF(const int&nd,const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,
 		      const int&nd3a,const int&nd3b,const int&nd4a,const int&nd4b,
 		      const real*coeff, const real *rhs,
 		      const real*ul, const real*x, const real *aj, const real*rsxy,
@@ -46,7 +46,7 @@ extern "C" {
 
 }
 
-// getLocalBoundsAndBoundaryConditions lives in cnsBC.C
+// getLocalBoundsAndBoundaryConditions lives in cssiBC.C
 // extern void
 // getLocalBoundsAndBoundaryConditions( const realMappedGridFunction & a, 
 //                                      IntegerArray & gidLocal, 
@@ -86,7 +86,7 @@ extern "C" {
 /// due to AMR (used with implicit?) as well as from the grid velocity.
 ///
 // ===================================================================================================================
-void Cgcns::
+void Cgcssi::
 formMatrixForImplicitSolve(const real & dt0,
 			   GridFunction & cgf1,
 			   GridFunction & cgf0 )
@@ -103,7 +103,7 @@ formMatrixForImplicitSolve(const real & dt0,
     // **** Initialize Implicit Time Stepping ****
     // *******************************************
     if( debug() & 4 )
-       printF(" ***Cgcns:: initialize implicit time stepping for viscous terms, t=%9.3e dt0=%8.2e ***** \n",cgf1.t,dt0);
+       printF(" ***Cgcssi:: initialize implicit time stepping for viscous terms, t=%9.3e dt0=%8.2e ***** \n",cgf1.t,dt0);
 
     CompositeGrid & cg = cgf1.cg;
 
@@ -181,7 +181,7 @@ formMatrixForImplicitSolve(const real & dt0,
 /// \param cgf0 (input) : holds the current state of the solution (used for linearization)
 ///
 // ==================================================================================================================
-void Cgcns::
+void Cgcssi::
 implicitSolve(const real & dt0,
 	      GridFunction & cgf1,
               GridFunction & cgf0)
@@ -425,7 +425,7 @@ implicitSolve(const real & dt0,
 
 
 
-int Cgcns::
+int Cgcssi::
 formImplicitTimeSteppingMatrix(realMappedGridFunction & coeff,
 			       const real & dt0, 
 			       int scalarSystem, 
@@ -445,7 +445,7 @@ formImplicitTimeSteppingMatrix(realMappedGridFunction & coeff,
 
   // We need to compute I+dt\theta L where L is the u^{n+1} part of the linearized operator
 
-  // // the next bunch of initialization stuff is taken from getUtCNS
+  // // the next bunch of initialization stuff is taken from getUtCSSI
   MappedGrid & mg = *(coeff.getMappedGrid());
   Index I1,I2,I3;
   getIndex(mg.extendedIndexRange(),I1,I2,I3);
@@ -573,7 +573,7 @@ formImplicitTimeSteppingMatrix(realMappedGridFunction & coeff,
   // // // end local variable initialization
 
   // // now actually build the coefficient matrix
-  ICNSCF(d.getDataPointer(),nr.getDataPointer(),vertex.getDataPointer(), rx.getDataPointer(), 
+  ICSSICF(d.getDataPointer(),nr.getDataPointer(),vertex.getDataPointer(), rx.getDataPointer(), 
 	 det.getDataPointer(), pmask,// grid info
 	 iparam.ptr(),rparam.ptr(), // solver paramters
 	 uL.getDataPointer(), // state to linearize about
@@ -615,17 +615,17 @@ formImplicitTimeSteppingMatrix(realMappedGridFunction & coeff,
   typedef int BoundaryCondition;
   const BoundaryCondition & noSlipWall                = Parameters::noSlipWall;
   const BoundaryCondition & slipWall                  = Parameters::slipWall;
-  const BoundaryCondition & superSonicOutflow         = CnsParameters::superSonicOutflow;
-  const BoundaryCondition & superSonicInflow          = CnsParameters::superSonicInflow;
-  const BoundaryCondition & subSonicOutflow           = CnsParameters::subSonicOutflow;
-  const BoundaryCondition & subSonicInflow            = CnsParameters::subSonicInflow;
+  const BoundaryCondition & superSonicOutflow         = CssiParameters::superSonicOutflow;
+  const BoundaryCondition & superSonicInflow          = CssiParameters::superSonicInflow;
+  const BoundaryCondition & subSonicOutflow           = CssiParameters::subSonicOutflow;
+  const BoundaryCondition & subSonicInflow            = CssiParameters::subSonicInflow;
   const BoundaryCondition & symmetry                  = Parameters::symmetry;
-  const BoundaryCondition & inflowWithVelocityGiven   = CnsParameters::inflowWithVelocityGiven;
-  const BoundaryCondition & outflow                   = CnsParameters::outflow;
+  const BoundaryCondition & inflowWithVelocityGiven   = CssiParameters::inflowWithVelocityGiven;
+  const BoundaryCondition & outflow                   = CssiParameters::outflow;
   const BoundaryCondition & dirichletBoundaryCondition= Parameters::dirichletBoundaryCondition;
   const BoundaryCondition & neumannBoundaryCondition  = Parameters::neumannBoundaryCondition;
   const BoundaryCondition & axisymmetric              = Parameters::axisymmetric;
-  const BoundaryCondition & farField                  = CnsParameters::farField;
+  const BoundaryCondition & farField                  = CssiParameters::farField;
 
   //  bcParams.ghostLineToAssign=0;
   // dirichlet conditions
@@ -656,7 +656,7 @@ formImplicitTimeSteppingMatrix(realMappedGridFunction & coeff,
   //  assert(nbv==nbd);
   if ( !oldbc ) 
     {
-      ICNSWALLBCCOEFF(  numberOfDimensions, uL.getBase(0),uL.getBound(0),uL.getBase(1),uL.getBound(1),
+      ICSSIWALLBCCOEFF(  numberOfDimensions, uL.getBase(0),uL.getBound(0),uL.getBase(1),uL.getBound(1),
 			uL.getBase(2),uL.getBound(2),uL.getBase(3),uL.getBound(3),
 			coeff.getDataPointer(), uL.getDataPointer(),// uL is just a dummy here
 			uL.getDataPointer(), vertex.getDataPointer(), det.getDataPointer(), rx.getDataPointer(),
@@ -676,7 +676,7 @@ formImplicitTimeSteppingMatrix(realMappedGridFunction & coeff,
 		       ubt.getDataPointer(),
 		       nbd,cfrhs);
 
-      CNSNOSLIPWALLBCCOEFF(  numberOfDimensions, uL.getBase(0),uL.getBound(0),uL.getBase(1),uL.getBound(1),
+      CSSINOSLIPWALLBCCOEFF(  numberOfDimensions, uL.getBase(0),uL.getBound(0),uL.getBase(1),uL.getBound(1),
 			     uL.getBase(2),uL.getBound(2),uL.getBase(3),uL.getBound(3),
 			     coeff.getDataPointer(), uL.getDataPointer(),// uL is just a dummy here
 			     uL.getDataPointer(), vertex.getDataPointer(), det.getDataPointer(), rx.getDataPointer(),
@@ -686,12 +686,12 @@ formImplicitTimeSteppingMatrix(realMappedGridFunction & coeff,
     }
 
 
-  // set the classify array in the sparse rep to "used" for ghost points that are set by cnsnoslipwallbccoeff or inoutflowcoeff
+  // set the classify array in the sparse rep to "used" for ghost points that are set by cssinoslipwallbccoeff or inoutflowcoeff
   for ( int a=0; a<numberOfDimensions; a++ )
     for ( int s=0; s<2; s++ )
       {
-	if ( mg.boundaryCondition()(s,a)==CnsParameters::noSlipWall || mg.boundaryCondition()(s,a)==slipWall ||
-	     mg.boundaryCondition()(s,a)==CnsParameters::subSonicInflow || mg.boundaryCondition()(s,a)==CnsParameters::subSonicOutflow )
+	if ( mg.boundaryCondition()(s,a)==CssiParameters::noSlipWall || mg.boundaryCondition()(s,a)==slipWall ||
+	     mg.boundaryCondition()(s,a)==CssiParameters::subSonicInflow || mg.boundaryCondition()(s,a)==CssiParameters::subSonicOutflow )
 	  {
 	    Index I1g,I2g,I3g;
 	    getGhostIndex(uL,s,a,I1g,I2g,I3g);
@@ -753,7 +753,7 @@ formImplicitTimeSteppingMatrix(realMappedGridFunction & coeff,
   for ( int a=0; a<numberOfDimensions; a++ )
     for ( int s=0; s<2; s++ )
       {
-	if ( mg.boundaryCondition()(s,a)==CnsParameters::subSonicInflow )
+	if ( mg.boundaryCondition()(s,a)==CssiParameters::subSonicInflow )
 	  {
 	    if ( parameters.dbase.get<RealArray>("bcData")(rc,s,a,grid)>0. )
 	      {
@@ -768,7 +768,7 @@ formImplicitTimeSteppingMatrix(realMappedGridFunction & coeff,
 		coeff.applyBoundaryConditionCoefficients(rc,rc,neumann,nb);
 	      }
 	  }
-	hasOutflow = hasOutflow || mg.boundaryCondition()(s,a)==CnsParameters::subSonicOutflow;
+	hasOutflow = hasOutflow || mg.boundaryCondition()(s,a)==CssiParameters::subSonicOutflow;
 	nb++;
       }
   bcParams.lineToAssign=0;
@@ -853,7 +853,7 @@ formImplicitTimeSteppingMatrix(realMappedGridFunction & coeff,
 /// \param grid (input) : grid number.
 ///
 // ==================================================================================================================
-int Cgcns::
+int Cgcssi::
 applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & rhs, 
 					       realMappedGridFunction & uL,
 					       realMappedGridFunction & uOld,  // *wdh* Dec 20, 2017 -- added uOld
@@ -993,17 +993,17 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & rhs,
   typedef int BoundaryCondition;
   const BoundaryCondition & noSlipWall                = Parameters::noSlipWall;
   const BoundaryCondition & slipWall                  = Parameters::slipWall;
-  const BoundaryCondition & superSonicOutflow         = CnsParameters::superSonicOutflow;
-  const BoundaryCondition & superSonicInflow          = CnsParameters::superSonicInflow;
-  const BoundaryCondition & subSonicOutflow           = CnsParameters::subSonicOutflow;
-  const BoundaryCondition & subSonicInflow            = CnsParameters::subSonicInflow;
+  const BoundaryCondition & superSonicOutflow         = CssiParameters::superSonicOutflow;
+  const BoundaryCondition & superSonicInflow          = CssiParameters::superSonicInflow;
+  const BoundaryCondition & subSonicOutflow           = CssiParameters::subSonicOutflow;
+  const BoundaryCondition & subSonicInflow            = CssiParameters::subSonicInflow;
   const BoundaryCondition & symmetry                  = Parameters::symmetry;
-  const BoundaryCondition & inflowWithVelocityGiven   = CnsParameters::inflowWithVelocityGiven;
-  const BoundaryCondition & outflow                   = CnsParameters::outflow;
+  const BoundaryCondition & inflowWithVelocityGiven   = CssiParameters::inflowWithVelocityGiven;
+  const BoundaryCondition & outflow                   = CssiParameters::outflow;
   const BoundaryCondition & dirichletBoundaryCondition= Parameters::dirichletBoundaryCondition;
   const BoundaryCondition & neumannBoundaryCondition  = Parameters::neumannBoundaryCondition;
   const BoundaryCondition & axisymmetric              = Parameters::axisymmetric;
-  const BoundaryCondition & farField                  = CnsParameters::farField;
+  const BoundaryCondition & farField                  = CssiParameters::farField;
 
   int cfrhs = 1; // fill in rhs
   //  bcParams.ghostLineToAssign = 1;
@@ -1028,7 +1028,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & rhs,
 		       ubt.getDataPointer(),
 		       nbd,cfrhs);
       
-      CNSNOSLIPWALLBCCOEFF(  numberOfDimensions, uL.getBase(0),uL.getBound(0),uL.getBase(1),uL.getBound(1),
+      CSSINOSLIPWALLBCCOEFF(  numberOfDimensions, uL.getBase(0),uL.getBound(0),uL.getBase(1),uL.getBound(1),
 			     uL.getBase(2),uL.getBound(2),uL.getBase(3),uL.getBound(3),
 			     /* uL is just a dummy here*/ uL.getDataPointer(), rhs.getDataPointer(),
 			     uL.getDataPointer(), vertex.getDataPointer(), det.getDataPointer(), rx.getDataPointer(),
@@ -1038,7 +1038,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & rhs,
     }
   else
     {
-      ICNSWALLBCCOEFF(  numberOfDimensions, uL.getBase(0),uL.getBound(0),uL.getBase(1),uL.getBound(1),
+      ICSSIWALLBCCOEFF(  numberOfDimensions, uL.getBase(0),uL.getBound(0),uL.getBase(1),uL.getBound(1),
 			uL.getBase(2),uL.getBound(2),uL.getBase(3),uL.getBound(3),
 			uL.getDataPointer(), rhs.getDataPointer(),
 			uL.getDataPointer(), vertex.getDataPointer(), det.getDataPointer(), rx.getDataPointer(),
@@ -1083,7 +1083,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & rhs,
   for ( int a=0; a<numberOfDimensions; a++ )
     for ( int s=0; s<2; s++ )
       {
-	if ( mg.boundaryCondition()(s,a)==CnsParameters::subSonicInflow )
+	if ( mg.boundaryCondition()(s,a)==CssiParameters::subSonicInflow )
 	  {
 	    if ( parameters.dbase.get<RealArray>("bcData")(rc,s,a,grid)>0. )
 	      {
@@ -1121,7 +1121,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & rhs,
   for ( int a=0; a<numberOfDimensions; a++ )
     for ( int s=0; s<2; s++ )
       {
-	if ( mg.boundaryCondition()(s,a)==CnsParameters::subSonicOutflow )
+	if ( mg.boundaryCondition()(s,a)==CssiParameters::subSonicOutflow )
 	  {
 	    rhs.applyBoundaryCondition(tc,dirichlet,nb,bcData(tc,s,a,grid),t,bcParams);
 	    rhs.applyBoundaryCondition(rc,dirichlet,nb,0.,t,bcParams);
@@ -1182,11 +1182,11 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & rhs,
 /// \brief Return true if the implicit time-stepping matrix is singular.
 /// \param uL (input) : holds the linearized solution.
 // ==================================================================================================================
-bool Cgcns::
+bool Cgcssi::
 isImplicitMatrixSingular( realCompositeGridFunction &uL )
 {
   CompositeGrid &cg = *uL.getCompositeGrid();
-  bool isSingular = ( parameters.dbase.get<CnsParameters::PDE >("pde")==CnsParameters::compressibleNavierStokes &&
+  bool isSingular = ( parameters.dbase.get<CssiParameters::PDE >("pde")==CssiParameters::compressibleNavierStokes &&
 		      parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::steadyStateNewton);
 
   //return false;
@@ -1217,7 +1217,7 @@ isImplicitMatrixSingular( realCompositeGridFunction &uL )
 /// \param rhs (input) : 
 /// \param numberOfComponents (input) : 
 // ==================================================================================================================
-int Cgcns::
+int Cgcssi::
 addConstraintEquation( Parameters &parameters, Oges& solver, 
 		       realCompositeGridFunction &coeff, 
 		       realCompositeGridFunction &ucur, 
@@ -1346,7 +1346,7 @@ addConstraintEquation( Parameters &parameters, Oges& solver,
 /// \brief Allocate the appropriate number of implicit solvers (Oges objects)
 /// \param cg (input) : 
 // ==================================================================================================================
-void Cgcns::
+void Cgcssi::
 buildImplicitSolvers(CompositeGrid &cg)
 {
   real cpu0=getCPU();

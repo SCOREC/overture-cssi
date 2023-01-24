@@ -1,6 +1,6 @@
-// This file automatically generated from cnsBC.bC with bpp.
-#include "Cgcns.h"
-#include "CnsParameters.h"
+// This file automatically generated from cssiBC.bC with bpp.
+#include "Cgcssi.h"
+#include "CssiParameters.h"
 #include "App.h"
 #include "FlowSolutions.h"
 #include "ParallelUtility.h"
@@ -27,28 +27,28 @@
 // OPTION: dirichlet, mixed, extrapolateGhost
 // ----------------------------------------------------------------------------
 
-#define cnsSlipWallBC EXTERN_C_NAME(cnsslipwallbc)
-#define cnsSlipWallBC2 EXTERN_C_NAME(cnsslipwallbc2)
-#define cnsFarFieldBC EXTERN_C_NAME(cnsfarfieldbc)
-#define cnsNoSlipWallBC EXTERN_C_NAME(cnsnoslipwallbc)
-#define cnsNoSlipBC EXTERN_C_NAME(cnsnoslipbc)
+#define cssiSlipWallBC EXTERN_C_NAME(cssislipwallbc)
+#define cssiSlipWallBC2 EXTERN_C_NAME(cssislipwallbc2)
+#define cssiFarFieldBC EXTERN_C_NAME(cssifarfieldbc)
+#define cssiNoSlipWallBC EXTERN_C_NAME(cssinoslipwallbc)
+#define cssiNoSlipBC EXTERN_C_NAME(cssinoslipbc)
 #define INOUTFLOWEXP EXTERN_C_NAME(inoutflowexp)
 extern "C"
 {
-    void cnsSlipWallBC(const int&nd,const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,
+    void cssiSlipWallBC(const int&nd,const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,
                                           const int&nd3a,const int&nd3b,const int&nd4a,const int&nd4b,		     const int&ipar, const real&rpar, 
                                           real&u, const real&u2, const real&gv, const real&gv2, const real & gtt,
                                           const int& mask, const real&x, const real&rsxy, 
                                           const int&bc, const int&indexRange, const int&exact, 
                                           const real& uKnown, const DataBase *pdb, const int&ierr );
-    void cnsSlipWallBC2(const int&nd,const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,
+    void cssiSlipWallBC2(const int&nd,const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,
                                           const int&nd3a,const int&nd3b,const int&nd4a,const int&nd4b,		     const int&ipar, const real&rpar, 
                                           real&u, const real&u2, const real&gv, const real&gv2, const real & gtt,
                                           const int& mask, const real&x, const real&rsxy, 
                                           const int&bc, const int&indexRange, const int&interfaceType, const int&exact, 
                                           const real& uKnown, const DataBase *pdb, const int&ierr );
 
-    void cnsFarFieldBC(const int&nd,const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,
+    void cssiFarFieldBC(const int&nd,const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,
                                           const int&nd3a,const int&nd3b,const int&nd4a,const int&nd4b,		     const int&ipar, const real&rpar, 
                                           real&u, const real&u2, const real&gv, const real&gv2, const real & gtt,
                                           const int& mask, const real&x, const real&rsxy, 
@@ -56,13 +56,13 @@ extern "C"
                                           const real& uKnown, const int&ierr );
 
   // Kyle's version:
-    void cnsNoSlipWallBC(const int&nd,const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,
+    void cssiNoSlipWallBC(const int&nd,const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,
                    		       const int&nd3a,const int&nd3b,const int&nd4a,const int&nd4b,
                    		       const real*u, const real*x, const real *aj, const real*rsxy,
                    		       const int*ipar, const real*rpar, const int*indexRange, const int*bc);
 
 
-    void cnsNoSlipBC(const int&nd,const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,
+    void cssiNoSlipBC(const int&nd,const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,
                		   const int&nd3a,const int&nd3b,const int&nd4a,const int&nd4b,		   const int&ipar, const real&rpar, 
                		   real&u, const real&gv, const real & gtt,
                		   const int& mask, const real&x, const real&rsxy, 
@@ -355,7 +355,7 @@ checkNormalBC( int grid, MappedGrid & mg, realMappedGridFunction & u, Parameters
 
 // ===================================================================================================
 /// \brief Apply boundary conditions.
-/// \details Most the methods implemented in Cgcns use this routine to assign boundary conditions.
+/// \details Most the methods implemented in Cgcssi use this routine to assign boundary conditions.
 ///
 /// \param t (input):
 /// \param u (input/output) : apply to this grid function.
@@ -379,7 +379,7 @@ checkNormalBC( int grid, MappedGrid & mg, realMappedGridFunction & u, Parameters
 ///          a_j = bcData(i+nc*(j),side,axis,grid),  j=0,1,2\n
 ///  Thus bcData(i,side,axis,grid) still holds the RHS value for the mixed-derivative condition
 // ===================================================================================================
-int Cgcns::
+int Cgcssi::
 applyBoundaryConditions(const real & t, 
                                                 realMappedGridFunction & u,
                   			realMappedGridFunction & gridVelocity,
@@ -394,10 +394,10 @@ applyBoundaryConditions(const real & t,
     real time0=getCPU();
 
     if( debug() & 16 )
-        printF("******* Cgcns::cnsBC: START grid=%i ***********\n",grid);
+        printF("******* Cgcssi::cssiBC: START grid=%i ***********\n",grid);
 
   // int numSent=getSent();
-    checkArrayIDs(" cnsBC: start"); 
+    checkArrayIDs(" cssiBC: start"); 
     
     MappedGrid & mg = *u.getMappedGrid();
     const IntegerArray & boundaryCondition = mg.boundaryCondition();
@@ -409,7 +409,7 @@ applyBoundaryConditions(const real & t,
     const bool gridIsMoving = parameters.gridIsMoving(grid);
     bool newMovingGridBoundaryConditions=false && gridIsMoving;
 
-    const CnsParameters::PDE & pde = parameters.dbase.get<CnsParameters::PDE >("pde");
+    const CssiParameters::PDE & pde = parameters.dbase.get<CssiParameters::PDE >("pde");
 
   // Here is the array that defines the domain interfaces, interfaceType(side,axis,grid) 
     const IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
@@ -426,7 +426,7 @@ applyBoundaryConditions(const real & t,
 
     const int & numberOfSpecies  = parameters.dbase.get<int >("numberOfSpecies");
     
-  // printF("******* Cgcns::cnsBC: numberOfSpecies=%i\n",numberOfSpecies);
+  // printF("******* Cgcssi::cssiBC: numberOfSpecies=%i\n",numberOfSpecies);
     
 
 //  const bool useOptSlipWall=!gridIsMoving && mg.numberOfDimensions()==2 && numberOfSpecies==0; 
@@ -438,7 +438,7 @@ applyBoundaryConditions(const real & t,
                                                   parameters.dbase.get<int >("slipWallBoundaryConditionOption")==2 ||  // use opt here too: *wdh* 100810
                                                   parameters.dbase.get<int >("slipWallBoundaryConditionOption")==3 || 
                                                   parameters.dbase.get<int >("slipWallBoundaryConditionOption")==4 ) &&
-                                                  pde!=CnsParameters::compressibleMultiphase; 
+                                                  pde!=CssiParameters::compressibleMultiphase; 
 
     const int & rc = parameters.dbase.get<int >("rc");
     const int & uc = parameters.dbase.get<int >("uc");
@@ -458,19 +458,19 @@ applyBoundaryConditions(const real & t,
 
     const BoundaryCondition & noSlipWall                = Parameters::noSlipWall;
     const BoundaryCondition & slipWall                  = Parameters::slipWall;
-    const BoundaryCondition & superSonicOutflow         = CnsParameters::superSonicOutflow;
-    const BoundaryCondition & superSonicInflow          = CnsParameters::superSonicInflow;
-    const BoundaryCondition & subSonicOutflow           = CnsParameters::subSonicOutflow;
-    const BoundaryCondition & subSonicInflow            = CnsParameters::subSonicInflow;
+    const BoundaryCondition & superSonicOutflow         = CssiParameters::superSonicOutflow;
+    const BoundaryCondition & superSonicInflow          = CssiParameters::superSonicInflow;
+    const BoundaryCondition & subSonicOutflow           = CssiParameters::subSonicOutflow;
+    const BoundaryCondition & subSonicInflow            = CssiParameters::subSonicInflow;
     const BoundaryCondition & symmetry                  = Parameters::symmetry;
-    const BoundaryCondition & inflowWithVelocityGiven   = CnsParameters::inflowWithVelocityGiven;
-    const BoundaryCondition & outflow                   = CnsParameters::outflow;
+    const BoundaryCondition & inflowWithVelocityGiven   = CssiParameters::inflowWithVelocityGiven;
+    const BoundaryCondition & outflow                   = CssiParameters::outflow;
   //  const BoundaryCondition & inflowWithPressureAndTangentialVelocityGiven 
   //                                                      = Parameters::inflowWithPressureAndTangentialVelocityGiven;
     const BoundaryCondition & dirichletBoundaryCondition= Parameters::dirichletBoundaryCondition;
     const BoundaryCondition & neumannBoundaryCondition  = Parameters::neumannBoundaryCondition;
     const BoundaryCondition & axisymmetric              = Parameters::axisymmetric;
-    const BoundaryCondition & farField                  = CnsParameters::farField;
+    const BoundaryCondition & farField                  = CssiParameters::farField;
     
   // make some shorter names for readability
     BCTypes::BCNames 
@@ -515,18 +515,18 @@ applyBoundaryConditions(const real & t,
         case -1: break;
         case Parameters::slipWall:           assignSlipWall=true; break;
         case Parameters::noSlipWall :        assignNoSlipWall=true; break;
-        case CnsParameters::superSonicInflow:   assignSuperSonicInflow=true; break;
-        case CnsParameters::superSonicOutflow:  assignSuperSonicOutflow=true; break;
-        case CnsParameters::subSonicInflow:     assignSubSonicInflow=true; break;
-        case CnsParameters::subSonicOutflow:    assignSubSonicOutflow=true; break;
+        case CssiParameters::superSonicInflow:   assignSuperSonicInflow=true; break;
+        case CssiParameters::superSonicOutflow:  assignSuperSonicOutflow=true; break;
+        case CssiParameters::subSonicInflow:     assignSubSonicInflow=true; break;
+        case CssiParameters::subSonicOutflow:    assignSubSonicOutflow=true; break;
         case Parameters::symmetry :          assignSymmetry=true; break;
         case Parameters::axisymmetric:       assignAxisymmetric=true; break;
         case Parameters::dirichletBoundaryCondition:  assignDirichletBoundaryCondition=true; break;
         case Parameters::neumannBoundaryCondition:  assignNeumannBoundaryCondition=true; break;
-        case CnsParameters::outflow:             assignOutflow=true; break;
-        case CnsParameters::farField:            assignFarField=true; break;
+        case CssiParameters::outflow:             assignOutflow=true; break;
+        case CssiParameters::farField:            assignFarField=true; break;
         default: 
-            printf("cnsBC:ERROR: unknown boundary condition =%i on grid %i, side=%i, axis=%i\n",bc,grid,side,axis);
+            printf("cssiBC:ERROR: unknown boundary condition =%i on grid %i, side=%i, axis=%i\n",bc,grid,side,axis);
             OV_ABORT("ERROR");
             break;
         }
@@ -539,7 +539,7 @@ applyBoundaryConditions(const real & t,
     if( gridHasSlipWallTractionInterfaces )
     {
         if( debug() & 4 )
-            printF("++cnsBC: grid=%i applyInterfaceBoundaryConditions=%i gridHasSlipWallTractionInterfaces=%i, \n",
+            printF("++cssiBC: grid=%i applyInterfaceBoundaryConditions=%i gridHasSlipWallTractionInterfaces=%i, \n",
            	     grid,(int)applyInterfaceBoundaryConditions, (int)gridHasSlipWallTractionInterfaces);
     }
     
@@ -562,7 +562,7 @@ applyBoundaryConditions(const real & t,
                         parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution");
     
     realArray *uKnownPointer=NULL;
-    if( knownSolution!=CnsParameters::noKnownSolution )
+    if( knownSolution!=CssiParameters::noKnownSolution )
     {
         int extra=2;
         Index I1,I2,I3;
@@ -599,7 +599,7 @@ applyBoundaryConditions(const real & t,
     const bool projectInterface = parameters.dbase.get<bool>("projectInterface");
     if( debug() & 4 )
     {
-        printP("*** cnsBC: projectInterface = %i ***\n",projectInterface);
+        printP("*** cssiBC: projectInterface = %i ***\n",projectInterface);
     }
 
 
@@ -639,7 +639,7 @@ applyBoundaryConditions(const real & t,
 //   int rg=ts+1, ug=rg+1, vg=ug+1, wg=vg+1, tg=ug+numberOfDimensions;
 
     int numberOfPhases=1;
-    if( pde==CnsParameters::compressibleMultiphase )
+    if( pde==CssiParameters::compressibleMultiphase )
     {
         numberOfPhases=2;           // assume 2 phases for now
     }
@@ -656,12 +656,12 @@ applyBoundaryConditions(const real & t,
     }
     Range mpA(mpT[numberOfPhases-1]+1,mpT[numberOfPhases-1]+numberOfPhases-1);  // fractions of phases
 
-    if( false && pde==CnsParameters::compressibleMultiphase )
+    if( false && pde==CssiParameters::compressibleMultiphase )
     {
 
         u.applyBoundaryCondition(C,neumann,BCTypes::allBoundaries,0.,t);
 
-        printf(">>> applyBoundaryConditionsCNS:compressibleMultiphase: Apply neumann BC on all boundaries <<<<\n");
+        printf(">>> applyBoundaryConditionsCSSI:compressibleMultiphase: Apply neumann BC on all boundaries <<<<\n");
 
         parameters.dbase.get<RealArray>("timing")(parameters.dbase.get<int>("timeForBoundaryConditions"))+=getCPU()-time0;
         return 0;
@@ -669,13 +669,13 @@ applyBoundaryConditions(const real & t,
 
     if( debug() & 64 )
     {
-        fprintf(parameters.dbase.get<FILE* >("pDebugFile")," ======Entering cnsBC t=%9.3e ========\n",t);
+        fprintf(parameters.dbase.get<FILE* >("pDebugFile")," ======Entering cssiBC t=%9.3e ========\n",t);
             
     }
   
     if( debug() & 4 || debug() & 64 )
     {
-        ::display(u,sPrintF("cnsBC: u at start, t=%8.2e",t),parameters.dbase.get<FILE* >("pDebugFile"),"%9.2e ");
+        ::display(u,sPrintF("cssiBC: u at start, t=%8.2e",t),parameters.dbase.get<FILE* >("pDebugFile"),"%9.2e ");
     }
 
 
@@ -689,8 +689,8 @@ applyBoundaryConditions(const real & t,
   // the dirichletBoundaryCondition is for testing TZ flow or known solutions.
     if( assignDirichletBoundaryCondition )
     {
-    // *wdh* 090412 if( knownSolution==CnsParameters::supersonicFlowInAnExpandingChannel )
-        if( knownSolution!=CnsParameters::noKnownSolution ) // apply any known solution at dirichlet BC's
+    // *wdh* 090412 if( knownSolution==CssiParameters::supersonicFlowInAnExpandingChannel )
+        if( knownSolution!=CssiParameters::noKnownSolution ) // apply any known solution at dirichlet BC's
         {
             bcParams.extraInTangentialDirections=2;
             bcParams.setBoundaryConditionForcingOption(BoundaryConditionParameters::arrayForcing); // *wdh* 050528 -- new way
@@ -707,8 +707,8 @@ applyBoundaryConditions(const real & t,
 
             if( debug() & 64 )
             {
-      	::display(uKnown,"cnsBC: known solution: uKnown",parameters.dbase.get<FILE* >("pDebugFile"),"%4.2f ");
-      	::display(u,"cnsBC: after assign dirichlet BC (from known solution)",parameters.dbase.get<FILE* >("pDebugFile"),"%4.2f ");
+      	::display(uKnown,"cssiBC: known solution: uKnown",parameters.dbase.get<FILE* >("pDebugFile"),"%4.2f ");
+      	::display(u,"cssiBC: after assign dirichlet BC (from known solution)",parameters.dbase.get<FILE* >("pDebugFile"),"%4.2f ");
             }
 
         }
@@ -732,8 +732,8 @@ applyBoundaryConditions(const real & t,
   // the neumannBoundaryCondition is for testing TZ flow.
     if( assignNeumannBoundaryCondition )
     {
-    // *wdh* 090412 if( knownSolution==CnsParameters::supersonicFlowInAnExpandingChannel )
-        if( knownSolution!=CnsParameters::noKnownSolution ) // apply any known solution at Neumann BC's
+    // *wdh* 090412 if( knownSolution==CssiParameters::supersonicFlowInAnExpandingChannel )
+        if( knownSolution!=CssiParameters::noKnownSolution ) // apply any known solution at Neumann BC's
         {
 
             bcParams.setBoundaryConditionForcingOption(BoundaryConditionParameters::arrayForcing); // *wdh* 050528 -- new way
@@ -742,8 +742,8 @@ applyBoundaryConditions(const real & t,
 
             if( debug() & 64 )
             {
-      	::display(uKnown,"cnsBC: known solution: uKnown",parameters.dbase.get<FILE* >("pDebugFile"),"%4.2f ");
-      	::display(u,"cnsBC: after assign neumann BC (from known solution)",parameters.dbase.get<FILE* >("pDebugFile"),"%4.2f ");
+      	::display(uKnown,"cssiBC: known solution: uKnown",parameters.dbase.get<FILE* >("pDebugFile"),"%4.2f ");
+      	::display(u,"cssiBC: after assign neumann BC (from known solution)",parameters.dbase.get<FILE* >("pDebugFile"),"%4.2f ");
             }
 
         }
@@ -774,10 +774,10 @@ applyBoundaryConditions(const real & t,
     // (2) extrapolate all components 
         if( debug() & 64 )
         {
-            ::display(u,"cnsBC: before supersonic inflow: uu",parameters.dbase.get<FILE* >("pDebugFile"),"%6.2f ");
+            ::display(u,"cssiBC: before supersonic inflow: uu",parameters.dbase.get<FILE* >("pDebugFile"),"%6.2f ");
         }
 
-        if( pde!=CnsParameters::compressibleMultiphase )
+        if( pde!=CssiParameters::compressibleMultiphase )
         {
             u.applyBoundaryCondition(V,dirichlet,superSonicInflow,bcData,t,
                          			       Overture::defaultBoundaryConditionParameters(),grid);
@@ -800,13 +800,13 @@ applyBoundaryConditions(const real & t,
 
         if( debug() & 64 )
         {
-            ::display(u,"cnsBC: after supersonic inflow: uu",parameters.dbase.get<FILE* >("pDebugFile"),"%6.2f ");
+            ::display(u,"cssiBC: after supersonic inflow: uu",parameters.dbase.get<FILE* >("pDebugFile"),"%6.2f ");
         }
 
     // do rest later
     }
 
-    checkArrayIDs(" cnsBC: before slipWall"); 
+    checkArrayIDs(" cssiBC: before slipWall"); 
 
 
     if( assignSlipWall )
@@ -816,7 +816,7 @@ applyBoundaryConditions(const real & t,
     // (2) apply a symmetry condition
         if( debug() & 64 )
         {   
-            printf(" cnsBC:before slipWall: u dimensions: [%i:%i][%i:%i]\n",
+            printf(" cssiBC:before slipWall: u dimensions: [%i:%i][%i:%i]\n",
            	     u.getBase(0),u.getBound(0),u.getBase(1),u.getBound(1));
         }
 
@@ -824,11 +824,11 @@ applyBoundaryConditions(const real & t,
         {
             if( (debug() & 64) )
             {
-      	::display(gridVelocity,sPrintF("cnsBC: grid Velocity for slip wall t=%8.2e",t),parameters.dbase.get<FILE* >("debugFile"),"%5.2f ");
-      	::display(u,sPrintF("cnsBC: u BEFORE slip-wall normalComponent"),parameters.dbase.get<FILE* >("debugFile"),"%5.2f ");
+      	::display(gridVelocity,sPrintF("cssiBC: grid Velocity for slip wall t=%8.2e",t),parameters.dbase.get<FILE* >("debugFile"),"%5.2f ");
+      	::display(u,sPrintF("cssiBC: u BEFORE slip-wall normalComponent"),parameters.dbase.get<FILE* >("debugFile"),"%5.2f ");
       	
             }
-            if( pde!=CnsParameters::compressibleMultiphase )
+            if( pde!=CssiParameters::compressibleMultiphase )
             {
         // deformingSticks is broken : try turning off this:
         // bool projectInterface=false;  // ************************ TEMP 2013/02/08 ************************ TEST **********
@@ -852,7 +852,7 @@ applyBoundaryConditions(const real & t,
             	      else
             	      {
                                 if( debug() & 2 )
-              		  printF("cnsBC:slipWall: do NOT set n.v=g on interface (side,axis,grid)=(%i,%i,%i)" 
+              		  printF("cssiBC:slipWall: do NOT set n.v=g on interface (side,axis,grid)=(%i,%i,%i)" 
                    			 "- this has already been done.\n",side,axis,grid);
             	      }
           	    }
@@ -869,14 +869,14 @@ applyBoundaryConditions(const real & t,
             
             if( (debug() & 64) )
             {
-      	::display(u,sPrintF("cnsBC: u AFTER slip-wall normalComponent"),parameters.dbase.get<FILE* >("debugFile"),"%5.2f ");
+      	::display(u,sPrintF("cssiBC: u AFTER slip-wall normalComponent"),parameters.dbase.get<FILE* >("debugFile"),"%5.2f ");
       	
             }
         }
         else
         {
-            checkArrayIDs(" cnsBC: slipWall before normalComponent"); 
-            if( pde!=CnsParameters::compressibleMultiphase )
+            checkArrayIDs(" cssiBC: slipWall before normalComponent"); 
+            if( pde!=CssiParameters::compressibleMultiphase )
             {
                 u.applyBoundaryCondition(V,normalComponent,slipWall,0.,t);
             }
@@ -888,18 +888,18 @@ applyBoundaryConditions(const real & t,
       	}
             }
 
-            checkArrayIDs(" cnsBC: slipWall after normalComponent"); 
+            checkArrayIDs(" cssiBC: slipWall after normalComponent"); 
         }
         
     // do rest of slip wall later
     
         if( debug() & 64 )
         {
-            printf(" cnsBC:after slipWall: u dimensions: [%i:%i][%i:%i]\n",
+            printf(" cssiBC:after slipWall: u dimensions: [%i:%i][%i:%i]\n",
            	     u.getBase(0),u.getBound(0),u.getBase(1),u.getBound(1));
 
-      // ::display(u,"cnsBC: u after slipWall, normalComponent",parameters.dbase.get<FILE* >("pDebugFile"),"%6.2f ");
-            ::display(u,sPrintF("cnsBC: u after slipWall, normalComponent, t=%8.2e",t),parameters.dbase.get<FILE* >("pDebugFile"),"%9.2e ");
+      // ::display(u,"cssiBC: u after slipWall, normalComponent",parameters.dbase.get<FILE* >("pDebugFile"),"%6.2f ");
+            ::display(u,sPrintF("cssiBC: u after slipWall, normalComponent, t=%8.2e",t),parameters.dbase.get<FILE* >("pDebugFile"),"%9.2e ");
             fflush(parameters.dbase.get<FILE* >("pDebugFile"));
             
         }
@@ -907,19 +907,19 @@ applyBoundaryConditions(const real & t,
 
     }
 
-    checkArrayIDs(" cnsBC: after slipWall (I)"); 
+    checkArrayIDs(" cssiBC: after slipWall (I)"); 
 
     
 
   // numSent=getSent();
-  // if( parameters.dbase.get<int >("myid")==0 ) printf("******* cnsBC: After slipWall (I): new messages sent=%i\n",numSent);
+  // if( parameters.dbase.get<int >("myid")==0 ) printf("******* cssiBC: After slipWall (I): new messages sent=%i\n",numSent);
 
 
     if( assignAxisymmetric )
     {
 
     // Assigm the dirichlet part of the axisymmetric BC here -- do the rest later
-        if( pde!=CnsParameters::compressibleMultiphase )
+        if( pde!=CssiParameters::compressibleMultiphase )
         {
       // radial axis=0:  x=0 is axis of symmetry, u=radial, v=axial, w=theta
       // radial axis=1:  y=0 is axis of symmetry, v=radial, u=axial, w=theta
@@ -976,7 +976,7 @@ applyBoundaryConditions(const real & t,
     // Here is an example of how to apply a BC to a particular side:
     // u.applyBoundaryCondition(V,neumann,BCTypes::boundary(side,axis),0.,t,bcParams);
 
-        if( pde!=CnsParameters::compressibleMultiphase )
+        if( pde!=CssiParameters::compressibleMultiphase )
         {
       // *wdh* 051128 u.applyBoundaryCondition(tc,dirichlet, noSlipWall,bcData,t,
       //              Overture::defaultBoundaryConditionParameters(),grid);
@@ -1040,16 +1040,16 @@ applyBoundaryConditions(const real & t,
                    	 bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3);
                    	 if( debug() & 4 )
                    	 {
-                     	   printP("cnsBC:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
+                     	   printP("cssiBC:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
                           		  side,axis,grid,mixedCoeff(tc,side,axis,grid),mixedNormalCoeff(tc,side,axis,grid));
-                     	   fprintf(pDebugFile,"cnsBC:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
+                     	   fprintf(pDebugFile,"cssiBC:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
                                      			       side,axis,grid,mixedCoeff(tc,side,axis,grid),mixedNormalCoeff(tc,side,axis,grid));
                      	   if( pBoundaryData[side][axis]==NULL )
                      	   {
                        	     if( !ok )
-                                          fprintf(pDebugFile," cnsBC:applyBC on T: pBoundaryData[side][axis] == NULL! \n");
+                                          fprintf(pDebugFile," cssiBC:applyBC on T: pBoundaryData[side][axis] == NULL! \n");
                                       else
-                                          fprintf(pDebugFile," cnsBC:applyBC on T: ERROR: pBoundaryData[side][axis] == NULL! \n");
+                                          fprintf(pDebugFile," cssiBC:applyBC on T: ERROR: pBoundaryData[side][axis] == NULL! \n");
                      	   }
                      	   else
                      	   {
@@ -1094,7 +1094,7 @@ applyBoundaryConditions(const real & t,
                                   const bool twilightZoneFlow = parameters.dbase.get<bool >("twilightZoneFlow");
                      	   if( false && twilightZoneFlow ) //  *******************************************************
                      	   {
-                                      fprintf(pDebugFile," cnsBC:applyBC on T: ********** Set TRUE value for bd at t=%8.2e ************\n",t);
+                                      fprintf(pDebugFile," cssiBC:applyBC on T: ********** Set TRUE value for bd at t=%8.2e ************\n",t);
                        	     const bool rectangular= mg.isRectangular() && !twilightZoneFlow;
                        	     realArray & x= mg.center();
             #ifdef USE_PPP
@@ -1132,12 +1132,12 @@ applyBoundaryConditions(const real & t,
                                   if( t>0. || debug() & 4 )
                      	   {
                                       if( ok )
-                                 	       printP("$$$$ cnsBC:applyBC:INFO:interface but no boundaryData, t=%9.3e\n",t);
+                                 	       printP("$$$$ cssiBC:applyBC:INFO:interface but no boundaryData, t=%9.3e\n",t);
                      	   }
                    	 }
                           }
                           if( debug() & 4 )
-                   	 printF("++++cnsBC: noSlipWall: (grid,side,axis)=(%i,%i,%i) : "
+                   	 printF("++++cssiBC: noSlipWall: (grid,side,axis)=(%i,%i,%i) : "
                         		"  BC for T: %3.2f*T+%3.2f*T.n=%3.2f,  \n"
                         		"  BC: u: %3.2f*u+%3.2f*u.n=%3.2f,  v: %3.2f*v+%3.2f*v.n=%3.2f \n",
                         		grid,side,axis, 
@@ -1242,16 +1242,16 @@ applyBoundaryConditions(const real & t,
                    	 bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3);
                    	 if( debug() & 4 )
                    	 {
-                     	   printP("cnsBC:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
+                     	   printP("cssiBC:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
                           		  side,axis,grid,mixedCoeff(mpT[m],side,axis,grid),mixedNormalCoeff(mpT[m],side,axis,grid));
-                     	   fprintf(pDebugFile,"cnsBC:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
+                     	   fprintf(pDebugFile,"cssiBC:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
                                      			       side,axis,grid,mixedCoeff(mpT[m],side,axis,grid),mixedNormalCoeff(mpT[m],side,axis,grid));
                      	   if( pBoundaryData[side][axis]==NULL )
                      	   {
                        	     if( !ok )
-                                          fprintf(pDebugFile," cnsBC:applyBC on T: pBoundaryData[side][axis] == NULL! \n");
+                                          fprintf(pDebugFile," cssiBC:applyBC on T: pBoundaryData[side][axis] == NULL! \n");
                                       else
-                                          fprintf(pDebugFile," cnsBC:applyBC on T: ERROR: pBoundaryData[side][axis] == NULL! \n");
+                                          fprintf(pDebugFile," cssiBC:applyBC on T: ERROR: pBoundaryData[side][axis] == NULL! \n");
                      	   }
                      	   else
                      	   {
@@ -1296,7 +1296,7 @@ applyBoundaryConditions(const real & t,
                                   const bool twilightZoneFlow = parameters.dbase.get<bool >("twilightZoneFlow");
                      	   if( false && twilightZoneFlow ) //  *******************************************************
                      	   {
-                                      fprintf(pDebugFile," cnsBC:applyBC on T: ********** Set TRUE value for bd at t=%8.2e ************\n",t);
+                                      fprintf(pDebugFile," cssiBC:applyBC on T: ********** Set TRUE value for bd at t=%8.2e ************\n",t);
                        	     const bool rectangular= mg.isRectangular() && !twilightZoneFlow;
                        	     realArray & x= mg.center();
             #ifdef USE_PPP
@@ -1334,12 +1334,12 @@ applyBoundaryConditions(const real & t,
                                   if( t>0. || debug() & 4 )
                      	   {
                                       if( ok )
-                                 	       printP("$$$$ cnsBC:applyBC:INFO:interface but no boundaryData, t=%9.3e\n",t);
+                                 	       printP("$$$$ cssiBC:applyBC:INFO:interface but no boundaryData, t=%9.3e\n",t);
                      	   }
                    	 }
                           }
                           if( debug() & 4 )
-                   	 printF("++++cnsBC: noSlipWall: (grid,side,axis)=(%i,%i,%i) : "
+                   	 printF("++++cssiBC: noSlipWall: (grid,side,axis)=(%i,%i,%i) : "
                         		"  BC for T: %3.2f*T+%3.2f*T.n=%3.2f,  \n"
                         		"  BC: u: %3.2f*u+%3.2f*u.n=%3.2f,  v: %3.2f*v+%3.2f*v.n=%3.2f \n",
                         		grid,side,axis, 
@@ -1411,7 +1411,7 @@ applyBoundaryConditions(const real & t,
         if( debug() & 64 )
         {
             char buff[80];
-            ::display(u,sPrintF(buff,"cnsBC:After assignNoSlipWall (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.4f ");
+            ::display(u,sPrintF(buff,"cssiBC:After assignNoSlipWall (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.4f ");
         }
 
 
@@ -1438,7 +1438,7 @@ applyBoundaryConditions(const real & t,
         	  getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
 
         	  if( debug() & 4 )
-          	    printf("cnsBC: Setting T to equal Tb on noSlipWall: (grid,side,axis)=(%i,%i,%i) t=%8.2e\n",
+          	    printf("cssiBC: Setting T to equal Tb on noSlipWall: (grid,side,axis)=(%i,%i,%i) t=%8.2e\n",
                		   grid,side,axis,t);
       	
         	  u(Ib1,Ib2,Ib3,tc)=u(Ib1,Ib2,Ib3,sec);
@@ -1451,7 +1451,7 @@ applyBoundaryConditions(const real & t,
 
     // do rest later
 
-        checkArrayIDs(" cnsBC: after assignNoSlipWall"); 
+        checkArrayIDs(" cssiBC: after assignNoSlipWall"); 
 
     }
 
@@ -1462,7 +1462,7 @@ applyBoundaryConditions(const real & t,
     {
     // subSonicInflow:
     // ****** fix this ***********
-        if( pde!=CnsParameters::compressibleMultiphase )
+        if( pde!=CssiParameters::compressibleMultiphase )
         {
             u.applyBoundaryCondition(V,dirichlet,subSonicInflow,bcData,pBoundaryData,t,
                          			       Overture::defaultBoundaryConditionParameters(),grid);
@@ -1484,7 +1484,7 @@ applyBoundaryConditions(const real & t,
                            			       Overture::defaultBoundaryConditionParameters(),grid);
         }
     // do rest later
-        checkArrayIDs(" cnsBC: after assignSubSonicInflow"); 
+        checkArrayIDs(" cssiBC: after assignSubSonicInflow"); 
 
     }
 
@@ -1496,30 +1496,30 @@ applyBoundaryConditions(const real & t,
   // ** get some decent values at all ghost points // ***** can we avoid this ??????
     if( debug() & 64 )
     {   
-        printf(" cnsBC:before extrap: u dimensions: [%i:%i][%i:%i]\n",
+        printf(" cssiBC:before extrap: u dimensions: [%i:%i][%i:%i]\n",
          	   u.getBase(0),u.getBound(0),u.getBase(1),u.getBound(1));
         char buff[80];
-        ::display(u,sPrintF(buff,"cnsBC:Before extrap (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.4f ");
+        ::display(u,sPrintF(buff,"cssiBC:Before extrap (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.4f ");
     }
 
     u.applyBoundaryCondition(C,extrapolate,BCTypes::allBoundaries,0.,t);
 
-    checkArrayIDs(" cnsBC: after extrapolate"); 
+    checkArrayIDs(" cssiBC: after extrapolate"); 
 
     if( debug() & 64 )
     {   
-        printf(" cnsBC:after extrap: u dimensions: [%i:%i][%i:%i]\n",
+        printf(" cssiBC:after extrap: u dimensions: [%i:%i][%i:%i]\n",
          	   u.getBase(0),u.getBound(0),u.getBase(1),u.getBound(1));
         char buff[80];
-        ::display(u,sPrintF(buff,"cnsBC:After extrap (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.4f ");
+        ::display(u,sPrintF(buff,"cssiBC:After extrap (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.4f ");
     }
 
     if( assignDirichletBoundaryCondition )
     {
     // -- re-assign the exact solution on ghost lines since these were changed by the extrapolation --
 
-    // *wdh* 090412 if( knownSolution==CnsParameters::supersonicFlowInAnExpandingChannel )
-        if( knownSolution!=CnsParameters::noKnownSolution ) // apply any known solution at dirichlet BC's
+    // *wdh* 090412 if( knownSolution==CssiParameters::supersonicFlowInAnExpandingChannel )
+        if( knownSolution!=CssiParameters::noKnownSolution ) // apply any known solution at dirichlet BC's
         {
             bcParams.extraInTangentialDirections=2;
             bcParams.setBoundaryConditionForcingOption(BoundaryConditionParameters::arrayForcing); // *wdh* 050528 -- new way
@@ -1536,8 +1536,8 @@ applyBoundaryConditions(const real & t,
 
             if( debug() & 64 )
             {
-      	::display(uKnown,"cnsBC: known solution: uKnown",parameters.dbase.get<FILE* >("pDebugFile"),"%4.2f ");
-      	::display(u,"cnsBC: after assign dirichlet BC (from known solution)",parameters.dbase.get<FILE* >("pDebugFile"),"%4.2f ");
+      	::display(uKnown,"cssiBC: known solution: uKnown",parameters.dbase.get<FILE* >("pDebugFile"),"%4.2f ");
+      	::display(u,"cssiBC: after assign dirichlet BC (from known solution)",parameters.dbase.get<FILE* >("pDebugFile"),"%4.2f ");
             }
 
         }
@@ -1556,8 +1556,8 @@ applyBoundaryConditions(const real & t,
         }
 
 
-// *     // *wdh* 090412 if( knownSolution==CnsParameters::supersonicFlowInAnExpandingChannel )
-// *     if( knownSolution!=CnsParameters::noKnownSolution ) // apply any known solution at dirichlet BC's
+// *     // *wdh* 090412 if( knownSolution==CssiParameters::supersonicFlowInAnExpandingChannel )
+// *     if( knownSolution!=CssiParameters::noKnownSolution ) // apply any known solution at dirichlet BC's
 // *     {
 // *       bcParams.lineToAssign=1;
 // *       bcParams.extraInTangentialDirections=2;
@@ -1591,7 +1591,7 @@ applyBoundaryConditions(const real & t,
         if( debug() & 64 )
         {
             char buff[80];
-            ::display(u,sPrintF(buff,"cnsBC:Before supersonic outflow (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.4f ");
+            ::display(u,sPrintF(buff,"cssiBC:Before supersonic outflow (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.4f ");
         }
         const int orderOfExtrapolationForOutflow = parameters.dbase.get<int >("orderOfExtrapolationForOutflow");
         
@@ -1610,7 +1610,7 @@ applyBoundaryConditions(const real & t,
         if( debug() & 64 )
         {
             char buff[80];
-            ::display(u,sPrintF(buff,"cnsBC:After supersonic outflow (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.4f ");
+            ::display(u,sPrintF(buff,"cssiBC:After supersonic outflow (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.4f ");
         }
     }
 
@@ -1624,7 +1624,7 @@ applyBoundaryConditions(const real & t,
         if( debug() & 64 )
         {
             char buff[80];
-            ::display(u,sPrintF(buff,"cnsBC:After extrap for supersonic inflow (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.4f ");
+            ::display(u,sPrintF(buff,"cssiBC:After extrap for supersonic inflow (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.4f ");
         }
 
     }
@@ -1633,9 +1633,9 @@ applyBoundaryConditions(const real & t,
     if( assignNoSlipWall )
     { // finish noSlipWall
 
-    // printF("cnsBC:assignNoSlipWall -- secondary\n");
+    // printF("cssiBC:assignNoSlipWall -- secondary\n");
 
-        if( pde!=CnsParameters::compressibleMultiphase )
+        if( pde!=CssiParameters::compressibleMultiphase )
         {
       //u.applyBoundaryCondition(rc,extrapolate,   noSlipWall,0.,t,extrapParams);
             extrapParams.orderOfExtrapolation=2;
@@ -1695,7 +1695,7 @@ applyBoundaryConditions(const real & t,
       	pdet = mg.centerJacobian().getDataPointer();
       	pu = u.getDataPointer();
 #endif
-      	cnsNoSlipWallBC(mg.numberOfDimensions(),
+      	cssiNoSlipWallBC(mg.numberOfDimensions(),
                   			uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
                   			uLocal.getBase(2),uLocal.getBound(2),uLocal.getBase(3),uLocal.getBound(3),
                   			pu,px,pdet,prsxy,ipar,rpar,gidLocal.getDataPointer(),bcLocal.getDataPointer());
@@ -1740,16 +1740,16 @@ applyBoundaryConditions(const real & t,
                    	 bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3);
                    	 if( debug() & 4 )
                    	 {
-                     	   printP("cnsBC:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
+                     	   printP("cssiBC:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
                           		  side,axis,grid,mixedCoeff(tc,side,axis,grid),mixedNormalCoeff(tc,side,axis,grid));
-                     	   fprintf(pDebugFile,"cnsBC:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
+                     	   fprintf(pDebugFile,"cssiBC:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
                                      			       side,axis,grid,mixedCoeff(tc,side,axis,grid),mixedNormalCoeff(tc,side,axis,grid));
                      	   if( pBoundaryData[side][axis]==NULL )
                      	   {
                        	     if( !ok )
-                                          fprintf(pDebugFile," cnsBC:applyBC on T: pBoundaryData[side][axis] == NULL! \n");
+                                          fprintf(pDebugFile," cssiBC:applyBC on T: pBoundaryData[side][axis] == NULL! \n");
                                       else
-                                          fprintf(pDebugFile," cnsBC:applyBC on T: ERROR: pBoundaryData[side][axis] == NULL! \n");
+                                          fprintf(pDebugFile," cssiBC:applyBC on T: ERROR: pBoundaryData[side][axis] == NULL! \n");
                      	   }
                      	   else
                      	   {
@@ -1794,7 +1794,7 @@ applyBoundaryConditions(const real & t,
                                   const bool twilightZoneFlow = parameters.dbase.get<bool >("twilightZoneFlow");
                      	   if( false && twilightZoneFlow ) //  *******************************************************
                      	   {
-                                      fprintf(pDebugFile," cnsBC:applyBC on T: ********** Set TRUE value for bd at t=%8.2e ************\n",t);
+                                      fprintf(pDebugFile," cssiBC:applyBC on T: ********** Set TRUE value for bd at t=%8.2e ************\n",t);
                        	     const bool rectangular= mg.isRectangular() && !twilightZoneFlow;
                        	     realArray & x= mg.center();
             #ifdef USE_PPP
@@ -1832,12 +1832,12 @@ applyBoundaryConditions(const real & t,
                                   if( t>0. || debug() & 4 )
                      	   {
                                       if( ok )
-                                 	       printP("$$$$ cnsBC:applyBC:INFO:interface but no boundaryData, t=%9.3e\n",t);
+                                 	       printP("$$$$ cssiBC:applyBC:INFO:interface but no boundaryData, t=%9.3e\n",t);
                      	   }
                    	 }
                           }
                           if( debug() & 4 )
-                   	 printF("++++cnsBC: noSlipWall: (grid,side,axis)=(%i,%i,%i) : "
+                   	 printF("++++cssiBC: noSlipWall: (grid,side,axis)=(%i,%i,%i) : "
                         		"  BC for T: %3.2f*T+%3.2f*T.n=%3.2f,  \n"
                         		"  BC: u: %3.2f*u+%3.2f*u.n=%3.2f,  v: %3.2f*v+%3.2f*v.n=%3.2f \n",
                         		grid,side,axis, 
@@ -1920,16 +1920,16 @@ applyBoundaryConditions(const real & t,
                    	 bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3);
                    	 if( debug() & 4 )
                    	 {
-                     	   printP("cnsBC:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
+                     	   printP("cssiBC:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
                           		  side,axis,grid,mixedCoeff(tc,side,axis,grid),mixedNormalCoeff(tc,side,axis,grid));
-                     	   fprintf(pDebugFile,"cnsBC:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
+                     	   fprintf(pDebugFile,"cssiBC:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
                                      			       side,axis,grid,mixedCoeff(tc,side,axis,grid),mixedNormalCoeff(tc,side,axis,grid));
                      	   if( pBoundaryData[side][axis]==NULL )
                      	   {
                        	     if( !ok )
-                                          fprintf(pDebugFile," cnsBC:applyBC on T: pBoundaryData[side][axis] == NULL! \n");
+                                          fprintf(pDebugFile," cssiBC:applyBC on T: pBoundaryData[side][axis] == NULL! \n");
                                       else
-                                          fprintf(pDebugFile," cnsBC:applyBC on T: ERROR: pBoundaryData[side][axis] == NULL! \n");
+                                          fprintf(pDebugFile," cssiBC:applyBC on T: ERROR: pBoundaryData[side][axis] == NULL! \n");
                      	   }
                      	   else
                      	   {
@@ -1974,7 +1974,7 @@ applyBoundaryConditions(const real & t,
                                   const bool twilightZoneFlow = parameters.dbase.get<bool >("twilightZoneFlow");
                      	   if( false && twilightZoneFlow ) //  *******************************************************
                      	   {
-                                      fprintf(pDebugFile," cnsBC:applyBC on T: ********** Set TRUE value for bd at t=%8.2e ************\n",t);
+                                      fprintf(pDebugFile," cssiBC:applyBC on T: ********** Set TRUE value for bd at t=%8.2e ************\n",t);
                        	     const bool rectangular= mg.isRectangular() && !twilightZoneFlow;
                        	     realArray & x= mg.center();
             #ifdef USE_PPP
@@ -2012,12 +2012,12 @@ applyBoundaryConditions(const real & t,
                                   if( t>0. || debug() & 4 )
                      	   {
                                       if( ok )
-                                 	       printP("$$$$ cnsBC:applyBC:INFO:interface but no boundaryData, t=%9.3e\n",t);
+                                 	       printP("$$$$ cssiBC:applyBC:INFO:interface but no boundaryData, t=%9.3e\n",t);
                      	   }
                    	 }
                           }
                           if( debug() & 4 )
-                   	 printF("++++cnsBC: noSlipWall: (grid,side,axis)=(%i,%i,%i) : "
+                   	 printF("++++cssiBC: noSlipWall: (grid,side,axis)=(%i,%i,%i) : "
                         		"  BC for T: %3.2f*T+%3.2f*T.n=%3.2f,  \n"
                         		"  BC: u: %3.2f*u+%3.2f*u.n=%3.2f,  v: %3.2f*v+%3.2f*v.n=%3.2f \n",
                         		grid,side,axis, 
@@ -2067,7 +2067,7 @@ applyBoundaryConditions(const real & t,
                    	 if( a0==0. && a1==1. )
                    	 {
                      	   if( debug() & 4 )
-                       	     printF("++++cnsBC: noSlipWall:adiabaticWall: (grid,side,axis)=(%i,%i,%i) : apply neumannBC\n",
+                       	     printF("++++cssiBC: noSlipWall:adiabaticWall: (grid,side,axis)=(%i,%i,%i) : apply neumannBC\n",
                             		    grid,side,axis);
       //                 real b0=bcData(tc+2,side,axis,grid);
       // 		u.applyBoundaryCondition(tc,neumann,BCTypes::boundary(side,axis),b0,t); // b0 ignored??
@@ -2088,7 +2088,7 @@ applyBoundaryConditions(const real & t,
                    	 {
                      	   if( debug() & 4 )
                      	   {
-                       	     fPrintF(pDebugFile,"++++cnsBC:noSlipWall:adiabaticWall: (grid,side,axis)=(%i,%i,%i) : "
+                       	     fPrintF(pDebugFile,"++++cssiBC:noSlipWall:adiabaticWall: (grid,side,axis)=(%i,%i,%i) : "
                             		    "Mixed BC for T: %3.2f*T+%3.2f*T.n=%3.2f (t=%8.2e)\n",
                              		     grid,side,axis,a0,a1,bcData(tc,side,axis,grid),t);
                      	   }
@@ -2098,11 +2098,11 @@ applyBoundaryConditions(const real & t,
                             	      Index Ib1,Ib2,Ib3;
                         	      getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
                                         RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
-                        	      ::display(bd(Ib1,Ib2,Ib3,tc),"cnsBC:noSlipWall:T: RHS for mixed BC: bd(Ib1,Ib2,Ib3,tc)",pDebugFile,"%5.2f ");
+                        	      ::display(bd(Ib1,Ib2,Ib3,tc),"cssiBC:noSlipWall:T: RHS for mixed BC: bd(Ib1,Ib2,Ib3,tc)",pDebugFile,"%5.2f ");
                             	      Index Ig1,Ig2,Ig3;
       	      // getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
                         	      getIndex(mg.gridIndexRange(),Ig1,Ig2,Ig3,1);
-                                        ::display(u(Ig1,Ig2,Ig3,tc),"cnsBC:noSlipWall:T: BEFORE mixed BC: u(I1,I2,I3,tc)",pDebugFile,"%5.2f ");
+                                        ::display(u(Ig1,Ig2,Ig3,tc),"cssiBC:noSlipWall:T: BEFORE mixed BC: u(I1,I2,I3,tc)",pDebugFile,"%5.2f ");
                                       #endif
                      	   }
                      	   bcParams.a(0)=a0;
@@ -2123,7 +2123,7 @@ applyBoundaryConditions(const real & t,
                             	      Index Ig1,Ig2,Ig3;
       	      // getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
                         	      getIndex(mg.gridIndexRange(),Ig1,Ig2,Ig3,1);
-                                        ::display(u(Ig1,Ig2,Ig3,tc),"cnsBC:noSlipWall:T: AFTER mixed BC: u(I1,I2,I3,tc)",pDebugFile,"%5.2f ");
+                                        ::display(u(Ig1,Ig2,Ig3,tc),"cssiBC:noSlipWall:T: AFTER mixed BC: u(I1,I2,I3,tc)",pDebugFile,"%5.2f ");
                                       #endif
                      	   }
                    	 }
@@ -2198,7 +2198,7 @@ applyBoundaryConditions(const real & t,
 
         // bool assignRhoFromEOS = true;
                 bool assignRhoFromEOS = false; // **** WDH**** 2015/07/24 -- turn this OFF for now
-	// printF("cnsBC: assignRhoFromEOS=%i\n",(int)assignRhoFromEOS);
+	// printF("cssiBC: assignRhoFromEOS=%i\n",(int)assignRhoFromEOS);
                 if( assignRhoFromEOS )
       	{
 	  // Apply a BC on rho derived from the p=rho*Rg*T and p.n=...
@@ -2278,7 +2278,7 @@ applyBoundaryConditions(const real & t,
                     rpar[15]=parameters.dbase.get<real>("kThermal");
                     rpar[16]=parameters.dbase.get<real>("Rg");
         	  
-        	  cnsNoSlipBC(mg.numberOfDimensions(),
+        	  cssiNoSlipBC(mg.numberOfDimensions(),
                   		      uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
                   		      uLocal.getBase(2),uLocal.getBound(2),uLocal.getBase(3),uLocal.getBound(3),
                   		      ipar[0],rpar[0], *pu, 
@@ -2308,12 +2308,12 @@ applyBoundaryConditions(const real & t,
         if( numberOfSpecies>0 )
             u.applyBoundaryCondition(S,neumann,noSlipWall,0.,t); 
         
-        checkArrayIDs(" cnsBC: after assignNoSlipWall"); 
+        checkArrayIDs(" cssiBC: after assignNoSlipWall"); 
         
         if( debug() & 64 )
             {
       	char buff[80];
-      	::display(u,sPrintF(buff,"cnsBC:After finish no slip wall (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.4f ");
+      	::display(u,sPrintF(buff,"cssiBC:After finish no slip wall (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.4f ");
             }
     }
     
@@ -2327,7 +2327,7 @@ applyBoundaryConditions(const real & t,
         bcParams.a(1)=1.;  // .1; // 10.; // 1. *wdh* 050627 -- try this
         bcParams.a(2)=1.;
 
-        if( pde!=CnsParameters::compressibleMultiphase &&
+        if( pde!=CssiParameters::compressibleMultiphase &&
       !(parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::implicit  ||
       	parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::steadyStateNewton))
         {
@@ -2337,7 +2337,7 @@ applyBoundaryConditions(const real & t,
       // u.applyBoundaryCondition(tc,neumann,    subSonicInflow,0.,t);
             u.applyBoundaryCondition(tc,mixed,subSonicInflow,bcData,t,bcParams,grid);
         }
-        else if ( pde==CnsParameters::compressibleMultiphase  )
+        else if ( pde==CssiParameters::compressibleMultiphase  )
         {
             for( int m=0; m<numberOfPhases; m++ )
             {
@@ -2351,7 +2351,7 @@ applyBoundaryConditions(const real & t,
         if( numberOfSpecies>0 )
             u.applyBoundaryCondition(S,neumann,subSonicInflow,0.,t); 
 
-        checkArrayIDs(" cnsBC: after assignSubSonicInflow"); 
+        checkArrayIDs(" cssiBC: after assignSubSonicInflow"); 
 
     }
 
@@ -2366,7 +2366,7 @@ applyBoundaryConditions(const real & t,
 // *wdh* 040929    u.applyBoundaryCondition(rc,extrapolate,subSonicOutflow,0.,t);
 // *wdh* 040929     u.applyBoundaryCondition(V,extrapolate,subSonicOutflow,0.,t);
 
-        if( pde!=CnsParameters::compressibleMultiphase )
+        if( pde!=CssiParameters::compressibleMultiphase )
         {
       // *wdh* 040929  use neumann BC's -- these are more stable
             if (!(parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::implicit||
@@ -2414,7 +2414,7 @@ applyBoundaryConditions(const real & t,
         if( numberOfSpecies>0 )
             u.applyBoundaryCondition(S,neumann,subSonicOutflow,0.,t); 
 
-        checkArrayIDs(" cnsBC: after assignSubSonicOutflow"); 
+        checkArrayIDs(" cssiBC: after assignSubSonicOutflow"); 
 
     }
     
@@ -2520,7 +2520,7 @@ applyBoundaryConditions(const real & t,
                    		       nbd);
         }
 
-    checkArrayIDs(" cnsBC: after outflow"); 
+    checkArrayIDs(" cssiBC: after outflow"); 
 
 
 //   if( (parameters.dbase.get<Parameters::PDEVariation >("pdeVariation")==Parameters::conservativeWithArtificialDissipation &&
@@ -2535,10 +2535,10 @@ applyBoundaryConditions(const real & t,
         if( debug() & 64 )
         {
             char buff[80];
-            ::display(u,sPrintF(buff,"cnsBC:Before assign 2nd-ghost line (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%5.2f ");
+            ::display(u,sPrintF(buff,"cssiBC:Before assign 2nd-ghost line (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%5.2f ");
         }
 
-        if( true || parameters.dbase.get<CnsParameters::PDEVariation >("pdeVariation")==CnsParameters::conservativeGodunov )
+        if( true || parameters.dbase.get<CssiParameters::PDEVariation >("pdeVariation")==CssiParameters::conservativeGodunov )
         {
       // we need to assign values at the second ghostline for all boundaries
 
@@ -2552,7 +2552,7 @@ applyBoundaryConditions(const real & t,
         // on a slip wall we assign the 2nd ghost line by symmetry
       	if( !newMovingGridBoundaryConditions )
       	{
-        	  if( pde!=CnsParameters::compressibleMultiphase )
+        	  if( pde!=CssiParameters::compressibleMultiphase )
         	  {
           	    u.applyBoundaryCondition(V,vectorSymmetry, slipWall,0.,t,extrapParams); // ****** 010629
           	    u.applyBoundaryCondition(rc,evenSymmetry,slipWall,0.,t,extrapParams);
@@ -2576,7 +2576,7 @@ applyBoundaryConditions(const real & t,
       	else
       	{
         	  extrapParams.orderOfExtrapolation=3;
-        	  if( pde!=CnsParameters::compressibleMultiphase )
+        	  if( pde!=CssiParameters::compressibleMultiphase )
         	  {
 	    // u.applyBoundaryCondition(V,vectorSymmetry, slipWall,0.,t,extrapParams); // ****** 010629
           	    u.applyBoundaryCondition(V,extrapolate, slipWall,0.,t,extrapParams); // ****** 010629
@@ -2616,7 +2616,7 @@ applyBoundaryConditions(const real & t,
 
             if( assignSymmetry ) // **** this is not correct if symmetry walls haven't been assigned yet!
             {
-	// printf(" *** cnsBC: extrapolate 2nd ghost for symmetry\n");
+	// printf(" *** cssiBC: extrapolate 2nd ghost for symmetry\n");
                 u.applyBoundaryCondition(C,extrapolate,symmetry,0.,t,extrapParams);
             }
       	
@@ -2629,11 +2629,11 @@ applyBoundaryConditions(const real & t,
         if( debug() & 64 )
         {
             char buff[80];
-            ::display(u,sPrintF(buff,"cnsBC:After assign 2nd-ghost line (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%9.2e ");
+            ::display(u,sPrintF(buff,"cssiBC:After assign 2nd-ghost line (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%9.2e ");
         }
         real maxVal=0.;
         if( Parameters::checkForFloatingPointErrors )
-            checkSolution(u,"cnsBC:before extrapInterpN",false,grid,maxVal,true);
+            checkSolution(u,"cssiBC:before extrapInterpN",false,grid,maxVal,true);
         
     // extrapolate neighbours of interpolation points for 4th order artificial viscosity
     //kkc 060710    assert( parameters.dbase.get<int >("extrapolateInterpolationNeighbours") );  // consistency check
@@ -2641,7 +2641,7 @@ applyBoundaryConditions(const real & t,
         {
             extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForInterpolationNeighbours"); // 3;
 
-//     printf("***cnsBC orderOfExtrapolationForInterpolationNeighbours=%i\n",
+//     printf("***cssiBC orderOfExtrapolationForInterpolationNeighbours=%i\n",
 //                 parameters.dbase.get<int >("orderOfExtrapolationForInterpolationNeighbours"));
         
             u.applyBoundaryCondition(C,BCTypes::extrapolateInterpolationNeighbours,BCTypes::allBoundaries,0.,t,
@@ -2649,7 +2649,7 @@ applyBoundaryConditions(const real & t,
         }
 
         if( Parameters::checkForFloatingPointErrors )
-            checkSolution(u,"cnsBC:after extrapInterpN",false,grid,maxVal,true);
+            checkSolution(u,"cssiBC:after extrapInterpN",false,grid,maxVal,true);
         
     }
     else
@@ -2664,14 +2664,14 @@ applyBoundaryConditions(const real & t,
 
 
 
-    checkArrayIDs(" cnsBC: before symmetry"); 
+    checkArrayIDs(" cssiBC: before symmetry"); 
     if( debug() & 64 )
     {
         char buff[80];
-        ::display(u,sPrintF(buff,"cnsBC:Before assign slipWallOpt: u (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%13.10f ");
+        ::display(u,sPrintF(buff,"cssiBC:Before assign slipWallOpt: u (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%13.10f ");
     }
 
-  // if( true ) printF("cnsBC:assignSlipWall=%i, useOptSlipWall=%i, slipWallBoundaryConditionOption=%i, t=%9.3e\n",(int)assignSlipWall,int(useOptSlipWall),parameters.dbase.get<int >("slipWallBoundaryConditionOption"),t);
+  // if( true ) printF("cssiBC:assignSlipWall=%i, useOptSlipWall=%i, slipWallBoundaryConditionOption=%i, t=%9.3e\n",(int)assignSlipWall,int(useOptSlipWall),parameters.dbase.get<int >("slipWallBoundaryConditionOption"),t);
 
     if( assignSlipWall || assignAxisymmetric || assignFarField )
     { 
@@ -2747,7 +2747,7 @@ applyBoundaryConditions(const real & t,
         // gtt(i1,i2,i3,0:d-1)  : g.tt
         // gtt(i1,i2,i3,d:2d-1) : g.ttt
 
-	// if( true ) printF("cnsBC:getBoundaryAcceleration t=%9.3e\n",t);
+	// if( true ) printF("cssiBC:getBoundaryAcceleration t=%9.3e\n",t);
 
       	parameters.dbase.get<MovingGrids >("movingGrids").getBoundaryAcceleration( mg, *gtt, grid,t, option );
       	pgtt=gtt->getDataPointer(); 
@@ -2766,7 +2766,7 @@ applyBoundaryConditions(const real & t,
             for( int m=0; m<numberOfPhases; m++ )
             {
 
-      	if( pde!=CnsParameters::compressibleMultiphase )
+      	if( pde!=CssiParameters::compressibleMultiphase )
       	{
         	  ipar[0]=parameters.dbase.get<int >("rc");
         	  ipar[1]=parameters.dbase.get<int >("uc");
@@ -2822,7 +2822,7 @@ applyBoundaryConditions(const real & t,
                 DataBase *pdb = &parameters.dbase;
                 if( (assignSlipWall || assignAxisymmetric) && parameters.dbase.get<int >("slipWallBoundaryConditionOption")!=4 )
       	{
-        	  cnsSlipWallBC(mg.numberOfDimensions(),
+        	  cssiSlipWallBC(mg.numberOfDimensions(),
                   			uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
                   			uLocal.getBase(2),uLocal.getBound(2),uLocal.getBase(3),uLocal.getBound(3),
                   			ipar[0],rpar[0], *pu, 
@@ -2834,7 +2834,7 @@ applyBoundaryConditions(const real & t,
       	else if( (assignSlipWall || assignAxisymmetric) )
       	{
 	  // slip-wall derivative conditions
-        	  cnsSlipWallBC2(mg.numberOfDimensions(),
+        	  cssiSlipWallBC2(mg.numberOfDimensions(),
                    			 uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
                    			 uLocal.getBase(2),uLocal.getBound(2),uLocal.getBase(3),uLocal.getBound(3),
                    			 ipar[0],rpar[0], *pu, 
@@ -2845,7 +2845,7 @@ applyBoundaryConditions(const real & t,
 
                 if( assignFarField )
       	{
-        	  cnsFarFieldBC(mg.numberOfDimensions(),
+        	  cssiFarFieldBC(mg.numberOfDimensions(),
                   			uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
                   			uLocal.getBase(2),uLocal.getBound(2),uLocal.getBase(3),uLocal.getBound(3),
                   			ipar[0],rpar[0], *pu, 
@@ -2862,7 +2862,7 @@ applyBoundaryConditions(const real & t,
             
 //       if( debug() & 4 )
 //       {
-//         fprintf(parameters.dbase.get<FILE* >("pDebugFile"),">>>cnsBC: Errors after cnsSlipWallBC, t=%9.3e\n",t);
+//         fprintf(parameters.dbase.get<FILE* >("pDebugFile"),">>>cssiBC: Errors after cssiSlipWallBC, t=%9.3e\n",t);
 //         determineErrors(u,t);
 
 //       }
@@ -2870,8 +2870,8 @@ applyBoundaryConditions(const real & t,
             if( debug() & 16 )
             {
       	char buff[80];
-      	::display(u,sPrintF(buff,"cnsBC:After cnsSlipWallBC (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.5f ");
-	// ::display(u,sPrintF(buff,"cnsBC:After cnsSlipWallBC (t=%8.2e)",t),stdout,"%7.5f ");
+      	::display(u,sPrintF(buff,"cssiBC:After cssiSlipWallBC (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.5f ");
+	// ::display(u,sPrintF(buff,"cssiBC:After cssiSlipWallBC (t=%8.2e)",t),stdout,"%7.5f ");
             }
 
       // if( true ) return 0;  // ******************************************************************
@@ -2883,13 +2883,13 @@ applyBoundaryConditions(const real & t,
             if( debug() & 64 )
             {
       	char buff[80];
-      	::display(u,sPrintF(buff,"cnsBC:Before slipWall symmetry (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.4f ");
+      	::display(u,sPrintF(buff,"cssiBC:Before slipWall symmetry (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%7.4f ");
             }
 
             const bool useExtrap=false;  // set to true to use old extrap BC's for the slipWall
             if( !useExtrap && !newMovingGridBoundaryConditions )
             {
-      	if( pde!=CnsParameters::compressibleMultiphase )
+      	if( pde!=CssiParameters::compressibleMultiphase )
       	{
         	  u.applyBoundaryCondition(V,vectorSymmetry,slipWall,0.,t); 
         	  u.applyBoundaryCondition(rc,evenSymmetry ,slipWall,0.,t);
@@ -2912,7 +2912,7 @@ applyBoundaryConditions(const real & t,
             {
       	extrapParams.ghostLineToAssign=1;
       	extrapParams.orderOfExtrapolation=3;
-      	if( pde!=CnsParameters::compressibleMultiphase )
+      	if( pde!=CssiParameters::compressibleMultiphase )
       	{
           // ** u.applyBoundaryCondition(V,vectorSymmetry, slipWall,0.,t,extrapParams); // ****** 010629
         	  u.applyBoundaryCondition(V,extrapolate, slipWall,0.,t,extrapParams); // ****** 010629
@@ -2938,16 +2938,16 @@ applyBoundaryConditions(const real & t,
             if( debug() & 64 )
             {
       	char buff[80];
-      	::display(u,sPrintF(buff,"cnsBC:After slip wall even-symmetry: u (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%13.10f ");
+      	::display(u,sPrintF(buff,"cssiBC:After slip wall even-symmetry: u (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%13.10f ");
             }
         }
         else
         {
-            assert( pde!=CnsParameters::compressibleMultiphase );
+            assert( pde!=CssiParameters::compressibleMultiphase );
             
       // **** old way
             if( true &&  // 010629: try turning this off **************************************************
-        	  parameters.dbase.get<CnsParameters::PDEVariation >("pdeVariation")==CnsParameters::conservativeGodunov )
+        	  parameters.dbase.get<CssiParameters::PDEVariation >("pdeVariation")==CssiParameters::conservativeGodunov )
             {
       	extrapParams.ghostLineToAssign=1;
       	extrapParams.orderOfExtrapolation=2;
@@ -2973,13 +2973,13 @@ applyBoundaryConditions(const real & t,
     if( debug() & 64 )
     {
         char buff[80];
-        ::display(u,sPrintF(buff,"cnsBC:Before assignSymmetry: u (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%13.10f ");
+        ::display(u,sPrintF(buff,"cssiBC:Before assignSymmetry: u (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%13.10f ");
     }
 
   // symmetry
     if( assignSymmetry )
     {
-        if( pde!=CnsParameters::compressibleMultiphase )
+        if( pde!=CssiParameters::compressibleMultiphase )
         {
             u.applyBoundaryCondition(V,vectorSymmetry, symmetry,0.,t);
             u.applyBoundaryCondition(rc,neumann,       symmetry,0.,t);
@@ -2999,7 +2999,7 @@ applyBoundaryConditions(const real & t,
             u.applyBoundaryCondition(S,neumann,symmetry,0.,t);
 
     // 050602 -- do this for now --- fix this 
-        if( true || parameters.dbase.get<CnsParameters::PDEVariation >("pdeVariation")==CnsParameters::conservativeGodunov )
+        if( true || parameters.dbase.get<CssiParameters::PDEVariation >("pdeVariation")==CssiParameters::conservativeGodunov )
         {
             extrapParams.ghostLineToAssign=2;
             extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForSecondGhostLine"); 
@@ -3011,11 +3011,11 @@ applyBoundaryConditions(const real & t,
     if( debug() & 64 )
     {
         char buff[80];
-        ::display(u,sPrintF(buff,"cnsBC:Before finishBoundaryConditions: u (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%13.10f ");
+        ::display(u,sPrintF(buff,"cssiBC:Before finishBoundaryConditions: u (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%13.10f ");
     }
 
   // numSent=getSent();
-  // if( parameters.dbase.get<int >("myid")==0 ) printf("******* cnsBC: After final symmetry: new messages sent=%i\n",numSent);
+  // if( parameters.dbase.get<int >("myid")==0 ) printf("******* cssiBC: After final symmetry: new messages sent=%i\n",numSent);
 
     extrapParams.ghostLineToAssign=1;
     extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForSecondGhostLine"); // 1;
@@ -3082,12 +3082,12 @@ applyBoundaryConditions(const real & t,
         if( debug() & 16 )
         {
             char buff[80];
-            ::display(u,sPrintF(buff,"cnsBC:After new symmetry BC: u (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%6.3f ");
+            ::display(u,sPrintF(buff,"cssiBC:After new symmetry BC: u (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%6.3f ");
         }
     }
     
   // numSent=getSent();
-  // if( parameters.dbase.get<int >("myid")==0 ) printf("******* cnsBC: After finishBoundaryConditions: new messages sent=%i\n",numSent);
+  // if( parameters.dbase.get<int >("myid")==0 ) printf("******* cssiBC: After finishBoundaryConditions: new messages sent=%i\n",numSent);
 
     if( !useNewSymmetryBC )  // ====================================
     {
@@ -3096,7 +3096,7 @@ applyBoundaryConditions(const real & t,
     if( debug() & 16 )
     {
         char buff[80];
-        ::display(u,sPrintF(buff,"cnsBC:After finishBoundaryConditions (before corner symmetry): u (t=%9.2e)",t),
+        ::display(u,sPrintF(buff,"cssiBC:After finishBoundaryConditions (before corner symmetry): u (t=%9.2e)",t),
                             parameters.dbase.get<FILE* >("pDebugFile"),"%9.2e ");
     }
     
@@ -3122,7 +3122,7 @@ applyBoundaryConditions(const real & t,
     {
         int rc=parameters.dbase.get<int >("rc"), uc=parameters.dbase.get<int >("uc"), vc=parameters.dbase.get<int >("vc"), wc=parameters.dbase.get<int >("wc"), tc=parameters.dbase.get<int >("tc");
           
-        if( pde==CnsParameters::compressibleMultiphase )
+        if( pde==CssiParameters::compressibleMultiphase )
         {
             rc=mpRho[m];
             uc=mpV[m].getBase();
@@ -3208,7 +3208,7 @@ applyBoundaryConditions(const real & t,
 		// * {
                 // *   // *wdh* 080329 -- I think that a slip wall next to an axisymmetric wall is ok 
                 // * 
-		// *   printf("cnsBC:ERROR:Symmetry corner condition -- fix this case for moving grids\n");
+		// *   printf("cssiBC:ERROR:Symmetry corner condition -- fix this case for moving grids\n");
 		// *   printf(" grid=%i, mg.boundaryCondition(side,axis)=%i, bc(side2,axisp1)=%i\n",
 		// * 	 grid,mg.boundaryCondition(side,axis),mg.boundaryCondition(side2,axisp1));
 		// *   // Overture::abort("ERROR");
@@ -3243,7 +3243,7 @@ applyBoundaryConditions(const real & t,
               		  uLocal(i1,i2,i3,tc)=uLocal(j1,j2,j3,tc);
               		  if( numberOfSpecies>0 )
                 		    uLocal(i1,i2,i3,S)=uLocal(j1,j2,j3,S);
-                                    if( pde==CnsParameters::compressibleMultiphase )
+                                    if( pde==CssiParameters::compressibleMultiphase )
                                         uLocal(i1,i2,i3,mpA)=uLocal(j1,j2,j3,mpA);
                                 
               		  uLocal(i1,i2,i3,uc)=uLocal(j1,j2,j3,uc);
@@ -3286,7 +3286,7 @@ applyBoundaryConditions(const real & t,
       // ---------------- Symmetry Fixup for 3D ------------------------
       // ---------------------------------------------------------------
 
-//      printf("***WARNING*** applyBoundaryConditionsCNS: symmetry correction at corners at not yet been "
+//      printf("***WARNING*** applyBoundaryConditionsCSSI: symmetry correction at corners at not yet been "
 //             "implemented in 3D\n");
             Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
             Index Jv[3], &J1=Jv[0], &J2=Jv[1], &J3=Jv[2];
@@ -3318,7 +3318,7 @@ applyBoundaryConditions(const real & t,
 
           	    if( mg.boundaryCondition(side,axis)==symmetry )
           	    {
-            	      Overture::abort("cnsBC:ERROR: finish this for symmetry");
+            	      Overture::abort("cssiBC:ERROR: finish this for symmetry");
           	    }
         	  
 
@@ -3386,7 +3386,7 @@ applyBoundaryConditions(const real & t,
                 		    uLocal(I1,I2,I3,tc)=uLocal(J1,J2,J3,tc);
                 		    if( numberOfSpecies>0 )
                   		      uLocal(I1,I2,I3,S)=uLocal(J1,J2,J3,S);
-                		    if( pde==CnsParameters::compressibleMultiphase )
+                		    if( pde==CssiParameters::compressibleMultiphase )
                   		      uLocal(I1,I2,I3,mpA)=uLocal(J1,J2,J3,mpA);
                                 
                 		    if( isRectangular )
@@ -3446,7 +3446,7 @@ applyBoundaryConditions(const real & t,
     if( debug() & 16 )
     {
         char buff[80];
-        ::display(u,sPrintF(buff,"cnsBC:After symmetry BC (end of cnsBC): u (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%9.2e ");
+        ::display(u,sPrintF(buff,"cssiBC:After symmetry BC (end of cssiBC): u (t=%8.2e)",t),parameters.dbase.get<FILE* >("pDebugFile"),"%9.2e ");
     }
     
     }  // end if( !useNewSymmetryBC )
@@ -3506,7 +3506,7 @@ applyBoundaryConditions(const real & t,
     }
 ----- */
 
-    checkArrayIDs(" cnsBC: done"); 
+    checkArrayIDs(" cssiBC: done"); 
 
     parameters.dbase.get<RealArray>("timing")(parameters.dbase.get<int>("timeForBoundaryConditions"))+=getCPU()-time0;
     return 0;

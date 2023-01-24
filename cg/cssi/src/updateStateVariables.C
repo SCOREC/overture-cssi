@@ -1,9 +1,9 @@
-#include "Cgcns.h"
+#include "Cgcssi.h"
 #include "CompositeGridOperators.h"
 #include "GridCollectionOperators.h"
 #include "ParallelUtility.h"
 #include "ParallelGridUtility.h"
-#include "CnsParameters.h"
+#include "CssiParameters.h"
 
 #define SETEOS EXTERN_C_NAME(seteos)
 
@@ -36,13 +36,13 @@ extern "C"
 /// In the second stage, (stage=1) the function is called after the boundary conditions have
 /// been applied. Make sure that the state variables have been updated at all points after this step.
 // ===================================================================================================================
-int Cgcns::
+int Cgcssi::
 updateStateVariables(GridFunction & cgf, int stage /* = -1 */)
 {
-  if( parameters.dbase.get<CnsParameters::PDE >("pde")==CnsParameters::compressibleNavierStokes && 
-      parameters.dbase.get<CnsParameters::PDEVariation >("pdeVariation")==CnsParameters::conservativeGodunov )
+  if( parameters.dbase.get<CssiParameters::PDE >("pde")==CssiParameters::compressibleNavierStokes && 
+      parameters.dbase.get<CssiParameters::PDEVariation >("pdeVariation")==CssiParameters::conservativeGodunov )
   {
-    if( parameters.dbase.get<CnsParameters::GodunovVariation >("conservativeGodunovMethod")==CnsParameters::multiFluidVersion )
+    if( parameters.dbase.get<CssiParameters::GodunovVariation >("conservativeGodunovMethod")==CssiParameters::multiFluidVersion )
     {
       // nothing to do currently for the multifluid (cmfdu.f)
       return 0;
@@ -62,9 +62,9 @@ updateStateVariables(GridFunction & cgf, int stage /* = -1 */)
 
     const int niparam=20;
     IntegerArray iparam(niparam);
-    iparam(0)=parameters.dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState");
+    iparam(0)=parameters.dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState");
     iparam(1)=parameters.dbase.get<int >("numberOfSpecies");
-    if( parameters.dbase.get<CnsParameters::GodunovVariation >("conservativeGodunovMethod")==CnsParameters::multiComponentVersion )
+    if( parameters.dbase.get<CssiParameters::GodunovVariation >("conservativeGodunovMethod")==CssiParameters::multiComponentVersion )
     {
       iparam(10)=1;
     }
@@ -72,7 +72,7 @@ updateStateVariables(GridFunction & cgf, int stage /* = -1 */)
     {
       iparam(10)=0;
     }
-    if( parameters.dbase.get<CnsParameters::ReactionTypeEnum >("reactionType")==CnsParameters::igDesensitization )
+    if( parameters.dbase.get<CssiParameters::ReactionTypeEnum >("reactionType")==CssiParameters::igDesensitization )
     {
       iparam(15)=1;
     }
@@ -192,8 +192,8 @@ updateStateVariables(GridFunction & cgf, int stage /* = -1 */)
   }
   
   if( false &&   // *wdh* this was added 060713 to track down a bug -- I don't think it is needed(?)
-      parameters.dbase.get<CnsParameters::PDEVariation >("pdeVariation")==CnsParameters::conservativeGodunov &&
-      parameters.dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState")==CnsParameters::jwlEOS )
+      parameters.dbase.get<CssiParameters::PDEVariation >("pdeVariation")==CssiParameters::conservativeGodunov &&
+      parameters.dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState")==CssiParameters::jwlEOS )
   {
     printF("updateStateVariables: update parallel ghost after seteos\n");
     for( int grid=0; grid<cgf.cg.numberOfComponentGrids(); grid++ )

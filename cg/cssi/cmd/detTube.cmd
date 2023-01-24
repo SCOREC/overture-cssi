@@ -5,10 +5,10 @@
 *      cg noplot detTube
 *  
 * Sample parallel commands:
-*   mpirun -np 2 $cgcnsp -readCollective -writeCollective detTube
-*   srun -N2 -n8 -ppdebug $cgcnsp -noplot detTube >! detTube.mf.N2n8.out  &
-*   srun -N1 -n8 -ppdebug $cgcnsp -noplot detTube >! detTube.mf.N1n8.out  &
-*   srun -N2 -n16 -ppdebug $cgcnsp -noplot detTube >! detTube.N2n16.out  &
+*   mpirun -np 2 $cgcssip -readCollective -writeCollective detTube
+*   srun -N2 -n8 -ppdebug $cgcssip -noplot detTube >! detTube.mf.N2n8.out  &
+*   srun -N1 -n8 -ppdebug $cgcssip -noplot detTube >! detTube.mf.N1n8.out  &
+*   srun -N2 -n16 -ppdebug $cgcssip -noplot detTube >! detTube.N2n16.out  &
 * Notes:
 *  (1) You will need to generate the grid using ogen 
 *        and the command file Overture/sampleGrids/tubeArg.cmd

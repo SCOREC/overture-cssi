@@ -1,19 +1,19 @@
-#ifndef CGCNS_H
-#define CGCNS_H
+#ifndef CGCSSI_H
+#define CGCSSI_H
 
 #include "DomainSolver.h"
 
 
-//   Cgcns can be used to solve the compressible Navier-Stokes and reactive Euler equations.
+//   Cgcssi can be used to solve the the multi-moment kernel from Gkeyll
 
-class Cgcns : public DomainSolver
+class Cgcssi : public DomainSolver
 {
 public:
 
-Cgcns(CompositeGrid & cg, GenericGraphicsInterface *ps=NULL, Ogshow *show=NULL, const int & plotOption=1 );
+Cgcssi(CompositeGrid & cg, GenericGraphicsInterface *ps=NULL, Ogshow *show=NULL, const int & plotOption=1 );
 
 
-virtual ~Cgcns();
+virtual ~Cgcssi();
 
 
 virtual int 

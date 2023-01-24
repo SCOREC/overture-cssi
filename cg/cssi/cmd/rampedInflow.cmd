@@ -1,9 +1,9 @@
-# cgcns command file: Example showing the use of ramped inflow values
+# cgcssi command file: Example showing the use of ramped inflow values
 # 
 # Ramp the inflow values from (ra,ua,Ta) to (rb,ub,Tb) over the time interval (ta,tb)
 #
 # Usage:
-#    cgcns rampedInflow.cmd 
+#    cgcssi rampedInflow.cmd 
 #
 $tFinal=1.; $tPlot=.05; $backGround="rectangle"; $show=" "; 
 $show = " ";  $format="%18.12e";  $debug=0; 

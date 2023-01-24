@@ -45,7 +45,7 @@ buildReactions()
   }
   else if( reactionName=="ignition-pressure reaction rate" )
   {
-    // number of species is set in CnsParameters for this case (multi-fluid)
+    // number of species is set in CssiParameters for this case (multi-fluid)
   }
   else
   {

@@ -1,6 +1,6 @@
 #
 # Create the initial grid for a flexible beam in a channel
-# Use this grid with cgcns for a fluid-structure example.
+# Use this grid with cgcssi for a fluid-structure example.
 #
 # Usage:
 #         ogen [noplot] beam_in_channel_dynamic_with_beam_grid [options]

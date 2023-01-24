@@ -1,13 +1,13 @@
-#include "Cgcns.h"
+#include "Cgcssi.h"
 
-void Cgcns::
+void Cgcssi::
 addForcing(MappedGrid& mg, realMappedGridFunction & dvdt, int iparam[], real rparam[],
 		realMappedGridFunction & dvdtImplicit = Overture::nullRealMappedGridFunction())
 {
 }
 
 
-// int Cgcns:: 
+// int Cgcssi:: 
 // applyBoundaryConditions(const real & t, realMappedGridFunction & u, 
 // 			realMappedGridFunction & gridVelocity,
 // 			const int & grid,
@@ -19,7 +19,7 @@ addForcing(MappedGrid& mg, realMappedGridFunction & dvdt, int iparam[], real rpa
 //   return 0;
 // }
 
-int Cgcns::
+int Cgcssi::
 getUt(const realMappedGridFunction & v, 
 	  const realMappedGridFunction & gridVelocity, 
 	  realMappedGridFunction & dvdt, 
@@ -33,7 +33,7 @@ getUt(const realMappedGridFunction & v,
 
 
 
-void Cgcns::
+void Cgcssi::
 getTimeSteppingEigenvalue(MappedGrid & mg, 
  			       realMappedGridFunction & u, 
  			       realMappedGridFunction & gridVelocity,  

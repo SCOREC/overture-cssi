@@ -124,8 +124,8 @@ getInterfaceDataOptions( GridFaceDescriptor & info, int & interfaceDataOptions )
     }
     else if( interfaceType(side,axis,grid)==Parameters::tractionInterface ) 
     {
-    // *** do this for now ** this function should be over-loaded by Cgad, Cgins, Cgcns, and Cgsm
-        if( getClassName()=="Cgins" || getClassName()=="Cgcns" )
+    // *** do this for now ** this function should be over-loaded by Cgad, Cgins, Cgcssi, and Cgsm
+        if( getClassName()=="Cgins" || getClassName()=="Cgcssi" )
         {
             interfaceDataOptions=Parameters::positionInterfaceData;
         }
@@ -804,7 +804,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 
 
       // ************ do this for now as a test ***************
-            if( getClassName()=="Cgins" || getClassName()=="Cgcns" )
+            if( getClassName()=="Cgins" || getClassName()=="Cgcssi" )
             {
         // We could optimize this for rectangular grids 
                 mg.update(MappedGrid::THEvertexBoundaryNormal);

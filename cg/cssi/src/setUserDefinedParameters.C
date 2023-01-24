@@ -1,4 +1,4 @@
-#include "CnsParameters.h"
+#include "CssiParameters.h"
 #include <math.h>
 
 //   F77_BLANK_COMMON
@@ -85,7 +85,7 @@ extern "C"
 }
 
 //\begin{>>Parameters.tex}{\subsection{setUserDefinedParameters}}  
-int CnsParameters::
+int CssiParameters::
 setUserDefinedParameters()  // allow user defined  dbase.get<ListOfShowFileParameters >("pdeParameters") to be passed to C or Fortran routines.
 // ==============================================================================================
 //  /Description:
@@ -140,11 +140,11 @@ setUserDefinedParameters()  // allow user defined  dbase.get<ListOfShowFileParam
     MVARS.ilimit=1;
   }
 
-  EquationOfStateEnum & equationOfState = dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState");
+  EquationOfStateEnum & equationOfState = dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState");
   
 
   MVARS.ides=0; // default to zero ... possibly change below
-  if(  dbase.get<CnsParameters::ReactionTypeEnum >("reactionType")==ignitionAndGrowth ||  dbase.get<CnsParameters::ReactionTypeEnum >("reactionType")==igDesensitization )
+  if(  dbase.get<CssiParameters::ReactionTypeEnum >("reactionType")==ignitionAndGrowth ||  dbase.get<CssiParameters::ReactionTypeEnum >("reactionType")==igDesensitization )
   {
     bool fdra, fdeb, fdex, fdec, fded, fdey, fdee, fdeg, fdez;
     bool fdal0, fdal1, fdal2, fdai, fdag1, fdag2, fdpref, fdtref;
@@ -171,19 +171,19 @@ setUserDefinedParameters()  // allow user defined  dbase.get<ListOfShowFileParam
 
     if( !fdra || !fdeb || !fdex || !fdec || !fded || !fdey || !fdee || !fdeg || !fdez )
     {
-      printf("Error (cns) : undefined IG rate parameter(s)\n");
+      printf("Error (cssi) : undefined IG rate parameter(s)\n");
       exit(0);
     }
     if( !fdal0 || !fdal1 || !fdal2 || !fdai || !fdag1 || !fdag2 || !fdpref || !fdtref )
     {
-      printf("Error (cns) : undefined IG amplitude or cut-off parameter(s)\n");
+      printf("Error (cssi) : undefined IG amplitude or cut-off parameter(s)\n");
       exit(0);
     }
     
     IGDAT.ai=tref*ai;
     IGDAT.ag1=tref*ag1*pow(pref,IGDAT.ey);
     IGDAT.ag2=tref*ag2*pow(pref,IGDAT.ez);
-    if(  dbase.get<CnsParameters::ReactionTypeEnum >("reactionType")==igDesensitization ) 
+    if(  dbase.get<CssiParameters::ReactionTypeEnum >("reactionType")==igDesensitization ) 
     {
       DESEN.alamc=0.01;                 // default value
       bool fdAr, fder, fdra1, fdalamc;
@@ -203,7 +203,7 @@ setUserDefinedParameters()  // allow user defined  dbase.get<ListOfShowFileParam
 
   if(  equationOfState==jwlEOS )
   {
-    if(  dbase.get<CnsParameters::GodunovVariation >("conservativeGodunovMethod")==multiComponentVersion )
+    if(  dbase.get<CssiParameters::GodunovVariation >("conservativeGodunovMethod")==multiComponentVersion )
     {
       // multicomponent JWL
       bool fdwi,fdws,fdwg,fda11,fda12,fda21,fda22,fda13,fda23;
@@ -486,7 +486,7 @@ setUserDefinedParameters()  // allow user defined  dbase.get<ListOfShowFileParam
     }
   }
 
-  if(  dbase.get<CnsParameters::PDE >("pde")==compressibleMultiphase )
+  if(  dbase.get<CssiParameters::PDE >("pde")==compressibleMultiphase )
   {
     GASDAT.gam[0]=1.4;    // default values
     GASDAT.gam[1]=1.4;

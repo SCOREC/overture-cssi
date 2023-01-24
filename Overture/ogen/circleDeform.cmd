@@ -1,6 +1,6 @@
 *
 * Create the initial grid for a deforming circle.
-* Use this grid with cg/cns/cmd circleDeform.cmd 
+* Use this grid with cg/cssi/cmd circleDeform.cmd 
 *
 *
 * $factor=1.; $gridName = "circleDeform.hdf"; 

@@ -4,7 +4,7 @@
 //
 // usage:
 //    cr [fileName]
-//     fileName = one of ins.results or asf.results or cns.results
+//     fileName = one of ins.results or asf.results or cssi.results
 
 int 
 getLineFromFile( FILE *file, char s[], int lim);
@@ -87,8 +87,8 @@ main(int argc, char *argv[])
       outputFileName="insTables.tex";
     else if( fileName[0](0,2)=="asf" )
       outputFileName="asfTables.tex";
-    else if( fileName[0](0,2)=="cns" )
-      outputFileName="cnsTables.tex";
+    else if( fileName[0](0,2)=="cssi" )
+      outputFileName="cssiTables.tex";
     else
       outputFileName="newTables.tex";
   }

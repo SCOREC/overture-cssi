@@ -1,29 +1,29 @@
 *
-* cgcns command file: a 3D shock moving through two intersecting pipes. 
+* cgcssi command file: a 3D shock moving through two intersecting pipes. 
 *
-*  usage: cgcns [-noplot] twoPipes -g=<name> -l=<levels> -r=[ratio] -tf=<tFinal> -tp=<tPlot> ...
+*  usage: cgcssi [-noplot] twoPipes -g=<name> -l=<levels> -r=[ratio] -tf=<tFinal> -tp=<tPlot> ...
 *               -x0=<num> -show=<name> -debug=<num> -go=[run/halt/og]
 *
 * Examples:
 *
-*  cgcns -noplot twoPipes -g=twoPipese2.order2.hdf -l=1 -r=2 -tf=1.5 -tp=.1 -y0=1.75 -show="twoPipes.show" -go=og
-*  cgcns -noplot twoPipes -g=twoPipese2.order2.hdf -l=2 -r=4 -tf=1.5 -tp=.1 -y0=1.75 -show="twoPipes.show" >! twoPipesl2r4.out &
+*  cgcssi -noplot twoPipes -g=twoPipese2.order2.hdf -l=1 -r=2 -tf=1.5 -tp=.1 -y0=1.75 -show="twoPipes.show" -go=og
+*  cgcssi -noplot twoPipes -g=twoPipese2.order2.hdf -l=2 -r=4 -tf=1.5 -tp=.1 -y0=1.75 -show="twoPipes.show" >! twoPipesl2r4.out &
 *
-*  mpirun -np 1 $cgcnsp twoPipes -g=twoPipese2.order2.hdf -l=1 -r=2 -tf=1.5 -tp=.1 -y0=1.75 -go=halt
-*  srun -N1 -n4 -ppdebug $cgcnsp noplot twoPipes -g=twoPipese2.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -y0=1.5 -show="twoPipesl2r2.show" >! twoPipes2l2r2.N1n4.out &
+*  mpirun -np 1 $cgcssip twoPipes -g=twoPipese2.order2.hdf -l=1 -r=2 -tf=1.5 -tp=.1 -y0=1.75 -go=halt
+*  srun -N1 -n4 -ppdebug $cgcssip noplot twoPipes -g=twoPipese2.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -y0=1.5 -show="twoPipesl2r2.show" >! twoPipes2l2r2.N1n4.out &
 * bug : seg fault round t=.3: 
-*   mpirun -np 1 $cgcnsp noplot twoPipes -g=twoPipese2.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -y0=1.5 -show="twoPipes.show" -go=go >! twoPipes.l2r2.np1.out &
+*   mpirun -np 1 $cgcssip noplot twoPipes -g=twoPipese2.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -y0=1.5 -show="twoPipes.show" -go=go >! twoPipes.l2r2.np1.out &
 * 
 * bug ?: 
-*   mpirun -np 1 $cgcnsp noplot twoPipes -g=twoPipese2.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -y0=1. -show="twoPipes.show" -go=go >! twoPipes.l2r2.np1.out &
+*   mpirun -np 1 $cgcssip noplot twoPipes -g=twoPipese2.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -y0=1. -show="twoPipes.show" -go=go >! twoPipes.l2r2.np1.out &
 * 
-*  srun -N1 -n4 -ppdebug $cgcnsp noplot twoPipes -g=twoPipese2.order2.hdf -l=1 -r=2 -tf=1.5 -tp=.1 -y0=1.75 -show="twoPipes.show" >! twoPipes.out &
-*  totalview srun -a -N1 -n4 -ppdebug $cgcnsp noplot twoPipes -g=twoPipese2.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -y0=1.75 -show="twoPipes2l2r2.show" >! twoPipes2l2r2.out &
-*  srun -N2 -n8 -ppdebug $cgcnsp noplot twoPipes -g=twoPipese4.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -y0=1.5 -show="twoPipes4l2r2.show" >! twoPipes4l2r2.N2n8out &
+*  srun -N1 -n4 -ppdebug $cgcssip noplot twoPipes -g=twoPipese2.order2.hdf -l=1 -r=2 -tf=1.5 -tp=.1 -y0=1.75 -show="twoPipes.show" >! twoPipes.out &
+*  totalview srun -a -N1 -n4 -ppdebug $cgcssip noplot twoPipes -g=twoPipese2.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -y0=1.75 -show="twoPipes2l2r2.show" >! twoPipes2l2r2.out &
+*  srun -N2 -n8 -ppdebug $cgcssip noplot twoPipes -g=twoPipese4.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -y0=1.5 -show="twoPipes4l2r2.show" >! twoPipes4l2r2.N2n8out &
 *
-* srun -N1 -n1 -ppdebug $cgcnsp noplot twoPipes -g=twoPipese2.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -y0=1.25 -show="twoPipes.show" -go=go >! twoPipes.l2r2.np1.out &
+* srun -N1 -n1 -ppdebug $cgcssip noplot twoPipes -g=twoPipese2.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -y0=1.25 -show="twoPipes.show" -go=go >! twoPipes.l2r2.np1.out &
 * 
-*  cgcns -noplot twoPipes -g=twoPipese2.order2.hdf -l=2 -r=2 -tf=1.5 -tp=.1 -y0=1.25 
+*  cgcssi -noplot twoPipes -g=twoPipese2.order2.hdf -l=2 -r=2 -tf=1.5 -tp=.1 -y0=1.25 
 * 
 * --- set default values for parameters ---
 $go="run"; $show = " "; $nplot="";

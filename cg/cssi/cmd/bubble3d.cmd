@@ -1,5 +1,5 @@
 *
-* cgcns command file for a shock hitting a 3d bubble
+* cgcssi command file for a shock hitting a 3d bubble
 *
 $show = "  ";
 $cfl=.9; $radius=.2; $debug=1; $x0=.5; $y0=.5; $z0=.5; $xShock=.2; 

@@ -2,7 +2,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "GenericGraphicsInterface.h"
-#include "CnsParameters.h"
+#include "CssiParameters.h"
 
 
 
@@ -35,7 +35,7 @@ int sc;  // component number of first reactive species
 // ==========================================================================================
 /// \brief Interactively select a user defined Equation of State (EOS).
 // ==========================================================================================
-int CnsParameters::
+int CssiParameters::
 updateUserDefinedEOS(GenericGraphicsInterface & gi)
 {
 
@@ -114,7 +114,7 @@ updateUserDefinedEOS(GenericGraphicsInterface & gi)
 
   if( userEOSData.equationOfState!=UserDefinedEOSData::noUserDefinedEOS )
   {
-    dbase.get<CnsParameters::EquationOfStateEnum >("equationOfState")=userDefinedEOS;
+    dbase.get<CssiParameters::EquationOfStateEnum >("equationOfState")=userDefinedEOS;
     // Set the opaque pointer to the user EOS data. NULL means there is no user EOS.
     userEOSDataPointer=&userEOSData;
     // printF(" &userEOSData = [%p]\n",&userEOSData);

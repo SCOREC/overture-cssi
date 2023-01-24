@@ -255,7 +255,7 @@ c ***********************************************************************
 
 
 
-      subroutine cnsNoSlipBC(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
+      subroutine cssiNoSlipBC(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
           ipar,rpar, u, gv, gtt, mask, x,rsxy, bc, indexRange, exact, uKnown, ierr )         
 c========================================================================
 c
@@ -387,7 +387,7 @@ c .............. end statement functions
 
 
       ierr=0
-      ! write(*,*) 'Inside cnsSlipWallBC'
+      ! write(*,*) 'Inside cssiSlipWallBC'
 
       rc                =ipar(0)
       uc                =ipar(1)
@@ -429,7 +429,7 @@ c .............. end statement functions
       kThermal          =rpar(15)
       Rg                =rpar(16)
 
-c      write(*,'(" **** cnsNoSlipBC: mu,kThermal,Rg=",3e9.2," gravity=",3f6.1)') \
+c      write(*,'(" **** cssiNoSlipBC: mu,kThermal,Rg=",3e9.2," gravity=",3f6.1)') \
 c          mu,kThermal,Rg,gravity(0),gravity(1),gravity(2)
 c      ! ' 
 
@@ -453,7 +453,7 @@ c      ! '
         ! *********************************************************************
 
         if( gridIsMoving.ne.0 )then
-          write(*,'("cnsNoSlipBC:ERROR: gridIsMoving not implemented yet for rectangular")')
+          write(*,'("cssiNoSlipBC:ERROR: gridIsMoving not implemented yet for rectangular")')
           ! '
           stop 6642
         end if
@@ -621,7 +621,7 @@ c            i1,i2,r0,T0,p0,alpha,u(i1-is1,i2-is2,i3,rc )
         ! *********************************************************************
 
         if( gridIsMoving.ne.0 )then
-          write(*,'("cnsNoSlipBC:ERROR: gridIsMoving not implemented yet for rectangular")')
+          write(*,'("cssiNoSlipBC:ERROR: gridIsMoving not implemented yet for rectangular")')
           ! '
           stop 6643
         end if

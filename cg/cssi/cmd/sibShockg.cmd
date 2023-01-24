@@ -1,15 +1,15 @@
 *
-*  cgcns command file: shock hitting a sphere (3d)
+*  cgcssi command file: shock hitting a sphere (3d)
 *     Solve the Euler equations with Godunov's method and AMR
 * 
 * Usage:
-*    cgcns [-noplot] sibShockg.cmd -g=<grid> -l=<levels> -r=<ratio> -tf=<final time> ...
+*    cgcssi [-noplot] sibShockg.cmd -g=<grid> -l=<levels> -r=<ratio> -tf=<final time> ...
 *          -tp=<tPlot> -xs=<xstep> -show=<show file> 
 *
 * Examples:
-*     cgcns sibShockg.cmd -g=sib.hdf -l=2 -r=2 -tf=1. -tp=.1 -xs="x=-1."
-*     cgcns sibShockg.cmd -g=sibe2.order2.hdf -l=3 -r=2 -tf=1. -tp=.1 -xs="x=-.75"
-*     srun -N4 -n32 -ppdebug $cgcnsp -noplot sibShockg -g=sibe2.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -xs="x=-.75" >! sib2l2r2.N4n32.out & 
+*     cgcssi sibShockg.cmd -g=sib.hdf -l=2 -r=2 -tf=1. -tp=.1 -xs="x=-1."
+*     cgcssi sibShockg.cmd -g=sibe2.order2.hdf -l=3 -r=2 -tf=1. -tp=.1 -xs="x=-.75"
+*     srun -N4 -n32 -ppdebug $cgcssip -noplot sibShockg -g=sibe2.order2.hdf -l=2 -r=2 -tf=1. -tp=.1 -xs="x=-.75" >! sib2l2r2.N4n32.out & 
 *
 * --- set default values for parameters ---
 $show = " "; 

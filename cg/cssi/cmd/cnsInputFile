@@ -1,28 +1,28 @@
-* This file contains sample command lines for cgcns when running in parallel
+* This file contains sample command lines for cgcssi when running in parallel
 *
-* mpirun -np 2 $cgcnsp -readCollective -writeCollective p.cmd
-* mpirun-wdh -np 2 $cgcnsp -readCollective -writeCollective p.cmd
-* mpirun-wdh -np 2 $cgcnsp p.cmd
+* mpirun -np 2 $cgcssip -readCollective -writeCollective p.cmd
+* mpirun-wdh -np 2 $cgcssip -readCollective -writeCollective p.cmd
+* mpirun-wdh -np 2 $cgcssip p.cmd
 * 
-* mpirun -np 1 $cgcnsp p.cmd
-* mpirun -np 2 $cgcnsp p.cmd
+* mpirun -np 1 $cgcssip p.cmd
+* mpirun -np 2 $cgcssip p.cmd
 * 
-* mpirun -np 2 -all-local -gdb $cgcnsp
+* mpirun -np 2 -all-local -gdb $cgcssip
 * 
-* mpirun -np 1 --dbg=valgrindebug $cgcnsp p.cmd
-* mpirun -np 2 -all-local -dbg=valgrindebug $cgcnsp p.cmd
-* mpirun -np 2 -machinefile machinefile $cgcnsp
+* mpirun -np 1 --dbg=valgrindebug $cgcssip p.cmd
+* mpirun -np 2 -all-local -dbg=valgrindebug $cgcssip p.cmd
+* mpirun -np 2 -machinefile machinefile $cgcssip
 *
-* mpirun -tv -np 2 -all-local $cgcnsp p.cmd
-* mpirun -tv -np 2 -all-local $cgcnsp p.cmd
-* mpirun -np 1 -all-local $cgcnsp p.cmd
+* mpirun -tv -np 2 -all-local $cgcssip p.cmd
+* mpirun -tv -np 2 -all-local $cgcssip p.cmd
+* mpirun -np 1 -all-local $cgcssip p.cmd
 * mcr:
-* mpirun-wdh -np 1 $cgcnsp p.cmd
-* mpirun-wdh -np 2 $cgcnsp p.cmd
+* mpirun-wdh -np 1 $cgcssip p.cmd
+* mpirun-wdh -np 2 $cgcssip p.cmd
 * mcr:
-*   totalview srun -a -N2 -n2 -ppdebug $cgcnsp p.cmd
+*   totalview srun -a -N2 -n2 -ppdebug $cgcssip p.cmd
 *
-* mpirun-wdh -np 2 -ppdebug $cgcnsp p.cmd
+* mpirun-wdh -np 2 -ppdebug $cgcssip p.cmd
 * -----------------------------------------------------------
 *
 * -readCollective -writeCollective p.cmd
@@ -30,11 +30,11 @@
 * 
 * cicShockg.cmd
 *
-* noplot cns/p.cmd
-* cns/p.cmd
-* cns/p2.cmd
-* noplot cns/p3.cmd
-* cns/p3.cmd
+* noplot cssi/p.cmd
+* cssi/p.cmd
+* cssi/p2.cmd
+* noplot cssi/p3.cmd
+* cssi/p3.cmd
 *
 * --- multi-material, shock hitting a bubble:
 * multiBubble.cmd
@@ -42,35 +42,35 @@
 * -- shock hitting a 3d bubble:
 * noplot bubble3d.cmd
 * 
-* noplot cns/sis.cmd
-* noplot cns/sis.cmd
+* noplot cssi/sis.cmd
+* noplot cssi/sis.cmd
 * 
 * -- TZ test:
-* noplot cns/sq.tz.cmd
+* noplot cssi/sq.tz.cmd
 * 
-*  noplot cns/sq.cmd
-* cns/sis.cmd
-*  cns/cicej.cns.cmd
-*  noplot cns/cicej.cns.cmd
-*  cns/sq.cmd
+*  noplot cssi/sq.cmd
+* cssi/sis.cmd
+*  cssi/cicej.cssi.cmd
+*  noplot cssi/cicej.cssi.cmd
+*  cssi/sq.cmd
 * 
-*   noplot cns/box.cmd
+*   noplot cssi/box.cmd
 *
-*   noplot cns/twoBumpg
+*   noplot cssi/twoBumpg
 *
 * sub-sonic flow past a cylinder:
-*  cns/tcilc.cmd
-*  noplot cns/tcilc.cmd
+*  cssi/tcilc.cmd
+*  noplot cssi/tcilc.cmd
 *
 * ---- sphere in a box
-* cns/sib.cmd
+* cssi/sib.cmd
 *
 *  ---- shock tube with AMR
-* cns/shockTubeg
-*   cns/shockTube3d
+* cssi/shockTubeg
+*   cssi/shockTube3d
 * 
-* noplot cns/quarterSphere.cmd
-* cns/quarterSphere.cmd
+* noplot cssi/quarterSphere.cmd
+* cssi/quarterSphere.cmd
 * 
 * Don's quarter sphere in a box:
-* noplot cns/euler3d.don.cmd
+* noplot cssi/euler3d.don.cmd

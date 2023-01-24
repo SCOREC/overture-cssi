@@ -1324,7 +1324,7 @@ takeTimeStepBDF( real & t0, real & dt0, int correction, AdvanceOptions & advance
     advanceOptions.correctionIterationsHaveConverged=false; // this may be set to true below
 
     assert( parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::implicit );
-    parameters.dbase.get<real >("dt")=dt0; // *wdh* 101106 this is the dt used in getUt (cns)
+    parameters.dbase.get<real >("dt")=dt0; // *wdh* 101106 this is the dt used in getUt (cssi)
 
     assert( parameters.dbase.get<int >("orderOfPredictorCorrector")==2 );  // for now we just have 2nd-order in time
 

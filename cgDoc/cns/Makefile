@@ -1,4 +1,4 @@
-# Makefile for the Cgcns documentation
+# Makefile for the Cgcssi documentation
 
 
 all = user ref
@@ -6,44 +6,44 @@ all = user ref
 # User Guide
 # obFiles = $(OverBlown)/OverBlown.C $(OverBlown)/setParameters.C $(OverBlown)/getInitialConditions.C \
 #           $(OverBlown)/OB_CompositeGridSolver.C $(OverBlown)/OB_Parameters.C
-user: CgcnsUserGuide.tex $(CgcnsFiles)
-	extract.p $(CgcnsFiles)
-	pdflatex CgcnsUserGuide
-	bibtex CgcnsUserGuide
-	makeindex CgcnsUserGuide.idx
+user: CgcssiUserGuide.tex $(CgcssiFiles)
+	extract.p $(CgcssiFiles)
+	pdflatex CgcssiUserGuide
+	bibtex CgcssiUserGuide
+	makeindex CgcssiUserGuide.idx
 
-#	mv CgcnsUserGuide.pdf $(WEBPAGE)/documentation
-userOld: CgcnsUserGuide.tex $(CgcnsFiles)
-	extract.p $(CgcnsFiles)
-	latex CgcnsUserGuide
-	makeindex CgcnsUserGuide.idx
-	dvips -P pdf -G0 -o CgcnsUserGuide.ps CgcnsUserGuide.dvi
-	ps2pdf CgcnsUserGuide.ps
-#	mv CgcnsUserGuide.pdf $(WEBPAGE)/documentation
+#	mv CgcssiUserGuide.pdf $(WEBPAGE)/documentation
+userOld: CgcssiUserGuide.tex $(CgcssiFiles)
+	extract.p $(CgcssiFiles)
+	latex CgcssiUserGuide
+	makeindex CgcssiUserGuide.idx
+	dvips -P pdf -G0 -o CgcssiUserGuide.ps CgcssiUserGuide.dvi
+	ps2pdf CgcssiUserGuide.ps
+#	mv CgcssiUserGuide.pdf $(WEBPAGE)/documentation
 
 # Reference Guide
-ref: CgcnsRef.tex
-	pdflatex CgcnsRef
-	bibtex CgcnsRef
-	makeindex CgcnsRef.idx
+ref: CgcssiRef.tex
+	pdflatex CgcssiRef
+	bibtex CgcssiRef
+	makeindex CgcssiRef.idx
 
-refOlder: CgcnsRef.tex
-	pdflatex CgcnsRef
-	bibtex CgcnsRef
+refOlder: CgcssiRef.tex
+	pdflatex CgcssiRef
+	bibtex CgcssiRef
 	bibtex bu1
 	bibtex bu2
-	pdflatex CgcnsRef
-	makeindex CgcnsRef.idx
+	pdflatex CgcssiRef
+	makeindex CgcssiRef.idx
 
 
-refOld: CgcnsRef.tex
-	latex CgcnsRef
-	makeindex CgcnsRef.idx
-	bibtex CgcnsRef
-	latex CgcnsRef
-	dvips -P pdf -G0 -o CgcnsRef.ps CgcnsRef.dvi
-	ps2pdf CgcnsRef.ps
-#	mv CgcnsRef.pdf $(WEBPAGE)/documentation
+refOld: CgcssiRef.tex
+	latex CgcssiRef
+	makeindex CgcssiRef.idx
+	bibtex CgcssiRef
+	latex CgcssiRef
+	dvips -P pdf -G0 -o CgcssiRef.ps CgcssiRef.dvi
+	ps2pdf CgcssiRef.ps
+#	mv CgcssiRef.pdf $(WEBPAGE)/documentation
 
 fig:
 	latex fig.tex

@@ -1,9 +1,9 @@
 #
-# airfoil.cmd : cgcns command file for flow past an airoil
+# airfoil.cmd : cgcssi command file for flow past an airoil
 #
 # Usage:
-#   cgcns [-noplot] airfoil -g=<grid name> -Mach=<machNumber> -tp=<> -tf=<> -show=<name> ...
-#          -cnsVariation=[goudnov|jameson] -restart=<restart-file> ...
+#   cgcssi [-noplot] airfoil -g=<grid name> -Mach=<machNumber> -tp=<> -tf=<> -show=<name> ...
+#          -cssiVariation=[goudnov|jameson] -restart=<restart-file> ...
 #          -amr=[0|1] -tol=<>
 #
 #  Inviscid or viscous flow past an airfoil
@@ -13,24 +13,24 @@
 # Examples:
 #      - NOTE: Use sampleGrids/airfoil.cmd to make airfoile1.order2
 #
-#   cgcns airfoil -g=airfoile1.order2 -tf=1. -amr=0 -show=airfoil1.show -go=halt
+#   cgcssi airfoil -g=airfoile1.order2 -tf=1. -amr=0 -show=airfoil1.show -go=halt
 # - AMR: 
-#   cgcns airfoil -g=airfoile1.order2 -tf=1. -amr=1 -show=airfoil1a.show -go=halt
+#   cgcssi airfoil -g=airfoile1.order2 -tf=1. -amr=1 -show=airfoil1a.show -go=halt
 #
 #  - restart AMR:
-#   cgcns airfoil -g=airfoile1.order2 -tf=1. -amr=1 -show=airfoil1b.show -restart=airfoil1a.show -go=halt
+#   cgcssi airfoil -g=airfoile1.order2 -tf=1. -amr=1 -show=airfoil1b.show -restart=airfoil1a.show -go=halt
 #  - restart on a finer grid: (NOTE: set useGridFromShowfile=0 so we don't use the grid in the show file)
-#   cgcns airfoil -g=airfoile2.order2 -tf=2. -amr=0 -show=airfoil2.show -restart=airfoil1.show -useGridFromShowfile=0 -go=halt
+#   cgcssi airfoil -g=airfoile2.order2 -tf=2. -amr=0 -show=airfoil2.show -restart=airfoil1.show -useGridFromShowfile=0 -go=halt
 #  - restart on a finer grid and turn on amr:
-#   cgcns airfoil -g=airfoile2.order2 -tf=2. -amr=1 -show=airfoil2.show -restart=airfoil1.show -useGridFromShowfile=0 -tol=.05 -go=halt
+#   cgcssi airfoil -g=airfoile2.order2 -tf=2. -amr=1 -show=airfoil2.show -restart=airfoil1.show -useGridFromShowfile=0 -tol=.05 -go=halt
 #
 # - parallel
-#  mpirun -np 2 $cgcnsp airfoil -g=airfoile2.order2 -tf=1. -amr=0 -show=airfoil1.show -go=halt
-#  mpirun -np 2 $cgcnsp airfoil -g=airfoile2.order2 -tf=2. -amr=0 -show=airfoil2.show -restart=airfoil1.show -go=halt
+#  mpirun -np 2 $cgcssip airfoil -g=airfoile2.order2 -tf=1. -amr=0 -show=airfoil1.show -go=halt
+#  mpirun -np 2 $cgcssip airfoil -g=airfoile2.order2 -tf=2. -amr=0 -show=airfoil2.show -restart=airfoil1.show -go=halt
 # 
 $cfl=.95; $tPlot=.1; $tFinal=1.; $show=" "; $debug=0; $mu=0.; $restart=""; $go="halt"; 
 $gamma=1.4;  $Mach=.8; # M = Mach number of incoming flow
-$cnsVariation="godunov"; 
+$cssiVariation="godunov"; 
 $slip="all=slipWall"; $noSlip="all=noSlipWall uniform(T=$T1)"; $bc=$slip;
 $backGround="backGround";
 $useGridFromShowfile=1; 
@@ -40,7 +40,7 @@ $amr=0; $tol=.1; $ratio=2; $nrl=2; $nbz=1; $regrid=100;
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"l=i"=> \$nrl,"r=i"=> \$ratio, "tf=f"=>\$tFinal,"debug=i"=> \$debug, \
             "tp=f"=>\$tPlot, "xStep=s"=>\$xStep, "bg=s"=>\$backGround,"show=s"=>\$show,"go=s"=>\$go,\
-            "cnsVariation=s"=>\$cnsVariation,"Mach=f"=>\$Mach,"restart=s"=>\$restart,"amr=i"=>\$amr,\
+            "cssiVariation=s"=>\$cssiVariation,"Mach=f"=>\$Mach,"restart=s"=>\$restart,"amr=i"=>\$amr,\
             "tol=f"=>\$tol,"useGridFromShowfile=i"=>\$useGridFromShowfile );
 # -------------------------------------------------------------------------------------------------
 # ---------------------------------------------------
@@ -48,9 +48,9 @@ GetOptions( "g=s"=>\$grid,"l=i"=> \$nrl,"r=i"=> \$ratio, "tf=f"=>\$tFinal,"debug
 #  M = Mach number of incoming flow
 $r1=$gamma; $u1=$Mach; $p1=1.; $T1=$p1/$r1; $a1=1.;
 # ---------------------------------------------------
-if( $cnsVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
-if( $cnsVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
-if( $cnsVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
+if( $cssiVariation eq "godunov" ){ $pdeVariation="compressible Navier Stokes (Godunov)"; }
+if( $cssiVariation eq "jameson" ){ $pdeVariation="compressible Navier Stokes (Jameson)"; }   #
+if( $cssiVariation eq "nonconservative" ){ $pdeVariation="compressible Navier Stokes (non-conservative)";}  #
 if( $amr eq 1 ){ $amr="turn on adaptive grids"; }else{ $amr="turn off adaptive grids"; }
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }

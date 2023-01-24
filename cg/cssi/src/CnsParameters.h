@@ -1,9 +1,9 @@
-#ifndef CNS_PARAMETERS
-#define CNS_PARAMETERS
+#ifndef CSSI_PARAMETERS
+#define CSSI_PARAMETERS
 
 #include "Parameters.h"
 // Here are the run time and PDE parameters
-class CnsParameters : public Parameters
+class CssiParameters : public Parameters
 {
 public:
 
@@ -68,8 +68,8 @@ enum TestProblems
   laminarFlame
 };
 
-CnsParameters(const int & numberOfDimensions0=3);
-~CnsParameters();
+CssiParameters(const int & numberOfDimensions0=3);
+~CssiParameters();
 
 virtual 
 int

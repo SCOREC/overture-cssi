@@ -1,4 +1,4 @@
-! This file automatically generated from icnscf.bf with bpp.
+! This file automatically generated from icssicf.bf with bpp.
 
 
 
@@ -18,11 +18,11 @@ c *wdh* 081214 -- xlf does not like +- --> change O1 to (O1) etc. below
 
 
 
-      subroutine icnscf(igd, igi,xyz,rx, jac, mask, iprm,rprm,u,coeff)
+      subroutine icssicf(igd, igi,xyz,rx, jac, mask, iprm,rprm,u,coeff)
 c
 c     060306 kkc Initial version
 c     
-c     icnscf computes the coefficient matrix for the linearized compressible
+c     icssicf computes the coefficient matrix for the linearized compressible
 c     Navier-Stokes equations on a curvilinear grid.  It should work for
 c     both Cartesian and (2D) cylindrical coordinate systems.  The method discretizes
 c     the non-dimensionalized, primitive-variable, and constant coefficient 
@@ -70,8 +70,8 @@ c     LOCAL
       double precision alpha,dr(3),dri(3),dri2(3)
       double precision alpha_r, alpha_s
 c     STATEMENT FUNCTIONS
-      include 'icnssfdec.h'
-      include 'icnssf.h'
+      include 'icssisfdec.h'
+      include 'icssisf.h'
 
       off(1) = 0
       off(2) = 0
@@ -143,7 +143,7 @@ c      alpha = 1d0/600d0
       endif
 
       if ( .false. ) then
-      write (*,*) "INSIDE ICNSCF"
+      write (*,*) "INSIDE ICSSICF"
       write (*,'("grid bounds : ",2(1x,i4))') igd(1,1), igd(2,1)
       write (*,'("              ",2(1x,i4))') igd(1,2), igd(2,2)
       write (*,'("              ",2(1x,i4))') igd(1,3), igd(2,3)
@@ -177,7 +177,7 @@ c     scan and fix negative densities
       do i1=igi(1,1), igi(2,1)
 c            u(i1,i2,i3,rc)  = u(i1,i2,i3,rc) + 1e-7
          if ( mask(i1,i2,i3).gt.0 .and. u(i1,i2,i3,rc).lt.0d0 ) then
-      write(*,*)"WARNING : icnscf : negative density at ",
+      write(*,*)"WARNING : icssicf : negative density at ",
      &           i1,", ",i2," : ",u(i1,i2,i3,rc)
 c         u(i1,i2,i3,rc) = abs(u(i1,i2,i3,rc))
 c            u(i1,i2,i3,rc) = .25d0 * ( abs(u(i1+1,i2,i3,rc)) + 
@@ -2849,11 +2849,11 @@ c            end do
       return
       end
 
-      subroutine icnsrhs(igd, igi, xyz,rx,jac, mask, iprm,rprm,u, rhs)
+      subroutine icssirhs(igd, igi, xyz,rx,jac, mask, iprm,rprm,u, rhs)
 c
 c     060306 kkc Initial version
 c     
-c     icnsrhs computes the right hand side vector for the linearized compressible
+c     icssirhs computes the right hand side vector for the linearized compressible
 c     Navier-Stokes equations on a curvilinear grid.  It should work for
 c     both Cartesian and (2D) cylindrical coordinate systems.  The method discretizes
 c     the non-dimensionalized, primitive-variable, and constant coefficient 
@@ -2863,7 +2863,7 @@ c     Notes:
 c          - only 2D is supported right now
 c          - artificial dissipation could be added to the rhs using the
 c            Jameson method's subroutine
-c          - any forcing terms are NOT added here, they are done elsewhere in cns.C
+c          - any forcing terms are NOT added here, they are done elsewhere in cssi.C
 c
       implicit none
 
@@ -2905,12 +2905,12 @@ c     LOCAL
       double precision alpha
 
 c     STATEMENT FUNCTIONS
-      include 'icnssfdec.h'
-      include 'icnssf.h'
+      include 'icssisfdec.h'
+      include 'icssisf.h'
 c     END OF STATEMENT FUNCTIONS
 
       if ( .false. ) then
-      write (*,*) "INSIDE ICNSRHS"
+      write (*,*) "INSIDE ICSSIRHS"
       write (*,'("grid bounds : ",2(1x,i4))') igd(1,1), igd(2,1)
       write (*,'("              ",2(1x,i4))') igd(1,2), igd(2,2)
       write (*,'("              ",2(1x,i4))') igd(1,3), igd(2,3)

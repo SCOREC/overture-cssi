@@ -1,14 +1,14 @@
 #
 # Test of the Stiffened Gas EOS 
-#    cgcns [-noplot] stiffenedGas -g=<name> -testCase=[ideal|stiff1|stiff2] -userDefinedEOS=[0|1]
+#    cgcssi [-noplot] stiffenedGas -g=<name> -testCase=[ideal|stiff1|stiff2] -userDefinedEOS=[0|1]
 #
 # NOTE: these examples define STEADY shock profiles for an ideal and stiffened gas.
 #
 # Examples:
-#    cgcns stiffenedGas -g=channelShort -testCase=stiff2
-#    cgcns stiffenedGas -g=channelShort -testCase=stiff2 -userDefinedEOS=1
+#    cgcssi stiffenedGas -g=channelShort -testCase=stiff2
+#    cgcssi stiffenedGas -g=channelShort -testCase=stiff2 -userDefinedEOS=1
 # -- 3D:
-#    cgcns stiffenedGas -g=box40.order2 -testCase=stiff2 -userDefinedEOS=1
+#    cgcssi stiffenedGas -g=box40.order2 -testCase=stiff2 -userDefinedEOS=1
 #
 $mu=0.; $kThermal=0.; $Prandtl=.72; $cfl=.9; $go="halt"; 
 $tFinal=5.; $tPlot=.1; 
@@ -18,13 +18,13 @@ $show = "stiffenedGas.show";
 * ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"testCase=s"=> \$testCase, "tf=f"=>\$tFinal,"debug=i"=> \$debug, \
             "tp=f"=>\$tPlot, "xStep=s"=>\$xStep, "bg=s"=>\$backGround,"show=s"=>\$show,"go=s"=>\$go,\
-            "cnsVariation=s"=>\$cnsVariation,"userDefinedEOS=i"=> \$userDefinedEOS );
+            "cssiVariation=s"=>\$cssiVariation,"userDefinedEOS=i"=> \$userDefinedEOS );
 * -------------------------------------------------------------------------------------------------
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
 #
-# Left and right states are from Veronica Eliasson ( cg/cns/doc/stiffenedGas.mv)
+# Left and right states are from Veronica Eliasson ( cg/cssi/doc/stiffenedGas.mv)
 #
 #
 # -- ideal gas ! works 3/11

@@ -10,7 +10,7 @@
 #beginMacro getIntParameter(name)
  ok=getInt(pdb,'name',name) 
  if( ok.eq.0 )then
-   write(*,'("*** cnsSlipWallBC:ERROR: unable to find name")') 
+   write(*,'("*** cssiSlipWallBC:ERROR: unable to find name")') 
    stop 2233
  end if
 #endMacro
@@ -21,7 +21,7 @@
 #beginMacro getRealParameter(name)
  ok=getReal(pdb,'name',name) 
  if( ok.eq.0 )then
-   write(*,'("*** cnsSlipWallBC:ERROR: unable to find name")') 
+   write(*,'("*** cssiSlipWallBC:ERROR: unable to find name")') 
    stop 2233
  end if
 #endMacro
@@ -1095,7 +1095,7 @@
  qtt0= -( ut0*qx0 + vt0*qy0 + gm1*qt0*(ux0+vy0) + u0*qtx0 + v0*qty0 + gm1*q0*(utx0+vty0) -fv(8) )
 #endMacro
 
-      subroutine cnsSlipWallBC(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
+      subroutine cssiSlipWallBC(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
           ipar,rpar, u, u2,  gv, gv2, gtt, mask, x,rsxy, bc, indexRange, exact, uKnown, pdb, ierr )         
 !========================================================================
 !
@@ -1263,7 +1263,7 @@
 
 
       ierr=0
-      ! write(*,*) 'Inside cnsSlipWallBC'
+      ! write(*,*) 'Inside cssiSlipWallBC'
 
       rc                =ipar(0)
       uc                =ipar(1)
@@ -1358,7 +1358,7 @@
         ! *********************************************************************
 
         if( gridIsMoving.ne.0 )then
-          write(*,'("cnsSlipWallBC:ERROR: gridIsMoving not implemented yet for rectangular")')
+          write(*,'("cssiSlipWallBC:ERROR: gridIsMoving not implemented yet for rectangular")')
           ! '
           stop 6642
         end if
@@ -1408,7 +1408,7 @@
               uvm(m)=ogf(ep,x(i1-is1,i2-is2,i3,0),x(i1-is1,i2-is2,i3,1),0.,m,t)
             end do
 
-    !  write(*,'("cnsSlip: i1,i2=",2i3," x,y=",2e10.2," rho,u,v,t=",4e10.2)') i1,i2,x(i1    ,i2    ,i3,0),x(i1    ,i2    ,i3,1),uv(rc),uv(uc),uv(vc),uv(tc)
+    !  write(*,'("cssiSlip: i1,i2=",2i3," x,y=",2e10.2," rho,u,v,t=",4e10.2)') i1,i2,x(i1    ,i2    ,i3,0),x(i1    ,i2    ,i3,1),uv(rc),uv(uc),uv(vc),uv(tc)
            
             u(i1-is1,i2-is2,i3,unc)=2.*u(i1,i2,i3,unc)-u(i1+is1,i2+is2,i3,unc) + uvm(unc)-2.*uv(unc)+uvp(unc)
             u(i1-is1,i2-is2,i3,utc)=u(i1+is1,i2+is2,i3,utc) + uvm(utc)-uvp(utc)
@@ -1651,12 +1651,12 @@
            ! *******************slipWallPressureEntropySymmetry****************
            ! ******************************************************************
 
-           ! write(*,'(" cnsSlipWall: slipWallPressureEntropySymmetry used")')
+           ! write(*,'(" cssiSlipWall: slipWallPressureEntropySymmetry used")')
            if( dt.lt.0. )then
-             write(*,'(" ***cnsSlipWall:WARNING: dt<0 for t=",e12.3)') t
+             write(*,'(" ***cssiSlipWall:WARNING: dt<0 for t=",e12.3)') t
              dt=0.
            else
-             write(*,'(" ***cnsSlipWall:INFO: t,dt=",2(e12.3,1x))') t,dt
+             write(*,'(" ***cssiSlipWall:INFO: t,dt=",2(e12.3,1x))') t,dt
            end if
 
 
@@ -1955,12 +1955,12 @@
            ! **********************slipWallTaylor  ****************************
            ! ******************************************************************
 
-           write(*,'(" cnsSlipWall: slipWallTaylor used")')
+           write(*,'(" cssiSlipWall: slipWallTaylor used")')
            if( dt.lt.0. )then
-             write(*,'(" ***cnsSlipWall:WARNING: dt<0 for t=",e12.3)') t
+             write(*,'(" ***cssiSlipWall:WARNING: dt<0 for t=",e12.3)') t
              dt=0.
            else
-             write(*,'(" ***cnsSlipWall:INFO: t,dt=",2(e12.3,1x))') t,dt
+             write(*,'(" ***cssiSlipWall:INFO: t,dt=",2(e12.3,1x))') t,dt
            end if
 
            ad2dt=ad2*dt
@@ -2345,19 +2345,19 @@
            ! ******************************************************************
 
            if( gridIsMoving.eq.1 )then
-             write(*,'(" cnsSlipWall: slipWallCharacteristic used with moving grids")')
+             write(*,'(" cssiSlipWall: slipWallCharacteristic used with moving grids")')
              ! '
            endif
 
            if( debug.gt.1 ) then
-             write(*,'(" cnsSlipWall: slipWallCharacteristic used")')
+             write(*,'(" cssiSlipWall: slipWallCharacteristic used")')
            end if
            if( dt.lt.0. )then
-             write(*,'(" ***cnsSlipWall:WARNING: dt<0 for t=",e12.3)') t
+             write(*,'(" ***cssiSlipWall:WARNING: dt<0 for t=",e12.3)') t
              dt=0.
            else
              if( debug.gt.1 ) then
-               write(*,'(" ***cnsSlipWall:INFO: t,dt=",2(e12.3,1x))') t,dt
+               write(*,'(" ***cssiSlipWall:INFO: t,dt=",2(e12.3,1x))') t,dt
              end if
            end if
 
@@ -2800,7 +2800,7 @@
           endLoops() ! slipWallCharacteristic
 
           else if( dt.gt.0. )then
-            write(*,'("cnsSlipWallBC: ERROR gridIsMoving=",i2," bcOption=",i3," dt=",e10.2)') gridIsMoving,bcOption,dt
+            write(*,'("cssiSlipWallBC: ERROR gridIsMoving=",i2," bcOption=",i3," dt=",e10.2)') gridIsMoving,bcOption,dt
              ! '
             write(*,'("  .. grid,side,axis=",3i4," bc=",i6)') grid,side,axis,bc(side,axis)
             stop 8825
@@ -2899,7 +2899,7 @@
 
       else
 
-        write(*,'("cnsSlipWallBC:ERROR:Unknown bcOption=",i5)') bcOption
+        write(*,'("cssiSlipWallBC:ERROR:Unknown bcOption=",i5)') bcOption
         stop 17342
 
       end if

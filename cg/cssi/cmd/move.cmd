@@ -1,10 +1,10 @@
 *
-* cgcns example: test moving grids
+* cgcssi example: test moving grids
 *
 * Usage:
 *   
-*  cgcns [-noplot] deform -g=<name> -tz=<poly/trig/none> -degreex=<> -degreet=<> -tf=<tFinal> -tp=<tPlot> ...
-*        -bc=<a|d|r> -cnsVariation=<Jameson/Godunov> -debug=<num> -bg=<backGround> -uInflow=<> -mu=<> -go=[run/halt/og]
+*  cgcssi [-noplot] deform -g=<name> -tz=<poly/trig/none> -degreex=<> -degreet=<> -tf=<tFinal> -tp=<tPlot> ...
+*        -bc=<a|d|r> -cssiVariation=<Jameson/Godunov> -debug=<num> -bg=<backGround> -uInflow=<> -mu=<> -go=[run/halt/og]
 * 
 *  -go : run, halt, og=open graphics
 *  -mg : the name of the grid to move 
@@ -13,19 +13,19 @@
 * Examples: 
 * 
 * -- moving plane interface --
-* cgcns move -g=planeInterfacenp2.hdf -bg=none -mg=interface -mt=shift -tf=2. -tp=.02 -go=halt 
+* cgcssi move -g=planeInterfacenp2.hdf -bg=none -mg=interface -mt=shift -tf=2. -tp=.02 -go=halt 
 * 
 *  -- note for TZ with moving grids : if ue=X(x)*T(t) and x=G(r,t) then the "real" exact solution is X(G(r,t))*T(t) 
-* cgcns move -g=square5 -bg=none -mg=square -mt=shift -tz=poly -degreex=1 -degreet=1 -cnsVariation=nonconservative -tf=2. -tp=.02 -go=halt -debug=1  [exact]
-* mpirun -np 1 $cgcnsp move -g=square5 -bg=none -mg=square -mt=shift -tz=poly -degreex=1 -degreet=1 -cnsVariation=nonconservative -tf=2. -tp=.02 -go=halt -debug=1  [exact]
+* cgcssi move -g=square5 -bg=none -mg=square -mt=shift -tz=poly -degreex=1 -degreet=1 -cssiVariation=nonconservative -tf=2. -tp=.02 -go=halt -debug=1  [exact]
+* mpirun -np 1 $cgcssip move -g=square5 -bg=none -mg=square -mt=shift -tz=poly -degreex=1 -degreet=1 -cssiVariation=nonconservative -tf=2. -tp=.02 -go=halt -debug=1  [exact]
 *
-* cgcns move -g=planeInterface1 -bg=none -mg=interface -mt=shift -tz=poly -degreex=1 -degreet=1 -cnsVariation=nonconservative -tf=2. -tp=.02 -go=halt -debug=1  [exact]
-* cgcns move -g=planeInterface1 -bg=none -mg=interface -mt="advect body" -vg0=1. -tz=poly -degreex=1 -degreet=1 -cnsVariation=nonconservative -tf=2. -tp=.01 -go=halt -debug=1 [exact]
-* cgcns move -g=planeInterface0 -bg=none -mg=interface -mt="advect body" -vg0=1. -tz=poly -degreex=1 -degreet=1 -cnsVariation=nonconservative -tf=2. -tp=.01 -go=halt -debug=15 >! junk 
+* cgcssi move -g=planeInterface1 -bg=none -mg=interface -mt=shift -tz=poly -degreex=1 -degreet=1 -cssiVariation=nonconservative -tf=2. -tp=.02 -go=halt -debug=1  [exact]
+* cgcssi move -g=planeInterface1 -bg=none -mg=interface -mt="advect body" -vg0=1. -tz=poly -degreex=1 -degreet=1 -cssiVariation=nonconservative -tf=2. -tp=.01 -go=halt -debug=1 [exact]
+* cgcssi move -g=planeInterface0 -bg=none -mg=interface -mt="advect body" -vg0=1. -tz=poly -degreex=1 -degreet=1 -cssiVariation=nonconservative -tf=2. -tp=.01 -go=halt -debug=15 >! junk 
 *
 * --- set default values for parameters ---
 * 
-$cnsVariation="Godunov"; $ts="pc"; 
+$cssiVariation="Godunov"; $ts="pc"; 
 $grid="halfCylinder.hdf"; $backGround="backGround"; $bcn="slipWall"; $uInflow=.1; 
 $mg="square"; $mt="shift"; $vg0=0.; $vg1=0.; $vg2=0.;
 $tFinal=1.; $tPlot=.1; $cfl=.9; $mu=.0; $Prandtl=.72; $thermalExpansivity=.1; 
@@ -37,7 +37,7 @@ $bc="a";
 * 
 *
 * ----------------------------- get command line arguments ---------------------------------------
-GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet, "cnsVariation=s"=>\$cnsVariation,\
+GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet, "cssiVariation=s"=>\$cssiVariation,\
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug, \
  "nu=f"=>\$nu,"cfl=f"=>\$cfl, "bg=s"=>\$backGround, "go=s"=>\$go,\
  "noplot=s"=>\$noplot,"dtMax=f"=>\$dtMax,"bcn=s"=>\$bcn,"vg0=f"=>\$vg0,"vg1=f"=>\$vg1,"vg2=f"=>\$vg2,\
@@ -49,9 +49,9 @@ if( $tz eq "none" ){ $tz="turn off twilight zone"; }
 if( $tz eq "poly" ){ $tz="turn on twilight zone\n turn on polynomial"; $cdv=0.; }
 if( $tz eq "trig" ){ $tz="turn on twilight zone\n turn on trigonometric"; $cdv=0.; }
 if( $order eq "2" ){ $order = "second order accurate"; }else{ $order = "fourth order accurate"; }
-if( $cnsVariation eq "godunov" ){ $cnsVariation="compressible Navier Stokes (Godunov)"; $ts="fe"; }
-if( $cnsVariation eq "jameson" ){ $cnsVariation="compressible Navier Stokes (Jameson)"; }  
-if( $cnsVariation eq "nonconservative" ){ $cnsVariation="compressible Navier Stokes (non-conservative)"; } 
+if( $cssiVariation eq "godunov" ){ $cssiVariation="compressible Navier Stokes (Godunov)"; $ts="fe"; }
+if( $cssiVariation eq "jameson" ){ $cssiVariation="compressible Navier Stokes (Jameson)"; }  
+if( $cssiVariation eq "nonconservative" ){ $cssiVariation="compressible Navier Stokes (non-conservative)"; } 
 if( $ts eq "fe" ){ $ts="forward Euler"; }
 if( $ts eq "be" ){ $ts="backward Euler"; }
 if( $ts eq "im" ){ $ts="implicit"; }
@@ -63,7 +63,7 @@ if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
 *
 * specify the overlapping grid to use:
 $grid
-  $cnsVariation
+  $cssiVariation
   done
 * -- time stepping method:
   $ts

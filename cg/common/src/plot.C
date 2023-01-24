@@ -59,7 +59,7 @@ buildRunTimeDialog()
     int numRows=(numberOfPushButtons+1)/2;
     dialog.setPushButtons( cmds, cmds, numRows ); 
 
-    // get any extra components such as errors for tz flow or the pressure for CNS.
+    // get any extra components such as errors for tz flow or the pressure for CSSI.
     realCompositeGridFunction *pu=NULL;
     realCompositeGridFunction v;
     if( plotMode==1 && plotOption==0 )
@@ -418,7 +418,7 @@ plot(const real & t,
   char buff[100];
 
   GridFunction & solution = gf[solutionToPlot];
-  // get any extra components such as errors for tz flow or the pressure for CNS.
+  // get any extra components such as errors for tz flow or the pressure for CSSI.
 
   // **** no need to compute extra components if we are in movie mode and we are not
   //      plotting any extra component ****

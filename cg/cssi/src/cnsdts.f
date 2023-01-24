@@ -1,4 +1,4 @@
-! This file automatically generated from cnsdts.bf with bpp.
+! This file automatically generated from cssidts.bf with bpp.
 c
 c Compute the time step for the compressible NS on rectangular AND curvilinear grids
 c
@@ -59,7 +59,7 @@ c ============== from inspf.bf ***
 
 c====================================================================================
 c
-c SOLVER: CNS, CNSSPAL, CNSBL, CNSKE
+c SOLVER: CSSI, CSSISPAL, CSSIBL, CSSIKE
 c METHOD: GLOBAL, LOCAL  (GLOBAL=fixed time step, LOCAL=local-time stepping -> compute dtVar)
 c OPTION: EXPLICIT, IMPLICIT
 c ADTYPE: AD2, AD4, AD24 --- NOT USED NOW
@@ -86,12 +86,12 @@ c  Define the subroutine that compute the time stepping eigenvalues for a given 
 c ============================================================================================================
 
 
-      subroutine cnsdts(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,
+      subroutine cssidts(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,
      & nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  u,uu, gv,dw, p, dp, dtVar, 
      & bc, ipar, rpar, ierr )
 c======================================================================
 c
-c    Determine the time step for the CNS equations.
+c    Determine the time step for the CSSI equations.
 c    ---------------------------------------------
 c
 c nd : number of space dimensions
@@ -134,7 +134,7 @@ c     ---- local variables -----
 c     --- end statement functions
 
       ierr=0
-      ! write(*,'("Inside cnsdts: gridType=",i2)') gridType
+      ! write(*,'("Inside cssidts: gridType=",i2)') gridType
 
 
       turbulenceModel    =ipar(19)
@@ -146,21 +146,21 @@ c     *****************************************************
 
       if( turbulenceModel.eq.noTurbulenceModel )then
 
-        call cnsdtsCNS(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,
+        call cssidtsCSSI(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,
      & nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  u,uu, gv,dw, p, dp, dtVar, 
      & bc, ipar, rpar, ierr )
 
       else if( turbulenceModel.eq.spalartAllmaras )then
 
-c       call cnsdtsSPAL(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,c         mask,xy,rsxy,  u,uu, gv,dw, p, dp, dtVar, bc, ipar, rpar, ierr )
+c       call cssidtsSPAL(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,c         mask,xy,rsxy,  u,uu, gv,dw, p, dp, dtVar, bc, ipar, rpar, ierr )
 
       else if( turbulenceModel.eq.baldwinLomax )then
 
-c       call cnsdtsBL(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,c         mask,xy,rsxy,  u,uu, gv,dw, p, dp, dtVar, bc, ipar, rpar, ierr )
+c       call cssidtsBL(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,c         mask,xy,rsxy,  u,uu, gv,dw, p, dp, dtVar, bc, ipar, rpar, ierr )
 
       else if( turbulenceModel.eq.kEpsilon )then
 
-c       call cnsdtsKE(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,c         mask,xy,rsxy,  u,uu, gv,dw, p, dp, dtVar, bc, ipar, rpar, ierr )
+c       call cssidtsKE(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,c         mask,xy,rsxy,  u,uu, gv,dw, p, dp, dtVar, bc, ipar, rpar, ierr )
 
       else
         stop 33
@@ -173,7 +173,7 @@ c       call cnsdtsKE(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,n
 
 
 
-c     buildFile(CNSSPAL,cnsdtsSPAL)
-c     buildFile(CNSBL,cnsdtsBL)
-c     buildFile(CNSKE,cnsdtsKE)
+c     buildFile(CSSISPAL,cssidtsSPAL)
+c     buildFile(CSSIBL,cssidtsBL)
+c     buildFile(CSSIKE,cssidtsKE)
 

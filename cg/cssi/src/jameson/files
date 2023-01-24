@@ -1,5 +1,5 @@
 # always compile these optimized: 
-FSRCO += cnsdu.f
+FSRCO += cssidu.f
 
 # fortran files compiled without auto-double:
 FSRC += 

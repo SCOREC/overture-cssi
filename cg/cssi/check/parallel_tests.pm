@@ -1,16 +1,16 @@
 # Parallel regression tests:
 $CGBUILDPREFIX = $ENV{"CGBUILDPREFIX"};
-$program = "$CGBUILDPREFIX/cns/bin/cgcns"; 
+$program = "$CGBUILDPREFIX/cssi/bin/cgcssi"; 
 
 @cmdFiles=(
- 	     "squarej.cns",    # compressible, Jameson with TZ
- 	     "squarej.cns", 
-	     "cicej.cns",
-	     "cicej.cns",
-	     "squareg.cns",    # compressible, Godunov with TZ
-	     "squareg.cns",
-	     "cicej.cns",
-	     "cicej.cns"  
+ 	     "squarej.cssi",    # compressible, Jameson with TZ
+ 	     "squarej.cssi", 
+	     "cicej.cssi",
+	     "cicej.cssi",
+	     "squareg.cssi",    # compressible, Godunov with TZ
+	     "squareg.cssi",
+	     "cicej.cssi",
+	     "cicej.cssi"  
 	     ); 
   # specify the number of processors to use in each of the above cases 
 @numProc=(

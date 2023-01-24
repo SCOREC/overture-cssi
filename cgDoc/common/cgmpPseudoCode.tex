@@ -34,7 +34,7 @@ This function reads in the overset grid, sets up the problem, solves the problem
 % --------------------------------------------------------------------------------------------------------------
 \subsection{Cgmp::setParametersInteractively}
 Pseudo-code for {\tt Cgmp::setParametersInteractively} (cg/mp/src/setParametersInteractively.C)
-This function reads commands to setup the parameters for each DomainSolver (Cgad, Cgins, Cgsm, Cgcns,...).
+This function reads commands to setup the parameters for each DomainSolver (Cgad, Cgins, Cgsm, Cgcssi,...).
 It initializes the list of interfaces and then request Cgmp run-time parameters.
 
 \begin{flushleft}\tt\small
@@ -62,7 +62,7 @@ of viscosity etc.) for each domain solver.
 
 \begin{flushleft}\tt\small
 Cgmp::\FUNC{setupDomainSolverParameters}( int domain, vector$<$aString$>$ \& modelNames ) \\
-\COM{// modelNames (input): list of available models (PDE solvers such as Cgins, Cgad, Cgcns, Cgsm)}\\
+\COM{// modelNames (input): list of available models (PDE solvers such as Cgins, Cgad, Cgcssi, Cgsm)}\\
 \{  \\
 \ia  \WHILE(true)  \\
 \ib    gi.getAnswer(""); \\
@@ -83,18 +83,18 @@ Cgmp::\FUNC{setupDomainSolverParameters}( int domain, vector$<$aString$>$ \& mod
 % --------------------------------------------------------------------------------------------------------------
 \subsection{Cgmp::buildModel}
 Pseudo-code for {\tt Cgmp::buildModel} (cg/mp/src/cgmpMain.C)
-This function builds a particular PDE solver such as Cgad, Cgins, Cgcns, etc.
+This function builds a particular PDE solver such as Cgad, Cgins, Cgcssi, etc.
 % It initializes the list of interfaces and then request Cgmp run-time parameters.
 
 \begin{flushleft}\tt\small
 DomainSolver* Cgmp::\FUNC{buildModel}( const aString \& modelName, CompositeGrid \& cg, ... ) \\
-\COM{// modelNames (input): list of available models (PDE solvers such as Cgins, Cgad, Cgcns, Cgsm)}\\
+\COM{// modelNames (input): list of available models (PDE solvers such as Cgins, Cgad, Cgcssi, Cgsm)}\\
 \{  \\
 \ia  DomainSolver *solver=NULL; \\ 
 \ia  \IF( modelName == "Cgins" )  \\
 \ib    solver = new Cgins(cg,ps,show,plotOption); \\
-\ia  \ELSEIF(  modelName == "Cgcns" )  \\
-\ib    solver = new Cgcns(cg,ps,show,plotOption); \\
+\ia  \ELSEIF(  modelName == "Cgcssi" )  \\
+\ib    solver = new Cgcssi(cg,ps,show,plotOption); \\
 \ia  \ELSEIF(  modelName == "Cgad" )  \\
 \ib    solver = new Cgad(cg,ps,show,plotOption); \\
 \ia  \ELSEIF(  modelName == "Cgsm" )  \\
@@ -556,13 +556,13 @@ int Cgmp::\FUNC{assignInterfaceRightHandSide}( int d, real t, real dt, int corre
 
 
 The {\tt DomainSolver::interfaceRightHandSide} function is used to get or set interface values.
-Each DomainSolver (cgad, cgcns, cgins, cgsm,...) has a version of this routine. The generic
+Each DomainSolver (cgad, cgcssi, cgins, cgsm,...) has a version of this routine. The generic
 version appears in cg/common/src/interfaceBoundaryConditions.C. 
 
 
-Here is {\tt Cgcns::interfaceRightHandSide} (cg/cns/src/interface.bC)
+Here is {\tt Cgcssi::interfaceRightHandSide} (cg/cssi/src/interface.bC)
 \begin{flushleft}\tt\small
-Cgcns::\FUNC{interfaceRightHandSide}( InterfaceOptionsEnum option, int interfaceDataOptions,  \\
+Cgcssi::\FUNC{interfaceRightHandSide}( InterfaceOptionsEnum option, int interfaceDataOptions,  \\
  \qquad\quad       GridFaceDescriptor \& info, GridFaceDescriptor \& gfd, int gfIndex, real t ) \\
 \{  \\
 \ia  RealArray \& bd = parameters.getBoundaryData(side,axis,grid,mg); \COM{// Interface data on this domain.}\\

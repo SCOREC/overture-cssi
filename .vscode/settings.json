@@ -1,0 +1,15 @@
+{
+  "files.associations": {
+    "cgcssiMain.C": "cpp",
+    "cns.C": "cpp",
+    "cssi.C": "cpp",
+    "cns.temp.C": "cpp",
+    "MovingGrids.C": "cpp",
+    "printTimeStepInfo.C": "cpp",
+    "cnsBC.temp.C": "cpp",
+    "cnsBC.C": "cpp",
+    "userDefinedBoundaryValues.C": "cpp",
+    "cnsNull.C": "cpp",
+    "Cgcns.C": "cpp"
+  }
+}

@@ -1,5 +1,5 @@
 *
-* cgcns command file for testing the compressible multiphase code
+* cgcssi command file for testing the compressible multiphase code
 *
 * some definitions
 $show = " ";

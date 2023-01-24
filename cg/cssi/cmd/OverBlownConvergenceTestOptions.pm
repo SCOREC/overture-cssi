@@ -6,21 +6,21 @@ require Exporter;
 sub getPDEString {
 
     my $arg = shift(@_);
-    if ( $arg eq "cns" ) {
+    if ( $arg eq "cssi" ) {
 	return "compressible Navier Stokes (Godunov)";
-    } elsif ( $arg eq "icns" ) {
+    } elsif ( $arg eq "icssi" ) {
 	return "compressible Navier Stokes (implicit)";
-    } elsif ( $arg eq "icns_axi_swirl" ) {
+    } elsif ( $arg eq "icssi_axi_swirl" ) {
 	return "compressible Navier Stokes (implicit)\naxisymmetric flow with swirl 1";
-    } elsif ( $arg eq "icns_axi" ) {
+    } elsif ( $arg eq "icssi_axi" ) {
 	return "compressible Navier Stokes (implicit)";
-    } elsif ( $arg eq "ncns" ) {
+    } elsif ( $arg eq "ncssi" ) {
 	return "steady-state compressible Navier Stokes (newton)";
-    } elsif ( $arg eq "ncns_axi_swirl" ) {
+    } elsif ( $arg eq "ncssi_axi_swirl" ) {
 	return "steady-state compressible Navier Stokes (newton)\naxisymmetric flow with swirl 1";
-    } elsif ( $arg eq "ncns_axi" ) {
+    } elsif ( $arg eq "ncssi_axi" ) {
 	return "steady-state compressible Navier Stokes (newton)";
-    } elsif ( $arg eq "jcns" ) {	
+    } elsif ( $arg eq "jcssi" ) {	
 	return "compressible Navier Stokes (Jameson)";
     } elsif ( $arg eq "asf" ) {
 	return "all speed Navier Stokes";
@@ -120,7 +120,7 @@ sub getTwilightZoneString {
 sub getPDEOptions {
 
     my $arg = shift(@_);
-    if ( $arg eq "icns" || $arg eq "icns_axi_swirl" || $arg eq "icns_axi" ) {
+    if ( $arg eq "icssi" || $arg eq "icssi_axi_swirl" || $arg eq "icssi_axi" ) {
 	my $s = "implicit factor $ifac \n";
 	$s .= "OBPDE:av2,av4 .0,$av4\n";
 	$s .= "implicit time step solver options\n";
@@ -129,18 +129,18 @@ sub getPDEOptions {
 #	$s .= "harwell\n";
 	$s .= "    matrix cutoff\n    1e-20\n";
 	$s .= "exit\n";
-	if ( $arg eq "icns_axi" ) {
+	if ( $arg eq "icssi_axi" ) {
 	    $s .= "turn on axisymmetric flow";
 	}
 	return $s;
-    } elsif ( $arg eq "ncns" || $arg eq "ncns_axi" || $arg eq "ncns_axi_swirl" ) {
+    } elsif ( $arg eq "ncssi" || $arg eq "ncssi_axi" || $arg eq "ncssi_axi_swirl" ) {
 	my $s = "implicit factor $ifac \n";
 	$s .= "OBPDE:av2,av4 .0,$av4\n";
 	$s .= "implicit time step solver options\n";
 	$s .= "choose best direct solver\n";
 	$s .= "    matrix cutoff\n    1e-20\n";
 	$s .= "exit\n";
-	if ( $arg eq "ncns_axi" ) {
+	if ( $arg eq "ncssi_axi" ) {
 	    $s .= "turn on axisymmetric flow";
 	}
 	return $s;

@@ -1,5 +1,5 @@
 *
-* cgcns command file for a 3d shock-tube
+* cgcssi command file for a 3d shock-tube
 *
 $tFinal=1.; $tPlot=.1; $show="";
 $numberOfLevels=2;  $refinementRatio=4;  $regrid=2; 

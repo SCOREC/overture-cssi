@@ -38,7 +38,7 @@ public:
 friend class Parameters;
 friend class AdParameters;
 friend class AsfParameters;
-friend class CnsParameters;
+friend class CssiParameters;
 friend class InsParameters;
 friend class SmParameters;
 friend class Cgins;

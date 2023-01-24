@@ -37,7 +37,7 @@
 #    ogen -noplot turbineAndTower -order=4 -interp=i -numBlades=3 -factor=4 -ml=2  [ THREE blades
 #
 #
-# - less strtetching for cgcns:
+# - less strtetching for cgcssi:
 #     ogen -noplot turbineAndTower -order=2 -interp=e -factor=2 -blf=2  NOTE: something funny happens with blf=1 ??
 # -- parallel 
 #   mpirun -np 2 $ogenp -noplot turbineAndTower -order=2 -interp=e -factor=2 -ml=2  [OK
