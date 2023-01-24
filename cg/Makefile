@@ -15,34 +15,9 @@ message : cgad cgcns cgins cgasf cgsm cgmp unitTests cgmx
 libCommon:
 	@cd common; $(MAKE) 
 
-# advection-diffusion
-cgad: libCommon
-	@cd ad;     $(MAKE) 
-
-# all-speed compressible Navier-Stokes
-cgasf: libCommon
-	@cd asf;  $(MAKE) 
-
-# compressible Navier-Stokes
-cgcns: libCommon
-	@cd cns;    $(MAKE) 
-
-# incompressible Navier-Stokes
-cgins: libCommon
-	@cd ins;    $(MAKE) 
-
-
-# multi-physics solver
-cgmp: cgins cgcns cgad libCommon
-	@cd mp;     $(MAKE) 
-
-# Maxwell solver
-cgmx: 
-	@cd mx;     $(MAKE) 
-
-# Solid mechanics:
-cgsm: libCommon
-	@cd sm;     $(MAKE) 
+# Astronomical plasma calculations
+cgcssi: libCommon
+	@cd cssi;    $(MAKE) 
 
 # Unit tests
 unitTests: libCommon
@@ -51,53 +26,23 @@ unitTests: libCommon
 # run regression tests:
 check:
 	-@cd unitTests/check;  $(MAKE)  check
-	-@cd ad/check;  $(MAKE)  check
-	-@cd asf/check; $(MAKE)  check
-	-@cd cns/check; $(MAKE)  check
-	-@cd ins/check; $(MAKE)  check
-	-@cd sm/check;  $(MAKE)  check
-	-@cd mx/check;  $(MAKE)  check
-	-@cd mp/check;  $(MAKE)  check
+	-@cd cssi/check; $(MAKE)  check
 
 check-unitTests-quiet:
 	-@cd unitTests/check;  $(MAKE) -s  check-quiet
-check-ad-quiet:
-	-@cd ad/check;  $(MAKE) -s check-quiet
-check-asf-quiet:
-	-@cd asf/check; $(MAKE) -s  check-quiet
-check-cns-quiet:
-	-@cd cns/check; $(MAKE) -s  check-quiet
-check-ins-quiet:
-	-@cd ins/check; $(MAKE) -s  check-quiet
-check-sm-quiet:
-	-@cd sm/check;  $(MAKE) -s  check-quiet
-check-mx-quiet:
-	-@cd mx/check;  $(MAKE) -s  check-quiet
-check-mp-quiet:
-	-@cd mp/check;  $(MAKE) -s  check-quiet
+check-cssi-quiet:
+	-@cd cssi/check;  $(MAKE) -s check-quiet
 
 # run regression tests with minimal output:  [ make -j8 check-quiet ]
 check-quiet: check-unitTests-quiet \
-             check-ad-quiet \
-             check-asf-quiet \
-             check-cns-quiet\
-             check-ins-quiet \
-             check-sm-quiet \
-             check-mx-quiet \
-             check-mp-quiet
+             check-cssi-quiet
 
 # clean out obj and bin directories and temporary files.
 clean:
 	rm -f *~ */*~ */*/*~ */*/*/*~
-	-@cd ad;            $(MAKE) clean
-	-@cd asf;           $(MAKE) clean
-	-@cd cns;           $(MAKE) clean
+	-@cd cssi;            $(MAKE) clean
 	-@cd common;        $(MAKE) clean
 	-@cd common/moving; $(MAKE) clean
-	-@cd ins;           $(MAKE) clean
-	-@cd mp;            $(MAKE) clean
-	-@cd mx;            $(MAKE) clean
-	-@cd sm;            $(MAKE) clean
 	-@cd user;          $(MAKE) clean
 	-@cd unitTests;     $(MAKE) clean
 

@@ -1,2 +1,0 @@
-doc:
-	pdflatex periodicChannel

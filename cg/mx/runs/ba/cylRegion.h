@@ -1,6 +1,0 @@
-# Define a cylindrical material region for the BA MX solver
-forcing options...
-define material region...
-material file: $matFile2
-cylinder: $xc $yc $zc $radius 0 1 (x0,y0,z0, radius, za,zb)
-continue

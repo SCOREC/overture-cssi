@@ -1,7 +1,0 @@
-*****************************************
-******* Wed Feb 9, 2021
-
-**NEW** mx/runs/common 
-**NEW** mxScript.cmd          <--- make this into a MASTER SCRIPT 
-**NEW**  getCommonOptions.h   <--- master getOptions
-**NEW**  setCommonOptions.h   <--- master set cgmx parameters
